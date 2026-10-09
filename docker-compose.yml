@@ -1,0 +1,10 @@
+# Production stack for cleaning.raynx.ie
+# Handled by Dokploy: Traefik manages reverse proxy, SSL (Let's Encrypt), and routes to port 3000.
+
+services:
+  web:
+    build: .
+    image: cleaning-partners-web
+    restart: unless-stopped
+    expose:
+      - "3000"
