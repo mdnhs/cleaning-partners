@@ -3,8 +3,8 @@
 
 services:
   cleaning-web:
-    build: .
-    image: cleaning-partners-web
+    image: ghcr.io/mdnhs/cleaning-partners:latest
     restart: unless-stopped
     expose:
       - "3000"
+
