@@ -65,9 +65,9 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       groupTitle: "OTHER SERVICES IN THE GROUP",
       copyright: "© 2026 Cleaning Partners Ltd. All rights reserved.",
       privacyLabel: "Privacy Policy",
-      privacyHref: "#",
+      privacyHref: "/privacy",
       termsLabel: "Terms",
-      termsHref: "#",
+      termsHref: "/terms",
     },
     "sections.clients": {
       eyebrow: "TRUSTED PARTNERS",

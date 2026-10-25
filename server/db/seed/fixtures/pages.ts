@@ -349,7 +349,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           ),
           heading2("Quotes and services"),
           paragraph(
-            "Prices vary with the size and type of space and how often it is cleaned. Every quote is tailored to you and is confirmed in writing before any work starts."
+            "Prices vary with the size and type of space and how often it is cleaned. Every quote is tailored to you."
           ),
           heading2("Our content"),
           paragraph(
@@ -361,7 +361,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           ),
           heading2("Contact us"),
           paragraph(
-            "Questions about these terms? Email info@cleaningpartners.ie or call us on 057 8697670."
+            "Questions about these terms? Email info@cleaningpartners.ie or call us on 057 8697670 Ext 4."
           )
         ),
       },

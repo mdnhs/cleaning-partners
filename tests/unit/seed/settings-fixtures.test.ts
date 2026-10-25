@@ -55,6 +55,11 @@ function valuesAt(root: unknown, path: string): unknown[] {
   )
 }
 
+const LEGAL_HREFS: Record<string, string> = {
+  "settings.footer.privacyHref": "/privacy",
+  "settings.footer.termsHref": "/terms",
+}
+
 describe("settings fixtures are verbatim from the inventory (master 3.1)", () => {
   it("has a fixture for every settings key and parses the lot", () => {
     for (const key of keys)
@@ -86,7 +91,10 @@ describe("settings fixtures are verbatim from the inventory (master 3.1)", () =>
       expect(list).toHaveLength(Number(entry.value))
       return
     }
-    const expected = entry.template ? entry.seed : entry.value
+    // Task 10: the frozen inventory has "#" for the footer legal links; they
+    // now point at the new /privacy and /terms pages.
+    const expected =
+      LEGAL_HREFS[entry.path] ?? (entry.template ? entry.seed : entry.value)
     expect(found, `${entry.path} (${entry.source})`).toContain(expected)
   })
 

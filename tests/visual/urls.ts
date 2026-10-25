@@ -20,5 +20,7 @@ export const PUBLIC_URLS = [
   "/blog/retail-cleaning-why-first-impressions-count",
   "/blog?category=Medical",
   "/blog?q=clean",
+  "/privacy",
+  "/terms",
   "/this-page-does-not-exist",
 ] as const

@@ -27,9 +27,9 @@ function staticMedia(id: string): MediaView {
 /**
  * The public site's data built straight from the seed fixtures, without a
  * database, with every { mediaId } resolved to its static MediaView (url =
- * the /images/... path). It is the expected value for the DB-backed loader
- * (tests/integration) and the interim data source of the public pages
- * (server/modules/pages/sources.ts) until Task 9 reads the database.
+ * the /images/... path). It is the seed source for the database and the expected value (test oracle)
+ * for the DB-backed loader in server/modules/pages/sources.ts
+ * (tests/integration). The public pages themselves read the database.
  */
 const pageOf = <D>(page: { data: D; seo: Seo }) => ({
   data: page.data,
