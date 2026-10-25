@@ -1,0 +1,24 @@
+// Every public URL that must stay pixel-identical. Literal on purpose:
+// lib/services.ts and lib/blog-posts.ts are deleted in Phase 3.
+export const PUBLIC_URLS = [
+  "/",
+  "/about",
+  "/services",
+  "/blog",
+  "/contact",
+  "/services/medical-cleaning",
+  "/services/board-of-education",
+  "/services/commercial-cleaning",
+  "/services/retail-cleaning",
+  "/services/ulv-fogging",
+  "/blog/deep-cleaning-vs-regular-cleaning-what-your-business-needs",
+  "/blog/5-signs-your-office-needs-a-professional-clean",
+  "/blog/infection-control-cleaning-in-healthcare-settings",
+  "/blog/how-to-get-stubborn-stains-out-of-curtains",
+  "/blog/what-is-ulv-fogging-and-when-do-you-need-it",
+  "/blog/keeping-schools-clean-through-term-and-holidays",
+  "/blog/retail-cleaning-why-first-impressions-count",
+  "/blog?category=Medical",
+  "/blog?q=clean",
+  "/this-page-does-not-exist",
+] as const

@@ -40,3 +40,6 @@ next-env.d.ts
 
 # superpowers SDD scratch
 .superpowers/
+test-results/
+playwright-report/
+.data/
