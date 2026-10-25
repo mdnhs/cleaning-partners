@@ -8,12 +8,6 @@ import { ArticleTemplate } from "@/templates/blog/render"
 import { articleView } from "@/templates/blog/view"
 import { articleMetadata } from "@/templates/shared/page-meta"
 
-// Interim, while the sources are fixture-backed: Task 9 drops it when the
-// page reads the database.
-export async function generateStaticParams() {
-  return (await loadSiteSources()).articles.map((a) => ({ slug: a.slug }))
-}
-
 export async function generateMetadata({
   params,
 }: PageProps<"/blog/[slug]">): Promise<Metadata> {

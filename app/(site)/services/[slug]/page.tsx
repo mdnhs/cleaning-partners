@@ -8,12 +8,6 @@ import { ServiceDetailTemplate } from "@/templates/services/render"
 import { serviceDetailView } from "@/templates/services/view"
 import { serviceMetadata } from "@/templates/shared/page-meta"
 
-// Interim, while the sources are fixture-backed: Task 9 drops it when the
-// page reads the database.
-export async function generateStaticParams() {
-  return (await loadSiteSources()).services.map((s) => ({ slug: s.slug }))
-}
-
 export async function generateMetadata({
   params,
 }: PageProps<"/services/[slug]">): Promise<Metadata> {
