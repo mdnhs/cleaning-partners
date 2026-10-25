@@ -5,4 +5,4 @@
  * the same page. Always overwritten by the proxy, so a client-sent value
  * never reaches a page.
  */
-export const REQUEST_PATH_HEADER = "x-sp-path"
+export const REQUEST_PATH_HEADER = "x-cp-path"

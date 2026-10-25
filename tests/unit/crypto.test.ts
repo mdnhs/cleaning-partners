@@ -197,7 +197,9 @@ describe("salt isolation", () => {
     const secret = "x".repeat(32)
     const spKey = hkdfSync("sha256", secret, SP_SALT, "secrets", 32)
     const token = sealWithKey(Buffer.from(spKey), "hello", "aad")
-    expect(() => decryptSecret(token, "aad", secret)).toThrow()
+    expect(() => decryptSecret(token, "aad", secret)).toThrow(
+      /Unable to decrypt secret/
+    )
   })
 
   it("sealWithKey matches encryptSecret's format under CP's own salt", () => {

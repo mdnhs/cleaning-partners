@@ -64,4 +64,7 @@ describe("link placeholder rules (server and editor)", () => {
         { path: "href", message: expect.stringContaining("Use /path") },
       ])
   })
+
+  // Deferred until server/db/seed/fixtures land (Task 3.3): restore from SP tests/unit/link-rules.test.ts
+  // ("keeps every seeded page and setting valid").
 })

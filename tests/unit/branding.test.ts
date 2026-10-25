@@ -15,6 +15,7 @@ const FORBIDDEN = [
   /\bSP_R2_/,
   /\bSP_ADMIN\b/,
   /sp-admin/,
+  /\bx-sp-/i,
   /Security Partners/,
 ]
 // Whole files that may cite SP (the reference repo, or the sister company as content).

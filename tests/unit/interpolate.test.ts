@@ -131,18 +131,23 @@ describe("interpolateHref (ruling: interpolated hrefs re-checked)", () => {
   })
 })
 
+// Deferred until server/db/seed/fixtures land (Task 3.3): restore from SP tests/unit/interpolate.test.ts
+// (group-companies telHref, share-network parity vs settings.microcopy, seeded href templates).
 describe("shareHref (ruling: {url}/{title} URI-encoded)", () => {
-  it("URI-encodes {url} and {title}", () => {
+  it.each([
+    {
+      url: "http://localhost:3000/blog/mobile-patrols-after-hours",
+      title: "How Mobile Patrols Protect Your Business After Hours",
+    },
+    {
+      url: "https://example.ie/blog/a?x=1&y=2#top",
+      title: "Q&A: \u201cDinn R\u00ed\u201d \u2014 100% safe? #1 / {url}",
+    },
+  ])("encodes $url", (page) => {
     expect(
-      shareHref("https://x.com/intent/post?url={url}&text={title}", {
-        url: "https://example.ie/blog/a?x=1&y=2#top",
-        title: "Q&A: 100% safe? #1 / {url}",
-      })
+      shareHref("https://x.com/intent/post?url={url}&text={title}", page)
     ).toBe(
-      "https://x.com/intent/post?url=" +
-        encodeURIComponent("https://example.ie/blog/a?x=1&y=2#top") +
-        "&text=" +
-        encodeURIComponent("Q&A: 100% safe? #1 / {url}")
+      `https://x.com/intent/post?url=${encodeURIComponent(page.url)}&text=${encodeURIComponent(page.title)}`
     )
   })
 })

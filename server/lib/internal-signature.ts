@@ -7,8 +7,8 @@ import { deriveKey } from "./crypto"
 // Server-to-itself requests (scheduler → /api/v1/internal/*): HMAC-SHA256
 // with the HKDF "cron" key over "<unix seconds>.<raw body>" (ledger ruling).
 
-export const TIMESTAMP_HEADER = "x-sp-timestamp"
-export const SIGNATURE_HEADER = "x-sp-signature"
+export const TIMESTAMP_HEADER = "x-cp-timestamp"
+export const SIGNATURE_HEADER = "x-cp-signature"
 /** Accepted clock skew, and how long a captured request could be replayed. */
 export const MAX_SKEW_SECONDS = 300
 
