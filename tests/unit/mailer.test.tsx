@@ -377,6 +377,7 @@ describe("real SMTP transport (Phase 6 target guard on every send)", () => {
         ).rejects.toMatchObject({ code: "EBLOCKEDHOST" })
         expect(factory).not.toHaveBeenCalled()
       } finally {
+        vi.unstubAllEnvs()
       }
     }
   )
