@@ -36,6 +36,7 @@ export const REVISION_ENTITIES = [
   "client",
   "groupCompany",
   "category",
+  "testimonial",
   "builder-page",
 ] as const
 export type RevisionEntity = (typeof REVISION_ENTITIES)[number]

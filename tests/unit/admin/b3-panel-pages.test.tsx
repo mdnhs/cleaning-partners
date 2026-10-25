@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  * MK parity B3 (settings pins): the Settings section index and the
  * [key] page, rendered as server components with the session and
  * navigation mocked. Other panel pages are pinned by the task that ships
- * them (collections 4.6, activity 4.7, marketing/AI/integrations 7-9).
+ * them (activity 4.7, marketing/AI/integrations 7-9).
  */
 const nav = vi.hoisted(() => ({
   redirect: vi.fn((to: string) => {
@@ -34,6 +34,7 @@ vi.mock("@/components/admin/settings/settings-editor", () => ({
   SettingsEditor: () => null,
 }))
 
+import CollectionsPage from "@/app/(admin)/admin/(panel)/collections/page"
 import SettingsKeyPage from "@/app/(admin)/admin/(panel)/settings/[key]/page"
 import SettingsPage from "@/app/(admin)/admin/(panel)/settings/page"
 import { SettingsEditor } from "@/components/admin/settings/settings-editor"
@@ -84,6 +85,17 @@ describe("/admin/settings opens its first readable child (registry)", () => {
   it("is forbidden without settings:read", async () => {
     session.roles = ["author"]
     await expect(inner(SettingsPage())).rejects.toThrow("FORBIDDEN")
+  })
+})
+
+describe("/admin/collections opens its first readable child (registry)", () => {
+  it("→ Team for collection readers; forbidden without collection:read", async () => {
+    session.roles = ["editor"]
+    await expect(inner(CollectionsPage())).rejects.toThrow(
+      "REDIRECT /admin/collections/team"
+    )
+    session.roles = ["author"]
+    await expect(inner(CollectionsPage())).rejects.toThrow("FORBIDDEN")
   })
 })
 

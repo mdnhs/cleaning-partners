@@ -39,6 +39,12 @@ export function SelectWidget({ field, path }: WidgetProps) {
   const error = errorText(fieldState.error)
   const help = field.meta.help
   const optional = field.optional || field.nullable
+  // A number field with meta.options (testimonial rating 1-5): the options
+  // are strings in the control and numbers in the form.
+  const numeric = !enumValues(field.schema) && !!field.meta.options
+  const items = numeric
+    ? field.meta.options!
+    : choiceItems(field, enumValues(field.schema) ?? [])
   return (
     <FieldShell
       id={id}
@@ -50,18 +56,19 @@ export function SelectWidget({ field, path }: WidgetProps) {
       <OptionSelect
         id={id}
         // "" is the "— None —" option of an optional field (null in the form).
-        value={(value as string | null | undefined) ?? ""}
-        options={[
-          ...(optional ? [{ value: "", label: NONE }] : []),
-          ...choiceItems(field, enumValues(field.schema) ?? []),
-        ]}
+        value={
+          value === null || value === undefined ? "" : String(value as string)
+        }
+        options={[...(optional ? [{ value: "", label: NONE }] : []), ...items]}
         placeholder="Choose…"
         disabled={disabled}
         aria-invalid={!!error}
         aria-required={!optional}
         aria-describedby={describedBy(id, { help, error })}
         triggerRef={ref}
-        onChange={(next) => onChange(next === "" ? null : next)}
+        onChange={(next) =>
+          onChange(next === "" ? null : numeric ? Number(next) : next)
+        }
         onBlur={onBlur}
       />
     </FieldShell>

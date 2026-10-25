@@ -47,7 +47,9 @@ function source(file: string): string {
  * calling it without `await`, or `void check() // await check` (a trailing
  * comment), fails "keeps its finer check".
  */
-const FINER_CHECKS: Record<string, string> = {}
+const FINER_CHECKS: Record<string, string> = {
+  "services/new/page.tsx": `requirePermission({ service: ["create"] })`,
+}
 
 /**
  * The permission each page opens with, pinned as literals: the inline checks
@@ -61,6 +63,14 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "account/page.tsx": null,
   "pages/page.tsx": { page: ["read"] },
   "pages/[key]/page.tsx": { page: ["read"] },
+  "collections/page.tsx": { collection: ["read"] },
+  "collections/clients/page.tsx": { collection: ["read"] },
+  "collections/group-companies/page.tsx": { collection: ["read"] },
+  "collections/team/page.tsx": { collection: ["read"] },
+  "collections/testimonials/page.tsx": { collection: ["read"] },
+  "services/page.tsx": { service: ["read"] },
+  "services/[id]/page.tsx": { service: ["read"] },
+  "services/new/page.tsx": { service: ["read"] },
   "settings/page.tsx": { settings: ["read"] },
   "settings/[key]/page.tsx": { settings: ["read"] },
 }

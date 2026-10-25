@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-html-link-for-pages -- plain <a> links exercise the guard's document-level click interception */
+import { QueryClientProvider } from "@tanstack/react-query"
 import {
   act,
   render,
@@ -9,7 +10,9 @@ import {
 } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { useState } from "react"
+import { renderToStaticMarkup } from "react-dom/server"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { toast } from "sonner"
 
 // Final review 3 (admin UI/UX/a11y): the shared pieces behind I1–I8.
 const { push, replace } = vi.hoisted(() => ({
@@ -22,7 +25,16 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
 }))
 
+import AdminError from "@/app/(admin)/admin/error"
+import GlobalError from "@/app/global-error"
 import { ProfileForm } from "@/components/admin/account/profile-form"
+import {
+  DataTable,
+  type DataTableParams,
+  columnsFor,
+  type DataTableColumns,
+} from "@/components/admin/data-table/data-table"
+import { useListHref } from "@/components/admin/data-table/list-url"
 import { SaveStateIndicator } from "@/components/admin/editor/save-state"
 import {
   formChanged,
@@ -30,14 +42,60 @@ import {
   UnsavedGuard,
   useConfirmLeave,
 } from "@/components/admin/editor/unsaved-guard"
-import { makeQueryClient } from "@/components/admin/providers"
+import { AdminProviders, makeQueryClient } from "@/components/admin/providers"
+import {
+  SectionTabs,
+  SectionTabsPanel,
+} from "@/components/admin/section-tabs/section-tabs"
 import { AdminShell } from "@/components/admin/shell/admin-shell"
+import { SortableList } from "@/components/admin/sortable-list"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { useAutosave } from "@/hooks/use-autosave"
 
 beforeEach(() => {
   push.mockReset()
   replace.mockReset()
+})
+
+describe("Sheet primitive widths (I1)", () => {
+  it("lets the caller's width win and is full width on phones by default", () => {
+    render(
+      <Sheet open>
+        <SheetContent side="right" className="sm:max-w-2xl">
+          <SheetTitle>Wide</SheetTitle>
+        </SheetContent>
+      </Sheet>
+    )
+    const sheet = screen.getByRole("dialog", { name: "Wide" })
+    expect(sheet).toHaveClass("w-full", "sm:max-w-2xl")
+    expect(sheet).not.toHaveClass("sm:max-w-sm")
+    expect(sheet.className).not.toMatch(/data-\[side=right\]:(w-3\/4|sm:max-w)/)
+    // The close button is 44 px on touch screens (I4).
+    expect(screen.getByRole("button", { name: "Close" })).toHaveClass(
+      "pointer-coarse:size-11"
+    )
+  })
+
+  it("keeps a narrow default for sheets that set no width", () => {
+    render(
+      <Sheet open>
+        <SheetContent side="left">
+          <SheetTitle>Nav</SheetTitle>
+        </SheetContent>
+      </Sheet>
+    )
+    expect(screen.getByRole("dialog", { name: "Nav" })).toHaveClass(
+      "w-full",
+      "sm:max-w-sm"
+    )
+  })
 })
 
 const onNav = vi.fn((event: React.MouseEvent) => event.preventDefault())
@@ -439,6 +497,54 @@ describe("shell unsaved-changes registry (I2/I3)", () => {
   })
 })
 
+describe("touch targets (I4)", () => {
+  it("SectionTabs tabs, sortable move buttons and dialog footers grow to 44 px on touch", () => {
+    render(
+      <>
+        <SectionTabs
+          ariaLabel="Sections"
+          items={[
+            { id: "a", label: "First" },
+            { id: "b", label: "Second" },
+          ]}
+        >
+          <SectionTabsPanel id="a">A</SectionTabsPanel>
+          <SectionTabsPanel id="b">B</SectionTabsPanel>
+        </SectionTabs>
+        <SortableList
+          label="Order"
+          items={[
+            { id: "1", label: "One" },
+            { id: "2", label: "Two" },
+          ]}
+          onReorder={() => {}}
+        />
+      </>
+    )
+    for (const tab of screen.getAllByRole("tab"))
+      expect(tab).toHaveClass("pointer-coarse:h-11")
+    expect(screen.getByRole("button", { name: "Move One down" })).toHaveClass(
+      "pointer-coarse:size-11"
+    )
+  })
+
+  it("DialogFooter makes its buttons 44 px on touch screens", () => {
+    render(
+      <Dialog open>
+        <DialogContent>
+          <DialogTitle>Publish</DialogTitle>
+          <DialogFooter>
+            <Button>Publish</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )
+    expect(
+      screen.getByRole("button", { name: "Publish" }).parentElement
+    ).toHaveClass("pointer-coarse:**:data-[slot=button]:h-11")
+  })
+})
+
 describe("save status announcements (M4)", () => {
   const live = () =>
     document.querySelector('[aria-live="polite"]') as HTMLElement
@@ -478,5 +584,113 @@ describe("autosave validation cost (M3)", () => {
     rerender({ value: edited })
     rerender({ value: edited })
     expect(isValid).toHaveBeenCalledTimes(1)
+  })
+})
+
+type Row = { id: string; name: string } & Record<string, unknown>
+const ch = columnsFor<Row>()
+const COLUMNS = ch.columns([
+  ch.accessor("name", { header: "Name" }),
+]) as unknown as DataTableColumns<Row>
+
+function BackLink() {
+  return <a href={useListHref("/admin/pages/home")}>Back to list</a>
+}
+
+describe("list state in the URL (I8)", () => {
+  it("starts from ?page=&sort=&q= and writes changes back with replace", async () => {
+    const user = userEvent.setup()
+    window.history.replaceState(
+      null,
+      "",
+      "/admin/pages/home?status=open&page=2&sort=name:desc&q=ann"
+    )
+    const fetchPage = vi.fn(async (params: DataTableParams) => ({
+      items: [{ id: "1", name: "Ann" }],
+      page: params.page,
+      pageSize: params.pageSize,
+      total: 60,
+    }))
+    render(
+      <QueryClientProvider client={makeQueryClient()}>
+        <DataTable<Row>
+          syncUrl
+          label="People"
+          queryKey={["people"]}
+          fetchPage={fetchPage}
+          columns={COLUMNS}
+          renderCard={(row) => row.name}
+          empty="Nobody"
+        />
+      </QueryClientProvider>
+    )
+    await screen.findByRole("table", { name: "People" })
+    expect(fetchPage).toHaveBeenCalledWith(
+      expect.objectContaining({ page: 2, sort: "name:desc", q: "ann" })
+    )
+    expect(screen.getByRole("searchbox")).toHaveValue("ann")
+
+    await user.click(screen.getByRole("button", { name: "Next page" }))
+    await waitFor(() =>
+      expect(window.location.search).toBe(
+        "?status=open&page=3&sort=name%3Adesc&q=ann"
+      )
+    )
+    // Replaced in place: Back still leaves the list.
+    expect(push).not.toHaveBeenCalled()
+
+    render(<BackLink />)
+    expect(screen.getByRole("link", { name: "Back to list" })).toHaveAttribute(
+      "href",
+      "/admin/pages/home?status=open&page=3&sort=name%3Adesc&q=ann"
+    )
+  })
+})
+
+describe("error boundaries (I7)", () => {
+  it("the admin-level boundary shows the styled card with Try again", async () => {
+    const user = userEvent.setup()
+    const retry = vi.fn()
+    render(
+      <AdminError
+        error={Object.assign(new Error("db down"), { digest: "abc123" })}
+        retry={retry}
+      />
+    )
+    const alert = screen.getByRole("alert")
+    expect(alert).toHaveTextContent("Something went wrong")
+    expect(alert).toHaveTextContent("abc123")
+    await user.click(screen.getByRole("button", { name: "Try again" }))
+    expect(retry).toHaveBeenCalledTimes(1)
+  })
+
+  it("global-error renders its own document with retry", () => {
+    const html = renderToStaticMarkup(
+      <GlobalError
+        error={Object.assign(new Error("x"), { digest: "d1" })}
+        retry={() => {}}
+      />
+    )
+    expect(html).toMatch(/^<html lang="en-IE">/)
+    expect(html).toContain('role="alert"')
+    expect(html).toContain("Try again")
+    expect(html).toContain("d1")
+  })
+})
+
+describe("toasts (M5, N4)", () => {
+  it("sit top centre, below the topbar (MK parity A3)", async () => {
+    render(
+      <AdminProviders cacheKey="toasts" client={makeQueryClient()}>
+        <p>Body</p>
+      </AdminProviders>
+    )
+    act(() => {
+      toast.success("Saved")
+    })
+    await screen.findByText("Saved")
+    const list = document.querySelector("[data-sonner-toaster]")
+    expect(list).toHaveAttribute("data-y-position", "top")
+    expect(list).toHaveAttribute("data-x-position", "center")
   })
 })

@@ -6,9 +6,11 @@ import { z } from "zod"
 
 import { EDITABLE_SETTINGS_KEYS } from "@/lib/admin/settings-keys"
 import { link } from "@/lib/schemas/common"
+import { serviceContent } from "@/lib/schemas/content/service"
 import { settingsSchemas } from "@/lib/schemas/settings"
 
 import { makeQueryClient } from "@/components/admin/providers"
+import { serviceEditorMeta } from "@/components/admin/services/service-meta"
 import { settingsEditorMeta } from "@/components/admin/settings/settings-meta"
 import type { EditorMeta } from "@/components/admin/schema-form/editor-meta"
 import { SchemaForm } from "@/components/admin/schema-form/schema-form"
@@ -23,6 +25,7 @@ import {
 import { itemSummary } from "@/components/admin/schema-form/widgets/list"
 import { fixtureMediaLookup } from "@/server/db/seed/fixtures/media"
 import { pagesFixture } from "@/server/db/seed/fixtures/pages"
+import { servicesFixture } from "@/server/db/seed/fixtures/services"
 import { settingsFixture } from "@/server/db/seed/fixtures/settings"
 import { templateEditorMeta } from "@/templates/editor-meta"
 import { PAGES, templateSchemaFor, templates } from "@/templates/registry"
@@ -438,8 +441,21 @@ describe("field layout helpers", () => {
   })
 })
 
+describe("service editor layout (4.6)", () => {
+  it("groups the card, banner and page content; long copy is a textarea", () => {
+    renderSchema(
+      serviceContent as z.ZodObject,
+      serviceEditorMeta,
+      (servicesFixture(fixtureMediaLookup)[0] as { content: unknown }).content
+    )
+    for (const title of ["Service card", "Page banner", "Page content"])
+      expect(screen.getByRole("region", { name: title })).toBeInTheDocument()
+    for (const name of ["Card text", "Banner text"])
+      expect(screen.getByRole("textbox", { name }).tagName).toBe("TEXTAREA")
+  })
+})
+
 describe("editor meta groups", () => {
-  // The service meta is checked here once it exists (4.6).
   const metas: [string, EditorMeta, z.ZodObject][] = [
     ...EDITABLE_SETTINGS_KEYS.map(
       (key) =>
@@ -449,6 +465,7 @@ describe("editor meta groups", () => {
           settingsSchemas[key] as z.ZodObject,
         ] as [string, EditorMeta, z.ZodObject]
     ),
+    ["service", serviceEditorMeta, serviceContent as z.ZodObject],
     ...Object.entries(templates).map(
       ([name, template]) =>
         [
