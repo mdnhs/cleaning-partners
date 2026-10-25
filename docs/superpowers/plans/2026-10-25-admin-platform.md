@@ -319,6 +319,12 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
 
   - **Phase 1 outcome.** `instrumentation.ts` moves from Task 1.5 to Task 5.4 (phase-01 R5). The public route-group move (`app/*` → `app/(site)/*`) moves from Task 3.4 to Task 2.5a: Next allows a separate `/admin` root layout only when there is no `app/layout.tsx`. Task 3.4 keeps only the props-driven work. The CI `image` smoke job is deferred to Task 11.4.
 
+  - **Phase 2 outcome.** The TipTap renderer moves from Task 5.2 to Phase 3 (phase-03 R3-4). Items for later phases:
+    - **6.1:** `server/lib/r2-client.ts` `r2ObjectKey` must force the `cp/` root regardless of the user-configurable `keyPrefix` (default `""`), with the Review Focus 2 tests.
+    - **9.1:** `lib/theme/checks.ts` `SITE_PAIRS` must include white text on `brand`.
+    - **4.1:** restore SP's impersonation banner and stop control in the panel shell. Delete the temporary `sign-out-control.tsx` and the header Account link. Restore the deferred user-menu tests.
+    - **3.x/3.10:** if the global 404 moves to SP's `(site)/[...notFound]` catch-all, drop `app/global-not-found.tsx`'s internal `next/dist` import.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.
