@@ -9,6 +9,7 @@ import { limitAdminBody, limitBody } from "@/server/api/middleware/body-limit"
 import { notFoundHandler, onError } from "@/server/api/middleware/error"
 import { requestIdMiddleware } from "@/server/api/middleware/request-id"
 import { sameOrigin } from "@/server/api/middleware/same-origin"
+import { getAuth } from "@/server/auth/auth"
 import { healthRoutes } from "@/server/modules/health/routes"
 
 /**
@@ -33,6 +34,11 @@ export function createApp() {
   })
   api.onError(onError)
   api.notFound(notFoundHandler)
+
+  // 2. Better Auth (sign-in, sign-out, password reset, two-factor)
+  api.on(["GET", "POST"], "/auth/*", limitBody("public"), (c) =>
+    getAuth().handler(c.req.raw)
+  )
 
   // 3. Public endpoints: 64 KB body
   api.use("/v1/public/*", limitBody("public"))
