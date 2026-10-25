@@ -1,11 +1,14 @@
 import "server-only"
 
+import { cacheLife, cacheTag } from "next/cache"
+
 import {
   DEFAULT_THEME,
   ThemeConfig,
   type ThemeConfigValue,
 } from "@/lib/theme/schema"
 import { getDb } from "@/server/db/client"
+import { tag } from "@/server/lib/cache-tags"
 import { findSettingsRow } from "@/server/modules/settings/repo"
 
 /**
@@ -28,12 +31,12 @@ export function readThemeOrDefault(value: unknown): ThemeConfigValue {
 
 /**
  * The live theme (admin and public site). Never the draft.
- *
- * Task 3.5 (cacheComponents) restores SP's `"use cache"` +
- * `cacheLife("max")` + `cacheTag(tag.settings("theme"))` here; until then
- * it is a plain read, and the admin's AdminThemeStyle is dynamic anyway.
+ * Cached until a theme save or publish expires `settings:theme`.
  */
 export async function getPublishedTheme(): Promise<ThemeConfigValue> {
+  "use cache"
+  cacheLife("max")
+  cacheTag(tag.settings("theme"))
   const row = await findSettingsRow(getDb(), "theme")
   return readThemeOrDefault(row?.published)
 }

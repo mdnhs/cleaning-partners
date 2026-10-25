@@ -17,7 +17,7 @@ import { seedContent } from "@/server/db/seed"
 import { contentFixtures } from "@/server/db/seed/fixtures"
 import type { MediaLookup } from "@/server/db/seed/fixtures/media"
 
-import { resetDb } from "../db"
+import { NON_DISPOSABLE_URL, resetDb } from "../db"
 
 const TABLES = [
   "media",
@@ -180,7 +180,7 @@ describe("pnpm db:seed guard", () => {
       encoding: "utf8",
       env: {
         ...process.env,
-        DATABASE_URL: "postgres://cp:cp@db.example.com:5412/cleaning",
+        DATABASE_URL: NON_DISPOSABLE_URL,
       },
     })
     expect(run.status).toBe(1)

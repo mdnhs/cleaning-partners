@@ -12,8 +12,6 @@ import { HowItWorks } from "@/components/services/how-it-works"
 import { ServiceOverview } from "@/components/services/service-overview"
 import { getService, services } from "@/lib/services"
 
-export const dynamicParams = false
-
 export function generateStaticParams() {
   return services.map((service) => ({ slug: service.slug }))
 }

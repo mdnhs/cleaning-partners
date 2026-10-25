@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 
 import { BlogList } from "@/components/blog/blog-list"
 import { Contact } from "@/components/home/contact"
@@ -12,7 +13,21 @@ export const metadata: Metadata = {
   description: "Cleaning tips, hygiene advice and news from the Clean Team.",
 }
 
-export default async function BlogPage({ searchParams }: PageProps<"/blog">) {
+// `searchParams` is runtime data: under Cache Components it is read inside
+// <Suspense>, so the page can still prerender a shell.
+export default function BlogPage({ searchParams }: PageProps<"/blog">) {
+  return (
+    <Suspense>
+      <BlogContent searchParams={searchParams} />
+    </Suspense>
+  )
+}
+
+async function BlogContent({
+  searchParams,
+}: {
+  searchParams: PageProps<"/blog">["searchParams"]
+}) {
   const { category, q } = await searchParams
   const initialCategory = typeof category === "string" ? category : undefined
   const initialQuery = typeof q === "string" ? q : undefined

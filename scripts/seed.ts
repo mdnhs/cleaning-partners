@@ -1,5 +1,5 @@
 // Seeds the public site content (pages, settings, services, articles,
-// team, clients, group companies, media library) from the fixtures.
+// team, clients, group companies, testimonials, media library) from the fixtures.
 // Idempotent: only missing rows are inserted. Refuses non-disposable
 // databases unless --allow-production.
 //   dev:       pnpm db:seed

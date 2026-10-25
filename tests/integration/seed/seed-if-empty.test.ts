@@ -7,7 +7,7 @@ import { getDb } from "@/server/db/client"
 import { pages, services } from "@/server/db/schema"
 import { seedContent, seedIfEmpty } from "@/server/db/seed"
 
-import { resetDb, TEST_DATABASE_URL } from "../db"
+import { NON_DISPOSABLE_URL, resetDb, TEST_DATABASE_URL } from "../db"
 
 const count = async (table: string) => {
   const { rows } = await getDb().execute<{ n: number }>(
@@ -91,7 +91,7 @@ describe("db:seed --if-empty (what docker-entrypoint.sh runs)", () => {
   it("needs no --allow-production (it never writes to a database with content)", () => {
     // Non-disposable, unresolvable host: the guard must not reject it first;
     // the run then fails on the connection, not on the disposable check.
-    const result = run("postgres://cp:cp@db.invalid:5439/cp_prod")
+    const result = run(NON_DISPOSABLE_URL)
     expect(result.status).toBe(1)
     expect(result.stderr).not.toContain("--allow-production")
   }, 60_000)

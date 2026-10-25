@@ -35,6 +35,8 @@ export const SECURITY_HEADERS = [
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  // Everything is dynamic unless a query opts in with "use cache" (notes §1).
+  cacheComponents: true,
   // forbidden() / forbidden.tsx for the admin 403 page (requirePermission).
   experimental: { authInterrupts: true, globalNotFound: true },
   async headers() {

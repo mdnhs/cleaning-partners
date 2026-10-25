@@ -6,6 +6,12 @@ import { getDb } from "@/server/db/client"
 export const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? "postgres://cp:cp@127.0.0.1:5434/cp_test"
 
+/**
+ * A URL the seed guard rejects as non-disposable (never connected to by the
+ * guard tests; the host does not resolve).
+ */
+export const NON_DISPOSABLE_URL = "postgres://cp:cp@db.invalid:5439/cp_prod"
+
 /** Only databases named cp_test / cp_<x>_test may be migrated or truncated. */
 const CP_TEST_DB = /^cp_(.*_)?test$/
 
