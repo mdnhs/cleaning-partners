@@ -307,6 +307,14 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
 
 ## Changes
 
+- 2026-10-25 (Phase 0 outcome):
+  - **Playwright.** The config differs from SP's in three ways, and every later phase must keep all three: `use.channel: "chromium"` (the 40 baselines were shot with full Chromium; dropping it moves pixels), port env `PW_PORT` with default 3200, and a standalone webServer (`pnpm build && node scripts/prepare-standalone.mjs && node .next/standalone/server.js`, because `next start` refuses `output: "standalone"`). `scripts/prepare-standalone.mjs` already exists, byte-identical to SP's. Phase 2 must set `testMatch` per project, replacing the global one.
+  - **Inventory.** It is frozen at baseline `3689369`. `scripts/check-inventory.ts` reads sources via `git show 3689369:<file>`, so it survives Phase 3.4's file moves.
+  - **Inventory schema.** Entries may carry `array` (list entries) and `seed`, the SP-`interpolate` form of a template value such as `"Tel: {office} Ext 4"`. Consumers ignore unknown keys.
+  - **Page SEO** targets are `pages.<key>.seo.*`. Service and article titles come from `settings.seo.defaults.titleTemplate` (SP contract).
+  - **Shared-section page lists:** `sections.whyChooseUs` and `sections.testimonials` also render on `/services/[slug]`, and `sections.contact` renders on all 7 routes.
+  - **Nav highlight.** `SiteHeader active=…` matches by label today. Task 3.4 switches it to match by href, so renaming a label can't break the highlight.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.
