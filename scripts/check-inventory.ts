@@ -80,13 +80,21 @@ for (const e of raw.entries) {
     errors.push(`${e.id}: pages empty`)
   if (e.template !== undefined && typeof e.template !== "boolean")
     errors.push(`${e.id}: template must be boolean`)
-  // Stale line numbers fail: value (or array identifier) must be in source.
+  // Stale line numbers fail: value (or array declaration) must be in a
+  // window of lines (line-1 .. line+8) around the stated source line.
+  const windowText = lines
+    .slice(Math.max(0, Number(line) - 2), Number(line) + 8)
+    .join("\n")
   if (e.kind === "list") {
     if (!e.array) errors.push(`${e.id}: list entry needs "array" identifier`)
-    else if (!text.includes(e.array))
-      errors.push(`${e.id}: array ${e.array} not found in ${file}`)
-  } else if (!normSource(text).includes(normValue(e.value))) {
-    errors.push(`${e.id}: value not found verbatim in ${file}`)
+    else {
+      const id = e.array.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+      const decl = new RegExp(`\\b${id}\\s*[:=]|const\\s+${id}\\b`)
+      if (!decl.test(windowText))
+        errors.push(`${e.id}: array ${e.array} not declared near ${e.source}`)
+    }
+  } else if (!normSource(windowText).includes(normValue(e.value))) {
+    errors.push(`${e.id}: value not found verbatim near ${e.source}`)
   }
 }
 // A value with {…} placeholders is either a template field (template: true,
