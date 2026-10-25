@@ -325,6 +325,8 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
     - **4.1:** restore SP's impersonation banner and stop control in the panel shell. Delete the temporary `sign-out-control.tsx` and the header Account link. Restore the deferred user-menu tests.
     - **3.x/3.10:** if the global 404 moves to SP's `(site)/[...notFound]` catch-all, drop `app/global-not-found.tsx`'s internal `next/dist` import.
 
+  - **Phase 4 outcome (Task 6).** Task 8.2 must restore `recordMove` in `server/modules/services/service.ts` `updateServiceSlug` and `deleteService` (markers at `:189` and `:223`). It must also restore the `"redirects"` tag assertion in `tests/integration/api/collections.test.ts`, which has an `it.todo` marker. Until then, a renamed or deleted published service 404s at its old URL. **Don't cut over before 8.2.** Task 8.1 restores the SEO tab in the page and service editors (SeoPanel).
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.
