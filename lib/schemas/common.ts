@@ -80,6 +80,8 @@ const hardBreak = z.object({ type: z.literal("hardBreak") })
 const inline = z.discriminatedUnion("type", [textNode, hardBreak])
 const paragraph = z.object({
   type: z.literal("paragraph"),
+  // "lead" is the article's opening paragraph (R3-4).
+  attrs: z.object({ variant: z.literal("lead") }).optional(),
   content: z.array(inline).optional(),
 })
 const heading = z.object({
@@ -93,6 +95,8 @@ const listItem = z.object({
 })
 const bulletList = z.object({
   type: z.literal("bulletList"),
+  // "checklist" is the article's tick list (R3-4).
+  attrs: z.object({ variant: z.literal("checklist") }).optional(),
   content: z.array(listItem).min(1),
 })
 const orderedList = z.object({

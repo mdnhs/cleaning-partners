@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { link, mediaRef, pageHero, text } from "@/lib/schemas/common"
+import { href, link, mediaRef, pageHero, text } from "@/lib/schemas/common"
 
 /** Page "services" (/services) and the copy around a service detail page. Cards come from the services collection. */
 export const servicesTemplate = z.object({
@@ -24,7 +24,7 @@ export const servicesTemplate = z.object({
     }),
   }),
   detail: z.object({
-    breadcrumbHref: text,
+    breadcrumbHref: href,
     breadcrumbLabel: text,
     overviewEyebrow: text,
     includedHeading: text,

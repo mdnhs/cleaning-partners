@@ -8,6 +8,7 @@ import {
 } from "@/server/db/seed/fixtures/media"
 import { pagesFixture } from "@/server/db/seed/fixtures/pages"
 
+import { frozenArray } from "../helpers/frozen"
 import { inventory, normalise } from "../helpers/inventory"
 
 const fixture = pagesFixture(fixtureMediaLookup)
@@ -113,6 +114,51 @@ describe("page fixtures (master 3.2)", () => {
     expect(fixture.contact.data.quoteForm.steps).toHaveLength(3)
     expect(fixture.home.data.services.items).toHaveLength(3)
     expect(fixture.blog.data.article.share.networks).toHaveLength(3)
+  })
+
+  // The inventory records only the first item of a list; these compare every
+  // item with the static site's own arrays at 3689369.
+  describe("every list item equals the static site's", () => {
+    it("about stats", () => {
+      expect(fixture.about.data.stats).toEqual(
+        frozenArray("components/about/stats.tsx", "stats")
+      )
+    })
+
+    it("about story paragraphs", () => {
+      expect(paragraphTexts(fixture.about.data.story.paragraphs)).toEqual(
+        frozenArray("components/about/our-story.tsx", "paragraphs")
+      )
+    })
+
+    it("about story sectors", () => {
+      expect(fixture.about.data.story.sectors).toEqual(
+        frozenArray("components/about/our-story.tsx", "sectors")
+      )
+    })
+
+    it("contact next steps", () => {
+      expect(fixture.contact.data.quoteForm.steps).toEqual(
+        frozenArray("components/contact/quote-form.tsx", "steps")
+      )
+    })
+
+    it("home service items", () => {
+      expect(fixture.home.data.services.items).toEqual(
+        frozenArray("components/home/services.tsx", "services")
+      )
+    })
+
+    it("share networks (the url template with {url} for the page address)", () => {
+      const frozen = frozenArray<{
+        label: string
+        name: string
+        url: (u: string) => string
+      }>("components/blog/share-links.tsx", "networks")
+      expect(fixture.blog.data.article.share.networks).toEqual(
+        frozen.map((n) => ({ ...n, url: n.url("{url}") }))
+      )
+    })
   })
 
   it("about and contact heroes have no own image; services, blog and legal do", () => {

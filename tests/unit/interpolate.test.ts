@@ -9,6 +9,10 @@ import {
   telHref,
 } from "@/lib/interpolate"
 import type { ContactSettings } from "@/lib/schemas/settings/contact"
+import { groupCompaniesFixture } from "@/server/db/seed/fixtures/group-companies"
+import { fixtureMediaLookup } from "@/server/db/seed/fixtures/media"
+import { pagesFixture } from "@/server/db/seed/fixtures/pages"
+import { settingsFixture } from "@/server/db/seed/fixtures/settings"
 
 // CP's numbers (docs/brief-inventory.json).
 const contact: ContactSettings = {
@@ -35,6 +39,16 @@ describe("telHref", () => {
     ["0044 20 7946 0000", "tel:+442079460000"],
   ])("%s → %s", (phone, expected) => {
     expect(telHref(phone)).toBe(expected)
+  })
+
+  it("derives the group companies' hrefs from their phone (static site's phoneHref)", () => {
+    // components/home/site-footer.tsx groupCompanies[].phone before Phase 3.
+    const original = ["tel:+353858591299", "tel:+353872948880"]
+    const companies = groupCompaniesFixture(fixtureMediaLookup)
+    expect(companies).toHaveLength(original.length)
+    companies.forEach((company, i) =>
+      expect(telHref(company.phone)).toBe(original[i])
+    )
   })
 })
 
@@ -134,8 +148,6 @@ describe("interpolateHref (ruling: interpolated hrefs re-checked)", () => {
   })
 })
 
-// Deferred until server/db/seed/fixtures land (Task 3.3): restore from SP tests/unit/interpolate.test.ts
-// (group-companies telHref, share-network parity vs settings.microcopy, seeded href templates).
 describe("shareHref (ruling: {url}/{title} URI-encoded)", () => {
   it.each([
     {
@@ -166,4 +178,88 @@ describe("templated hrefs resolve", () => {
       expect(resolved).not.toMatch(/\{\w+\}/)
     }
   )
+})
+
+describe("share networks match the static site's ShareLinks", () => {
+  // Verbatim from components/blog/share-links.tsx at 3689369 (no text param).
+  const original: Record<string, (url: string) => string> = {
+    Facebook: (url) =>
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+    LinkedIn: (url) =>
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+    X: (url) => `https://x.com/intent/post?url=${encodeURIComponent(url)}`,
+  }
+  const pages = [
+    {
+      url: "http://localhost:3000/blog/5-signs-your-office-needs-a-professional-clean",
+      title: "5 Signs Your Office Needs a Professional Clean",
+    },
+    {
+      url: "https://example.ie/blog/a?x=1&y=2#top",
+      title: "Q&A: \u201cHSE\u201d \u2014 100% safe? #1 / {url}",
+    },
+  ]
+
+  it.each(pages)("matches the static site's share URLs for $url", (page) => {
+    const { networks } =
+      pagesFixture(fixtureMediaLookup).blog.data.article.share
+    expect(networks.map((n) => n.name)).toEqual(Object.keys(original))
+    for (const network of networks)
+      expect(shareHref(network.url, page)).toBe(
+        original[network.name](page.url)
+      )
+  })
+})
+
+describe("seeded href templates all resolve", () => {
+  const settings = settingsFixture(fixtureMediaLookup)
+  const values = contactPlaceholders(settings.contact)
+
+  /** Every string under an href-like key ("href", "url", "link", "…Href") with a {placeholder}. */
+  function templatedHrefs(value: unknown, path = "", out: string[][] = []) {
+    if (Array.isArray(value))
+      value.forEach((v, i) => templatedHrefs(v, `${path}[${i}]`, out))
+    else if (value && typeof value === "object")
+      for (const [key, child] of Object.entries(value)) {
+        const at = path ? `${path}.${key}` : key
+        if (
+          typeof child === "string" &&
+          /^(href|url|link)$|Href$/.test(key) &&
+          child.includes("{")
+        )
+          out.push([at, child])
+        else templatedHrefs(child, at, out)
+      }
+    return out
+  }
+
+  const hrefs = templatedHrefs({
+    settings,
+    pages: pagesFixture(fixtureMediaLookup),
+  })
+
+  it("finds the templated hrefs (CP's contact links are derived, so only the share networks carry placeholders)", () => {
+    expect(hrefs.map(([, href]) => href)).toEqual([
+      "https://www.facebook.com/sharer/sharer.php?u={url}",
+      "https://www.linkedin.com/sharing/share-offsite/?url={url}",
+      "https://x.com/intent/post?url={url}",
+    ])
+  })
+
+  it.each(hrefs)("%s (%s) resolves to a safe href", (path, template) => {
+    const resolved = path.includes("share.networks")
+      ? shareHref(template, { url: "https://example.ie/blog/x", title: "T" })
+      : interpolateHref(template, values)
+    expect(resolved).not.toBe("#")
+    expect(resolved).not.toMatch(/\{\w+\}/)
+  })
+
+  it("resolves CP's contact numbers from the seeded contact settings", () => {
+    expect(interpolate("Tel: {office} Ext {officeExtension}", values)).toBe(
+      "Tel: 057 8697670 Ext 4"
+    )
+    expect(interpolate("{mobile}", values)).toBe("085 806 2369")
+    expect(interpolate("{officeHref}", values)).toBe("tel:+353578697670")
+    expect(interpolate("{mobileHref}", values)).toBe("tel:+353858062369")
+  })
 })

@@ -218,3 +218,49 @@ describe("richText (TipTap subset, spec §5.3)", () => {
     expect(ok(richText, { type: "doc", content: [] })).toBe(false)
   })
 })
+
+describe("richText variants (R3-4: CP article blocks)", () => {
+  const item = {
+    type: "listItem",
+    content: [{ type: "paragraph", content: [{ type: "text", text: "Yes" }] }],
+  }
+  const lead = {
+    type: "paragraph",
+    attrs: { variant: "lead" },
+    content: [{ type: "text", text: "Lead" }],
+  }
+  const checklist = {
+    type: "bulletList",
+    attrs: { variant: "checklist" },
+    content: [item],
+  }
+
+  it("keeps paragraph variant lead on parse", () => {
+    const doc = { type: "doc", content: [lead] }
+    expect(richText.parse(doc)).toEqual(doc)
+  })
+
+  it("keeps bulletList variant checklist on parse", () => {
+    const doc = { type: "doc", content: [checklist] }
+    expect(richText.parse(doc)).toEqual(doc)
+  })
+
+  it("still accepts plain paragraphs and bullet lists without attrs", () => {
+    const doc = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "p" }] },
+        { type: "bulletList", content: [item] },
+      ],
+    }
+    expect(richText.parse(doc)).toEqual(doc)
+  })
+
+  it.each([
+    ["paragraph", { ...lead, attrs: { variant: "shout" } }],
+    ["bulletList", { ...checklist, attrs: { variant: "lead" } }],
+    ["paragraph (checklist)", { ...lead, attrs: { variant: "checklist" } }],
+  ])("rejects an unknown %s variant", (_, block) => {
+    expect(ok(richText, { type: "doc", content: [block] })).toBe(false)
+  })
+})

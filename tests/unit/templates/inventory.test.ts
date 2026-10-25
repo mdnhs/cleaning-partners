@@ -50,11 +50,14 @@ const DERIVED: Record<string, string[]> = {
   ],
 }
 
-/** Template-page fields that are structure, not copy, so the inventory has no entry. */
+/**
+ * Template-page fields that are structure, not copy, so the inventory has no
+ * entry. Keyed per page ("page:leaf"): a same-named leaf elsewhere is not exempt.
+ */
 const STRUCTURAL_PAGE_LEAVES = new Set([
-  "blog.count", // posts shown on the home strip (seeded 3)
-  "pageSize", // blog posts per page (seeded 6)
-  "featuredArticle", // slug picker; null = newest
+  "home:blog.count", // posts shown on the home strip (seeded 3)
+  "blog:pageSize", // blog posts per page (seeded 6)
+  "blog:featuredArticle", // slug picker; null = newest
 ])
 
 function expectInventoryCovered(
@@ -134,11 +137,21 @@ describe("template schemas match docs/brief-inventory.json (master Task 3.2)", (
           (p) =>
             !wanted.has(p) &&
             !(p.endsWith("[]") && wanted.has(p.slice(0, -2))) &&
-            !STRUCTURAL_PAGE_LEAVES.has(p)
+            !STRUCTURAL_PAGE_LEAVES.has(`${key}:${p}`)
         )
       ).toEqual([])
     }
   )
+
+  it("every structural exemption is a real leaf of its page (no stale entries)", () => {
+    for (const entry of STRUCTURAL_PAGE_LEAVES) {
+      const [page, leaf] = entry.split(":") as [keyof typeof PAGES, string]
+      expect(
+        schemaPaths(templates[PAGES[page]].schema).leaves,
+        entry
+      ).toContain(leaf)
+    }
+  })
 
   it("page seo.* fields map onto the seo column schema", () => {
     const seoPaths = schemaPaths(seo).leaves

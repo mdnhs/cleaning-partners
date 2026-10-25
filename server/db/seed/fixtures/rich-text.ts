@@ -15,6 +15,12 @@ export const paragraph = (text: string): ParagraphNode => ({
   content: [{ type: "text", text }],
 })
 
+/** The article's opening paragraph (R3-4: paragraph with variant "lead"). */
+export const lead = (text: string): ParagraphNode => ({
+  ...paragraph(text),
+  attrs: { variant: "lead" },
+})
+
 export const doc = (...content: RichTextBlock[]): RichTextDoc => ({
   type: "doc",
   content,
@@ -34,6 +40,16 @@ export const heading2 = (text: string): RichTextBlock => ({
 
 export const bulletList = (...items: string[]): RichTextBlock => ({
   type: "bulletList",
+  content: items.map((item) => ({
+    type: "listItem",
+    content: [paragraph(item)],
+  })),
+})
+
+/** The article's tick list (R3-4: bulletList with variant "checklist"). */
+export const checklist = (...items: string[]): RichTextBlock => ({
+  type: "bulletList",
+  attrs: { variant: "checklist" },
   content: items.map((item) => ({
     type: "listItem",
     content: [paragraph(item)],

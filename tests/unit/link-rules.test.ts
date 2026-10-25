@@ -8,7 +8,12 @@ import {
   linkPlaceholderProblems,
 } from "@/lib/link-rules"
 import { link } from "@/lib/schemas/common"
+import { settingsSchemas, type SettingsKey } from "@/lib/schemas/settings"
 import { contactSettings } from "@/lib/schemas/settings/contact"
+import { fixtureMediaLookup } from "@/server/db/seed/fixtures/media"
+import { pagesFixture } from "@/server/db/seed/fixtures/pages"
+import { settingsFixture } from "@/server/db/seed/fixtures/settings"
+import { PAGE_KEYS, PAGES, templates } from "@/templates/registry"
 
 const issues = (value: unknown) =>
   (link.safeParse(value).error?.issues ?? []).map((issue) => ({
@@ -66,6 +71,16 @@ describe("link placeholder rules (server and editor)", () => {
       ])
   })
 
-  // Deferred until server/db/seed/fixtures land (Task 3.3): restore from SP tests/unit/link-rules.test.ts
-  // ("keeps every seeded page and setting valid").
+  it("keeps every seeded page and setting valid", () => {
+    const pages = pagesFixture(fixtureMediaLookup)
+    for (const key of PAGE_KEYS)
+      expect(
+        templates[PAGES[key]].schema.safeParse(pages[key].data).error
+      ).toBeUndefined()
+    const settings = settingsFixture(fixtureMediaLookup)
+    for (const key of Object.keys(settingsSchemas) as SettingsKey[])
+      expect(
+        settingsSchemas[key].safeParse(settings[key]).error
+      ).toBeUndefined()
+  })
 })
