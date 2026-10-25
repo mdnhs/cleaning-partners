@@ -276,4 +276,21 @@ describe("nav registry (MK IA, spec §5.1)", () => {
         SETTINGS_ENTRIES[key].read
       )
   })
+
+  it("Site settings lists the CP shared sections and none of the old ones (R3-1)", () => {
+    const hrefs = NAV_ITEMS.find((i) => i.id === "settings")!.children!.map(
+      (c) => c.href
+    )
+    for (const key of [
+      "sections.testimonials",
+      "sections.team",
+      "sections.map",
+      "sections.howItWorks",
+    ])
+      expect(hrefs).toContain(`/admin/settings/${key}`)
+    expect(hrefs.join()).not.toMatch(/enquire|about/i)
+    expect(permissionFor("/admin/settings/sections.map")).toEqual({
+      settings: ["read"],
+    })
+  })
 })

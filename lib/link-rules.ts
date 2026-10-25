@@ -4,22 +4,27 @@
 
 import { WHOLE_PLACEHOLDER } from "./href"
 
-/** settings.contact field names (a unit test keeps this equal to the schema). */
+/**
+ * settings.contact fields usable as {placeholders}. phone24Label is a
+ * template that itself contains {phone24h}, so it is not one (a unit test
+ * keeps this plus the template fields equal to the schema).
+ */
 export const CONTACT_FIELDS = [
   "phone24h",
   "office",
-  "operationsMobile",
-  "operationsExtension",
+  "officeExtension",
+  "mobile",
   "email",
-  "operationsEmail",
   "hours",
   "addressLine1",
   "addressLine2",
-  "mapsHref",
 ] as const
 
+/** settings.contact fields holding a template rather than a value. */
+export const CONTACT_TEMPLATE_FIELDS = ["phone24Label"] as const
+
 /** Contact numbers that also get a derived tel: placeholder ({officeHref}). */
-export const TEL_FIELDS = ["phone24h", "office", "operationsMobile"] as const
+export const TEL_FIELDS = ["phone24h", "office", "mobile"] as const
 
 /** Every placeholder the public site fills in a link (lib/interpolate.ts). */
 export const CONTACT_PLACEHOLDERS: readonly string[] = [

@@ -1,46 +1,29 @@
 import { z } from "zod"
 
-import { href, mediaRef, text } from "../common"
+import { href, link, mediaRef, text } from "../common"
 
-/** settings.sections.contact — Contact section, form copy and map shared by / and /contact (ruling). */
+/**
+ * settings.sections.contact — the Contact section shared by / and /contact:
+ * info cards, ICCA membership, social links and the quote box. Lines may
+ * carry {placeholders} (lib/interpolate.ts); the enquiry form is page data.
+ */
 export const contactSectionSettings = z.object({
   eyebrow: text,
-  heading: text,
-  intro: text,
-  infoItems: z
+  title: text,
+  infoCards: z
     .array(
       z.object({
         title: text,
         icon: mediaRef,
-        lines: z.array(z.object({ text, href: href.optional() })).min(1),
+        lines: z.array(text).min(1),
       })
     )
     .min(1),
-  form: z.object({
-    nameLabel: text,
-    namePlaceholder: text,
-    emailLabel: text,
-    emailPlaceholder: text,
-    phoneLabel: text,
-    phonePlaceholder: text,
-    messageLabel: text,
-    messagePlaceholder: text,
-    submitLabel: text,
-    /** Button text while the enquiry is being sent. */
-    sendingLabel: text,
-    successMessage: text,
-    errorMessage: text,
-    /** Shown on 429 (more than 5 enquiries in 10 minutes). */
-    rateLimitedMessage: text,
-    /** Subject of the staff notification email; {name} = the visitor. */
-    mailtoSubject: text,
-  }),
-  map: z.object({
-    link: href,
-    ariaLabel: text,
-    label: text,
-    /** Tile URL template, {col} 0–8 and {row} 0–1. */
-    tiles: text,
-  }),
+  memberLogo: mediaRef,
+  memberLogoAlt: text,
+  memberTitle: text,
+  memberSubtitle: text,
+  socials: z.array(z.object({ label: text, icon: mediaRef, href })),
+  quoteBox: z.object({ title: text, body: text, cta: link }),
 })
 export type ContactSectionSettings = z.infer<typeof contactSectionSettings>

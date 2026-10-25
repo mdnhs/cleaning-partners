@@ -4,6 +4,7 @@ import { contactPlaceholders } from "@/lib/interpolate"
 import {
   CONTACT_FIELDS,
   CONTACT_PLACEHOLDERS,
+  CONTACT_TEMPLATE_FIELDS,
   linkPlaceholderProblems,
 } from "@/lib/link-rules"
 import { link } from "@/lib/schemas/common"
@@ -17,11 +18,11 @@ const issues = (value: unknown) =>
 
 describe("link placeholder rules (server and editor)", () => {
   it("lists exactly the placeholders the public site fills in", () => {
-    expect([...CONTACT_FIELDS].sort()).toEqual(
+    expect([...CONTACT_FIELDS, ...CONTACT_TEMPLATE_FIELDS].sort()).toEqual(
       Object.keys(contactSettings.shape).sort()
     )
     const contact = Object.fromEntries(
-      CONTACT_FIELDS.map((key) => [key, "0"])
+      [...CONTACT_FIELDS, ...CONTACT_TEMPLATE_FIELDS].map((key) => [key, "0"])
     ) as Parameters<typeof contactPlaceholders>[0]
     expect([...CONTACT_PLACEHOLDERS].sort()).toEqual(
       Object.keys(contactPlaceholders(contact)).sort()
@@ -31,8 +32,8 @@ describe("link placeholder rules (server and editor)", () => {
   it("accepts the shipped link shapes", () => {
     for (const value of [
       { label: "Call 24/7: {phone24h}", href: "{phone24hHref}" },
-      { label: "Email", href: "mailto:{operationsEmail}" },
-      { label: "Directions", href: "{mapsHref}" },
+      { label: "Email", href: "mailto:{email}" },
+      { label: "Call {office} Ext {officeExtension}", href: "{officeHref}" },
       { label: "Our Services", href: "#services" },
     ])
       expect(issues(value)).toEqual([])

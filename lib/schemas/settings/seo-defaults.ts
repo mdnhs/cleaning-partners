@@ -2,7 +2,7 @@ import { z } from "zod"
 
 import { httpUrl, mediaRef, text } from "../common"
 
-/** schema.org types the business presents as (schema.org has no "SecurityService"). */
+/** schema.org types the business presents as. */
 export const ORGANIZATION_TYPES = [
   "LocalBusiness",
   "ProfessionalService",

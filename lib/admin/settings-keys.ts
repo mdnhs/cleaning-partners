@@ -12,11 +12,13 @@ export const EDITABLE_SETTINGS_KEYS = [
   "navigation",
   "footer",
   "microcopy",
-  "sections.about",
-  "sections.contact",
-  "sections.enquireBanner",
   "sections.clients",
   "sections.whyChooseUs",
+  "sections.testimonials",
+  "sections.team",
+  "sections.contact",
+  "sections.map",
+  "sections.howItWorks",
   "leads",
 ] as const satisfies readonly SettingsKey[]
 export type EditableSettingsKey = (typeof EDITABLE_SETTINGS_KEYS)[number]
@@ -40,7 +42,7 @@ export const SETTINGS_ENTRIES: Record<
   site: {
     label: "Identity",
     description:
-      "Name, logos, production URL, time zone and the copyright line.",
+      "Name, logos, default hero image, production URL and time zone.",
     group: "General",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,
@@ -63,37 +65,17 @@ export const SETTINGS_ENTRIES: Record<
   },
   footer: {
     label: "Footer",
-    description: "Footer text, headings and the privacy and terms links.",
+    description:
+      "Footer text, headings, the copyright line and the privacy and terms links.",
     group: "General",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,
   },
   microcopy: {
     label: "Forms & microcopy",
-    description: "Small labels, button text and screen-reader labels.",
-    group: "General",
-    read: { settings: ["read"] },
-    update: CONTENT_UPDATE,
-  },
-  "sections.about": {
-    label: "About section",
-    description: "Shown on the home page and the About page.",
-    group: "Shared sections",
-    read: { settings: ["read"] },
-    update: CONTENT_UPDATE,
-  },
-  "sections.contact": {
-    label: "Contact section",
     description:
-      "Contact details, form labels and map on the home and Contact pages.",
-    group: "Shared sections",
-    read: { settings: ["read"] },
-    update: CONTENT_UPDATE,
-  },
-  "sections.enquireBanner": {
-    label: "Enquire banner",
-    description: "The “Enquire about our services” banner on inner pages.",
-    group: "Shared sections",
+      "Small labels, icons and the quote card shared by several pages.",
+    group: "General",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,
   },
@@ -106,7 +88,46 @@ export const SETTINGS_ENTRIES: Record<
   },
   "sections.whyChooseUs": {
     label: "Why choose us",
-    description: "Heading, text and features of the “Why choose us” section.",
+    description:
+      "Background, heading, text and features of the “Why choose us” section.",
+    group: "Shared sections",
+    read: { settings: ["read"] },
+    update: CONTENT_UPDATE,
+  },
+  "sections.testimonials": {
+    label: "Testimonials section",
+    description:
+      "Heading and labels above the testimonials (the quotes are under Collections).",
+    group: "Shared sections",
+    read: { settings: ["read"] },
+    update: CONTENT_UPDATE,
+  },
+  "sections.team": {
+    label: "Team section",
+    description:
+      "Background and heading of “Meet the team” (members are under Collections).",
+    group: "Shared sections",
+    read: { settings: ["read"] },
+    update: CONTENT_UPDATE,
+  },
+  "sections.contact": {
+    label: "Contact section",
+    description:
+      "Contact cards, ICCA membership, social links and the quote box on the home and Contact pages.",
+    group: "Shared sections",
+    read: { settings: ["read"] },
+    update: CONTENT_UPDATE,
+  },
+  "sections.map": {
+    label: "Location map",
+    description: "Map link, label and pin of the location card.",
+    group: "Shared sections",
+    read: { settings: ["read"] },
+    update: CONTENT_UPDATE,
+  },
+  "sections.howItWorks": {
+    label: "How it works",
+    description: "Heading and numbered steps on the Services page.",
     group: "Shared sections",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,

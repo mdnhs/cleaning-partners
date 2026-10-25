@@ -42,21 +42,15 @@ const CONTENT_TABLES = [
 
 const serviceContent = {
   title: "T",
-  description: "D",
   icon: { mediaId: "00000000-0000-7000-8000-000000000001" },
-  heroImage: { mediaId: "00000000-0000-7000-8000-000000000001" },
-  image: { mediaId: "00000000-0000-7000-8000-000000000001" },
-  imageAlt: "A",
-  detail: {
-    intro: "I",
-    heading: "H",
-    overview: {
-      type: "doc" as const,
-      content: [{ type: "paragraph" as const }],
-    },
-    included: ["x"],
-    callout: "C",
-  },
+  cover: { mediaId: "00000000-0000-7000-8000-000000000001" },
+  summary: "S",
+  tags: [],
+  heroDescription: "D",
+  overviewTitle: "H",
+  overview: ["P"],
+  included: ["x"],
+  places: [],
 }
 
 /** Postgres error code of a rejected statement (drizzle wraps it in `cause`). */

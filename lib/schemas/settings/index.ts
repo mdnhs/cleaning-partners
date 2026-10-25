@@ -2,19 +2,21 @@ import { z } from "zod"
 
 import { ThemeConfig } from "@/lib/theme/schema"
 
-import { aboutSectionSettings } from "./sections-about"
 import { clientsSectionSettings } from "./sections-clients"
 import { consentSettings } from "./consent"
 import { contactSettings } from "./contact"
 import { contactSectionSettings } from "./sections-contact"
 import { customCodeSettings } from "./custom-code"
-import { enquireBannerSettings } from "./sections-enquire-banner"
 import { footerSettings } from "./footer"
+import { howItWorksSettings } from "./sections-how-it-works"
 import { leadsSettings } from "./leads"
+import { mapSectionSettings } from "./sections-map"
 import { microcopySettings } from "./microcopy"
 import { navigationSettings } from "./navigation"
 import { seoDefaultsSettings } from "./seo-defaults"
 import { siteSettings } from "./site"
+import { teamSectionSettings } from "./sections-team"
+import { testimonialsSectionSettings } from "./sections-testimonials"
 import { trackingSettings } from "./tracking"
 import { whyChooseUsSettings } from "./sections-why-choose-us"
 
@@ -24,11 +26,13 @@ export const settingsSchemas = {
   contact: contactSettings,
   navigation: navigationSettings,
   footer: footerSettings,
-  "sections.enquireBanner": enquireBannerSettings,
   "sections.clients": clientsSectionSettings,
   "sections.whyChooseUs": whyChooseUsSettings,
-  "sections.about": aboutSectionSettings,
+  "sections.testimonials": testimonialsSectionSettings,
+  "sections.team": teamSectionSettings,
   "sections.contact": contactSectionSettings,
+  "sections.map": mapSectionSettings,
+  "sections.howItWorks": howItWorksSettings,
   "seo.defaults": seoDefaultsSettings,
   consent: consentSettings,
   tracking: trackingSettings,
@@ -52,11 +56,13 @@ export const PUBLIC_SETTINGS_KEYS = [
   "contact",
   "navigation",
   "footer",
-  "sections.enquireBanner",
   "sections.clients",
   "sections.whyChooseUs",
-  "sections.about",
+  "sections.testimonials",
+  "sections.team",
   "sections.contact",
+  "sections.map",
+  "sections.howItWorks",
   "seo.defaults",
   "microcopy",
 ] as const satisfies readonly SettingsKey[]

@@ -8,6 +8,10 @@ export const siteSettings = z.object({
   legalName: text,
   logo: mediaRef,
   logoAlt: text,
+  /** The larger logo of the home hero and the article page. */
+  logoLarge: mediaRef,
+  /** Hero image of an inner page that does not pick its own. */
+  defaultHeroImage: mediaRef,
   logoOnDark: mediaRef.nullable(),
   /**
    * Lottie animation (JSON or dotLottie) played in a loop in place of the
@@ -20,6 +24,5 @@ export const siteSettings = z.object({
   timezone: text,
   /** <html lang> of the public site. */
   locale: text,
-  copyright: text,
 })
 export type SiteSettings = z.infer<typeof siteSettings>

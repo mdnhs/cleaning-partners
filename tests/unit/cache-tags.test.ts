@@ -22,6 +22,7 @@ describe("cache tags (spec §5.6)", () => {
       tag.categories,
       tag.team,
       tag.clients,
+      tag.testimonials,
       tag.groupCompanies,
       tag.redirects,
     ]).toEqual([
@@ -30,6 +31,7 @@ describe("cache tags (spec §5.6)", () => {
       "categories",
       "team",
       "clients",
+      "testimonials",
       "group-companies",
       "redirects",
     ])

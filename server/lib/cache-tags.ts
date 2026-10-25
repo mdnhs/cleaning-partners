@@ -14,6 +14,7 @@ export const tag = {
   categories: "categories",
   team: "team",
   clients: "clients",
+  testimonials: "testimonials",
   groupCompanies: "group-companies",
   settings: (key: SettingsKey) => `settings:${key}`,
   redirects: "redirects",

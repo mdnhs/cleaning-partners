@@ -10,29 +10,28 @@ import {
 } from "@/lib/interpolate"
 import type { ContactSettings } from "@/lib/schemas/settings/contact"
 
-// Local contact fixture: the seed fixtures arrive in a later phase.
+// CP's numbers (docs/brief-inventory.json).
 const contact: ContactSettings = {
-  phone24h: "(085) 8018746",
+  phone24h: "(085) 8062369",
+  phone24Label: "24hr contact: {phone24h}",
   office: "057 8697670",
-  operationsMobile: "085 859 1299",
-  operationsExtension: "2",
+  officeExtension: "4",
+  mobile: "085 806 2369",
   email: "info@cleaningpartners.ie",
-  operationsEmail: "operations@cleaningpartners.ie",
-  hours: "Mon-Fri 9-5",
-  addressLine1: "1 Main Street",
-  addressLine2: "Dublin",
-  mapsHref: "https://maps.example.ie/?q=1+Main+Street",
+  hours: "Mon–Fri: 9am – 6pm",
+  addressLine1: "Derryguile, Mountmellick",
+  addressLine2: "Co. Laois, Ireland. R32 YX49",
 }
 
 describe("telHref", () => {
   // Every hard-coded tel: href of the static site, from its display number.
   it.each([
-    ["(085) 8018746", "tel:+353858018746"],
+    ["(085) 8062369", "tel:+353858062369"],
     ["057 8697670", "tel:+353578697670"],
-    ["085 859 1299", "tel:+353858591299"],
-    ["(087) 924 8880", "tel:+353879248880"],
     ["085 806 2369", "tel:+353858062369"],
-    ["+353 85 801 8746", "tel:+353858018746"],
+    ["Tel: (085) 8591299", "tel:+353858591299"],
+    ["Tel: 087 294 8880", "tel:+353872948880"],
+    ["+353 85 806 2369", "tel:+353858062369"],
     ["0044 20 7946 0000", "tel:+442079460000"],
   ])("%s → %s", (phone, expected) => {
     expect(telHref(phone)).toBe(expected)
@@ -57,36 +56,38 @@ describe("interpolate", () => {
 
   it("reproduces the static site's contact strings", () => {
     const values = contactPlaceholders(contact)
-    expect(interpolate("Call 24/7: {phone24h}", values)).toBe(
-      "Call 24/7: (085) 8018746"
+    expect(interpolate("24hr contact: {phone24h}", values)).toBe(
+      "24hr contact: (085) 8062369"
     )
-    expect(interpolate("{phone24hHref}", values)).toBe("tel:+353858018746")
+    expect(interpolate("{phone24hHref}", values)).toBe("tel:+353858062369")
     expect(interpolate("{officeHref}", values)).toBe("tel:+353578697670")
-    expect(interpolate("{operationsMobileHref}", values)).toBe(
-      "tel:+353858591299"
+    expect(interpolate("{mobileHref}", values)).toBe("tel:+353858062369")
+    expect(interpolate("Tel: {office} Ext {officeExtension}", values)).toBe(
+      "Tel: 057 8697670 Ext 4"
     )
-    expect(interpolate("Tel: {office} Ext 2", values)).toBe(
-      "Tel: 057 8697670 Ext 2"
+    expect(interpolate("Mobile: {mobile}", values)).toBe("Mobile: 085 806 2369")
+    expect(interpolate("{addressLine1},", values)).toBe(
+      "Derryguile, Mountmellick,"
     )
-    expect(interpolate("mailto:{operationsEmail}", values)).toBe(
-      "mailto:operations@cleaningpartners.ie"
+    expect(interpolate("mailto:{email}", values)).toBe(
+      "mailto:info@cleaningpartners.ie"
     )
-    expect(interpolate("{mapsHref}", values)).toBe(contact.mapsHref)
   })
 })
 
 describe("contactPlaceholders", () => {
-  it("derives the tel: hrefs from the numbers (not stored); mapsHref is stored", () => {
+  it("derives the tel: hrefs from the numbers (not stored)", () => {
     const values = contactPlaceholders({
       ...contact,
       phone24h: "01 234 5678",
       office: "(045) 111 2222",
-      operationsMobile: "+44 7700 900123",
+      mobile: "+44 7700 900123",
     })
     expect(values.phone24hHref).toBe("tel:+35312345678")
     expect(values.officeHref).toBe("tel:+353451112222")
-    expect(values.operationsMobileHref).toBe("tel:+447700900123")
-    expect(values.mapsHref).toBe(contact.mapsHref)
+    expect(values.mobileHref).toBe("tel:+447700900123")
+    // A template is not a placeholder value.
+    expect(Object.keys(values)).not.toContain("phone24Label")
     expect(Object.keys(contact)).not.toContain("phone24hHref")
   })
 })
@@ -111,7 +112,9 @@ describe("interpolateHref (ruling: interpolated hrefs re-checked)", () => {
     const values = contactPlaceholders(contact)
     expect(interpolateHref("/contact", values)).toBe("/contact")
     expect(interpolateHref("{officeHref}", values)).toBe("tel:+353578697670")
-    expect(interpolateHref("{mapsHref}", values)).toBe(contact.mapsHref)
+    expect(interpolateHref("mailto:{email}", values)).toBe(
+      "mailto:info@cleaningpartners.ie"
+    )
   })
 
   it.each([
@@ -136,12 +139,12 @@ describe("interpolateHref (ruling: interpolated hrefs re-checked)", () => {
 describe("shareHref (ruling: {url}/{title} URI-encoded)", () => {
   it.each([
     {
-      url: "http://localhost:3000/blog/mobile-patrols-after-hours",
-      title: "How Mobile Patrols Protect Your Business After Hours",
+      url: "http://localhost:3000/blog/deep-cleaning-vs-regular-cleaning-what-your-business-needs",
+      title: "Deep Cleaning vs Regular Cleaning: What Your Business Needs",
     },
     {
       url: "https://example.ie/blog/a?x=1&y=2#top",
-      title: "Q&A: \u201cDinn R\u00ed\u201d \u2014 100% safe? #1 / {url}",
+      title: "Q&A: \u201cHSE\u201d \u2014 100% safe? #1 / {url}",
     },
   ])("encodes $url", (page) => {
     expect(
@@ -155,15 +158,12 @@ describe("shareHref (ruling: {url}/{title} URI-encoded)", () => {
 describe("templated hrefs resolve", () => {
   const values = contactPlaceholders(contact)
 
-  it.each([
-    "{phone24hHref}",
-    "{officeHref}",
-    "{operationsMobileHref}",
-    "mailto:{operationsEmail}",
-    "{mapsHref}",
-  ])("%s resolves to a safe href", (template) => {
-    const resolved = interpolateHref(template, values)
-    expect(resolved).not.toBe("#")
-    expect(resolved).not.toMatch(/\{\w+\}/)
-  })
+  it.each(["{phone24hHref}", "{officeHref}", "{mobileHref}", "mailto:{email}"])(
+    "%s resolves to a safe href",
+    (template) => {
+      const resolved = interpolateHref(template, values)
+      expect(resolved).not.toBe("#")
+      expect(resolved).not.toMatch(/\{\w+\}/)
+    }
+  )
 })

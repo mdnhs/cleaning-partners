@@ -1,22 +1,23 @@
 import { z } from "zod"
 
-import { mediaRef, paragraphsText, slug, text } from "../common"
+import { mediaRef, slug, text } from "../common"
 
-/** The draft/published payload of a service (slug and sortOrder are columns). */
+/**
+ * The draft/published payload of a service, in CP's shape (lib/services.ts,
+ * R3-3). slug and sortOrder are columns; SEO is the shared `seo` object.
+ * `overview` is a list of paragraphs, each rendered as its own <p>.
+ */
 export const serviceContent = z.object({
   title: text,
-  description: text,
   icon: mediaRef,
-  heroImage: mediaRef,
-  image: mediaRef,
-  imageAlt: text,
-  detail: z.object({
-    intro: text,
-    heading: text,
-    overview: paragraphsText,
-    included: z.array(text).min(1),
-    callout: text,
-  }),
+  cover: mediaRef,
+  summary: text,
+  tags: z.array(text),
+  heroDescription: text,
+  overviewTitle: text,
+  overview: z.array(text).min(1),
+  included: z.array(text).min(1),
+  places: z.array(text),
 })
 
 /** A service as edited: slug + payload. */

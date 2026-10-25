@@ -1,21 +1,22 @@
 import { z } from "zod"
 
-import { href, text } from "../common"
+import { text } from "../common"
 
 /**
  * settings.contact — numbers and addresses edited once. tel: hrefs are
- * derived at render (lib/interpolate.ts telHref); mapsHref is stored.
+ * derived at render (lib/interpolate.ts telHref); the office extension is
+ * its own field so "Tel: {office} Ext {officeExtension}" stays editable.
  */
 export const contactSettings = z.object({
   phone24h: text,
+  /** Template of the 24 hour line; {phone24h} is filled in at render. */
+  phone24Label: text,
   office: text,
-  operationsMobile: text,
-  operationsExtension: text,
+  officeExtension: text,
+  mobile: text,
   email: z.email(),
-  operationsEmail: z.email(),
   hours: text,
   addressLine1: text,
   addressLine2: text,
-  mapsHref: href,
 })
 export type ContactSettings = z.infer<typeof contactSettings>
