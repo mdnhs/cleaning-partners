@@ -315,6 +315,8 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
   - **Shared-section page lists:** `sections.whyChooseUs` and `sections.testimonials` also render on `/services/[slug]`, and `sections.contact` renders on all 7 routes.
   - **Nav highlight.** `SiteHeader active=…` matches by label today. Task 3.4 switches it to match by href, so renaming a label can't break the highlight.
 
+  - **Branding map extension (Phase 1).** Every `sp`-prefixed identifier becomes `cp`: internal headers `x-sp-*` → `x-cp-*`; events `sp:consent` / `sp:navigate` → `cp:*`; cookie and storage keys `sp_consent` / `sp_attribution` → `cp_*`; window and global names `__sp*` → `__cp*`. The CP dev Postgres port is **5434**, because 5433 is taken locally. `tests/unit/branding.test.ts` forbids all of these.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.
