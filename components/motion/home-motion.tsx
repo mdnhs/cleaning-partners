@@ -7,6 +7,8 @@ import { SplitText } from "gsap/SplitText"
 import { useGSAP } from "@gsap/react"
 
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP)
+// Pages share these scenes but not every section, so skip absent targets quietly
+gsap.config({ nullTargetWarn: false })
 
 const MOTION_OK = "(prefers-reduced-motion: no-preference)"
 

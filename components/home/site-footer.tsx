@@ -28,7 +28,7 @@ const groupCompanies = [
 
 function ColumnTitle({ children }: { children: React.ReactNode }) {
   return (
-    <p className="font-heading text-base font-bold tracking-[1.28px] text-brand">
+    <p className="font-heading text-base/[normal] font-bold tracking-[1.28px] text-brand">
       {children}
     </p>
   )
@@ -104,11 +104,15 @@ export function SiteFooter() {
                   </div>
                 </div>
                 <div className="flex min-w-0 flex-col gap-0.5">
-                  <p className="font-heading text-base font-bold text-white">
+                  <p className="font-heading text-base/[normal] font-bold text-white">
                     {company.name}
                   </p>
-                  <p className="text-[13px] text-white/70">{company.phone}</p>
-                  <p className="text-[13px] text-white/70">{company.site}</p>
+                  <p className="text-[13px]/[normal] text-white/70">
+                    {company.phone}
+                  </p>
+                  <p className="text-[13px]/[normal] text-white/70">
+                    {company.site}
+                  </p>
                 </div>
               </a>
             ))}
@@ -117,7 +121,7 @@ export function SiteFooter() {
 
         <div className="h-px w-full bg-white/12" />
 
-        <div className="flex flex-col justify-between gap-2 text-sm text-white/60 sm:flex-row">
+        <div className="flex flex-col justify-between gap-2 text-sm/[normal] text-white/60 sm:flex-row">
           <p>© 2026 Cleaning Partners Ltd. All rights reserved.</p>
           <p className="flex gap-3">
             <Link href="#" className="hover:text-white">

@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 
 import { buttonVariants } from "@/components/ui/button"
 import { Container, SectionHeading } from "@/components/home/section-heading"
@@ -93,12 +94,12 @@ export function Services() {
 
           <div data-services-more className="flex flex-col items-start gap-6">
             <p className="text-base text-body italic">and more...</p>
-            <a
-              href="#services"
+            <Link
+              href="/services"
               className={buttonVariants({ variant: "navy", size: "pill" })}
             >
               View All Services
-            </a>
+            </Link>
           </div>
         </div>
       </Container>

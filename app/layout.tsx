@@ -15,7 +15,7 @@ const roboto = Roboto({
 
 const barlow = Barlow({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["500", "600", "700", "800"],
   variable: "--font-heading",
 })
 

@@ -37,8 +37,10 @@ const baseButtonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
-        pill: "rounded-full px-[30px] py-4 font-heading text-[17px] font-bold",
-        "pill-sm": "rounded-full px-6 py-3.5 font-heading text-base font-bold",
+        // py excludes the 1px base border so pills match Figma heights
+        pill: "rounded-full px-[30px] py-[15px] font-heading text-[17px]/[normal] font-bold",
+        "pill-sm":
+          "rounded-full px-6 py-[13px] font-heading text-base/[normal] font-bold",
       },
     },
     defaultVariants: {

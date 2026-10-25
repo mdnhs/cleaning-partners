@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 
 import { buttonVariants } from "@/components/ui/button"
 import { Container, SectionHeading } from "@/components/home/section-heading"
@@ -35,14 +36,15 @@ const socials = [
   { label: "Instagram", icon: "/images/home/instagram.png", href: "#" },
 ]
 
-export function Contact() {
+export function Contact({ title = "Contact Us" }: { title?: string }) {
   return (
     <section id="contact" className="bg-white py-16 md:py-28">
       <Container className="flex flex-col gap-14">
         <SectionHeading
           align="left"
           eyebrow="GET IN TOUCH"
-          title="Contact Us"
+          title={title}
+          titleClassName="leading-[normal]"
         />
 
         <div className="flex flex-col gap-6 lg:flex-row">
@@ -57,7 +59,7 @@ export function Contact() {
                     <Image src={card.icon} alt="" width={22} height={22} />
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                    <h3 className="font-heading text-xl font-bold text-ink">
+                    <h3 className="font-heading text-xl/[normal] font-bold text-ink">
                       {card.title}
                     </h3>
                     {card.lines.map((line) => (
@@ -87,10 +89,10 @@ export function Contact() {
                 />
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <p className="font-heading text-lg font-bold text-ink">
+                <p className="font-heading text-lg/[normal] font-bold text-ink">
                   Member of the ICCA
                 </p>
-                <p className="text-sm text-body">
+                <p className="text-sm/[normal] text-body">
                   Irish Contract Cleaning Association
                 </p>
               </div>
@@ -126,8 +128,8 @@ export function Contact() {
               Tell us about your space and we&apos;ll put together a cleaning
               plan and price that suits you.
             </p>
-            <a
-              href="mailto:info@cleaningpartners.ie?subject=Quote%20request"
+            <Link
+              href="/contact#quote"
               className={buttonVariants({
                 variant: "light",
                 size: "pill",
@@ -135,7 +137,7 @@ export function Contact() {
               })}
             >
               Fill the Form
-            </a>
+            </Link>
           </div>
         </div>
       </Container>

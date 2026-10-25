@@ -56,10 +56,12 @@ export function Testimonials() {
                   {t.initials}
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <p className="font-heading text-lg font-bold text-ink">
+                  <p className="font-heading text-lg/[normal] font-bold text-ink">
                     {t.name}
                   </p>
-                  <p className="text-[13px] text-body">Verified customer</p>
+                  <p className="text-[13px]/[normal] text-body">
+                    Verified customer
+                  </p>
                 </div>
               </div>
             </li>

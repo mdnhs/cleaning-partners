@@ -7,17 +7,19 @@ import { Container } from "@/components/home/section-heading"
 import { cn } from "@/lib/utils"
 
 export const navLinks = [
-  { label: "Home", href: "#top" },
-  { label: "About", href: "#team" },
-  { label: "Services", href: "#services" },
-  { label: "Blog", href: "#blog" },
-  { label: "Contact", href: "#contact" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Services", href: "/services" },
+  { label: "Blog", href: "/blog" },
+  { label: "Contact", href: "/contact" },
 ]
 
-export function SiteHeader() {
+type NavLabel = (typeof navLinks)[number]["label"]
+
+export function SiteHeader({ active = "Home" }: { active?: NavLabel }) {
   return (
     <header id="top" data-intro data-header className="relative z-50">
-      <div className="bg-navy text-[13px]">
+      <div className="bg-navy text-[13px]/[normal]">
         <Container className="flex items-center justify-between gap-4 py-2.5">
           <div className="flex gap-7">
             <a href="tel:+353858062369" className="font-medium text-white">
@@ -48,17 +50,20 @@ export function SiteHeader() {
           </Link>
 
           <nav className="hidden items-center gap-9 font-heading text-[17px] lg:flex">
-            {navLinks.map((link, i) => (
-              <a
+            {navLinks.map((link) => (
+              <Link
                 key={link.label}
                 href={link.href}
+                aria-current={link.label === active ? "page" : undefined}
                 className={cn(
                   "transition-colors hover:text-brand",
-                  i === 0 ? "font-bold text-brand" : "font-semibold text-ink"
+                  link.label === active
+                    ? "font-bold text-brand"
+                    : "font-semibold text-ink"
                 )}
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -78,13 +83,13 @@ export function SiteHeader() {
               </summary>
               <nav className="absolute top-full right-0 mt-3 flex w-48 flex-col rounded-2xl border border-line bg-white p-2 font-heading text-[17px] font-semibold text-ink shadow-[0px_10px_30px_0px_rgba(13,38,64,0.12)]">
                 {navLinks.map((link) => (
-                  <a
+                  <Link
                     key={link.label}
                     href={link.href}
                     className="rounded-xl px-4 py-2.5 hover:bg-surface hover:text-brand"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 ))}
               </nav>
             </details>

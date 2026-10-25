@@ -73,7 +73,7 @@ export function WhyChooseUs() {
                   />
                 </div>
               </div>
-              <h3 className="font-heading text-[22px] font-bold text-white">
+              <h3 className="font-heading text-[22px]/[normal] font-bold text-white">
                 {feature.title}
               </h3>
               <p className="text-[15px] leading-[1.55] text-white/85">

@@ -7,6 +7,7 @@ type SectionHeadingProps = {
   align?: "left" | "center"
   tone?: "default" | "inverted"
   className?: string
+  titleClassName?: string
 }
 
 export function SectionHeading({
@@ -16,6 +17,7 @@ export function SectionHeading({
   align = "center",
   tone = "default",
   className,
+  titleClassName,
 }: SectionHeadingProps) {
   const inverted = tone === "inverted"
 
@@ -30,7 +32,7 @@ export function SectionHeading({
       <p
         data-reveal
         className={cn(
-          "font-heading text-[15px] font-bold tracking-[2.1px]",
+          "font-heading text-[15px]/[normal] font-bold tracking-[2.1px]",
           inverted ? "text-sky" : "text-brand"
         )}
       >
@@ -40,7 +42,8 @@ export function SectionHeading({
         data-split
         className={cn(
           "font-heading text-4xl leading-[1.1] font-bold md:text-5xl",
-          inverted ? "text-white" : "text-ink"
+          inverted ? "text-white" : "text-ink",
+          titleClassName
         )}
       >
         {title}

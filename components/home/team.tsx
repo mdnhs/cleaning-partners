@@ -84,10 +84,10 @@ export function Team() {
               </div>
               <div className="flex flex-col gap-3.5 px-7 pt-7 pb-8">
                 <div className="flex flex-col gap-1">
-                  <h3 className="font-heading text-2xl font-bold text-ink">
+                  <h3 className="font-heading text-2xl/[normal] font-bold text-ink">
                     {member.name}
                   </h3>
-                  <p className="font-heading text-sm font-semibold tracking-[1.12px] text-brand">
+                  <p className="font-heading text-sm/[normal] font-semibold tracking-[1.12px] text-brand">
                     {member.role}
                   </p>
                 </div>

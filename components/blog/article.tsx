@@ -1,0 +1,311 @@
+import Image from "next/image"
+import Link from "next/link"
+
+import { ShareLinks } from "@/components/blog/share-links"
+import { QuoteCard } from "@/components/home/quote-card"
+import { Container } from "@/components/home/section-heading"
+import {
+  blogCategories,
+  blogPosts,
+  type ArticleBlock,
+  type BlogPost,
+} from "@/lib/blog-posts"
+import { cn } from "@/lib/utils"
+
+const LOGO = "/images/home/cleaning-partners-logo.png"
+
+export function ArticleHeader({ post }: { post: BlogPost }) {
+  return (
+    <section className="bg-surface pt-12 pb-16 md:pt-[72px] md:pb-20">
+      <Container className="flex flex-col items-center gap-6 text-center">
+        <nav
+          aria-label="Breadcrumb"
+          data-intro
+          data-hero-copy
+          className="flex flex-wrap justify-center gap-2.5 font-heading text-[15px]/[normal] font-medium text-body"
+        >
+          <Link href="/" className="hover:text-navy">
+            Home
+          </Link>
+          <span aria-hidden className="text-body/50">
+            /
+          </span>
+          <Link href="/blog" className="hover:text-navy">
+            Blog
+          </Link>
+          <span aria-hidden className="text-body/50">
+            /
+          </span>
+          <Link
+            href={`/blog?category=${encodeURIComponent(post.category)}`}
+            className="font-bold text-navy hover:text-brand"
+          >
+            {post.category}
+          </Link>
+        </nav>
+
+        <span
+          data-intro
+          data-hero-copy
+          className="rounded-full bg-brand/12 px-3.5 py-1.5 font-heading text-sm/[normal] font-bold text-brand"
+        >
+          {post.category}
+        </span>
+
+        <h1
+          data-intro
+          data-hero-title
+          className="max-w-[900px] font-heading text-4xl leading-[1.15] font-bold text-ink md:text-[56px]"
+        >
+          {post.title}
+        </h1>
+
+        <div
+          data-intro
+          data-hero-copy
+          className="flex items-center gap-3.5 text-left"
+        >
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-line bg-white">
+            <Image src={LOGO} alt="" width={36} height={32} />
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <p className="font-heading text-base/[normal] font-bold text-ink">
+              The Clean Team
+            </p>
+            <p className="text-sm/[normal] text-body">
+              <time dateTime={post.date}>{post.displayDate}</time>
+              {post.readTime && <>&nbsp;&nbsp;·&nbsp;&nbsp;{post.readTime}</>}
+            </p>
+          </div>
+        </div>
+
+        <div
+          data-reveal
+          className="relative h-[280px] w-full overflow-hidden rounded-[28px] md:h-[560px]"
+        >
+          <Image
+            src={post.cover}
+            alt=""
+            fill
+            sizes="(min-width: 1440px) 1200px, 100vw"
+            className="object-cover"
+            preload
+          />
+        </div>
+      </Container>
+    </section>
+  )
+}
+
+function Block({ block }: { block: ArticleBlock }) {
+  switch (block.type) {
+    case "lead":
+      return <p className="text-xl leading-[1.7] text-ink">{block.text}</p>
+    case "h2":
+      return (
+        <h2 className="font-heading text-[26px] leading-[1.25] font-bold text-ink md:text-[30px]">
+          {block.text}
+        </h2>
+      )
+    case "p":
+      return (
+        <p className="text-[17px] leading-[1.75] text-body">{block.text}</p>
+      )
+    case "quote":
+      return (
+        <figure className="flex gap-5 rounded-[20px] bg-surface px-8 py-7">
+          <div aria-hidden className="w-1 shrink-0 rounded-xs bg-brand" />
+          <div className="flex flex-col gap-2.5">
+            <blockquote className="font-heading text-[22px] leading-[1.4] font-semibold text-ink">
+              &ldquo;{block.text}&rdquo;
+            </blockquote>
+            <figcaption className="text-[15px]/[normal] font-medium text-navy">
+              — {block.cite}
+            </figcaption>
+          </div>
+        </figure>
+      )
+    case "checklist":
+      return (
+        <ul className="flex flex-col gap-3">
+          {block.items.map((item) => (
+            <li key={item} className="flex items-center gap-3">
+              <Image
+                src="/images/services/check.svg"
+                alt=""
+                width={24}
+                height={24}
+                className="shrink-0"
+              />
+              <span className="text-[17px]/[normal] font-medium text-ink">
+                {item}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )
+  }
+}
+
+function SidebarCard({
+  title,
+  className,
+  children,
+}: {
+  title: string
+  className?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col rounded-3xl border border-line bg-white p-7",
+        className
+      )}
+    >
+      <h2 className="font-heading text-[22px]/[normal] font-bold text-ink">
+        {title}
+      </h2>
+      {children}
+    </div>
+  )
+}
+
+export function ArticleBody({ post }: { post: BlogPost }) {
+  const body = post.body ?? [{ type: "lead", text: post.excerpt }]
+  const recent = blogPosts.filter((p) => p.slug !== post.slug).slice(0, 3)
+
+  return (
+    <section className="bg-white py-16 md:py-20">
+      <Container className="grid items-start gap-16 lg:grid-cols-[minmax(0,776px)_1fr]">
+        <article className="flex flex-col gap-5">
+          {body.map((block, i) => (
+            <Block key={i} block={block} />
+          ))}
+
+          <div className="h-px w-full bg-line" />
+
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="font-heading text-base/[normal] font-bold text-ink">
+                Tags:
+              </p>
+              {(post.tags ?? [post.category]).map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-surface px-3.5 py-1.5 text-sm/[normal] font-medium text-navy"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <ShareLinks />
+          </div>
+
+          <div className="flex items-center gap-5 rounded-[20px] bg-surface p-7">
+            <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-white">
+              <Image src={LOGO} alt="" width={60} height={54} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <p className="font-heading text-xl/[normal] font-bold text-ink">
+                Written by The Clean Team
+              </p>
+              <p className="text-[15px] leading-[1.6] text-body">
+                Cleaning Partners Ltd. Medical, commercial and domestic cleaning
+                from Mountmellick, Co. Laois.
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <aside className="flex flex-col gap-6 lg:sticky lg:top-8">
+          <form
+            action="/blog"
+            role="search"
+            className="flex items-center gap-2.5 rounded-full border border-line bg-white px-5 py-3.5 focus-within:border-navy"
+          >
+            <Image
+              src="/images/blog/search.svg"
+              alt=""
+              width={18}
+              height={18}
+              className="shrink-0"
+            />
+            <label htmlFor="article-search" className="sr-only">
+              Search articles
+            </label>
+            <input
+              id="article-search"
+              type="search"
+              name="q"
+              placeholder="Search articles…"
+              className="w-full min-w-0 bg-transparent text-base/[normal] text-ink outline-none placeholder:text-[#8a949e]"
+            />
+          </form>
+
+          <SidebarCard title="Categories" className="gap-2">
+            {blogCategories.map((category) => {
+              const active = category === post.category
+              return (
+                <Link
+                  key={category}
+                  href={`/blog?category=${encodeURIComponent(category)}`}
+                  className={cn(
+                    "group flex items-center justify-between rounded-xl px-4 py-3 font-heading text-base/[normal] font-semibold transition-colors",
+                    active
+                      ? "bg-brand text-white"
+                      : "bg-surface text-ink hover:bg-brand-soft"
+                  )}
+                >
+                  {category}
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "font-bold transition-transform group-hover:translate-x-1",
+                      !active && "text-navy"
+                    )}
+                  >
+                    →
+                  </span>
+                </Link>
+              )
+            })}
+          </SidebarCard>
+
+          <SidebarCard title="Recent Posts" className="gap-[18px]">
+            {recent.map((item) => (
+              <Link
+                key={item.slug}
+                href={`/blog/${item.slug}`}
+                className="group flex items-center gap-3.5"
+              >
+                <div className="relative size-20 shrink-0 overflow-hidden rounded-[14px]">
+                  <Image
+                    src={item.cover}
+                    alt=""
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex min-w-0 flex-col gap-1.5">
+                  <p className="font-heading text-base leading-[1.3] font-bold text-ink group-hover:text-navy">
+                    {item.title}
+                  </p>
+                  <time
+                    dateTime={item.date}
+                    className="text-[13px]/[normal] text-body"
+                  >
+                    {item.displayDate}
+                  </time>
+                </div>
+              </Link>
+            ))}
+          </SidebarCard>
+
+          <QuoteCard />
+        </aside>
+      </Container>
+    </section>
+  )
+}
