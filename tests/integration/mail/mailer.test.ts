@@ -13,6 +13,7 @@ const unique = (prefix: string) =>
 
 const LINK = "http://localhost:3000/admin/set-password?token=zz9"
 const invite = createElement(InviteEmail, {
+  logoUrl: "http://localhost:3000/images/home/logo.png",
   name: "Dinn Rí",
   inviterName: "Owner",
   url: LINK,

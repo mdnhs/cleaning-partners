@@ -3,6 +3,8 @@ import { Button, Heading, Link, Text } from "react-email"
 import { EmailLayout, emailStyles, formatExpiry } from "./layout"
 
 export type ResetPasswordEmailProps = {
+  /** Absolute logo URL (emailLogoUrl), computed by the caller. */
+  logoUrl: string
   name: string
   url: string
   expiresInMinutes: number
@@ -10,11 +12,15 @@ export type ResetPasswordEmailProps = {
 
 export function ResetPasswordEmail({
   name,
+  logoUrl,
   url,
   expiresInMinutes,
 }: ResetPasswordEmailProps) {
   return (
-    <EmailLayout preview="Reset your Cleaning Partners admin password">
+    <EmailLayout
+      logoUrl={logoUrl}
+      preview="Reset your Cleaning Partners admin password"
+    >
       <Heading as="h1" style={emailStyles.heading}>
         Reset your password
       </Heading>

@@ -1,6 +1,6 @@
 import type { ReactElement } from "react"
 import { render } from "react-email"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { InviteEmail } from "@/emails/invite"
 import { ResetPasswordEmail } from "@/emails/reset-password"
@@ -14,6 +14,7 @@ import {
 } from "@/server/lib/mailer"
 import { smtpTransportOptions } from "@/server/modules/integrations/testers"
 
+const LOGO = "http://localhost:3000/images/home/logo.png"
 const LINK = "http://localhost:3000/admin/set-password?token=abc123"
 
 const SAVED: SmtpConfig = {
@@ -26,19 +27,8 @@ const SAVED: SmtpConfig = {
   fromAddress: "website@example.ie",
 }
 
-// The email frame builds an absolute logo URL from BETTER_AUTH_URL (CP delta).
-beforeEach(() => {
-  vi.stubEnv("DATABASE_URL", "postgres://cp:cp@127.0.0.1:5434/cp_test")
-  vi.stubEnv(
-    "BETTER_AUTH_SECRET",
-    "test-secret-0123456789abcdef0123456789abcdef"
-  )
-  vi.stubEnv("BETTER_AUTH_URL", "http://localhost:3000")
-})
-
 afterEach(() => {
   vi.restoreAllMocks()
-  vi.unstubAllEnvs()
 })
 
 function fakeTransport(sendMail: MailTransport["sendMail"] = async () => ({})) {
@@ -60,13 +50,20 @@ function deps(over: Partial<MailerDeps> & { transport?: MailTransport } = {}) {
 }
 
 const invite = (
-  <InviteEmail name="S" inviterName="O" url={LINK} expiresInDays={7} />
+  <InviteEmail
+    logoUrl={LOGO}
+    name="S"
+    inviterName="O"
+    url={LINK}
+    expiresInDays={7}
+  />
 )
 
 describe("email templates", () => {
   it("invite: greets the user, names the inviter and links the token URL", async () => {
     const email = (
       <InviteEmail
+        logoUrl={LOGO}
         name="Dinn Rí"
         inviterName="Owner One"
         url={LINK}
@@ -84,7 +81,12 @@ describe("email templates", () => {
 
   it("reset-password: links the token URL and states the expiry", async () => {
     const email = (
-      <ResetPasswordEmail name="Sam" url={LINK} expiresInMinutes={60} />
+      <ResetPasswordEmail
+        logoUrl={LOGO}
+        name="Sam"
+        url={LINK}
+        expiresInMinutes={60}
+      />
     )
     expect(await render(email)).toContain(`href="${LINK}"`)
     expect(await render(email, { plainText: true })).toContain(
@@ -96,7 +98,12 @@ describe("email templates", () => {
 describe("email frame (CP branding)", () => {
   it("shows the CP logo as an absolute URL, brand colours and the footer contact", async () => {
     const html = await render(
-      <ResetPasswordEmail name="Sam" url={LINK} expiresInMinutes={60} />
+      <ResetPasswordEmail
+        logoUrl={LOGO}
+        name="Sam"
+        url={LINK}
+        expiresInMinutes={60}
+      />
     )
     expect(html).toContain('src="http://localhost:3000/images/home/logo.png"')
     expect(html).toContain("#11b1d1")
@@ -288,12 +295,23 @@ describe("link expiry wording", () => {
     const text = (email: ReactElement) => render(email, { plainText: true })
     expect(
       await text(
-        <ResetPasswordEmail name="Sam" url={LINK} expiresInMinutes={1440} />
+        <ResetPasswordEmail
+          logoUrl={LOGO}
+          name="Sam"
+          url={LINK}
+          expiresInMinutes={1440}
+        />
       )
     ).toContain("expires in 24 hours")
     expect(
       await text(
-        <InviteEmail name="S" inviterName="O" url={LINK} expiresInDays={1} />
+        <InviteEmail
+          logoUrl={LOGO}
+          name="S"
+          inviterName="O"
+          url={LINK}
+          expiresInDays={1}
+        />
       )
     ).toContain("expires in 24 hours")
   })
@@ -359,7 +377,6 @@ describe("real SMTP transport (Phase 6 target guard on every send)", () => {
         ).rejects.toMatchObject({ code: "EBLOCKEDHOST" })
         expect(factory).not.toHaveBeenCalled()
       } finally {
-        vi.unstubAllEnvs()
       }
     }
   )

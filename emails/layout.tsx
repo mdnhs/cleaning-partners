@@ -11,17 +11,13 @@ import {
   Text,
 } from "react-email"
 
-import { siteOrigin } from "@/lib/seo/urls"
-import { getEnv } from "@/server/env"
-
 const BRAND = "#11b1d1"
 const NAVY = "#28648f"
 const FOOTER_ADDRESS = "Derryguile, Mountmellick, Co. Laois, R32 YX49"
 const FOOTER_EMAIL = "info@cleaningpartners.ie"
 
-/** Absolute logo URL: mail clients cannot resolve a relative `src`. */
-export function emailLogoUrl(): string {
-  const origin = siteOrigin(null, getEnv().BETTER_AUTH_URL)
+/** Absolute logo URL for an origin: mail clients cannot resolve a relative `src`. */
+export function emailLogoUrl(origin: string): string {
   return new URL("/images/home/logo.png", origin).toString()
 }
 
@@ -85,9 +81,11 @@ export const emailStyles = {
 
 export function EmailLayout({
   preview,
+  logoUrl,
   children,
 }: {
   preview: string
+  logoUrl: string
   children: ReactNode
 }) {
   return (
@@ -98,7 +96,7 @@ export function EmailLayout({
         <Container style={emailStyles.container}>
           <Section>
             <Img
-              src={emailLogoUrl()}
+              src={logoUrl}
               alt="Cleaning Partners"
               width={119}
               height={107}

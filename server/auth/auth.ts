@@ -7,6 +7,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { admin, twoFactor } from "better-auth/plugins"
 import { createAccessControl } from "better-auth/plugins/access"
 
+import { emailLogoUrl } from "@/emails/layout"
 import { ResetPasswordEmail } from "@/emails/reset-password"
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@/lib/auth/password"
 import { hasPermission } from "@/lib/auth/permissions"
@@ -16,6 +17,7 @@ import { type Db, getDb } from "@/server/db/client"
 import * as schema from "@/server/db/schema"
 import { getEnv } from "@/server/env"
 import { mailer } from "@/server/lib/mailer"
+import { publicOrigin } from "@/server/lib/site-origin"
 
 import { actorFor, auditAuthEvent, onUserUpdated, securityHooks } from "./hooks"
 
@@ -111,6 +113,7 @@ function createAuth(db: Db) {
             template: "reset-password",
             react: createElement(ResetPasswordEmail, {
               name: user.name,
+              logoUrl: emailLogoUrl(publicOrigin(null)),
               url: adminUrl("/admin/reset-password", { token }),
               expiresInMinutes: RESET_TOKEN_EXPIRES_IN / 60,
             }),

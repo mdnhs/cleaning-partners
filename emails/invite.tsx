@@ -3,6 +3,8 @@ import { Button, Heading, Link, Text } from "react-email"
 import { EmailLayout, emailStyles, formatExpiry } from "./layout"
 
 export type InviteEmailProps = {
+  /** Absolute logo URL (emailLogoUrl), computed by the caller. */
+  logoUrl: string
   name: string
   inviterName: string
   url: string
@@ -11,13 +13,17 @@ export type InviteEmailProps = {
 
 export function InviteEmail({
   name,
+  logoUrl,
   inviterName,
   url,
   expiresInDays,
 }: InviteEmailProps) {
   const expiry = formatExpiry(expiresInDays * 1440)
   return (
-    <EmailLayout preview="You're invited to the Cleaning Partners admin">
+    <EmailLayout
+      logoUrl={logoUrl}
+      preview="You're invited to the Cleaning Partners admin"
+    >
       <Heading as="h1" style={emailStyles.heading}>
         You&apos;re invited
       </Heading>
