@@ -13,8 +13,9 @@ import {
   INVITE_TOKEN_EXPIRES_IN,
   passwordUrl,
 } from "@/server/auth/tokens"
-import { closeDb } from "@/server/db/client"
+import { closeDb, getDb } from "@/server/db/client"
 import { runMigrations } from "@/server/db/migrate"
+import { seedContent } from "@/server/db/seed"
 import { getEnv } from "@/server/env"
 
 import { resetDb } from "../integration/db"
@@ -27,7 +28,8 @@ assertE2eDatabase(DATABASE_URL)
 
 await runMigrations(DATABASE_URL)
 await resetDb()
-// Phase 3 adds seedContent(getDb()) here: the public site reads its content.
+// The public site reads its content from the database.
+await seedContent(getDb())
 const auth = getAuth()
 
 const editor = { email: "editor@e2e.test", name: "Edith Editor" }

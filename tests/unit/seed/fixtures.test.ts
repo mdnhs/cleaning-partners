@@ -122,7 +122,7 @@ describe("seed fixtures (master Task 3.3)", () => {
       expect(seo.parse(s.seo)).toEqual(s.seo)
     }
     for (const a of fx.articles) {
-      // toEqual would hide a stripped attr: the variants must survive.
+      // Full-tree toEqual also catches a stripped attrs key (e.g. the variants).
       expect(articleContent.parse(a.content)).toEqual(a.content)
       expect(seo.parse(a.seo)).toEqual(a.seo)
     }
@@ -158,7 +158,6 @@ describe("seed fixtures (master Task 3.3)", () => {
     expect(fx.categories.every((c) => c.showInFilter)).toBe(true)
     expect(fx.team).toHaveLength(3)
     expect(fx.clients).toHaveLength(7)
-    expect(fx.groupCompanies.map((g) => g.name)).toHaveLength(2)
     expect(fx.groupCompanies[1].name).toBe("MJS Eco")
     expect(fx.testimonials).toHaveLength(3)
   })

@@ -155,6 +155,13 @@
       "when": 1792958836197,
       "tag": "0021_testimonials",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1792960357953,
+      "tag": "0022_team_members_drop_email",
+      "breakpoints": true
     }
   ]
 }

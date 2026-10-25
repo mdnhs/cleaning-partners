@@ -14,7 +14,6 @@ export const teamMembers = pgTable("team_members", {
   name: text("name").notNull().unique(),
   role: text("role").notNull(),
   bio: text("bio").notNull(),
-  email: text("email").notNull(),
   photoId: uuid("photo_id").references(() => media.id, {
     onDelete: "restrict",
   }),

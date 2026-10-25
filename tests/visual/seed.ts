@@ -4,8 +4,9 @@
 // the standalone server.js on every Playwright run:
 //   pnpm tsx:server tests/visual/seed.ts   (env from tests/e2e/env.ts)
 import { getAuth } from "@/server/auth/auth"
-import { closeDb } from "@/server/db/client"
+import { closeDb, getDb } from "@/server/db/client"
 import { runMigrations } from "@/server/db/migrate"
+import { seedContent } from "@/server/db/seed"
 import { getEnv } from "@/server/env"
 
 import { assertE2eDatabase } from "../e2e/env"
@@ -24,8 +25,8 @@ const name = new URL(DATABASE_URL).pathname
 
 await runMigrations(DATABASE_URL)
 await resetDb()
-// Phase 3 seeds the public content here (seedContent) and Phase 10 the
-// builder fixture page; until then the public pages are static.
+// The public content (seedContent); Phase 10 adds the builder fixture page.
+await seedContent(getDb())
 const auth = getAuth()
 await auth.api.createUser({
   body: {

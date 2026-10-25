@@ -24,6 +24,7 @@
     "db:migrate": "pnpm tsx:server scripts/migrate.ts",
     "admin:create": "pnpm tsx:server scripts/admin-create.ts",
     "owner:recover": "pnpm tsx:server scripts/owner-recover.ts",
+    "db:seed": "pnpm tsx:server scripts/seed.ts",
     "demo:seed": "pnpm tsx:server scripts/demo-seed.ts",
     "scripts:build": "tsx scripts/build-scripts.ts",
     "audit:deps": "pnpm audit --prod --audit-level high"
