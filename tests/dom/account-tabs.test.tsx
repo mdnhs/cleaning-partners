@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { ComponentProps } from "react"
 import { renderToString } from "react-dom/server"
@@ -62,6 +62,8 @@ vi.mock("next/link", () => ({
 }))
 
 import { AccountTabs } from "@/components/admin/account/account-tabs"
+import { makeQueryClient } from "@/components/admin/providers"
+import { AdminShell } from "@/components/admin/shell/admin-shell"
 
 const native = {
   push: window.history.pushState.bind(window.history),
@@ -168,5 +170,35 @@ describe("AccountTabs (MK B7)", () => {
     native.replace(null, "", "/admin/account?tab=sessions")
     render(<AccountTabs {...panels} />)
     expect(selectedTab()).toBe("Devices")
+  })
+
+  it("the user menu's Security switches the tab while on the account page", async () => {
+    const user = userEvent.setup()
+    native.replace(null, "", "/admin/account?tab=profile")
+    render(
+      <AdminShell
+        queryClient={makeQueryClient()}
+        session={{
+          user: {
+            id: "u1",
+            name: "Edith Editor",
+            email: "e@x.test",
+            title: null,
+            twoFactorEnabled: false,
+          },
+          roles: ["editor"],
+          impersonatedBy: null,
+        }}
+      >
+        <AccountTabs {...panels} />
+      </AdminShell>
+    )
+    expect(selectedTab()).toBe("Profile")
+    await user.click(
+      screen.getByRole("button", { name: "Account menu for Edith Editor" })
+    )
+    await user.click(await screen.findByRole("menuitem", { name: "Security" }))
+    await waitFor(() => expect(selectedTab()).toBe("Security"))
+    expect(screen.getByText("Security body")).toBeVisible()
   })
 })

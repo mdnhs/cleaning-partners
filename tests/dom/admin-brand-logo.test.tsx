@@ -1,8 +1,23 @@
 import { act, render, screen, waitFor } from "@testing-library/react"
+import type { ComponentProps } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 // Owner request: the admin sidebar shows the site's logo (the published
 // settings.site logo, or its Lottie animation), falling back to the CP chip.
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/admin",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+}))
+vi.mock("next/link", () => ({
+  default: ({ href, ...props }: ComponentProps<"a"> & { href: string }) => (
+    <a href={href} {...props} />
+  ),
+}))
+vi.mock("@/lib/auth-client", () => ({
+  authClient: { signOut: vi.fn() },
+  authErrorMessage: () => "Could not sign out.",
+}))
+
 type Listener = (event: unknown) => void
 const players: FakePlayer[] = []
 class FakePlayer {
@@ -26,6 +41,8 @@ vi.mock("@lottiefiles/dotlottie-web", () => {
   return { DotLottie: FakePlayer }
 })
 
+import { makeQueryClient } from "@/components/admin/providers"
+import { AdminShell } from "@/components/admin/shell/admin-shell"
 import { BrandMark } from "@/components/admin/shell/brand-mark"
 import type { AdminBrand } from "@/components/admin/shell/constants"
 
@@ -53,9 +70,26 @@ function reducedMotion(reduce: boolean) {
   }))
 }
 
-// Phase 4 restores the AdminShell-level cases (the brand link's name).
 function renderShell(value: AdminBrand | null) {
-  return render(<BrandMark brand={value} />)
+  return render(
+    <AdminShell
+      queryClient={makeQueryClient()}
+      brand={value}
+      session={{
+        user: {
+          id: "u1",
+          title: null,
+          twoFactorEnabled: false,
+          name: "Edith Editor",
+          email: "edith@example.test",
+        },
+        roles: ["editor"],
+        impersonatedBy: null,
+      }}
+    >
+      <p>Body</p>
+    </AdminShell>
+  )
 }
 
 beforeEach(() => {
@@ -87,8 +121,11 @@ describe("admin sidebar brand logo", () => {
     expect(canvas.style.opacity).toBe("1")
     expect(img.style.opacity).toBe("0")
     expect(container.querySelector("[data-slot=brand-chip]")).toBeNull()
-    // The Admin pill stays beside the logo.
-    expect(screen.getByText("Admin")).toBeInTheDocument()
+    // The brand link keeps a text name; the Admin pill stays.
+    const link = screen.getByRole("link", {
+      name: "Cleaning Partners admin home",
+    })
+    expect(link).toHaveTextContent("Admin")
   })
 
   it("shows the image logo alone, never loading the player", async () => {
@@ -104,12 +141,11 @@ describe("admin sidebar brand logo", () => {
 
   it("keeps the CP chip without a logo", () => {
     const { container } = renderShell(null)
-    const chip = container.querySelector("[data-slot=brand-chip]")
-    expect(chip).not.toBeNull()
-    expect(chip).toHaveTextContent("CP")
+    expect(container.querySelector("[data-slot=brand-chip]")).not.toBeNull()
     expect(container.querySelector("[data-slot=brand-logo]")).toBeNull()
-    expect(screen.getByText("Cleaning Partners")).toBeInTheDocument()
-    expect(screen.getByText("Admin")).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: "Cleaning Partners admin home" })
+    ).toBeInTheDocument()
   })
 
   it("never loads the player when motion is reduced", async () => {
@@ -142,5 +178,12 @@ describe("admin sidebar brand logo", () => {
     expect(container.querySelector("[data-slot=brand-logo]")).toHaveClass(
       "dark:bg-white"
     )
+  })
+
+  it("names the brand link after the site", () => {
+    renderShell(brand({ name: "Acme Guarding" }))
+    expect(
+      screen.getByRole("link", { name: "Acme Guarding admin home" })
+    ).toBeInTheDocument()
   })
 })

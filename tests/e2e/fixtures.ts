@@ -7,6 +7,7 @@ export const FIXTURES_FILE = resolve("tests/e2e/.state/fixtures.json")
 export const E2E_PASSWORD = "e2e-password-0123456789"
 
 export type E2EFixtures = {
+  owner: { email: string; name: string }
   editor: { email: string; name: string }
   invitee: { email: string; name: string; inviteUrl: string }
   twoFactor: { email: string; name: string; totpUri: string }

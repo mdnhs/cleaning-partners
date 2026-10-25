@@ -24,11 +24,11 @@ test("account page: turn on 2FA, then sign in with a backup code (Task 2.6)", as
   await expect(
     page.getByRole("heading", { name: greeting(account.name) })
   ).toBeVisible()
-  // Phase 4's user menu replaces the plain header's Account link.
+  // Account is in the user menu (the dock holds Help).
   await page
-    .getByRole("navigation", { name: "Admin" })
-    .getByRole("link", { name: "Account" })
+    .getByRole("button", { name: `Account menu for ${account.name}` })
     .click()
+  await page.getByRole("menuitem", { name: "Account" }).click()
   await expect(
     page.getByRole("heading", { name: "Account", exact: true })
   ).toBeVisible()
@@ -60,7 +60,10 @@ test("account page: turn on 2FA, then sign in with a backup code (Task 2.6)", as
   ).toBeVisible()
   await expect(page.getByText("Two-factor authentication is on")).toBeVisible()
 
-  await page.getByRole("button", { name: "Sign out" }).click()
+  await page
+    .getByRole("button", { name: `Account menu for ${account.name}` })
+    .click()
+  await page.getByRole("menuitem", { name: "Sign out" }).click()
   await expect(page).toHaveURL(/\/admin\/sign-in\?notice=signed-out$/)
   await signIn(page, account.email)
   await expect(page).toHaveURL(/\/admin\/two-factor/)
@@ -86,8 +89,12 @@ test("account page: turn 2FA off, then sign in without a code (spec §15 2FA dis
     page.getByRole("heading", { name: greeting(twoFactorOff.name) })
   ).toBeVisible()
 
-  // Phase 4's user menu adds a Security entry that deep-links this tab.
-  await page.goto("/admin/account?tab=security")
+  // The user menu's Security entry deep-links this tab.
+  await page
+    .getByRole("button", { name: `Account menu for ${twoFactorOff.name}` })
+    .click()
+  await page.getByRole("menuitem", { name: "Security" }).click()
+  await expect(page).toHaveURL(/\/admin\/account\?tab=security$/)
   const sections = page.getByRole("tablist", { name: "Account sections" })
   await expect(sections.getByRole("tab", { name: "Security" })).toHaveAttribute(
     "aria-selected",
@@ -100,7 +107,10 @@ test("account page: turn 2FA off, then sign in without a code (spec §15 2FA dis
     page.getByText("Two-factor authentication turned off.")
   ).toBeVisible()
 
-  await page.getByRole("button", { name: "Sign out" }).click()
+  await page
+    .getByRole("button", { name: `Account menu for ${twoFactorOff.name}` })
+    .click()
+  await page.getByRole("menuitem", { name: "Sign out" }).click()
   await expect(page).toHaveURL(/\/admin\/sign-in\?notice=signed-out$/)
   await signIn(page, twoFactorOff.email)
   await expect(

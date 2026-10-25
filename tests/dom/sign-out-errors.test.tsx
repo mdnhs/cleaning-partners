@@ -1,75 +1,82 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { replace, refresh } = vi.hoisted(() => ({
-  replace: vi.fn(),
-  refresh: vi.fn(),
-}))
 vi.mock("next/navigation", () => ({
   usePathname: () => "/admin",
-  useRouter: () => ({ push: vi.fn(), replace, refresh }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }))
 
 // Better Auth's client binds `fetch` when it is created (module import),
 // so a fetch stubbed per test never reaches it: sign-out would go out over
-// the network and its outcome would depend on what listens on the port.
+// the network and its outcome would depend on what listens on :3000.
 const { signOut } = vi.hoisted(() => ({ signOut: vi.fn() }))
 vi.mock("@/lib/auth-client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/auth-client")>()),
   authClient: { signOut },
 }))
 
-import { SignOutControl } from "@/components/admin/auth/sign-out-control"
+import { makeQueryClient } from "@/components/admin/providers"
+import { AdminShell } from "@/components/admin/shell/admin-shell"
 
-// Phase 4's shell tests restore the user-menu and dock variants of this.
 beforeEach(() => {
   signOut.mockReset()
-  replace.mockReset()
-  refresh.mockReset()
+  signOut.mockResolvedValue({
+    data: null,
+    error: {
+      status: 503,
+      statusText: "Service Unavailable",
+      message: "Unavailable",
+    },
+  })
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () => {
+      return new Response(
+        JSON.stringify({ items: [], page: 1, pageSize: 20, total: 0 }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      )
+    })
+  )
 })
 
-describe("plain header sign-out errors", () => {
-  it("a failed sign-out shows the error and keeps the user on the page", async () => {
+describe("shell sign-out errors (ledger P04b-4)", () => {
+  it("opening the user menu keeps the dock's sign-out error", async () => {
     const user = userEvent.setup()
-    signOut.mockResolvedValue({
-      data: null,
-      error: { status: 503, statusText: "Unavailable", message: "Unavailable" },
-    })
-    render(<SignOutControl />)
-    await user.click(screen.getByRole("button", { name: "Sign out" }))
-    const alert = await screen.findByRole("alert")
-    expect(alert).toHaveTextContent("Unavailable")
-    expect(signOut).toHaveBeenCalledTimes(1)
-    expect(replace).not.toHaveBeenCalled()
-    // The button is usable again for a retry.
-    expect(screen.getByRole("button", { name: "Sign out" })).toBeEnabled()
-  })
-
-  it("a thrown error reads as a generic failure", async () => {
-    const user = userEvent.setup()
-    signOut.mockRejectedValue(new Error("network down"))
-    render(<SignOutControl />)
-    await user.click(screen.getByRole("button", { name: "Sign out" }))
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Something went wrong. Try again."
+    render(
+      <AdminShell
+        queryClient={makeQueryClient()}
+        session={{
+          user: {
+            id: "u1",
+            name: "Edith Editor",
+            email: "e@x.test",
+            title: null,
+            twoFactorEnabled: true,
+          },
+          roles: ["editor"],
+          impersonatedBy: null,
+        }}
+      >
+        <p>Body</p>
+      </AdminShell>
     )
-    expect(replace).not.toHaveBeenCalled()
-  })
-
-  it("a retry that works clears the error and leaves for sign-in", async () => {
-    const user = userEvent.setup()
-    signOut.mockResolvedValueOnce({
-      data: null,
-      error: { status: 503, statusText: "Unavailable", message: "Unavailable" },
-    })
-    signOut.mockResolvedValueOnce({ data: { success: true }, error: null })
-    render(<SignOutControl />)
-    await user.click(screen.getByRole("button", { name: "Sign out" }))
-    await screen.findByRole("alert")
-    await user.click(screen.getByRole("button", { name: "Sign out" }))
-    expect(replace).toHaveBeenCalledWith("/admin/sign-in?notice=signed-out")
-    expect(refresh).toHaveBeenCalled()
-    expect(screen.queryByRole("alert")).toBeNull()
+    // The sidebar renders the dock twice (card and icon rail; CSS shows one).
+    await user.click(screen.getAllByRole("button", { name: "Log out" })[0])
+    // The dock's error sits in the sidebar footer (other live regions exist).
+    const footer = document.querySelector(
+      '[data-slot="sidebar-footer"]'
+    ) as HTMLElement
+    const alert = await within(footer).findByRole("alert")
+    expect(signOut).toHaveBeenCalledTimes(1)
+    expect(alert).not.toBeEmptyDOMElement()
+    const text = alert.textContent ?? ""
+    await user.click(
+      screen.getByRole("button", { name: "Account menu for Edith Editor" })
+    )
+    await screen.findByRole("menu")
+    await user.keyboard("{Escape}")
+    expect(alert).toBeInTheDocument()
+    expect(alert).toHaveTextContent(text)
   })
 })

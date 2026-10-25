@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { requireSession } from "@/server/auth/session"
+import { requirePage, requireSession } from "@/server/auth/session"
 
 export const metadata: Metadata = { title: "Dashboard" }
 
@@ -15,6 +15,7 @@ export default function DashboardPage() {
 }
 
 async function Welcome() {
+  await requirePage("/admin")
   const { user } = await requireSession()
   return (
     <section className="flex flex-col gap-2">

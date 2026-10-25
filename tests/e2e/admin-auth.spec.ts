@@ -4,6 +4,11 @@ import { URI } from "otpauth"
 import { BASE_URL } from "./env"
 import { clientIpFor, E2E_PASSWORD, greeting, readFixtures } from "./fixtures"
 
+/** The signed-in user's menu in the topbar (holds "Sign out"). */
+async function openUserMenu(page: Page, name: string) {
+  await page.getByRole("button", { name: `Account menu for ${name}` }).click()
+}
+
 async function signIn(page: Page, email: string, password: string) {
   await page.getByLabel("Email").fill(email)
   await page.getByLabel("Password", { exact: true }).fill(password)
@@ -131,7 +136,8 @@ test.describe("admin auth pages + proxy (Task 2.5)", () => {
     await expect(
       page.getByRole("heading", { name: greeting(editor.name) })
     ).toBeVisible()
-    await page.getByRole("button", { name: "Sign out" }).click()
+    await openUserMenu(page, editor.name)
+    await page.getByRole("menuitem", { name: "Sign out" }).click()
     await expect(page).toHaveURL(/\/admin\/sign-in\?notice=signed-out$/)
     await page.goto("/admin")
     await expect(page).toHaveURL(/\/admin\/sign-in\?next=%2Fadmin$/)
@@ -154,17 +160,20 @@ test.describe("admin auth pages + proxy (Task 2.5)", () => {
         body: JSON.stringify({ message: "Internal server error" }),
       })
     )
-    await page.getByRole("button", { name: "Sign out" }).click()
-    // The error shows beside the button; a retry can succeed. Scoped to the
-    // header: Next's route announcer is a role="alert" too.
-    const header = page.locator("header")
-    await expect(header.getByRole("alert")).toContainText(
+    await openUserMenu(page, editor.name)
+    await page.getByRole("menuitem", { name: "Sign out" }).click()
+    // The error shows under the avatar; the menu can be reopened to retry.
+    // Scoped: Next's route announcer is a role="alert" too.
+    const footer = page.locator('[data-slot="topbar"]')
+    await expect(footer.getByRole("alert")).toContainText(
       "Internal server error"
     )
     await expect(page).toHaveURL(/\/admin$/)
 
     await page.unroute("**/api/auth/sign-out")
-    await page.getByRole("button", { name: "Sign out" }).click()
+    await openUserMenu(page, editor.name)
+    await expect(footer.getByRole("alert")).toHaveCount(0)
+    await page.getByRole("menuitem", { name: "Sign out" }).click()
     await expect(page).toHaveURL(/\/admin\/sign-in\?notice=signed-out$/)
   })
 

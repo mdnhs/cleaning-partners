@@ -32,6 +32,11 @@ await resetDb()
 await seedContent(getDb())
 const auth = getAuth()
 
+const owner = { email: "owner@e2e.test", name: "Olive Owner" }
+await auth.api.createUser({
+  body: { ...owner, role: ["owner"], password: E2E_PASSWORD },
+})
+
 const editor = { email: "editor@e2e.test", name: "Edith Editor" }
 await auth.api.createUser({
   body: { ...editor, role: ["editor"], password: E2E_PASSWORD },
@@ -90,9 +95,10 @@ await auth.api.createUser({
 const twoFactorOff = { email: "twofactor-off@e2e.test", name: "Toby Twofactor" }
 const twoFactorOffUri = await enrolTotp(twoFactorOff, ["editor"])
 
-// Phase 4+ add the owner/admin, author, intake, demo and reset users.
+// Later phases add the admin, author, intake, demo and reset users.
 
 const fixtures: E2EFixtures = {
+  owner,
   editor,
   invitee: { ...invitee, inviteUrl },
   twoFactor: { ...twoFactor, totpUri: twoFactorUri },
