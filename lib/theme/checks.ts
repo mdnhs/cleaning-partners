@@ -173,7 +173,7 @@ const ACCENT_FAMILY = [
 // brand-family surface that is not a page background is the coloured side,
 // so it moves rather than the text drawn on it. Every candidate is
 // re-checked: when the preferred side cannot clear the pair (a locked
-// a locked brand outranks `site.brand`), the other side moves instead, unless
+// brand outranks `site.brand`), the other side moves instead, unless
 // it is a page surface; failing both, the issue is unfixable (null). A
 // config that still fails the pair is never returned.
 export function fixIssue(

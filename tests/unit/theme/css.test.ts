@@ -85,7 +85,7 @@ describe("liveDeclarations", () => {
 describe("serialiser safety", () => {
   const MALICIOUS = [
     "red;}</style><script>alert(1)</script>",
-    "#367318;}</style><script>",
+    "#4a7a2c;}</style><script>",
     "oklch(0.5 0.1 200);}",
     "oklch(1 0 0);--x:1",
     "var(--x)",

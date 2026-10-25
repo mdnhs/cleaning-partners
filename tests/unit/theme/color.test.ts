@@ -40,7 +40,7 @@ describe("parseColor", () => {
   ])("rejects %s", (s) => expect(parseColor(s)).toBeNull())
 
   it("round-trips hex", () =>
-    expect(toHex(parseColor("#367318")!)).toBe("#367318"))
+    expect(toHex(parseColor("#4a7a2c")!)).toBe("#4a7a2c"))
 
   it("normalises hex to canonical OKLCH", () => {
     expect(formatOklch(parseColor("#67bd31")!)).toMatch(
@@ -97,7 +97,7 @@ describe("contrast", () => {
 
 describe("scale", () => {
   it("builds 11 displayable steps, light to dark, with eased chroma", () => {
-    const steps = scale(parseColor("#367318")!)
+    const steps = scale(parseColor("#4a7a2c")!)
     expect(steps).toHaveLength(11)
     for (let i = 1; i < steps.length; i++)
       expect(steps[i]!.l).toBeLessThan(steps[i - 1]!.l)

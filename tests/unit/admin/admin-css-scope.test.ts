@@ -6,10 +6,15 @@ import { describe, expect, it } from "vitest"
 const root = path.join(import.meta.dirname, "../../..")
 const css = readFileSync(path.join(root, "app/(admin)/admin/admin.css"), "utf8")
 
-// Public-only utilities (app/globals.css brand colours, font-heading) and the
+// Public-only utilities (app/globals.css brand palette, font-heading) and the
 // public button variants. button.tsx defines the variants, so it is skipped.
-const PUBLIC_ONLY =
-  /\b(?:text|bg|border|ring|fill|stroke)-brand-|font-heading|variant="(?:brand|brand-outline[\w-]*|pill)"/
+const TOKENS =
+  "brand|brand-deep|brand-soft|navy|navy-dark|ink|ink-soft|body|subtle|line|surface|sky|sky-soft|star"
+const PUBLIC_ONLY = new RegExp(
+  `\\b(?:text|bg|border|ring|fill|stroke|from|to|via)-(?:${TOKENS})\\b|font-heading|` +
+    `variant(?:=|:\\s*)\\{?["'](?:brand|navy|light|outline-navy|outline-light)["']|size(?:=|:\\s*)\\{?["']pill`
+)
+const PUBLIC_CSS = new RegExp(`--color-(?:${TOKENS})\\s*:|--font-heading`)
 
 describe("admin stylesheet scope (spec §4.1)", () => {
   it("admin.css is its own Tailwind entry", () => {
@@ -40,7 +45,29 @@ describe("admin stylesheet scope (spec §4.1)", () => {
     expect(offenders).toEqual([])
   })
 
-  it("admin.css reads no public brand variables", () => {
-    expect(css).not.toMatch(/--color-brand-|--font-heading/)
+  it("admin.css declares no public brand variables", () => {
+    expect(css).not.toMatch(PUBLIC_CSS)
+  })
+
+  it("the guard catches CP's public classes and variants", () => {
+    for (const hit of [
+      '<div className="bg-navy p-2" />',
+      "text-brand-deep",
+      "border-line",
+      "from-navy-dark",
+      '<h1 className="font-heading" />',
+      '<Button variant="brand" />',
+      'buttonVariants({ variant: "outline-navy" })',
+      '<Button size="pill" />',
+    ])
+      expect(PUBLIC_ONLY.test(hit), hit).toBe(true)
+    for (const ok of [
+      "bg-primary text-foreground",
+      "border-border",
+      'variant="outline"',
+    ])
+      expect(PUBLIC_ONLY.test(ok), ok).toBe(false)
+    expect(PUBLIC_CSS.test("--color-navy: #28648f;")).toBe(true)
+    expect(PUBLIC_CSS.test("--font-heading: x;")).toBe(true)
   })
 })

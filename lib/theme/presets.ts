@@ -34,10 +34,11 @@ export const CP_SITE: Readonly<Record<SiteToken, string>> = deepFreeze({
 })
 
 // Every preset is one shift from the base tables (CP_SITE, CP_ADMIN_*): the
-// site's green family follows `site.brand`, the admin follows
-// `admin.primary`. The non-SP site brands are the brief's colours after
-// "fix all" (lightened so navy text on the consent button clears 4.5:1),
-// baked in as hex so every preset passes SITE_PAIRS unmodified.
+// site's brand family (brand, brand-deep, brand-soft) follows `site.brand`,
+// the admin follows `admin.primary`. The non-default site brands are the
+// brief's colours after "fix all" (lightened so navy-dark text on the
+// brand-soft tint clears 4.5:1), baked in as hex so every preset passes
+// SITE_PAIRS unmodified.
 export const PRESETS: Readonly<
   Record<
     PresetId,

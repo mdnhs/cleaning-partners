@@ -127,11 +127,11 @@ describe("schema", () => {
   })
 
   it("stores colours as canonical oklch()", () => {
-    expect(ColorValue.parse("#367318")).toMatch(
+    expect(ColorValue.parse("#4a7a2c")).toMatch(
       /^oklch\([\d.]+ [\d.]+ [\d.]+\)$/
     )
-    expect(ColorValue.parse(ColorValue.parse("#367318"))).toBe(
-      ColorValue.parse("#367318")
+    expect(ColorValue.parse(ColorValue.parse("#4a7a2c"))).toBe(
+      ColorValue.parse("#4a7a2c")
     )
   })
 

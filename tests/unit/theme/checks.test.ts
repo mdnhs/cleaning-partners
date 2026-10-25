@@ -139,6 +139,10 @@ describe("fix automatically", () => {
       config.site.tokens["brand-soft"]
     )
     expect(fixed.site.tokens["navy-dark"]).toBeDefined()
+    const tokens = resolveSiteTokens(fixed.site)
+    expect(
+      contrast(tokens["navy-dark"], tokens["brand-soft"])
+    ).toBeGreaterThanOrEqual(4.5)
   })
 
   it("returns null or a config that clears the pair, never a non-fix", () => {
