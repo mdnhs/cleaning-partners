@@ -1,6 +1,6 @@
-/** Collections a "collection" widget can pick from (the admin options API). */
-export type OptionCollection =
-  "articles" | "services" | "categories" | "pages" | "links"
+import type { OptionCollection } from "@/lib/schemas/api/search"
+
+export type { OptionCollection }
 
 /** Widget kinds SchemaForm renders (master 4.3). */
 export const WIDGET_KINDS = [

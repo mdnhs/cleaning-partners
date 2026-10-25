@@ -181,9 +181,9 @@ describe("admin sidebar brand logo", () => {
   })
 
   it("names the brand link after the site", () => {
-    renderShell(brand({ name: "Acme Guarding" }))
+    renderShell(brand({ name: "Sparkle Cleaning" }))
     expect(
-      screen.getByRole("link", { name: "Acme Guarding admin home" })
+      screen.getByRole("link", { name: "Sparkle Cleaning admin home" })
     ).toBeInTheDocument()
   })
 })

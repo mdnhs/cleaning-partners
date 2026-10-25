@@ -119,7 +119,7 @@ export function searchTestimonials(db: DbOrTx, q: string, limit: number) {
         ilike(testimonials.quote, contains(q))
       )
     )
-    .orderBy(asc(testimonials.sortOrder))
+    .orderBy(asc(testimonials.sortOrder), asc(testimonials.id))
     .limit(limit)
 }
 

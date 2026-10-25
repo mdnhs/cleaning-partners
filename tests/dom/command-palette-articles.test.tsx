@@ -46,7 +46,8 @@ beforeEach(() => {
                 type: "article",
                 id: "a1",
                 title: "Key Holding Explained",
-                subtitle: "/blog/key-holding-explained",
+                subtitle:
+                  "/blog/5-signs-your-office-needs-a-professional-clean",
                 href: "/admin/blog/a1",
               },
             ],
@@ -88,7 +89,9 @@ describe("⌘K palette and articles (Phase 5)", () => {
     const result = await within(again.dialog).findByRole("option", {
       name: /Key Holding Explained/,
     })
-    expect(result).toHaveTextContent("Article · /blog/key-holding-explained")
+    expect(result).toHaveTextContent(
+      "Article · /blog/5-signs-your-office-needs-a-professional-clean"
+    )
     await again.user.click(result)
     expect(push).toHaveBeenCalledWith("/admin/blog/a1")
   })
