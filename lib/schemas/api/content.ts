@@ -1,15 +1,9 @@
 import { z } from "zod"
 
-// Phase 3 restores PAGE_KEYS / PageKey from @/templates/registry (CP's page
-// set); until then they are the five public routes that exist today.
-export const PAGE_KEYS = [
-  "home",
-  "about",
-  "services",
-  "blog",
-  "contact",
-] as const
-export type PageKey = (typeof PAGE_KEYS)[number]
+import { PAGE_KEYS, type PageKey } from "@/templates/registry"
+
+export { PAGE_KEYS }
+export type { PageKey }
 
 export const CONTENT_STATUSES = [
   "draft",

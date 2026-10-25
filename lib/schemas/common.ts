@@ -137,6 +137,9 @@ export const pageHero = z.object({
   description: text,
 })
 
+/** A page hero without its own banner (about, contact): the site default image is used. */
+export const pageHeroText = pageHero.omit({ image: true })
+
 /** Icon + title + description cards (values, officer qualities, features). */
 export const iconCard = z.object({
   title: text,
@@ -178,4 +181,5 @@ export type RichTextDoc = z.infer<typeof richText>
 export type ParagraphsDoc = z.infer<typeof paragraphsText>
 export type Seo = z.infer<typeof seo>
 export type PageHero = z.infer<typeof pageHero>
+export type PageHeroText = z.infer<typeof pageHeroText>
 export type IconCard = z.infer<typeof iconCard>

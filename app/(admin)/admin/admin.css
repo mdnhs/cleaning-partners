@@ -16,6 +16,7 @@
    bloats this file. */
 @source not "../../../docs";
 @source not "../../(site)";
+@source not "../../../templates";
 /* prettier-ignore */
 @source not "../../../components/{about,blog,contact,home,services,motion}";
 @source not "../../../components/theme-provider.tsx";
