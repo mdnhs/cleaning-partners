@@ -1,0 +1,3993 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "meta.root.title",
+      "source": "app/layout.tsx:28",
+      "kind": "meta",
+      "value": "Cleaning Partners Ltd. | The Clean Team",
+      "target": "settings.seo.defaults.title",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "meta.root.description",
+      "source": "app/layout.tsx:30",
+      "kind": "meta",
+      "value": "Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond.",
+      "target": "settings.seo.defaults.description",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "meta.about.title",
+      "source": "app/about/page.tsx:16",
+      "kind": "meta",
+      "value": "About Us | Cleaning Partners Ltd.",
+      "target": "pages.about.meta.title",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "meta.about.description",
+      "source": "app/about/page.tsx:18",
+      "kind": "meta",
+      "value": "Over fifteen years of combined experience cleaning homes and businesses across Ireland from our base in Mountmellick, Co. Laois.",
+      "target": "pages.about.meta.description",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "meta.services.title",
+      "source": "app/services/page.tsx:14",
+      "kind": "meta",
+      "value": "Our Services | Cleaning Partners Ltd.",
+      "target": "pages.services.meta.title",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "meta.services.description",
+      "source": "app/services/page.tsx:16",
+      "kind": "meta",
+      "value": "Medical, education, commercial and retail cleaning plus ULV fogging for hospitals, GP clinics, schools, offices, shops and homes across Ireland.",
+      "target": "pages.services.meta.description",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "meta.blog.title",
+      "source": "app/blog/page.tsx:11",
+      "kind": "meta",
+      "value": "Our Blog | Cleaning Partners Ltd.",
+      "target": "pages.blog.meta.title",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "meta.blog.description",
+      "source": "app/blog/page.tsx:12",
+      "kind": "meta",
+      "value": "Cleaning tips, hygiene advice and news from the Clean Team.",
+      "target": "pages.blog.meta.description",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "meta.contact.title",
+      "source": "app/contact/page.tsx:12",
+      "kind": "meta",
+      "value": "Contact Us | Cleaning Partners Ltd.",
+      "target": "pages.contact.meta.title",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "meta.contact.description",
+      "source": "app/contact/page.tsx:14",
+      "kind": "meta",
+      "value": "Get in touch with the Clean Team for a free, no-obligation quote. 24hr contact: (085) 8062369.",
+      "target": "pages.contact.meta.description",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "meta.service.title",
+      "source": "app/services/[slug]/page.tsx:27",
+      "kind": "meta",
+      "value": "${service.title} | Cleaning Partners Ltd.",
+      "target": "services[].meta.title",
+      "pages": [
+        "/services/[slug]"
+      ],
+      "template": true
+    },
+    {
+      "id": "meta.service.description",
+      "source": "app/services/[slug]/page.tsx:28",
+      "kind": "meta",
+      "value": "service.heroDescription",
+      "target": "services[].heroDescription",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "meta.article.title",
+      "source": "app/blog/[slug]/page.tsx:24",
+      "kind": "meta",
+      "value": "${post.title} | Cleaning Partners Ltd.",
+      "target": "articles[].meta.title",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "template": true
+    },
+    {
+      "id": "meta.article.description",
+      "source": "app/blog/[slug]/page.tsx:25",
+      "kind": "meta",
+      "value": "post.excerpt",
+      "target": "articles[].excerpt",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "header.phone.href",
+      "source": "components/home/site-header.tsx:25",
+      "kind": "tel",
+      "value": "tel:+353858062369",
+      "target": "settings.contact.phone24Href",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "header.phone.label",
+      "source": "components/home/site-header.tsx:26",
+      "kind": "text",
+      "value": "24hr contact: (085) 8062369",
+      "target": "settings.contact.phone24Label",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "header.email.href",
+      "source": "components/home/site-header.tsx:29",
+      "kind": "mailto",
+      "value": "mailto:info@cleaningpartners.ie",
+      "target": "settings.contact.emailHref",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "header.email.label",
+      "source": "components/home/site-header.tsx:32",
+      "kind": "text",
+      "value": "info@cleaningpartners.ie",
+      "target": "settings.contact.email",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "header.hours",
+      "source": "components/home/site-header.tsx:35",
+      "kind": "text",
+      "value": "Mon–Fri: 9am – 6pm",
+      "target": "settings.contact.hours",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "header.logo.src",
+      "source": "components/home/site-header.tsx:43",
+      "kind": "image",
+      "value": "/images/home/logo.png",
+      "target": "settings.site.logo",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "header.logo.alt",
+      "source": "components/home/site-header.tsx:44",
+      "kind": "alt",
+      "value": "Cleaning Partners",
+      "target": "settings.site.logoAlt",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "navigation.links",
+      "source": "components/home/site-header.tsx:9",
+      "kind": "list",
+      "value": "5",
+      "target": "settings.navigation.links",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "array": "navLinks"
+    },
+    {
+      "id": "navigation.links.label",
+      "source": "components/home/site-header.tsx:10",
+      "kind": "text",
+      "value": "Home",
+      "target": "settings.navigation.links[].label",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "navigation.links.href",
+      "source": "components/home/site-header.tsx:10",
+      "kind": "href",
+      "value": "/",
+      "target": "settings.navigation.links[].href",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "navigation.cta.href",
+      "source": "components/home/site-header.tsx:72",
+      "kind": "href",
+      "value": "#contact",
+      "target": "settings.navigation.cta.href",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "navigation.cta.label",
+      "source": "components/home/site-header.tsx:75",
+      "kind": "text",
+      "value": "Get a Quote",
+      "target": "settings.navigation.cta.label",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "navigation.menuAria",
+      "source": "components/home/site-header.tsx:79",
+      "kind": "aria",
+      "value": "Open menu",
+      "target": "settings.navigation.menuAria",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.logo.src",
+      "source": "components/home/site-footer.tsx:49",
+      "kind": "image",
+      "value": "/images/home/logo.png",
+      "target": "settings.site.logo",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.logo.alt",
+      "source": "components/home/site-footer.tsx:50",
+      "kind": "alt",
+      "value": "Cleaning Partners",
+      "target": "settings.site.logoAlt",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.tagline",
+      "source": "components/home/site-footer.tsx:58",
+      "kind": "text",
+      "value": "The Clean Team. Medical, commercial and domestic cleaning from Mountmellick, Co. Laois.",
+      "target": "settings.footer.tagline",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.quickLinks.title",
+      "source": "components/home/site-footer.tsx:64",
+      "kind": "text",
+      "value": "QUICK LINKS",
+      "target": "settings.footer.quickLinksTitle",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.contact.title",
+      "source": "components/home/site-footer.tsx:77",
+      "kind": "text",
+      "value": "CONTACT",
+      "target": "settings.footer.contactTitle",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.contactLines",
+      "source": "components/home/site-footer.tsx:7",
+      "kind": "list",
+      "value": "4",
+      "target": "settings.footer.contactLines",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "array": "contactLines"
+    },
+    {
+      "id": "footer.contactLines.item",
+      "source": "components/home/site-footer.tsx:8",
+      "kind": "text",
+      "value": "Derryguile, Mountmellick",
+      "target": "settings.footer.contactLines[]",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.group.title",
+      "source": "components/home/site-footer.tsx:86",
+      "kind": "text",
+      "value": "OTHER SERVICES IN THE GROUP",
+      "target": "settings.footer.groupTitle",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "groupCompanies",
+      "source": "components/home/site-footer.tsx:14",
+      "kind": "list",
+      "value": "2",
+      "target": "groupCompanies[].*",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "array": "groupCompanies"
+    },
+    {
+      "id": "groupCompanies.name",
+      "source": "components/home/site-footer.tsx:16",
+      "kind": "text",
+      "value": "Security Partners",
+      "target": "groupCompanies[].name",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "groupCompanies.phone",
+      "source": "components/home/site-footer.tsx:17",
+      "kind": "tel",
+      "value": "Tel: (085) 8591299",
+      "target": "groupCompanies[].phone",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "groupCompanies.site",
+      "source": "components/home/site-footer.tsx:18",
+      "kind": "text",
+      "value": "www.securitypartnersltd.ie",
+      "target": "groupCompanies[].site",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "groupCompanies.logo",
+      "source": "components/home/site-footer.tsx:19",
+      "kind": "image",
+      "value": "/images/home/security-partners.png",
+      "target": "groupCompanies[].logo",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "groupCompanies.href",
+      "source": "components/home/site-footer.tsx:90",
+      "kind": "href",
+      "value": "https://${company.site}",
+      "target": "groupCompanies[].site",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "template": true
+    },
+    {
+      "id": "footer.copyright",
+      "source": "components/home/site-footer.tsx:125",
+      "kind": "text",
+      "value": "© 2026 Cleaning Partners Ltd. All rights reserved.",
+      "target": "settings.footer.copyright",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.legal.privacy.href",
+      "source": "components/home/site-footer.tsx:127",
+      "kind": "href",
+      "value": "#",
+      "target": "settings.footer.privacyHref",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.legal.privacy.label",
+      "source": "components/home/site-footer.tsx:128",
+      "kind": "text",
+      "value": "Privacy Policy",
+      "target": "settings.footer.privacyLabel",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.legal.terms.href",
+      "source": "components/home/site-footer.tsx:131",
+      "kind": "href",
+      "value": "#",
+      "target": "settings.footer.termsHref",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.legal.terms.label",
+      "source": "components/home/site-footer.tsx:132",
+      "kind": "text",
+      "value": "Terms",
+      "target": "settings.footer.termsLabel",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "home.hero.background",
+      "source": "components/home/hero.tsx:11",
+      "kind": "image",
+      "value": "/images/home/hero.png",
+      "target": "pages.home.hero.background",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.logo",
+      "source": "components/home/hero.tsx:32",
+      "kind": "image",
+      "value": "/images/home/cleaning-partners-logo.png",
+      "target": "settings.site.logoLarge",
+      "pages": [
+        "/",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "home.hero.logoAlt",
+      "source": "components/home/hero.tsx:33",
+      "kind": "alt",
+      "value": "Cleaning Partners",
+      "target": "settings.site.logoAlt",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.title",
+      "source": "components/home/hero.tsx:47",
+      "kind": "text",
+      "value": "Cleaning Partners Ltd.",
+      "target": "pages.home.hero.title",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.subtitle",
+      "source": "components/home/hero.tsx:54",
+      "kind": "text",
+      "value": "The Clean Team. Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond.",
+      "target": "pages.home.hero.subtitle",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.primaryCta.href",
+      "source": "components/home/hero.tsx:64",
+      "kind": "href",
+      "value": "#contact",
+      "target": "pages.home.hero.primaryCta.href",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.primaryCta.label",
+      "source": "components/home/hero.tsx:67",
+      "kind": "text",
+      "value": "Get a Free Quote",
+      "target": "pages.home.hero.primaryCta.label",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.secondaryCta.href",
+      "source": "components/home/hero.tsx:70",
+      "kind": "href",
+      "value": "#services",
+      "target": "pages.home.hero.secondaryCta.href",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.secondaryCta.label",
+      "source": "components/home/hero.tsx:76",
+      "kind": "text",
+      "value": "Our Services",
+      "target": "pages.home.hero.secondaryCta.label",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.member.label",
+      "source": "components/home/hero.tsx:85",
+      "kind": "text",
+      "value": "Proud member of",
+      "target": "pages.home.hero.memberLabel",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.member.logo",
+      "source": "components/home/hero.tsx:88",
+      "kind": "image",
+      "value": "/images/home/icca.png",
+      "target": "pages.home.hero.memberLogo",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.hero.member.logoAlt",
+      "source": "components/home/hero.tsx:89",
+      "kind": "alt",
+      "value": "Irish Contract Cleaning Association",
+      "target": "pages.home.hero.memberLogoAlt",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "clients.eyebrow",
+      "source": "components/home/clients.tsx:22",
+      "kind": "text",
+      "value": "TRUSTED PARTNERS",
+      "target": "settings.sections.clients.eyebrow",
+      "pages": [
+        "/",
+        "/about",
+        "/services"
+      ]
+    },
+    {
+      "id": "clients.title",
+      "source": "components/home/clients.tsx:22",
+      "kind": "text",
+      "value": "Who We Work With",
+      "target": "settings.sections.clients.title",
+      "pages": [
+        "/",
+        "/about",
+        "/services"
+      ]
+    },
+    {
+      "id": "clients",
+      "source": "components/home/clients.tsx:5",
+      "kind": "list",
+      "value": "7",
+      "target": "clients[].*",
+      "pages": [
+        "/",
+        "/about",
+        "/services"
+      ],
+      "array": "clients"
+    },
+    {
+      "id": "clients.name",
+      "source": "components/home/clients.tsx:6",
+      "kind": "text",
+      "value": "HSE",
+      "target": "clients[].name",
+      "pages": [
+        "/",
+        "/about",
+        "/services"
+      ]
+    },
+    {
+      "id": "clients.logo",
+      "source": "components/home/clients.tsx:6",
+      "kind": "image",
+      "value": "/images/home/client-hse.png",
+      "target": "clients[].logo",
+      "pages": [
+        "/",
+        "/about",
+        "/services"
+      ]
+    },
+    {
+      "id": "clients.logoAlt",
+      "source": "components/home/clients.tsx:33",
+      "kind": "alt",
+      "value": "{client.name}",
+      "target": "clients[].name",
+      "pages": [
+        "/",
+        "/about",
+        "/services"
+      ]
+    },
+    {
+      "id": "home.services.imageA",
+      "source": "components/home/services.tsx:38",
+      "kind": "image",
+      "value": "/images/home/cleaning-the-counter.png",
+      "target": "pages.home.services.imageA",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.imageAAlt",
+      "source": "components/home/services.tsx:39",
+      "kind": "alt",
+      "value": "Cleaner wiping down a counter",
+      "target": "pages.home.services.imageAAlt",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.imageB",
+      "source": "components/home/services.tsx:51",
+      "kind": "image",
+      "value": "/images/home/vacuuming.png",
+      "target": "pages.home.services.imageB",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.imageBAlt",
+      "source": "components/home/services.tsx:52",
+      "kind": "alt",
+      "value": "Cleaner vacuuming an office",
+      "target": "pages.home.services.imageBAlt",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.eyebrow",
+      "source": "components/home/services.tsx:64",
+      "kind": "text",
+      "value": "CHECK OUT",
+      "target": "pages.home.services.eyebrow",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.title",
+      "source": "components/home/services.tsx:65",
+      "kind": "text",
+      "value": "Our Services",
+      "target": "pages.home.services.title",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.description",
+      "source": "components/home/services.tsx:66",
+      "kind": "text",
+      "value": "Clean as a button! Professional cleaning tailored to your space, delivered by trained and trusted teams.",
+      "target": "pages.home.services.description",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.items",
+      "source": "components/home/services.tsx:7",
+      "kind": "list",
+      "value": "3",
+      "target": "pages.home.services.items",
+      "pages": [
+        "/"
+      ],
+      "array": "services"
+    },
+    {
+      "id": "home.services.items.title",
+      "source": "components/home/services.tsx:9",
+      "kind": "text",
+      "value": "Medical Cleaning",
+      "target": "pages.home.services.items[].title",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.items.description",
+      "source": "components/home/services.tsx:11",
+      "kind": "text",
+      "value": "Hygienic, compliant cleaning for clinics and healthcare settings.",
+      "target": "pages.home.services.items[].description",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.itemIcon",
+      "source": "components/home/services.tsx:77",
+      "kind": "image",
+      "value": "/images/home/check.svg",
+      "target": "pages.home.services.itemIcon",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.more",
+      "source": "components/home/services.tsx:96",
+      "kind": "text",
+      "value": "and more...",
+      "target": "pages.home.services.moreText",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.cta.href",
+      "source": "components/home/services.tsx:98",
+      "kind": "href",
+      "value": "/services",
+      "target": "pages.home.services.cta.href",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.services.cta.label",
+      "source": "components/home/services.tsx:101",
+      "kind": "text",
+      "value": "View All Services",
+      "target": "pages.home.services.cta.label",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "whyChooseUs.background",
+      "source": "components/home/why-choose-us.tsx:33",
+      "kind": "image",
+      "value": "/images/home/why-choose-us.png",
+      "target": "settings.sections.whyChooseUs.background",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "whyChooseUs.eyebrow",
+      "source": "components/home/why-choose-us.tsx:46",
+      "kind": "text",
+      "value": "CLEANING PARTNERS",
+      "target": "settings.sections.whyChooseUs.eyebrow",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "whyChooseUs.title",
+      "source": "components/home/why-choose-us.tsx:47",
+      "kind": "text",
+      "value": "Why Choose Us?",
+      "target": "settings.sections.whyChooseUs.title",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "whyChooseUs.description",
+      "source": "components/home/why-choose-us.tsx:48",
+      "kind": "text",
+      "value": "We at Cleaning Partners Ltd strive to meet the high standards our clients expect.",
+      "target": "settings.sections.whyChooseUs.description",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "whyChooseUs.features",
+      "source": "components/home/why-choose-us.tsx:5",
+      "kind": "list",
+      "value": "4",
+      "target": "settings.sections.whyChooseUs.features",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ],
+      "array": "features"
+    },
+    {
+      "id": "whyChooseUs.features.title",
+      "source": "components/home/why-choose-us.tsx:7",
+      "kind": "text",
+      "value": "Skilled Cleaners",
+      "target": "settings.sections.whyChooseUs.features[].title",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "whyChooseUs.features.description",
+      "source": "components/home/why-choose-us.tsx:8",
+      "kind": "text",
+      "value": "Trained, vetted staff who take pride in their work.",
+      "target": "settings.sections.whyChooseUs.features[].description",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "whyChooseUs.features.icon",
+      "source": "components/home/why-choose-us.tsx:9",
+      "kind": "image",
+      "value": "/images/home/feature-skilled-cleaners.png",
+      "target": "settings.sections.whyChooseUs.features[].icon",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "testimonials.eyebrow",
+      "source": "components/home/testimonials.tsx:28",
+      "kind": "text",
+      "value": "TESTIMONIALS",
+      "target": "settings.sections.testimonials.eyebrow",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "testimonials.title",
+      "source": "components/home/testimonials.tsx:28",
+      "kind": "text",
+      "value": "What Our Customers Say",
+      "target": "settings.sections.testimonials.title",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "testimonials",
+      "source": "components/home/testimonials.tsx:3",
+      "kind": "list",
+      "value": "3",
+      "target": "testimonials[].*",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ],
+      "array": "testimonials"
+    },
+    {
+      "id": "testimonials.name",
+      "source": "components/home/testimonials.tsx:5",
+      "kind": "text",
+      "value": "Thomas Murray",
+      "target": "testimonials[].name",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "testimonials.initials",
+      "source": "components/home/testimonials.tsx:6",
+      "kind": "text",
+      "value": "TM",
+      "target": "testimonials[].initials",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "testimonials.quote",
+      "source": "components/home/testimonials.tsx:8",
+      "kind": "richText",
+      "value": "Great service – easy to arrange, friendly people. The drapes look amazing, not a trace from the red wine stain. I am very happy! Will definitely be using their service again and will recommend to friends and family!",
+      "target": "testimonials[].quote",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "testimonials.starsAria",
+      "source": "components/home/testimonials.tsx:45",
+      "kind": "aria",
+      "value": "5 out of 5 stars",
+      "target": "settings.sections.testimonials.starsAria",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "testimonials.stars",
+      "source": "components/home/testimonials.tsx:48",
+      "kind": "text",
+      "value": "★★★★★",
+      "target": "settings.sections.testimonials.stars",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "testimonials.verified",
+      "source": "components/home/testimonials.tsx:63",
+      "kind": "text",
+      "value": "Verified customer",
+      "target": "settings.sections.testimonials.verifiedLabel",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "team.background",
+      "source": "components/home/team.tsx:34",
+      "kind": "image",
+      "value": "/images/home/meet-the-team.png",
+      "target": "settings.sections.team.background",
+      "pages": [
+        "/",
+        "/about"
+      ]
+    },
+    {
+      "id": "team.eyebrow",
+      "source": "components/home/team.tsx:47",
+      "kind": "text",
+      "value": "OUR PEOPLE",
+      "target": "settings.sections.team.eyebrow",
+      "pages": [
+        "/",
+        "/about"
+      ]
+    },
+    {
+      "id": "team.title",
+      "source": "components/home/team.tsx:48",
+      "kind": "text",
+      "value": "Meet The Team",
+      "target": "settings.sections.team.title",
+      "pages": [
+        "/",
+        "/about"
+      ]
+    },
+    {
+      "id": "team.description",
+      "source": "components/home/team.tsx:49",
+      "kind": "text",
+      "value": "The family behind Cleaning Partners, sister company to Security Partners.",
+      "target": "settings.sections.team.description",
+      "pages": [
+        "/",
+        "/about"
+      ]
+    },
+    {
+      "id": "team",
+      "source": "components/home/team.tsx:8",
+      "kind": "list",
+      "value": "3",
+      "target": "team[].*",
+      "pages": [
+        "/",
+        "/about"
+      ],
+      "array": "team"
+    },
+    {
+      "id": "team.name",
+      "source": "components/home/team.tsx:10",
+      "kind": "text",
+      "value": "Michael McDonald",
+      "target": "team[].name",
+      "pages": [
+        "/",
+        "/about"
+      ]
+    },
+    {
+      "id": "team.role",
+      "source": "components/home/team.tsx:11",
+      "kind": "text",
+      "value": "MANAGING DIRECTOR",
+      "target": "team[].role",
+      "pages": [
+        "/",
+        "/about"
+      ]
+    },
+    {
+      "id": "team.bio",
+      "source": "components/home/team.tsx:12",
+      "kind": "text",
+      "value": "Michael saw the opportunity to provide a one stop shop service in cleaning and security, so he set up Cleaning Partners as a sister company to Security Partners.",
+      "target": "team[].bio",
+      "pages": [
+        "/",
+        "/about"
+      ]
+    },
+    {
+      "id": "team.photo",
+      "source": "components/home/team.tsx:6",
+      "kind": "image",
+      "value": "/images/home/team-temp.png",
+      "target": "team[].photo",
+      "pages": [
+        "/",
+        "/about"
+      ]
+    },
+    {
+      "id": "team.photoAlt",
+      "source": "components/home/team.tsx:69",
+      "kind": "alt",
+      "value": "{member.name}",
+      "target": "team[].name",
+      "pages": [
+        "/",
+        "/about"
+      ]
+    },
+    {
+      "id": "home.blog.eyebrow",
+      "source": "components/home/blog.tsx:18",
+      "kind": "text",
+      "value": "TIPS & NEWS",
+      "target": "pages.home.blog.eyebrow",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.blog.title",
+      "source": "components/home/blog.tsx:19",
+      "kind": "text",
+      "value": "From Our Blog",
+      "target": "pages.home.blog.title",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "home.blog.description",
+      "source": "components/home/blog.tsx:20",
+      "kind": "text",
+      "value": "Cleaning tips, hygiene advice and news from the Clean Team.",
+      "target": "pages.home.blog.description",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "id": "microcopy.viewAllPosts.href",
+      "source": "components/home/blog.tsx:24",
+      "kind": "href",
+      "value": "/blog",
+      "target": "settings.microcopy.viewAllPostsHref",
+      "pages": [
+        "/",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "microcopy.viewAllPosts.label",
+      "source": "components/home/blog.tsx:30",
+      "kind": "text",
+      "value": "View All Posts  →",
+      "target": "settings.microcopy.viewAllPosts",
+      "pages": [
+        "/",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "contact.eyebrow",
+      "source": "components/home/contact.tsx:45",
+      "kind": "text",
+      "value": "GET IN TOUCH",
+      "target": "settings.sections.contact.eyebrow",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.title",
+      "source": "components/home/contact.tsx:39",
+      "kind": "text",
+      "value": "Contact Us",
+      "target": "settings.sections.contact.title",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.infoCards",
+      "source": "components/home/contact.tsx:7",
+      "kind": "list",
+      "value": "4",
+      "target": "settings.sections.contact.infoCards",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "array": "infoCards"
+    },
+    {
+      "id": "contact.infoCards.title",
+      "source": "components/home/contact.tsx:9",
+      "kind": "text",
+      "value": "Phone",
+      "target": "settings.sections.contact.infoCards[].title",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.infoCards.icon",
+      "source": "components/home/contact.tsx:10",
+      "kind": "image",
+      "value": "/images/home/phone.svg",
+      "target": "settings.sections.contact.infoCards[].icon",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.infoCards.lines",
+      "source": "components/home/contact.tsx:11",
+      "kind": "list",
+      "value": "3",
+      "target": "settings.sections.contact.infoCards[].lines",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "array": "lines"
+    },
+    {
+      "id": "contact.infoCards.lines.item",
+      "source": "components/home/contact.tsx:12",
+      "kind": "text",
+      "value": "Tel: 057 8697670 Ext 4",
+      "target": "settings.sections.contact.infoCards[].lines[]",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.member.logo",
+      "source": "components/home/contact.tsx:84",
+      "kind": "image",
+      "value": "/images/home/icca-member.png",
+      "target": "settings.sections.contact.memberLogo",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.member.logoAlt",
+      "source": "components/home/contact.tsx:85",
+      "kind": "alt",
+      "value": "ICCA",
+      "target": "settings.sections.contact.memberLogoAlt",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.member.title",
+      "source": "components/home/contact.tsx:93",
+      "kind": "text",
+      "value": "Member of the ICCA",
+      "target": "settings.sections.contact.memberTitle",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.member.subtitle",
+      "source": "components/home/contact.tsx:96",
+      "kind": "text",
+      "value": "Irish Contract Cleaning Association",
+      "target": "settings.sections.contact.memberSubtitle",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.socials",
+      "source": "components/home/contact.tsx:34",
+      "kind": "list",
+      "value": "2",
+      "target": "settings.sections.contact.socials",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "array": "socials"
+    },
+    {
+      "id": "contact.socials.label",
+      "source": "components/home/contact.tsx:35",
+      "kind": "text",
+      "value": "Facebook",
+      "target": "settings.sections.contact.socials[].label",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.socials.icon",
+      "source": "components/home/contact.tsx:35",
+      "kind": "image",
+      "value": "/images/home/facebook.png",
+      "target": "settings.sections.contact.socials[].icon",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.socials.href",
+      "source": "components/home/contact.tsx:35",
+      "kind": "href",
+      "value": "#",
+      "target": "settings.sections.contact.socials[].href",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.socials.aria",
+      "source": "components/home/contact.tsx:104",
+      "kind": "aria",
+      "value": "{social.label}",
+      "target": "settings.sections.contact.socials[].label",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.quoteBox.title",
+      "source": "components/home/contact.tsx:125",
+      "kind": "text",
+      "value": "Need a Quote?",
+      "target": "settings.sections.contact.quoteBox.title",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.quoteBox.body",
+      "source": "components/home/contact.tsx:128",
+      "kind": "text",
+      "value": "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
+      "target": "settings.sections.contact.quoteBox.body",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.quoteBox.cta.href",
+      "source": "components/home/contact.tsx:132",
+      "kind": "href",
+      "value": "/contact#quote",
+      "target": "settings.sections.contact.quoteBox.cta.href",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.quoteBox.cta.label",
+      "source": "components/home/contact.tsx:139",
+      "kind": "text",
+      "value": "Fill the Form",
+      "target": "settings.sections.contact.quoteBox.cta.label",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.override.title",
+      "source": "app/contact/page.tsx:28",
+      "kind": "text",
+      "value": "Ways to Reach Us",
+      "target": "pages.contact.contactTitle",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "map.aria",
+      "source": "components/home/location-map.tsx:77",
+      "kind": "aria",
+      "value": "Map showing Cleaning Partners in Mountmellick, Co. Laois",
+      "target": "settings.sections.map.ariaLabel",
+      "pages": [
+        "/",
+        "/contact"
+      ]
+    },
+    {
+      "id": "map.tilePattern",
+      "source": "components/home/location-map.tsx:62",
+      "kind": "image",
+      "value": "/images/home/tiles/tile-${i + offset}.png",
+      "target": "settings.sections.map.tileImagePattern",
+      "pages": [
+        "/",
+        "/contact"
+      ],
+      "template": true
+    },
+    {
+      "id": "map.href",
+      "source": "components/home/location-map.tsx:88",
+      "kind": "href",
+      "value": "https://www.google.com/maps/search/?api=1&query=Derryguile%2C+Mountmellick%2C+Co.+Laois%2C+R32+YX49",
+      "target": "settings.sections.map.href",
+      "pages": [
+        "/",
+        "/contact"
+      ]
+    },
+    {
+      "id": "map.marker.logo",
+      "source": "components/home/location-map.tsx:97",
+      "kind": "image",
+      "value": "/images/home/logo.png",
+      "target": "settings.site.logo",
+      "pages": [
+        "/",
+        "/contact"
+      ]
+    },
+    {
+      "id": "map.marker.label",
+      "source": "components/home/location-map.tsx:105",
+      "kind": "text",
+      "value": "Cleaning Partners Ltd.",
+      "target": "settings.sections.map.markerLabel",
+      "pages": [
+        "/",
+        "/contact"
+      ]
+    },
+    {
+      "id": "map.pin",
+      "source": "components/home/location-map.tsx:108",
+      "kind": "image",
+      "value": "/images/home/map-pin.svg",
+      "target": "settings.sections.map.pin",
+      "pages": [
+        "/",
+        "/contact"
+      ]
+    },
+    {
+      "id": "pageHero.defaultImage",
+      "source": "components/home/page-hero.tsx:23",
+      "kind": "image",
+      "value": "/images/home/hero.png",
+      "target": "settings.site.defaultHeroImage",
+      "pages": [
+        "/about",
+        "/contact"
+      ]
+    },
+    {
+      "id": "pageHero.breadcrumbAria",
+      "source": "components/home/page-hero.tsx:44",
+      "kind": "aria",
+      "value": "Breadcrumb",
+      "target": "settings.microcopy.breadcrumbAria",
+      "pages": [
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "pageHero.breadcrumbHome.label",
+      "source": "components/home/page-hero.tsx:49",
+      "kind": "text",
+      "value": "Home",
+      "target": "settings.navigation.breadcrumbHome",
+      "pages": [
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "pageHero.breadcrumbHome.href",
+      "source": "components/home/page-hero.tsx:49",
+      "kind": "href",
+      "value": "/",
+      "target": "settings.navigation.breadcrumbHomeHref",
+      "pages": [
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "about.hero.crumb",
+      "source": "app/about/page.tsx:28",
+      "kind": "text",
+      "value": "About",
+      "target": "pages.about.hero.crumb",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.hero.title",
+      "source": "app/about/page.tsx:29",
+      "kind": "text",
+      "value": "About Us",
+      "target": "pages.about.hero.title",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.hero.description",
+      "source": "app/about/page.tsx:30",
+      "kind": "text",
+      "value": "We at Cleaning Partners Ltd strive to meet the high standards our clients expect.",
+      "target": "pages.about.hero.description",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.imageA",
+      "source": "components/about/our-story.tsx:24",
+      "kind": "image",
+      "value": "/images/home/cleaning-the-counter.png",
+      "target": "pages.about.story.imageA",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.imageAAlt",
+      "source": "components/about/our-story.tsx:25",
+      "kind": "alt",
+      "value": "Cleaner wiping down a bathroom counter",
+      "target": "pages.about.story.imageAAlt",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.imageB",
+      "source": "components/about/our-story.tsx:34",
+      "kind": "image",
+      "value": "/images/home/vacuuming.png",
+      "target": "pages.about.story.imageB",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.imageBAlt",
+      "source": "components/about/our-story.tsx:35",
+      "kind": "alt",
+      "value": "Cleaner vacuuming an office",
+      "target": "pages.about.story.imageBAlt",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.eyebrow",
+      "source": "components/about/our-story.tsx:50",
+      "kind": "text",
+      "value": "WHO WE ARE",
+      "target": "pages.about.story.eyebrow",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.title",
+      "source": "components/about/our-story.tsx:56",
+      "kind": "text",
+      "value": "About Cleaning Partners",
+      "target": "pages.about.story.title",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.paragraphs",
+      "source": "components/about/our-story.tsx:6",
+      "kind": "list",
+      "value": "3",
+      "target": "pages.about.story.paragraphs",
+      "pages": [
+        "/about"
+      ],
+      "array": "paragraphs"
+    },
+    {
+      "id": "about.story.paragraphs.item",
+      "source": "components/about/our-story.tsx:7",
+      "kind": "richText",
+      "value": "With combined experience of over fifteen years, our objective has always been to provide a first-class service to all our customers. Since our establishment, we have greatly expanded and are continuously growing our customer base.",
+      "target": "pages.about.story.paragraphs[]",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.sectorsHeading",
+      "source": "components/about/our-story.tsx:72",
+      "kind": "text",
+      "value": "Sectors we clean in",
+      "target": "pages.about.story.sectorsHeading",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.sectors",
+      "source": "components/about/our-story.tsx:12",
+      "kind": "list",
+      "value": "5",
+      "target": "pages.about.story.sectors",
+      "pages": [
+        "/about"
+      ],
+      "array": "sectors"
+    },
+    {
+      "id": "about.story.sectors.item",
+      "source": "components/about/our-story.tsx:12",
+      "kind": "text",
+      "value": "HSE",
+      "target": "pages.about.story.sectors[]",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.cta.href",
+      "source": "components/about/our-story.tsx:88",
+      "kind": "href",
+      "value": "#contact",
+      "target": "pages.about.story.cta.href",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.story.cta.label",
+      "source": "components/about/our-story.tsx:91",
+      "kind": "text",
+      "value": "Get a Free Quote",
+      "target": "pages.about.story.cta.label",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.stats",
+      "source": "components/about/stats.tsx:4",
+      "kind": "list",
+      "value": "4",
+      "target": "pages.about.stats",
+      "pages": [
+        "/about"
+      ],
+      "array": "stats"
+    },
+    {
+      "id": "about.stats.value",
+      "source": "components/about/stats.tsx:5",
+      "kind": "text",
+      "value": "15+",
+      "target": "pages.about.stats[].value",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "about.stats.label",
+      "source": "components/about/stats.tsx:5",
+      "kind": "text",
+      "value": "Years of combined experience",
+      "target": "pages.about.stats[].label",
+      "pages": [
+        "/about"
+      ]
+    },
+    {
+      "id": "services.hero.crumb",
+      "source": "app/services/page.tsx:26",
+      "kind": "text",
+      "value": "Services",
+      "target": "pages.services.hero.crumb",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.hero.title",
+      "source": "app/services/page.tsx:27",
+      "kind": "text",
+      "value": "Our Services",
+      "target": "pages.services.hero.title",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.hero.description",
+      "source": "app/services/page.tsx:28",
+      "kind": "text",
+      "value": "Cleaning for hospitals, health centres and GP clinics, schools and colleges, offices, shops and homes.",
+      "target": "pages.services.hero.description",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.hero.image",
+      "source": "app/services/page.tsx:29",
+      "kind": "image",
+      "value": "/images/home/cleaning-the-counter.png",
+      "target": "pages.services.hero.image",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.eyebrow",
+      "source": "components/services/services-grid.tsx:17",
+      "kind": "text",
+      "value": "CHECK OUT",
+      "target": "pages.services.grid.eyebrow",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.title",
+      "source": "components/services/services-grid.tsx:23",
+      "kind": "text",
+      "value": "Clean as a Button!",
+      "target": "pages.services.grid.title",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.intro",
+      "source": "components/services/services-grid.tsx:26",
+      "kind": "text",
+      "value": "Professional cleaning tailored to your space, delivered by trained and trusted teams. Prices vary, so every quote is tailored to you.",
+      "target": "pages.services.grid.intro",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.cardIcon",
+      "source": "components/services/services-grid.tsx:42",
+      "kind": "image",
+      "value": "{service.icon}",
+      "target": "services[].icon",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.priceBadge",
+      "source": "components/services/services-grid.tsx:45",
+      "kind": "text",
+      "value": "Prices Vary",
+      "target": "pages.services.grid.priceBadge",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.cardTitle",
+      "source": "components/services/services-grid.tsx:49",
+      "kind": "text",
+      "value": "{service.title}",
+      "target": "services[].title",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.cardSummary",
+      "source": "components/services/services-grid.tsx:52",
+      "kind": "text",
+      "value": "{service.summary}",
+      "target": "services[].summary",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.cardTag",
+      "source": "components/services/services-grid.tsx:60",
+      "kind": "text",
+      "value": "{item}",
+      "target": "services[].tags[]",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.learnMore.href",
+      "source": "components/services/services-grid.tsx:67",
+      "kind": "href",
+      "value": "/services/${service.slug}",
+      "target": "services[].slug",
+      "pages": [
+        "/services"
+      ],
+      "template": true
+    },
+    {
+      "id": "services.grid.learnMore.aria",
+      "source": "components/services/services-grid.tsx:68",
+      "kind": "aria",
+      "value": "Learn more about ${service.title}",
+      "target": "pages.services.grid.learnMoreAria",
+      "pages": [
+        "/services"
+      ],
+      "template": true
+    },
+    {
+      "id": "services.grid.learnMore.label",
+      "source": "components/services/services-grid.tsx:71",
+      "kind": "text",
+      "value": "Learn More  →",
+      "target": "pages.services.grid.learnMore",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.quote.href",
+      "source": "components/services/services-grid.tsx:74",
+      "kind": "href",
+      "value": "#contact",
+      "target": "pages.services.grid.quoteCta.href",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.quote.label",
+      "source": "components/services/services-grid.tsx:81",
+      "kind": "text",
+      "value": "Get A Quote",
+      "target": "pages.services.grid.quoteCta.label",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.help.icon",
+      "source": "components/services/services-grid.tsx:90",
+      "kind": "image",
+      "value": "/images/services/icon-help.svg",
+      "target": "pages.services.grid.helpCard.icon",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.help.title",
+      "source": "components/services/services-grid.tsx:97",
+      "kind": "text",
+      "value": "Not sure what you need?",
+      "target": "pages.services.grid.helpCard.title",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.help.body",
+      "source": "components/services/services-grid.tsx:100",
+      "kind": "text",
+      "value": "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
+      "target": "pages.services.grid.helpCard.body",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.help.cta.href",
+      "source": "components/services/services-grid.tsx:105",
+      "kind": "href",
+      "value": "#contact",
+      "target": "pages.services.grid.helpCard.cta.href",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.help.cta.label",
+      "source": "components/services/services-grid.tsx:112",
+      "kind": "text",
+      "value": "Contact Us",
+      "target": "pages.services.grid.helpCard.cta.label",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.help.call.href",
+      "source": "components/services/services-grid.tsx:115",
+      "kind": "tel",
+      "value": "tel:+353578697670",
+      "target": "pages.services.grid.helpCard.callHref",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "services.grid.help.call.label",
+      "source": "components/services/services-grid.tsx:118",
+      "kind": "text",
+      "value": "Or call 057 8697670 Ext 4",
+      "target": "pages.services.grid.helpCard.callLabel",
+      "pages": [
+        "/services"
+      ]
+    },
+    {
+      "id": "serviceDetail.hero.parent.href",
+      "source": "app/services/[slug]/page.tsx:44",
+      "kind": "href",
+      "value": "/services",
+      "target": "pages.services.detail.breadcrumbHref",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.hero.parent.label",
+      "source": "app/services/[slug]/page.tsx:44",
+      "kind": "text",
+      "value": "Services",
+      "target": "pages.services.detail.breadcrumbLabel",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.hero.crumb",
+      "source": "app/services/[slug]/page.tsx:45",
+      "kind": "text",
+      "value": "{service.title}",
+      "target": "services[].title",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.hero.title",
+      "source": "app/services/[slug]/page.tsx:46",
+      "kind": "text",
+      "value": "{service.title}",
+      "target": "services[].title",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.hero.description",
+      "source": "app/services/[slug]/page.tsx:47",
+      "kind": "text",
+      "value": "{service.heroDescription}",
+      "target": "services[].heroDescription",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.hero.image",
+      "source": "app/services/[slug]/page.tsx:48",
+      "kind": "image",
+      "value": "{service.cover}",
+      "target": "services[].cover",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.cover",
+      "source": "components/services/service-overview.tsx:25",
+      "kind": "image",
+      "value": "{service.cover}",
+      "target": "services[].cover",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.eyebrow",
+      "source": "components/services/service-overview.tsx:38",
+      "kind": "text",
+      "value": "SERVICE OVERVIEW",
+      "target": "pages.services.detail.overviewEyebrow",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.overviewTitle",
+      "source": "components/services/service-overview.tsx:44",
+      "kind": "text",
+      "value": "{service.overviewTitle}",
+      "target": "services[].overviewTitle",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.overview",
+      "source": "components/services/service-overview.tsx:54",
+      "kind": "richText",
+      "value": "{text}",
+      "target": "services[].overview[]",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.includedHeading",
+      "source": "components/services/service-overview.tsx:59",
+      "kind": "text",
+      "value": "What's Included",
+      "target": "pages.services.detail.includedHeading",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.includedItem",
+      "source": "components/services/service-overview.tsx:77",
+      "kind": "text",
+      "value": "{item}",
+      "target": "services[].included[]",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.placesHeading",
+      "source": "components/services/service-overview.tsx:86",
+      "kind": "text",
+      "value": "Where We Clean",
+      "target": "pages.services.detail.placesHeading",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.place",
+      "source": "components/services/service-overview.tsx:94",
+      "kind": "text",
+      "value": "{place}",
+      "target": "services[].places[]",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.sidebarAria",
+      "source": "components/services/service-overview.tsx:102",
+      "kind": "aria",
+      "value": "Our services",
+      "target": "pages.services.detail.sidebarAria",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.sidebarHeading",
+      "source": "components/services/service-overview.tsx:106",
+      "kind": "text",
+      "value": "Our Services",
+      "target": "pages.services.detail.sidebarHeading",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.sidebarItem.href",
+      "source": "components/services/service-overview.tsx:113",
+      "kind": "href",
+      "value": "/services/${item.slug}",
+      "target": "services[].slug",
+      "pages": [
+        "/services/[slug]"
+      ],
+      "template": true
+    },
+    {
+      "id": "serviceDetail.sidebarItem.title",
+      "source": "components/services/service-overview.tsx:122",
+      "kind": "text",
+      "value": "{item.title}",
+      "target": "services[].title",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.checkIcon",
+      "source": "components/services/service-overview.tsx:70",
+      "kind": "image",
+      "value": "/images/services/check.svg",
+      "target": "settings.microcopy.checkIcon",
+      "pages": [
+        "/services/[slug]",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.officeHours.title",
+      "source": "components/services/service-overview.tsx:141",
+      "kind": "text",
+      "value": "Office Hours",
+      "target": "pages.services.detail.officeHours.title",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.officeHours.hours",
+      "source": "components/services/service-overview.tsx:143",
+      "kind": "text",
+      "value": "Mon – Fri: 9am – 6pm",
+      "target": "pages.services.detail.officeHours.hours",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.officeHours.phone.href",
+      "source": "components/services/service-overview.tsx:145",
+      "kind": "tel",
+      "value": "tel:+353858062369",
+      "target": "settings.contact.phone24Href",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "serviceDetail.officeHours.phone.label",
+      "source": "components/services/service-overview.tsx:148",
+      "kind": "text",
+      "value": "24hr contact: (085) 8062369",
+      "target": "settings.contact.phone24Label",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "quoteCard.title",
+      "source": "components/home/quote-card.tsx:8",
+      "kind": "text",
+      "value": "Need a Quote?",
+      "target": "settings.microcopy.quoteCard.title",
+      "pages": [
+        "/services/[slug]",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "quoteCard.body",
+      "source": "components/home/quote-card.tsx:11",
+      "kind": "text",
+      "value": "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
+      "target": "settings.microcopy.quoteCard.body",
+      "pages": [
+        "/services/[slug]",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "quoteCard.tel.href",
+      "source": "components/home/quote-card.tsx:15",
+      "kind": "tel",
+      "value": "tel:+353578697670",
+      "target": "settings.microcopy.quoteCard.telHref",
+      "pages": [
+        "/services/[slug]",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "quoteCard.tel.label",
+      "source": "components/home/quote-card.tsx:18",
+      "kind": "text",
+      "value": "Tel: 057 8697670 Ext 4",
+      "target": "settings.microcopy.quoteCard.telLabel",
+      "pages": [
+        "/services/[slug]",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "quoteCard.cta.href",
+      "source": "components/home/quote-card.tsx:21",
+      "kind": "href",
+      "value": "#contact",
+      "target": "settings.microcopy.quoteCard.cta.href",
+      "pages": [
+        "/services/[slug]",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "quoteCard.cta.label",
+      "source": "components/home/quote-card.tsx:28",
+      "kind": "text",
+      "value": "Get a Free Quote",
+      "target": "settings.microcopy.quoteCard.cta.label",
+      "pages": [
+        "/services/[slug]",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "howItWorks.eyebrow",
+      "source": "components/services/how-it-works.tsx:30",
+      "kind": "text",
+      "value": "HOW IT WORKS",
+      "target": "settings.sections.howItWorks.eyebrow",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "howItWorks.title",
+      "source": "components/services/how-it-works.tsx:36",
+      "kind": "text",
+      "value": "Simple From Start to Finish",
+      "target": "settings.sections.howItWorks.title",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "howItWorks.steps",
+      "source": "components/services/how-it-works.tsx:3",
+      "kind": "list",
+      "value": "3",
+      "target": "settings.sections.howItWorks.steps",
+      "pages": [
+        "/services/[slug]"
+      ],
+      "array": "steps"
+    },
+    {
+      "id": "howItWorks.steps.title",
+      "source": "components/services/how-it-works.tsx:5",
+      "kind": "text",
+      "value": "Get in touch",
+      "target": "settings.sections.howItWorks.steps[].title",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "howItWorks.steps.description",
+      "source": "components/services/how-it-works.tsx:7",
+      "kind": "text",
+      "value": "Call us or fill in the quote form and tell us about your facility.",
+      "target": "settings.sections.howItWorks.steps[].description",
+      "pages": [
+        "/services/[slug]"
+      ]
+    },
+    {
+      "id": "blog.hero.crumb",
+      "source": "app/blog/page.tsx:26",
+      "kind": "text",
+      "value": "Blog",
+      "target": "pages.blog.hero.crumb",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.hero.title",
+      "source": "app/blog/page.tsx:27",
+      "kind": "text",
+      "value": "Our Blog",
+      "target": "pages.blog.hero.title",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.hero.description",
+      "source": "app/blog/page.tsx:28",
+      "kind": "text",
+      "value": "Cleaning tips, hygiene advice and news from the Clean Team.",
+      "target": "pages.blog.hero.description",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.hero.image",
+      "source": "app/blog/page.tsx:29",
+      "kind": "image",
+      "value": "/images/home/vacuuming.png",
+      "target": "pages.blog.hero.image",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.list.allLabel",
+      "source": "components/blog/blog-list.tsx:12",
+      "kind": "text",
+      "value": "All Posts",
+      "target": "pages.blog.allLabel",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.list.filterAria",
+      "source": "components/blog/blog-list.tsx:58",
+      "kind": "aria",
+      "value": "Filter by category",
+      "target": "pages.blog.filterAria",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.list.searchIcon",
+      "source": "components/blog/blog-list.tsx:83",
+      "kind": "image",
+      "value": "/images/blog/search.svg",
+      "target": "settings.microcopy.searchIcon",
+      "pages": [
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "blog.list.searchLabel",
+      "source": "components/blog/blog-list.tsx:89",
+      "kind": "text",
+      "value": "Search articles",
+      "target": "settings.microcopy.searchLabel",
+      "pages": [
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "blog.list.searchPlaceholder",
+      "source": "components/blog/blog-list.tsx:97",
+      "kind": "text",
+      "value": "Search articles…",
+      "target": "settings.microcopy.searchPlaceholder",
+      "pages": [
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "blog.list.featuredLabel",
+      "source": "components/blog/blog-list.tsx:120",
+      "kind": "text",
+      "value": "Featured",
+      "target": "pages.blog.featuredLabel",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.list.readArticle",
+      "source": "components/blog/blog-list.tsx:147",
+      "kind": "text",
+      "value": "Read Article  →",
+      "target": "settings.microcopy.readArticle",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "blog.card.readArticle",
+      "source": "components/blog/post-card.tsx:42",
+      "kind": "text",
+      "value": "Read Article  →",
+      "target": "settings.microcopy.readArticle",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "blog.list.empty",
+      "source": "components/blog/blog-list.tsx:166",
+      "kind": "text",
+      "value": "No articles match your search. Try another term or category.",
+      "target": "pages.blog.emptyState",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.list.paginationAria",
+      "source": "components/blog/blog-list.tsx:170",
+      "kind": "aria",
+      "value": "Pagination",
+      "target": "pages.blog.paginationAria",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.list.prevAria",
+      "source": "components/blog/blog-list.tsx:173",
+      "kind": "aria",
+      "value": "Previous page",
+      "target": "pages.blog.prevAria",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.list.prevGlyph",
+      "source": "components/blog/blog-list.tsx:182",
+      "kind": "text",
+      "value": "←",
+      "target": "pages.blog.prevLabel",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.list.nextAria",
+      "source": "components/blog/blog-list.tsx:201",
+      "kind": "aria",
+      "value": "Next page",
+      "target": "pages.blog.nextAria",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "blog.list.nextGlyph",
+      "source": "components/blog/blog-list.tsx:210",
+      "kind": "text",
+      "value": "→",
+      "target": "pages.blog.nextLabel",
+      "pages": [
+        "/blog"
+      ]
+    },
+    {
+      "id": "article.breadcrumbAria",
+      "source": "components/blog/article.tsx:22",
+      "kind": "aria",
+      "value": "Breadcrumb",
+      "target": "settings.microcopy.breadcrumbAria",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.breadcrumbHome.label",
+      "source": "components/blog/article.tsx:28",
+      "kind": "text",
+      "value": "Home",
+      "target": "settings.navigation.breadcrumbHome",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.breadcrumbHome.href",
+      "source": "components/blog/article.tsx:27",
+      "kind": "href",
+      "value": "/",
+      "target": "settings.navigation.breadcrumbHomeHref",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.breadcrumbBlog.href",
+      "source": "components/blog/article.tsx:33",
+      "kind": "href",
+      "value": "/blog",
+      "target": "pages.blog.article.breadcrumbBlogHref",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.breadcrumbBlog.label",
+      "source": "components/blog/article.tsx:34",
+      "kind": "text",
+      "value": "Blog",
+      "target": "pages.blog.article.breadcrumbBlog",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.header.category",
+      "source": "components/blog/article.tsx:43",
+      "kind": "text",
+      "value": "{post.category}",
+      "target": "articles[].category",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.header.title",
+      "source": "components/blog/article.tsx:60",
+      "kind": "text",
+      "value": "{post.title}",
+      "target": "articles[].title",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.header.authorLogo",
+      "source": "components/blog/article.tsx:15",
+      "kind": "image",
+      "value": "/images/home/cleaning-partners-logo.png",
+      "target": "settings.site.logoLarge",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.header.authorName",
+      "source": "components/blog/article.tsx:73",
+      "kind": "text",
+      "value": "The Clean Team",
+      "target": "pages.blog.article.authorName",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.header.displayDate",
+      "source": "components/blog/article.tsx:76",
+      "kind": "text",
+      "value": "{post.displayDate}",
+      "target": "articles[].displayDate",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.header.readTime",
+      "source": "components/blog/article.tsx:77",
+      "kind": "text",
+      "value": "{post.readTime}",
+      "target": "articles[].readTime",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.header.cover",
+      "source": "components/blog/article.tsx:87",
+      "kind": "image",
+      "value": "{post.cover}",
+      "target": "articles[].cover",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.body.text",
+      "source": "components/blog/article.tsx:103",
+      "kind": "richText",
+      "value": "{block.text}",
+      "target": "articles[].body[].text",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.body.cite",
+      "source": "components/blog/article.tsx:123",
+      "kind": "text",
+      "value": "{block.cite}",
+      "target": "articles[].body[].cite",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.body.checkIcon",
+      "source": "components/blog/article.tsx:134",
+      "kind": "image",
+      "value": "/images/services/check.svg",
+      "target": "settings.microcopy.checkIcon",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.body.checkItem",
+      "source": "components/blog/article.tsx:141",
+      "kind": "text",
+      "value": "{item}",
+      "target": "articles[].body[].items[]",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.tagsLabel",
+      "source": "components/blog/article.tsx:191",
+      "kind": "text",
+      "value": "Tags:",
+      "target": "pages.blog.article.tagsLabel",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.tag",
+      "source": "components/blog/article.tsx:198",
+      "kind": "text",
+      "value": "{tag}",
+      "target": "articles[].tags[]",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.writtenBy",
+      "source": "components/blog/article.tsx:211",
+      "kind": "text",
+      "value": "Written by The Clean Team",
+      "target": "pages.blog.article.writtenBy",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.authorBio",
+      "source": "components/blog/article.tsx:214",
+      "kind": "text",
+      "value": "Cleaning Partners Ltd. Medical, commercial and domestic cleaning from Mountmellick, Co. Laois.",
+      "target": "pages.blog.article.authorBio",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.search.action",
+      "source": "components/blog/article.tsx:223",
+      "kind": "href",
+      "value": "/blog",
+      "target": "pages.blog.article.searchAction",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.search.icon",
+      "source": "components/blog/article.tsx:228",
+      "kind": "image",
+      "value": "/images/blog/search.svg",
+      "target": "settings.microcopy.searchIcon",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.search.label",
+      "source": "components/blog/article.tsx:235",
+      "kind": "text",
+      "value": "Search articles",
+      "target": "settings.microcopy.searchLabel",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.search.placeholder",
+      "source": "components/blog/article.tsx:241",
+      "kind": "text",
+      "value": "Search articles…",
+      "target": "settings.microcopy.searchPlaceholder",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.sidebar.categoriesHeading",
+      "source": "components/blog/article.tsx:246",
+      "kind": "text",
+      "value": "Categories",
+      "target": "pages.blog.article.categoriesHeading",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.sidebar.category",
+      "source": "components/blog/article.tsx:260",
+      "kind": "text",
+      "value": "{category}",
+      "target": "categories[].name",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.sidebar.recentHeading",
+      "source": "components/blog/article.tsx:275",
+      "kind": "text",
+      "value": "Recent Posts",
+      "target": "pages.blog.article.recentHeading",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.sidebar.recentTitle",
+      "source": "components/blog/article.tsx:293",
+      "kind": "text",
+      "value": "{item.title}",
+      "target": "articles[].title",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.sidebar.recentDate",
+      "source": "components/blog/article.tsx:299",
+      "kind": "text",
+      "value": "{item.displayDate}",
+      "target": "articles[].displayDate",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.related.eyebrow",
+      "source": "components/blog/related-posts.tsx:25",
+      "kind": "text",
+      "value": "KEEP READING",
+      "target": "pages.blog.article.related.eyebrow",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.related.title",
+      "source": "components/blog/related-posts.tsx:31",
+      "kind": "text",
+      "value": "Related Articles",
+      "target": "pages.blog.article.related.title",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.related.viewAll.href",
+      "source": "components/blog/related-posts.tsx:35",
+      "kind": "href",
+      "value": "/blog",
+      "target": "settings.microcopy.viewAllPostsHref",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.related.viewAll.label",
+      "source": "components/blog/related-posts.tsx:42",
+      "kind": "text",
+      "value": "View All Posts  →",
+      "target": "settings.microcopy.viewAllPosts",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.share.label",
+      "source": "components/blog/share-links.tsx:26",
+      "kind": "text",
+      "value": "Share:",
+      "target": "pages.blog.article.share.label",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.share.networks",
+      "source": "components/blog/share-links.tsx:3",
+      "kind": "list",
+      "value": "3",
+      "target": "pages.blog.article.share.networks",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "array": "networks"
+    },
+    {
+      "id": "article.share.networks.label",
+      "source": "components/blog/share-links.tsx:5",
+      "kind": "text",
+      "value": "f",
+      "target": "pages.blog.article.share.networks[].label",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.share.networks.name",
+      "source": "components/blog/share-links.tsx:6",
+      "kind": "text",
+      "value": "Facebook",
+      "target": "pages.blog.article.share.networks[].name",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "article.share.networks.url",
+      "source": "components/blog/share-links.tsx:7",
+      "kind": "href",
+      "value": "https://www.facebook.com/sharer/sharer.php?u=${u}",
+      "target": "pages.blog.article.share.networks[].url",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "template": true
+    },
+    {
+      "id": "article.share.aria",
+      "source": "components/blog/share-links.tsx:32",
+      "kind": "aria",
+      "value": "Share on ${network.name}",
+      "target": "pages.blog.article.share.aria",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "template": true
+    },
+    {
+      "id": "contact.page.hero.crumb",
+      "source": "app/contact/page.tsx:24",
+      "kind": "text",
+      "value": "Contact",
+      "target": "pages.contact.hero.crumb",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.page.hero.title",
+      "source": "app/contact/page.tsx:25",
+      "kind": "text",
+      "value": "Contact Us",
+      "target": "pages.contact.hero.title",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.page.hero.description",
+      "source": "app/contact/page.tsx:26",
+      "kind": "text",
+      "value": "Get in touch with the Clean Team for a free, no-obligation quote.",
+      "target": "pages.contact.hero.description",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.email",
+      "source": "components/contact/quote-form.tsx:11",
+      "kind": "text",
+      "value": "info@cleaningpartners.ie",
+      "target": "settings.contact.email",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.steps",
+      "source": "components/contact/quote-form.tsx:13",
+      "kind": "list",
+      "value": "3",
+      "target": "pages.contact.quoteForm.steps",
+      "pages": [
+        "/contact"
+      ],
+      "array": "steps"
+    },
+    {
+      "id": "quoteForm.steps.title",
+      "source": "components/contact/quote-form.tsx:15",
+      "kind": "text",
+      "value": "Send your request",
+      "target": "pages.contact.quoteForm.steps[].title",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.steps.description",
+      "source": "components/contact/quote-form.tsx:16",
+      "kind": "text",
+      "value": "Fill in the form with a few details about your space.",
+      "target": "pages.contact.quoteForm.steps[].description",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.eyebrow",
+      "source": "components/contact/quote-form.tsx:94",
+      "kind": "text",
+      "value": "FREE QUOTE",
+      "target": "pages.contact.quoteForm.eyebrow",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.title",
+      "source": "components/contact/quote-form.tsx:100",
+      "kind": "text",
+      "value": "Request a Quote",
+      "target": "pages.contact.quoteForm.title",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.intro",
+      "source": "components/contact/quote-form.tsx:103",
+      "kind": "text",
+      "value": "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
+      "target": "pages.contact.quoteForm.intro",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.stepsHeading",
+      "source": "components/contact/quote-form.tsx:110",
+      "kind": "text",
+      "value": "What happens next",
+      "target": "pages.contact.quoteForm.stepsHeading",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.urgent.title",
+      "source": "components/contact/quote-form.tsx:139",
+      "kind": "text",
+      "value": "Need us urgently?",
+      "target": "pages.contact.quoteForm.urgentTitle",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.urgent.href",
+      "source": "components/contact/quote-form.tsx:142",
+      "kind": "tel",
+      "value": "tel:+353858062369",
+      "target": "settings.contact.phone24Href",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.urgent.label",
+      "source": "components/contact/quote-form.tsx:145",
+      "kind": "text",
+      "value": "24hr contact: (085) 8062369",
+      "target": "settings.contact.phone24Label",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.formTitle",
+      "source": "components/contact/quote-form.tsx:156",
+      "kind": "text",
+      "value": "Send us your details",
+      "target": "pages.contact.quoteForm.formTitle",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.name.label",
+      "source": "components/contact/quote-form.tsx:160",
+      "kind": "text",
+      "value": "Full Name",
+      "target": "pages.contact.quoteForm.fields.name.label",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.name.placeholder",
+      "source": "components/contact/quote-form.tsx:166",
+      "kind": "text",
+      "value": "John Murphy",
+      "target": "pages.contact.quoteForm.fields.name.placeholder",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.phone.label",
+      "source": "components/contact/quote-form.tsx:170",
+      "kind": "text",
+      "value": "Phone Number",
+      "target": "pages.contact.quoteForm.fields.phone.label",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.phone.placeholder",
+      "source": "components/contact/quote-form.tsx:177",
+      "kind": "text",
+      "value": "085 000 0000",
+      "target": "pages.contact.quoteForm.fields.phone.placeholder",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.email.label",
+      "source": "components/contact/quote-form.tsx:181",
+      "kind": "text",
+      "value": "Email Address",
+      "target": "pages.contact.quoteForm.fields.email.label",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.email.placeholder",
+      "source": "components/contact/quote-form.tsx:188",
+      "kind": "text",
+      "value": "you@email.com",
+      "target": "pages.contact.quoteForm.fields.email.placeholder",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.service.label",
+      "source": "components/contact/quote-form.tsx:192",
+      "kind": "text",
+      "value": "Service Required",
+      "target": "pages.contact.quoteForm.fields.service.label",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.service.placeholder",
+      "source": "components/contact/quote-form.tsx:203",
+      "kind": "text",
+      "value": "Select a service",
+      "target": "pages.contact.quoteForm.fields.service.placeholder",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.service.option",
+      "source": "components/contact/quote-form.tsx:205",
+      "kind": "text",
+      "value": "{service.title}",
+      "target": "services[].title",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.service.extraOption1",
+      "source": "components/contact/quote-form.tsx:207",
+      "kind": "text",
+      "value": "Domestic Cleaning",
+      "target": "pages.contact.quoteForm.fields.service.extraOption1",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.service.extraOption2",
+      "source": "components/contact/quote-form.tsx:208",
+      "kind": "text",
+      "value": "Other",
+      "target": "pages.contact.quoteForm.fields.service.extraOption2",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.service.fallback",
+      "source": "components/contact/quote-form.tsx:74",
+      "kind": "text",
+      "value": "Not sure",
+      "target": "pages.contact.quoteForm.fields.service.fallback",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.service.chevron",
+      "source": "components/contact/quote-form.tsx:211",
+      "kind": "image",
+      "value": "/images/contact/chevron.svg",
+      "target": "pages.contact.quoteForm.chevron",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.address.label",
+      "source": "components/contact/quote-form.tsx:221",
+      "kind": "text",
+      "value": "Address / Eircode",
+      "target": "pages.contact.quoteForm.fields.address.label",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.address.placeholder",
+      "source": "components/contact/quote-form.tsx:226",
+      "kind": "text",
+      "value": "e.g. Mountmellick, R32 YX49",
+      "target": "pages.contact.quoteForm.fields.address.placeholder",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.message.label",
+      "source": "components/contact/quote-form.tsx:231",
+      "kind": "text",
+      "value": "Tell us about your space",
+      "target": "pages.contact.quoteForm.fields.message.label",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.message.placeholder",
+      "source": "components/contact/quote-form.tsx:235",
+      "kind": "text",
+      "value": "Type of building, size, how often you need cleaning…",
+      "target": "pages.contact.quoteForm.fields.message.placeholder",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.consent",
+      "source": "components/contact/quote-form.tsx:247",
+      "kind": "text",
+      "value": "I agree to be contacted about my enquiry.",
+      "target": "settings.consent.quoteForm.label",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.submit",
+      "source": "components/contact/quote-form.tsx:258",
+      "kind": "text",
+      "value": "Send Request",
+      "target": "pages.contact.quoteForm.submitLabel",
+      "pages": [
+        "/contact"
+      ]
+    },
+    {
+      "id": "quoteForm.mailSubject",
+      "source": "components/contact/quote-form.tsx:80",
+      "kind": "text",
+      "value": "Quote request from ${value(\"name\")}",
+      "target": "pages.contact.quoteForm.mailSubject",
+      "pages": [
+        "/contact"
+      ],
+      "template": true
+    },
+    {
+      "id": "quoteForm.sent",
+      "source": "components/contact/quote-form.tsx:269",
+      "kind": "text",
+      "value": "Your email app should open with your request. If it doesn't, email us at ${EMAIL}.",
+      "target": "pages.contact.quoteForm.sentMessage",
+      "pages": [
+        "/contact"
+      ],
+      "template": true
+    },
+    {
+      "id": "services",
+      "source": "lib/services.ts:19",
+      "kind": "list",
+      "value": "5",
+      "target": "services[].*",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ],
+      "array": "services"
+    },
+    {
+      "id": "services.slug",
+      "source": "lib/services.ts:21",
+      "kind": "text",
+      "value": "medical-cleaning",
+      "target": "services[].slug",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.title",
+      "source": "lib/services.ts:22",
+      "kind": "text",
+      "value": "Medical Cleaning",
+      "target": "services[].title",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.icon",
+      "source": "lib/services.ts:23",
+      "kind": "image",
+      "value": "/images/services/icon-medical.svg",
+      "target": "services[].icon",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.cover",
+      "source": "lib/services.ts:24",
+      "kind": "image",
+      "value": "/images/home/cleaning-the-counter.png",
+      "target": "services[].cover",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.summary",
+      "source": "lib/services.ts:26",
+      "kind": "text",
+      "value": "We understand the importance of the high standard of cleaning required within hospitals and health centres. We currently clean in a number of HSE Health Centres, Primary Care Centres and GP clinics.",
+      "target": "services[].summary",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.tags",
+      "source": "lib/services.ts:27",
+      "kind": "list",
+      "value": "3",
+      "target": "services[].tags",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ],
+      "array": "tags"
+    },
+    {
+      "id": "services.tags.item",
+      "source": "lib/services.ts:27",
+      "kind": "text",
+      "value": "Daily cleaning",
+      "target": "services[].tags[]",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.heroDescription",
+      "source": "lib/services.ts:29",
+      "kind": "text",
+      "value": "Hygienic, high-standard cleaning for hospitals, HSE health centres, primary care centres and GP clinics.",
+      "target": "services[].heroDescription",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.overviewTitle",
+      "source": "lib/services.ts:30",
+      "kind": "text",
+      "value": "Cleaning to Healthcare Standards",
+      "target": "services[].overviewTitle",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.overview",
+      "source": "lib/services.ts:31",
+      "kind": "list",
+      "value": "2",
+      "target": "services[].overview",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ],
+      "array": "overview"
+    },
+    {
+      "id": "services.overview.item",
+      "source": "lib/services.ts:32",
+      "kind": "richText",
+      "value": "We at Cleaning Partners understand the importance of the high standard of cleaning required within hospitals and health centres. We currently clean in a number of HSE Health Centres, Primary Care Centres and GP clinics.",
+      "target": "services[].overview[]",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.included",
+      "source": "lib/services.ts:35",
+      "kind": "list",
+      "value": "6",
+      "target": "services[].included",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ],
+      "array": "included"
+    },
+    {
+      "id": "services.included.item",
+      "source": "lib/services.ts:36",
+      "kind": "text",
+      "value": "Daily cleaning of clinical and public areas",
+      "target": "services[].included[]",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "services.places",
+      "source": "lib/services.ts:43",
+      "kind": "list",
+      "value": "4",
+      "target": "services[].places",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ],
+      "array": "places"
+    },
+    {
+      "id": "services.places.item",
+      "source": "lib/services.ts:44",
+      "kind": "text",
+      "value": "Hospitals",
+      "target": "services[].places[]",
+      "pages": [
+        "/services",
+        "/services/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "articles",
+      "source": "lib/blog-posts.ts:21",
+      "kind": "list",
+      "value": "7",
+      "target": "articles[].*",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ],
+      "array": "blogPosts"
+    },
+    {
+      "id": "articles.slug",
+      "source": "lib/blog-posts.ts:23",
+      "kind": "text",
+      "value": "deep-cleaning-vs-regular-cleaning-what-your-business-needs",
+      "target": "articles[].slug",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.title",
+      "source": "lib/blog-posts.ts:24",
+      "kind": "text",
+      "value": "Deep Cleaning vs Regular Cleaning: What Your Business Needs",
+      "target": "articles[].title",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.excerpt",
+      "source": "lib/blog-posts.ts:26",
+      "kind": "text",
+      "value": "Daily and weekly cleaning keeps things tidy, but a deep clean reaches the places regular visits miss. Here is how to plan both around your business.",
+      "target": "articles[].excerpt",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.category",
+      "source": "lib/blog-posts.ts:27",
+      "kind": "text",
+      "value": "Commercial",
+      "target": "articles[].category",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.date",
+      "source": "lib/blog-posts.ts:28",
+      "kind": "text",
+      "value": "2026-09-28",
+      "target": "articles[].date",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.displayDate",
+      "source": "lib/blog-posts.ts:29",
+      "kind": "text",
+      "value": "28 Sep 2026",
+      "target": "articles[].displayDate",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.cover",
+      "source": "lib/blog-posts.ts:30",
+      "kind": "image",
+      "value": "/images/home/hero.png",
+      "target": "articles[].cover",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.readTime",
+      "source": "lib/blog-posts.ts:31",
+      "kind": "text",
+      "value": "6 min read",
+      "target": "articles[].readTime",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.tags",
+      "source": "lib/blog-posts.ts:43",
+      "kind": "list",
+      "value": "3",
+      "target": "articles[].tags",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "array": "tags"
+    },
+    {
+      "id": "articles.tags.item",
+      "source": "lib/blog-posts.ts:43",
+      "kind": "text",
+      "value": "Office Cleaning",
+      "target": "articles[].tags[]",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.body",
+      "source": "lib/blog-posts.ts:44",
+      "kind": "list",
+      "value": "15",
+      "target": "articles[].body",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "array": "body"
+    },
+    {
+      "id": "articles.body.type",
+      "source": "lib/blog-posts.ts:46",
+      "kind": "text",
+      "value": "lead",
+      "target": "articles[].body[].type",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.body.text",
+      "source": "lib/blog-posts.ts:47",
+      "kind": "richText",
+      "value": "A clean office is about more than appearances. It shapes how your team feels at work, how visitors see your business and how quickly coughs and colds spread around the building. Here are five signs it's time to call in the professionals.",
+      "target": "articles[].body[].text",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.body.cite",
+      "source": "lib/blog-posts.ts:67",
+      "kind": "text",
+      "value": "The Clean Team",
+      "target": "articles[].body[].cite",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "articles.body.items",
+      "source": "lib/blog-posts.ts:89",
+      "kind": "list",
+      "value": "4",
+      "target": "articles[].body[].items",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "array": "items"
+    },
+    {
+      "id": "articles.body.items.item",
+      "source": "lib/blog-posts.ts:90",
+      "kind": "text",
+      "value": "Daily or weekly cleaning of office space",
+      "target": "articles[].body[].items[]",
+      "pages": [
+        "/blog/[slug]"
+      ]
+    },
+    {
+      "id": "categories",
+      "source": "lib/blog-posts.ts:154",
+      "kind": "list",
+      "value": "6",
+      "target": "categories[].*",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ],
+      "array": "blogCategories"
+    },
+    {
+      "id": "categories.name",
+      "source": "lib/blog-posts.ts:155",
+      "kind": "text",
+      "value": "Medical",
+      "target": "categories[].name",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ]
+    }
+  ]
+}
