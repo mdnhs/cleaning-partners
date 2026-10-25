@@ -317,6 +317,8 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
 
   - **Branding map extension (Phase 1).** Every `sp`-prefixed identifier becomes `cp`: internal headers `x-sp-*` → `x-cp-*`; events `sp:consent` / `sp:navigate` → `cp:*`; cookie and storage keys `sp_consent` / `sp_attribution` → `cp_*`; window and global names `__sp*` → `__cp*`. The CP dev Postgres port is **5434**, because 5433 is taken locally. `tests/unit/branding.test.ts` forbids all of these.
 
+  - **Phase 1 outcome.** `instrumentation.ts` moves from Task 1.5 to Task 5.4 (phase-01 R5). The public route-group move (`app/*` → `app/(site)/*`) moves from Task 3.4 to Task 2.5a: Next allows a separate `/admin` root layout only when there is no `app/layout.tsx`. Task 3.4 keeps only the props-driven work. The CI `image` smoke job is deferred to Task 11.4.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.
