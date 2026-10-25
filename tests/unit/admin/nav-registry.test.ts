@@ -95,6 +95,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
 
   it("permissionFor resolves exact, nested and unknown paths", () => {
     expect(permissionFor("/admin")).toBeNull()
+    expect(permissionFor("/admin/blog/new")).toEqual({ article: ["read"] })
     expect(permissionFor("/admin/blog/0192a")).toEqual({
       article: ["read"],
     })

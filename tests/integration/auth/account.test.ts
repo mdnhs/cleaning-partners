@@ -9,6 +9,7 @@ import { auditLog, sessions, twoFactors, users } from "@/server/db/schema"
 
 import { resetDb } from "../db"
 import {
+  adminRequest,
   authPost,
   cookiesFrom,
   createUser,
@@ -247,6 +248,7 @@ describe("account security (Task 2.6)", () => {
       "/list-sessions": null,
       "/list-accounts": null,
     }
+    const GET_PATHS = new Set(["/list-sessions", "/list-accounts"])
 
     it("covers every guarded path, including the probing ones", () => {
       expect([...SELF_SERVICE_PATHS].sort()).toEqual(Object.keys(BODIES).sort())
@@ -259,6 +261,24 @@ describe("account security (Task 2.6)", () => {
         "/list-accounts",
       ])
         expect(SELF_SERVICE_PATHS.has(path)).toBe(true)
+    })
+
+    it.each([...SELF_SERVICE_PATHS])("%s → 403", async (path) => {
+      const admin = await signedInUser(["admin"])
+      const target = await createUser({ roles: ["editor"] })
+      const start = await adminRequest(`/users/${target.id}/impersonate`, {
+        cookie: admin.cookie,
+        method: "POST",
+      })
+      expect(start.status).toBe(200)
+      const cookie = mergeCookies(admin.cookie, start)
+      const res = GET_PATHS.has(path)
+        ? await app.request(`/api/auth${path}`, { headers: { cookie } })
+        : await authPost(path, BODIES[path], cookie)
+      expect(res.status).toBe(403)
+      expect((await res.json()).message).toBe(
+        "Account settings are disabled while impersonating"
+      )
     })
 
     it("the same user's own session is not affected", async () => {
@@ -308,5 +328,19 @@ describe("final review M1/M3/M4", () => {
     expect((await read())?.user.id).toBe(user.id)
     await getDb().delete(sessions).where(eq(sessions.userId, user.id))
     expect(await read()).toBeNull()
+  })
+
+  it("M4: list-sessions is refused while impersonating", async () => {
+    const admin = await signedInUser(["admin"])
+    const target = await createUser({ roles: ["editor"] })
+    const start = await adminRequest(`/users/${target.id}/impersonate`, {
+      cookie: admin.cookie,
+      method: "POST",
+    })
+    expect(start.status).toBe(200)
+    const res = await app.request("/api/auth/list-sessions", {
+      headers: { cookie: mergeCookies(admin.cookie, start) },
+    })
+    expect(res.status).toBe(403)
   })
 })

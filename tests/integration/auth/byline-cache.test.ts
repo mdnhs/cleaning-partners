@@ -8,7 +8,12 @@ vi.mock("next/cache", () => ({
 }))
 
 import { resetDb } from "../db"
-import { authPost, signedInUser } from "../helpers/auth"
+import {
+  adminRequest,
+  authPost,
+  createUser,
+  signedInUser,
+} from "../helpers/auth"
 
 beforeEach(async () => {
   await resetDb()
@@ -29,5 +34,35 @@ describe("bylines come from user profiles (spec §5.3, ledger carry)", () => {
     )
     expect(res.status).toBe(200)
     expect(expiredArticles()).toEqual([["articles", { expire: 0 }]])
+  })
+
+  it("an admin renaming a user expires the cached articles", async () => {
+    const admin = await signedInUser(["admin"])
+    const target = await createUser({ roles: ["author"] })
+    revalidateTag.mockClear()
+    const res = await adminRequest(`/users/${target.id}`, {
+      cookie: admin.cookie,
+      method: "PATCH",
+      json: { title: "Managing Director" },
+    })
+    expect(res.status).toBe(200)
+    expect(expiredArticles()).toEqual([["articles", { expire: 0 }]])
+  })
+
+  it("role changes and bans do not touch the public cache", async () => {
+    const admin = await signedInUser(["admin"])
+    const target = await createUser({ roles: ["author"] })
+    revalidateTag.mockClear()
+    await adminRequest(`/users/${target.id}/roles`, {
+      cookie: admin.cookie,
+      method: "PUT",
+      json: { roles: ["editor"] },
+    })
+    await adminRequest(`/users/${target.id}/ban`, {
+      cookie: admin.cookie,
+      method: "POST",
+      json: {},
+    })
+    expect(expiredArticles()).toEqual([])
   })
 })

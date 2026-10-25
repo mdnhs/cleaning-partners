@@ -5,6 +5,7 @@ import { InviteEmail } from "@/emails/invite"
 import { mailer } from "@/server/lib/mailer"
 
 import { resetDb } from "../db"
+import { adminRequest, signedInUser } from "../helpers/auth"
 import { assertMailpitUp, deleteMail, waitForMail } from "../helpers/mailpit"
 import { configureSmtp } from "../helpers/smtp"
 
@@ -46,6 +47,24 @@ describe("SMTP mailer against Mailpit (master 7.2)", () => {
     expect(mail.ReplyTo.map((a) => a.Address)).toEqual(["visitor@example.test"])
     expect(mail.HTML).toContain(`href="${LINK}"`)
     expect(mail.Text).toContain("Hi Dinn Rí,")
+  })
+  it("invite email arrives in Mailpit and the API reports emailDelivered:true", async () => {
+    await configureSmtp()
+    const { cookie } = await signedInUser(["admin"])
+    const email = unique("invitee")
+    const res = await adminRequest("/users/invite", {
+      cookie,
+      method: "POST",
+      json: { email, name: "Ivy Invitee", roles: ["viewer"] },
+    })
+    expect(res.status).toBe(201)
+    expect(
+      ((await res.json()) as { emailDelivered: boolean }).emailDelivered
+    ).toBe(true)
+    const mail = await waitForMail(email, {
+      subject: "You're invited to the Cleaning Partners admin",
+    })
+    expect(mail.Text).toContain("Hi Ivy Invitee,")
   })
 
   it("without SMTP settings (NODE_ENV=test) nothing is sent: delivered:false + logged", async () => {
