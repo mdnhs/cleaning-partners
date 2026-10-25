@@ -37,7 +37,7 @@ describe("deriveKey", () => {
     })
 
     it("defaults to BETTER_AUTH_SECRET from the env", () => {
-      vi.stubEnv("DATABASE_URL", "postgres://cp:cp@127.0.0.1:5433/cp_test")
+      vi.stubEnv("DATABASE_URL", "postgres://cp:cp@127.0.0.1:5434/cp_test")
       vi.stubEnv("BETTER_AUTH_SECRET", SECRET)
       vi.stubEnv("BETTER_AUTH_URL", "http://localhost:3000")
       expect(deriveKey("preview").equals(deriveKey("preview", SECRET))).toBe(

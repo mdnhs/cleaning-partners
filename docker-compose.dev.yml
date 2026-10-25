@@ -1,0 +1,37 @@
+# Local development services (never deployed).
+#   pnpm db:up    start Postgres 17 + Mailpit and wait until healthy
+#   pnpm db:down  stop them (data stays in the pgdata volume)
+# Databases: cp_dev (next dev, scripts), cp_test (Vitest integration),
+# cp_e2e (Playwright E2E). Mailpit: SMTP localhost:1026, UI http://localhost:8026.
+name: cleaning-partners-dev
+
+services:
+  postgres:
+    # Same patch release as CI (ci.yml postgres services).
+    image: postgres:17.11
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cp
+      POSTGRES_PASSWORD: cp
+      POSTGRES_DB: cp_dev
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/10-databases.sql:ro
+    healthcheck:
+      # TCP check: only passes after the init scripts ran and the server restarted.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U cp -d cp_dev"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:v1.31.4
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1026:1025"
+      - "127.0.0.1:8026:8025"
+
+volumes:
+  pgdata:

@@ -4,7 +4,7 @@ import { getEnv, parseEnv } from "@/server/env"
 import { getSiteEnv } from "@/server/lib/site-env"
 
 const VALID = {
-  DATABASE_URL: "postgres://cp:cp@127.0.0.1:5433/cp_dev",
+  DATABASE_URL: "postgres://cp:cp@127.0.0.1:5434/cp_dev",
   BETTER_AUTH_SECRET: "a".repeat(32),
   BETTER_AUTH_URL: "https://staging.example.ie",
   NODE_ENV: "production",
