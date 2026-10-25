@@ -1,5 +1,5 @@
-// Every public URL that must stay pixel-identical. Literal on purpose:
-// lib/services.ts and lib/blog-posts.ts are deleted in Phase 3.
+// Every public URL that must stay pixel-identical (baselines in
+// tests/visual/__screenshots__). Literal on purpose: the list is the contract.
 export const PUBLIC_URLS = [
   "/",
   "/about",
