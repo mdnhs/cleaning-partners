@@ -1,6 +1,7 @@
 import "server-only"
 
-import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core"
+import { sql } from "drizzle-orm"
+import { check, integer, pgTable, text, uuid } from "drizzle-orm/pg-core"
 
 import { id, timestamps } from "./_shared"
 import { media } from "./media"
@@ -43,3 +44,17 @@ export const groupCompanies = pgTable("group_companies", {
   sortOrder: integer("sort_order").notNull().default(0),
   ...timestamps(),
 })
+
+export const testimonials = pgTable(
+  "testimonials",
+  {
+    id: id(),
+    name: text("name").notNull(),
+    initials: text("initials").notNull(),
+    quote: text("quote").notNull(),
+    rating: integer("rating").notNull().default(5),
+    sortOrder: integer("sort_order").notNull().default(0),
+    ...timestamps(),
+  },
+  (t) => [check("testimonials_rating_check", sql`${t.rating} between 1 and 5`)]
+)
