@@ -113,7 +113,7 @@ describe("parseEnv", () => {
 
   it("refuses the .env.example secret or any change-me placeholder in production", () => {
     for (const secret of [
-      "dev-only-secret-change-me-0123456789abcdef",
+      "dev-only-cp-secret-change-me-0123456789abcdef",
       "my-own-CHANGE-ME-secret-0123456789abcdef",
     ]) {
       let message = ""
@@ -132,9 +132,9 @@ describe("parseEnv", () => {
       parseEnv({
         ...VALID,
         NODE_ENV: "development",
-        BETTER_AUTH_SECRET: "dev-only-secret-change-me-0123456789abcdef",
+        BETTER_AUTH_SECRET: "dev-only-cp-secret-change-me-0123456789abcdef",
       }).BETTER_AUTH_SECRET
-    ).toBe("dev-only-secret-change-me-0123456789abcdef")
+    ).toBe("dev-only-cp-secret-change-me-0123456789abcdef")
   })
 
   it("names NODE_ENV when it is not development, production or test", () => {

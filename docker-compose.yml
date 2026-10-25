@@ -14,11 +14,12 @@
 #     POSTGRES_PASSWORD   the `cp` role's password (used on the volume's first start only)
 #   Input-only, read by the entrypoint scripts and unset before the app starts:
 #     CP_R2_ACCOUNT_ID, CP_R2_ACCESS_KEY_ID, CP_R2_SECRET_ACCESS_KEY, CP_R2_BUCKET,
-#     CP_R2_PREFIX        save Settings ▸ Integrations ▸ R2 once (folder, default cp)
+#     CP_R2_PREFIX        (added in Task 11.1; not active yet) save Settings ▸ Integrations ▸ R2 once (folder, default cp)
 #     CP_IMPORT_KEY, CP_IMPORT_SOURCE_SECRET  one-shot import of local data
-# The container applies pending migrations on start, imports CP_IMPORT_KEY
-# once, seeds the site content when the database has no pages yet and saves
-# R2 from CP_R2_* when it is not saved (docker-entrypoint.sh).
+# The container applies pending migrations on start. (Added in Task 11.1; not
+# active yet:) it also imports CP_IMPORT_KEY once, seeds the site content when
+# the database has no pages yet and saves R2 from CP_R2_* when it is not saved
+# (docker-entrypoint.sh).
 #
 # Run exactly ONE app container (replicas: 1; do not scale this service in
 # Dokploy). The 'use cache' store and the scheduler's cache expiry are per
@@ -42,6 +43,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in Dokploy}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in Dokploy}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:?set BETTER_AUTH_URL in Dokploy}
+      # (added in Task 11.1; not active yet)
       CP_R2_ACCOUNT_ID: ${CP_R2_ACCOUNT_ID:-}
       CP_R2_ACCESS_KEY_ID: ${CP_R2_ACCESS_KEY_ID:-}
       CP_R2_SECRET_ACCESS_KEY: ${CP_R2_SECRET_ACCESS_KEY:-}

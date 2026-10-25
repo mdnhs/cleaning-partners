@@ -53,3 +53,7 @@ playwright-report/
 
 # bundled ops scripts (Docker builder output)
 /scripts/dist/
+
+# worktrees and e2e state
+.claude/worktrees/
+/tests/e2e/.state/

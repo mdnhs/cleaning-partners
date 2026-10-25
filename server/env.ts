@@ -35,7 +35,7 @@ const isInsecureRemote = (value: string) => {
 }
 
 /** The .env.example value (and any "change-me" variant) must never sign production cookies. */
-const EXAMPLE_SECRET = "dev-only-secret-change-me-0123456789abcdef"
+const EXAMPLE_SECRET = "dev-only-cp-secret-change-me-0123456789abcdef"
 const isPlaceholderSecret = (value: string) =>
   value === EXAMPLE_SECRET || /change-?me/i.test(value)
 

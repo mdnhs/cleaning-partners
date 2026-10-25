@@ -40,7 +40,8 @@ jobs:
       - run: pnpm exec next typegen
       - run: pnpm typecheck
       - run: pnpm test:unit
-      - run: pnpm exec vitest run --project dom
+      # (remove --passWithNoTests once Phase 2 adds dom tests)
+      - run: pnpm exec vitest run --project dom --passWithNoTests
       - run: pnpm audit:deps
 
   integration:

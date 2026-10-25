@@ -188,15 +188,15 @@ function sealWithKey(key: Buffer, plain: string, aad: string): string {
   ].join(":")
 }
 
-// SP's HKDF salt, built so the branding gate does not flag the literal.
-const SP_SALT = ["sp", "v1"].join("/")
+// SP's HKDF salt, used to prove isolation (the single branding-gate allowance for this line).
+const FOREIGN_SALT = "sp/v1"
 
 describe("salt isolation", () => {
   it("does not decrypt a token sealed under SP's salt", () => {
     // HKDF salt is part of CP's isolation from SP (spec §4): same secret, different salt → no decrypt.
     const secret = "x".repeat(32)
-    const spKey = hkdfSync("sha256", secret, SP_SALT, "secrets", 32)
-    const token = sealWithKey(Buffer.from(spKey), "hello", "aad")
+    const foreignKey = hkdfSync("sha256", secret, FOREIGN_SALT, "secrets", 32)
+    const token = sealWithKey(Buffer.from(foreignKey), "hello", "aad")
     expect(() => decryptSecret(token, "aad", secret)).toThrow(
       /Unable to decrypt secret/
     )

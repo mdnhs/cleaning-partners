@@ -20,12 +20,30 @@ const FORBIDDEN = [
   /\bsp_(consent|attribution)\b/,
   /__sp[A-Z]/,
   /Security Partners/,
+  /\bSP_[A-Z]/,
+  /\bsp[-.][a-z]/,
+  /\b[Ss]p[A-Z][a-z]/,
+  /["']sp\/?["']/,
+  /\/\/sp:/,
 ]
 // Whole files that may cite SP (the reference repo, or the sister company as content).
 const FILE_ALLOW = [
   /^docs\/superpowers\//,
   /^docs\/brief(-inventory\.json|\.md)$/,
   /^tests\/unit\/branding\.test\.ts$/,
+]
+// Single-line allowances: file + exact line content.
+const FILE_LINE_ALLOW: { file: RegExp; line: RegExp }[] = [
+  // The guard test must name SP's test database to prove it is refused.
+  {
+    file: /^tests\/unit\/test-db-guard\.test\.ts$/,
+    line: /^it\.each\(\["sp_test", "postgres", "cp_dev", "cp_test_old"\]\)\($/,
+  },
+  // SP's HKDF salt, used to prove CP's isolation from SP.
+  {
+    file: /^tests\/unit\/crypto\.test\.ts$/,
+    line: /^const FOREIGN_SALT = "sp\/v1"$/,
+  },
 ]
 // Lines where "Security Partners" is CP content (group companies, team bio).
 const LINE_ALLOW = [
@@ -44,9 +62,16 @@ function skipFile(file: string): boolean {
   return file === "pnpm-lock.yaml"
 }
 
-export function findHits(text: string): { line: number; text: string }[] {
+export function findHits(
+  text: string,
+  file = ""
+): { line: number; text: string }[] {
   const hits: { line: number; text: string }[] = []
   text.split("\n").forEach((line, i) => {
+    if (
+      FILE_LINE_ALLOW.some((a) => a.file.test(file) && a.line.test(line.trim()))
+    )
+      return
     const lineAllowed = LINE_ALLOW.some((re) => re.test(line))
     for (const re of FORBIDDEN) {
       if (!re.test(line)) continue
@@ -85,7 +110,7 @@ describe("branding gate", () => {
         continue // deleted in the working tree
       }
       if (text.includes("\0")) continue
-      for (const hit of findHits(text))
+      for (const hit of findHits(text, file))
         failures.push(`${file}:${hit.line}: ${hit.text}`)
     }
     expect(failures, failures.join("\n")).toEqual([])
@@ -97,5 +122,41 @@ describe("branding gate", () => {
     )
     expect(hits).toHaveLength(1)
     expect(hits[0].line).toBe(1)
+  })
+
+  it("flags each new SP pattern", () => {
+    for (const line of [
+      "const k = process.env.SP_ADMIN_LIGHT",
+      'import x from "sp-core"',
+      "host sp.example",
+      "const spFoo = 1",
+      'cookie: "sp"',
+      'salt: "sp/"',
+      "//sp:thing",
+    ])
+      expect(findHits(line), line).toHaveLength(1)
+  })
+
+  it("LINE_ALLOW does not excuse a forbidden domain on the same line", () => {
+    const hits = findHits(
+      "sister company to Security Partners, see securitypartnersltd.com"
+    )
+    expect(hits).toHaveLength(1)
+  })
+
+  it("logo allowance does not excuse another forbidden token", () => {
+    const line =
+      '<img src="/images/home/security-partners.png" data-x="SP_ADMIN_LIGHT">'
+    expect(findHits(line)).toHaveLength(1)
+    expect(
+      findHits('<img src="/images/home/security-partners.png">')
+    ).toHaveLength(0)
+  })
+
+  it("FILE_LINE_ALLOW covers only the SP salt line in crypto.test.ts", () => {
+    const salt = 'const FOREIGN_SALT = "sp/v1"'
+    expect(findHits(salt, "tests/unit/crypto.test.ts")).toHaveLength(0)
+    expect(findHits(salt, "tests/unit/other.test.ts")).toHaveLength(1)
+    expect(findHits('x = "sp/v1"', "tests/unit/crypto.test.ts")).toHaveLength(1)
   })
 })

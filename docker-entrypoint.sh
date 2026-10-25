@@ -4,7 +4,7 @@
 # A failed migration exits non-zero: the container stops and Docker's restart
 # policy starts it again, a crash loop until the cause is fixed. The previous
 # container is already gone by then, so read `docker logs` right after a
-# deploy. Later phases add data import, seeding and R2 bootstrap here.
+# deploy. Data import, seeding and R2 bootstrap (added in Task 11.1; not active yet) go here.
 set -eu
 
 echo "[entrypoint] applying database migrations"
