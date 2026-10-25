@@ -16,6 +16,7 @@ import { sameOrigin } from "@/server/api/middleware/same-origin"
 import { getAuth } from "@/server/auth/auth"
 import { auditRoutes } from "@/server/modules/audit/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
+import { mediaFileRoutes, mediaRoutes } from "@/server/modules/media/routes"
 import { pagesRoutes } from "@/server/modules/pages/routes"
 import {
   adminPreviewRoutes,
@@ -34,6 +35,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/users", usersRoutes)
   .route("/search", searchRoutes)
   .route("/pages", pagesRoutes)
+  .route("/media", mediaRoutes)
   .route("/revisions", revisionsRoutes)
   .route("/preview", adminPreviewRoutes)
 export type AdminApi = typeof adminRoutes
@@ -77,6 +79,9 @@ export function createApp() {
 
   // 5. Health
   api.route("/v1/health", healthRoutes)
+
+  // 6. Media files (disk; R2 in Phase 6), public and cacheable (spec §11)
+  api.route("/v1/media/file", mediaFileRoutes)
 
   return api
 }
