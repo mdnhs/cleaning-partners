@@ -177,7 +177,7 @@ The public site is untouched and stays at 0 px.
   - `drizzle.config.ts`
   - `server/db/{client,migrate,like}.ts`
   - `server/db/schema/**` (every SP schema file, R2 for builder-pages)
-  - `server/db/migrations/0000_init.sql` … `0020_remove_newsletter.sql` and `meta/**`, **verbatim**. Do not rebrand SQL comments if that would change checksums; check with SP's migrator whether it hashes files.
+  - `server/db/migrations/0000_init.sql` … `0020_remove_newsletter.sql` and `meta/**`: **verbatim, except that the branding map is applied to data literals and comments**. `0010_theme.sql` seeds preset `"security-partners"`, which becomes `"cleaning-partners"`; `0017_newsletter.sql` copy also gets rebranded. Drizzle records each file's hash in the target DB, and CP's DB is fresh, so editing CP's copies is safe. Never change DDL.
   - `scripts/migrate.ts`
   - `tests/integration/{db,setup,global-setup}.ts`
   - pure `lib/**` type dependencies per R3
