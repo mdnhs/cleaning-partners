@@ -1,28 +1,10 @@
 import type { Metadata } from "next"
-import { Barlow, Geist_Mono, Roboto } from "next/font/google"
 
-import "./globals.css"
+import "../globals.css"
+import { barlow, fontMono, roboto } from "@/app/fonts"
 import { SmoothScroll } from "@/components/motion/smooth-scroll"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
-
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["normal", "italic"],
-  variable: "--font-sans",
-})
-
-const barlow = Barlow({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-  variable: "--font-heading",
-})
-
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-})
 
 export const metadata: Metadata = {
   title: "Cleaning Partners Ltd. | The Clean Team",

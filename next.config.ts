@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   // forbidden() / forbidden.tsx for the admin 403 page (requirePermission).
-  experimental: { authInterrupts: true },
+  experimental: { authInterrupts: true, globalNotFound: true },
   async headers() {
     return [
       { source: "/((?!api/).*)", headers: SECURITY_HEADERS },
