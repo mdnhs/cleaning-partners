@@ -16,6 +16,12 @@ import { sameOrigin } from "@/server/api/middleware/same-origin"
 import { getAuth } from "@/server/auth/auth"
 import { auditRoutes } from "@/server/modules/audit/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
+import { pagesRoutes } from "@/server/modules/pages/routes"
+import {
+  adminPreviewRoutes,
+  previewExitRoutes,
+} from "@/server/modules/preview/routes"
+import { revisionsRoutes } from "@/server/modules/revisions/routes"
 import { searchRoutes } from "@/server/modules/search/routes"
 import { usersRoutes } from "@/server/modules/users/routes"
 
@@ -27,6 +33,9 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/audit", auditRoutes)
   .route("/users", usersRoutes)
   .route("/search", searchRoutes)
+  .route("/pages", pagesRoutes)
+  .route("/revisions", revisionsRoutes)
+  .route("/preview", adminPreviewRoutes)
 export type AdminApi = typeof adminRoutes
 
 /** Builds the API. Mount order follows spec §7. */
@@ -62,6 +71,9 @@ export function createApp() {
     limitAdminBody
   )
   api.route("/v1/admin", adminRoutes)
+
+  // Leaving draft-mode preview needs no session (cookies are cleared).
+  api.route("/v1/preview", previewExitRoutes)
 
   // 5. Health
   api.route("/v1/health", healthRoutes)

@@ -19,7 +19,7 @@
 @source not "../../../templates";
 /* prettier-ignore */
 @source not "../../../components/{about,blog,contact,home,services,motion}";
-@source not "../../../components/theme-provider.tsx";
+@source not "../../../components/{preview-bar,theme-provider}.tsx";
 
 @custom-variant dark (&:is(.dark *));
 

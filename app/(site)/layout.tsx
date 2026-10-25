@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
 import { unstable_rethrow } from "next/navigation"
 import { connection } from "next/server"
+import { Suspense } from "react"
 
 import "../globals.css"
 import { barlow, fontMono, roboto } from "@/app/fonts"
+import { PreviewBar } from "@/components/preview-bar"
 import { SmoothScroll } from "@/components/motion/smooth-scroll"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
@@ -52,6 +54,10 @@ export default function RootLayout({
         </noscript>
         <SmoothScroll />
         <ThemeProvider>{children}</ThemeProvider>
+        {/* Draft-mode only (admins); renders nothing for visitors. */}
+        <Suspense fallback={null}>
+          <PreviewBar />
+        </Suspense>
       </body>
     </html>
   )

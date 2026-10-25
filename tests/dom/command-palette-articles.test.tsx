@@ -45,7 +45,7 @@ beforeEach(() => {
               {
                 type: "article",
                 id: "a1",
-                title: "Key Holding Explained",
+                title: "5 Signs Your Office Needs a Professional Clean",
                 subtitle:
                   "/blog/5-signs-your-office-needs-a-professional-clean",
                 href: "/admin/blog/a1",
@@ -87,7 +87,7 @@ describe("⌘K palette and articles (Phase 5)", () => {
       "key"
     )
     const result = await within(again.dialog).findByRole("option", {
-      name: /Key Holding Explained/,
+      name: /5 Signs Your Office Needs a Professional Clean/,
     })
     expect(result).toHaveTextContent(
       "Article · /blog/5-signs-your-office-needs-a-professional-clean"
