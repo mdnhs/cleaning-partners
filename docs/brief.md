@@ -103,7 +103,7 @@ Constraints:
 - `next build` must pass with no env and no DB.
 - Next.js 16.3.8 as installed; read `node_modules/next/dist/docs/` before writing framework code (AGENTS.md).
 - Deploy target: Dokploy compose app for `cleaning.raynx.ie`, own Postgres 17 service, one replica.
-- Dev services run beside SP's: Postgres on `127.0.0.1:5433`, Mailpit SMTP on `127.0.0.1:1026` and UI on `127.0.0.1:8026`, Playwright port 3200.
+- Dev services run beside SP's: Postgres on `127.0.0.1:5434`, Mailpit SMTP on `127.0.0.1:1026` and UI on `127.0.0.1:8026`, Playwright port 3200.
 - Never push; never merge to `main`.
 
 Dependencies use SP's exact pinned versions.

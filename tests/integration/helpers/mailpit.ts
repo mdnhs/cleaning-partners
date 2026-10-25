@@ -1,6 +1,6 @@
-// Mailpit HTTP API (docker-compose.dev.yml, UI/API on :8025). No "@/"
+// Mailpit HTTP API (docker-compose.dev.yml, UI/API on :8026). No "@/"
 // imports: Playwright specs import this file too.
-export const MAILPIT_URL = process.env.MAILPIT_URL ?? "http://127.0.0.1:8025"
+export const MAILPIT_URL = process.env.MAILPIT_URL ?? "http://127.0.0.1:8026"
 
 export type MailpitAddress = { Name: string; Address: string }
 export type MailpitMessage = {

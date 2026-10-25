@@ -174,7 +174,7 @@ describe("mailer (master 7.2)", () => {
     })
     expect(result).toEqual({ delivered: true })
     expect(createTransport).toHaveBeenCalledWith(DEV_MAILPIT_SMTP)
-    expect(DEV_MAILPIT_SMTP).toMatchObject({ host: "127.0.0.1", port: 1025 })
+    expect(DEV_MAILPIT_SMTP).toMatchObject({ host: "127.0.0.1", port: 1026 })
   })
 
   it("unconfigured under vitest (NODE_ENV=test): not delivered (phase correction)", async () => {

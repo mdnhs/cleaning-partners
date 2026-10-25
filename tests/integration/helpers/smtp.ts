@@ -14,7 +14,7 @@ import { settings } from "@/server/db/schema"
 export async function configureSmtp(values: Partial<SmtpConfig> = {}) {
   const draft: SmtpConfig = {
     host: "127.0.0.1",
-    port: 1025,
+    port: 1026,
     secure: false,
     user: "",
     password: "",

@@ -96,7 +96,7 @@ describe("parseEnv", () => {
     )
     for (const url of [
       "http://localhost:3000",
-      "http://127.0.0.1:3100",
+      "http://127.0.0.1:3200",
       "http://[::1]:3000",
     ])
       expect(parseEnv({ ...VALID, BETTER_AUTH_URL: url }).BETTER_AUTH_URL).toBe(

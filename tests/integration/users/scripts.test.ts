@@ -57,11 +57,11 @@ describe("operator scripts", { timeout: 60_000 }, () => {
 
   it("pnpm demo:seed refuses a non-disposable database unless --allow-production", () => {
     const result = run("demo:seed", ["--password", "demo-password-123"], {
-      DATABASE_URL: "postgres://cp:cp@db.example.com:5432/cleaning",
+      DATABASE_URL: "postgres://cp:cp@db.example.com:5434/cleaning",
     })
     expect(result.status).toBe(1)
     expect(result.stderr).toContain(
-      "Refusing to write seed or demo data to db.example.com:5432/cleaning"
+      "Refusing to write seed or demo data to db.example.com:5434/cleaning"
     )
     expect(result.stderr).not.toContain("cp:cp")
   })

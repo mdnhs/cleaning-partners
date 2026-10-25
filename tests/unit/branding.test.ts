@@ -25,6 +25,11 @@ const FORBIDDEN = [
   /\b[Ss]p[A-Z][a-z]/,
   /["']sp\/?["']/,
   /\/\/sp:/,
+  // SP's dev ports: CP runs beside SP on 5434 / 1026 / 8026 / 3200.
+  /\b(1025|8025|3100)\b/,
+  /:543[23]\b/,
+  // SP palette (lib/theme/sp-admin.ts, presets.ts); CP has its own brand.
+  /#(367318|67bd31|7cc84a|4e9a22|2f5f14|eef6e8|0d1b36|2f6a15|a7d98a|709f53|b7e892|1b3566|071022|13284d|3f6b25|4a7731|1f3318|cfeab8|2751a3|03428f)\b/i,
 ]
 // Whole files that may cite SP (the reference repo, or the sister company as content).
 const FILE_ALLOW = [
@@ -44,6 +49,16 @@ const FILE_LINE_ALLOW: { file: RegExp; line: RegExp }[] = [
     file: /^tests\/unit\/crypto\.test\.ts$/,
     line: /^const FOREIGN_SALT = "sp\/v1"$/,
   },
+  // Pure colour math on a sample hex that happens to be SP's green.
+  {
+    file: /^tests\/unit\/theme\/color\.test\.ts$/,
+    line: /^expect\(formatOklch\(parseColor\("#67bd31"\)!\)\)\.toMatch\($/,
+  },
+  // Container-internal Postgres port in the compose example's DATABASE_URL.
+  {
+    file: /^docker-compose\.yml$/,
+    line: /^# {5}DATABASE_URL {8}postgres:\/\/cp:<POSTGRES_PASSWORD>@cleaning-partners-db:5432\/cp$/,
+  },
 ]
 // Lines where "Security Partners" is CP content (group companies, team bio).
 const LINE_ALLOW = [
@@ -62,6 +77,16 @@ function skipFile(file: string): boolean {
   return file === "pnpm-lock.yaml"
 }
 
+// Compose / CI files may publish "host:container" port mappings. Only the
+// host side is a dev endpoint, so drop the container side before matching.
+const PORT_MAP_FILE =
+  /^(docker-compose[^/]*\.ya?ml|\.github\/workflows\/[^/]+\.ya?ml)$/
+const PORT_MAP = /"((?:\d+\.\d+\.\d+\.\d+:)?\d+):\d+"/g
+
+function maskContainerPorts(line: string, file: string): string {
+  return PORT_MAP_FILE.test(file) ? line.replace(PORT_MAP, '"h:$1"') : line
+}
+
 export function findHits(
   text: string,
   file = ""
@@ -73,8 +98,9 @@ export function findHits(
     )
       return
     const lineAllowed = LINE_ALLOW.some((re) => re.test(line))
+    const scanned = maskContainerPorts(line, file)
     for (const re of FORBIDDEN) {
-      if (!re.test(line)) continue
+      if (!re.test(scanned)) continue
       // A LINE_ALLOW match excuses only the sister-company name; the logo
       // path (sister company's logo, CP content) excuses only security-partners.
       if (lineAllowed && re.source === SP_NAME.source) continue
@@ -158,5 +184,42 @@ describe("branding gate", () => {
     expect(findHits(salt, "tests/unit/crypto.test.ts")).toHaveLength(0)
     expect(findHits(salt, "tests/unit/other.test.ts")).toHaveLength(1)
     expect(findHits('x = "sp/v1"', "tests/unit/crypto.test.ts")).toHaveLength(1)
+  })
+
+  it("flags SP dev ports in code but not container-side mappings", () => {
+    for (const line of [
+      "  port: 1025,",
+      'const u = "http://127.0.0.1:8025"',
+      "BETTER_AUTH_URL=http://localhost:3100",
+      "postgres://cp:cp@127.0.0.1:5432/cp",
+      "postgres://cp:cp@localhost:5433/cp",
+    ])
+      expect(findHits(line, "server/lib/mailer.ts"), line).toHaveLength(1)
+    const compose = "docker-compose.dev.yml"
+    expect(findHits('      - "127.0.0.1:1026:1025"', compose)).toHaveLength(0)
+    expect(findHits('      - "127.0.0.1:5434:5432"', compose)).toHaveLength(0)
+    expect(
+      findHits('    ports: ["5434:5432"]', ".github/workflows/ci.yml")
+    ).toHaveLength(0)
+    // Host side on an SP port is still refused.
+    expect(findHits('      - "127.0.0.1:1025:1025"', compose)).toHaveLength(1)
+    expect(findHits('      - "5433:5432"', compose)).toHaveLength(1)
+    expect(findHits('      - "8025:8025"', compose)).toHaveLength(1)
+    // The mapping allowance does not extend to other files.
+    expect(findHits('x = "1026:1025"', "server/lib/mailer.ts")).toHaveLength(1)
+  })
+
+  it("flags SP palette hexes case-insensitively", () => {
+    for (const hex of ["#367318", "#67BD31", "#7cc84a", "#0D1B36", "#EEF6E8"])
+      expect(findHits(`primary: "${hex}"`, "lib/x.ts"), hex).toHaveLength(1)
+    expect(findHits('primary: "#15803d"', "lib/x.ts")).toHaveLength(0)
+  })
+
+  it("palette allowance covers only the colour-math line", () => {
+    const line = '    expect(formatOklch(parseColor("#67bd31")!)).toMatch('
+    const file = "tests/unit/theme/color.test.ts"
+    expect(findHits(line, file)).toHaveLength(0)
+    expect(findHits(line, "tests/unit/other.test.ts")).toHaveLength(1)
+    expect(findHits('x = "#67bd31"', file)).toHaveLength(1)
   })
 })
