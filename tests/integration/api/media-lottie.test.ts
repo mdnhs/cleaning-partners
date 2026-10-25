@@ -10,10 +10,13 @@ vi.mock("next/cache", () => ({
 }))
 
 import type { MediaItem } from "@/lib/schemas/api/media"
+import type { SettingsDto } from "@/lib/schemas/api/settings"
+import { siteSettings } from "@/lib/schemas/settings/site"
 import { app } from "@/server/api/app"
 import { getDb } from "@/server/db/client"
 import { seedContent } from "@/server/db/seed"
 import { diskStorage } from "@/server/lib/storage"
+import { listMediaUsagesFor } from "@/server/modules/media/repo"
 
 import { buildDotLottie, buildZip } from "../../fixtures/lottie/zip"
 import { resetDb } from "../db"
@@ -61,6 +64,20 @@ async function upload(bytes: Uint8Array | string, name: string, type = "") {
   if (res.status === 201)
     created.push(body.url.replace("/api/v1/media/file/", ""))
   return { status: res.status, body }
+}
+
+async function saveSite(patch: Record<string, unknown>) {
+  const current = (await (
+    await adminRequest("/settings/site", { cookie: editor })
+  ).json()) as SettingsDto
+  return adminRequest("/settings/site/draft", {
+    cookie: editor,
+    method: "PUT",
+    json: {
+      draft: { ...(current.draft as Record<string, unknown>), ...patch },
+      version: current.version,
+    },
+  })
 }
 
 const fileError = (body: Uploaded) => body.error?.fieldErrors?.file?.[0]
@@ -194,5 +211,79 @@ describe("Lottie uploads", () => {
     expect(fileError((await res.json()) as Uploaded)).toMatch(
       /Replace a Lottie animation/
     )
+  })
+})
+
+describe("settings.site.logoAnimation", () => {
+  it("defaults to null for values saved before the field existed", () => {
+    const parsed = siteSettings.parse({
+      name: "n",
+      legalName: "n",
+      logo: { mediaId: png.id },
+      logoAlt: "a",
+      logoLarge: { mediaId: png.id },
+      defaultHeroImage: { mediaId: png.id },
+      logoOnDark: null,
+      favicon: null,
+      productionUrl: null,
+      timezone: "Europe/Dublin",
+      locale: "en",
+    })
+    expect(parsed.logoAnimation).toBeNull()
+  })
+
+  it("saves a Lottie, loads it back and records its usage", async () => {
+    const res = await saveSite({ logoAnimation: { mediaId: json.id } })
+    expect(res.status).toBe(200)
+    const dto = (await res.json()) as SettingsDto
+    expect((dto.draft as { logoAnimation: unknown }).logoAnimation).toEqual({
+      mediaId: json.id,
+    })
+    const loaded = (await (
+      await adminRequest("/settings/site", { cookie: editor })
+    ).json()) as SettingsDto
+    expect((loaded.draft as { logoAnimation: unknown }).logoAnimation).toEqual({
+      mediaId: json.id,
+    })
+    const usages = await listMediaUsagesFor(getDb(), "settings", "site")
+    expect(usages).toContainEqual({ mediaId: json.id, field: "logoAnimation" })
+    // In use: the file cannot be deleted.
+    const del = await adminRequest(`/media/${json.id}`, {
+      cookie: editor,
+      method: "DELETE",
+    })
+    expect(del.status).toBe(409)
+  })
+
+  it("accepts a dotLottie and clears back to null", async () => {
+    expect(
+      (await saveSite({ logoAnimation: { mediaId: dotLottie.id } })).status
+    ).toBe(200)
+    const cleared = await saveSite({ logoAnimation: null })
+    expect(cleared.status).toBe(200)
+    expect(
+      ((await cleared.json()) as { draft: { logoAnimation: unknown } }).draft
+        .logoAnimation
+    ).toBeNull()
+  })
+
+  it("refuses an image in the animation field and a Lottie in an image field", async () => {
+    const imageAsAnimation = await saveSite({
+      logoAnimation: { mediaId: png.id },
+    })
+    expect(imageAsAnimation.status).toBe(422)
+    const body = (await imageAsAnimation.json()) as {
+      error: { fieldErrors: Record<string, string[]> }
+    }
+    expect(body.error.fieldErrors.logoAnimation?.[0]).toMatch(
+      /not a Lottie animation/
+    )
+
+    const lottieAsLogo = await saveSite({ favicon: { mediaId: json.id } })
+    expect(lottieAsLogo.status).toBe(422)
+    const logoBody = (await lottieAsLogo.json()) as {
+      error: { fieldErrors: Record<string, string[]> }
+    }
+    expect(logoBody.error.fieldErrors.favicon?.[0]).toMatch(/not an image/)
   })
 })

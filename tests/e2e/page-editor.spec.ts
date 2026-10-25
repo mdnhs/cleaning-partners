@@ -5,7 +5,7 @@ import { clientIpFor, E2E_PASSWORD, greeting, readFixtures } from "./fixtures"
 
 // Master 4.4: edit the home hero heading → autosave → publish → public site
 // shows it; preview shows drafts only to a signed-in user; ⌘S; unsaved guard;
-// conflict dialog. Specs run serially on the seeded cp_e2e. The last test
+// conflict dialog. Specs run serially on the seeded cp_e2e. The afterAll
 // restores the home page, and `pnpm test:visual` reseeds its own database.
 
 test.beforeEach(async ({ context }, testInfo) => {

@@ -24,6 +24,7 @@ import {
 } from "@/server/modules/preview/routes"
 import { revisionsRoutes } from "@/server/modules/revisions/routes"
 import { searchRoutes } from "@/server/modules/search/routes"
+import { settingsRoutes } from "@/server/modules/settings/routes"
 import { usersRoutes } from "@/server/modules/users/routes"
 
 /**
@@ -35,6 +36,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/users", usersRoutes)
   .route("/search", searchRoutes)
   .route("/pages", pagesRoutes)
+  .route("/settings", settingsRoutes)
   .route("/media", mediaRoutes)
   .route("/revisions", revisionsRoutes)
   .route("/preview", adminPreviewRoutes)
