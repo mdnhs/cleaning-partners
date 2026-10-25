@@ -116,7 +116,7 @@ Collections (spec §6.3):
 - `articles`: today's `lib/blog-posts.ts`; body becomes TipTap JSON; read time computed.
 - `article_categories`: Medical, Commercial, Domestic, Education, Retail, ULV Fogging.
 - `team_members`, `clients`, `group_companies` (Security Partners, MJS Eco).
-- `testimonials` (new; name, initials, quote, rating 1..5, sortOrder; same immediate-publish rules as SP's small collections). The only collection CP adds; it exists because the public site has a testimonials section on four pages.
+- `testimonials` (new; name, initials, quote, rating 1..5, sortOrder; same immediate-publish rules as SP's small collections). The only collection CP adds; it exists because the public site has a testimonials section on five routes (home, about, services, every service detail).
 
 Globals (`settings`): SP's key set with CP content. A section rendered on more than one page is a global (O6).
 
@@ -124,11 +124,11 @@ Globals (`settings`): SP's key set with CP content. A section rendered on more t
 export const settingsSchemas = {
   site, contact, navigation, footer,
   "sections.clients",        // home, about, services
-  "sections.whyChooseUs",    // home, about, services
-  "sections.contact",        // home, about, services, contact (title overridable per page)
+  "sections.whyChooseUs",    // home, about, services, every /services/[slug]
+  "sections.contact",        // every route (7), title overridable per page
   "sections.map",            // home, contact
   "sections.team",           // home, about (heading; members are the team collection)
-  "sections.testimonials",   // home, about, services (heading; items are the testimonials collection)
+  "sections.testimonials",   // home, about, services, every /services/[slug] (heading; items are the testimonials collection)
   "sections.howItWorks",     // every /services/[slug]
   "seo.defaults", consent, tracking, customCode, microcopy, leads,
   theme,
@@ -156,6 +156,8 @@ Visual gate (spec §6.4): Playwright baselines at commit `3689369` before any re
 | `home` | `/` | Hero · Clients (shared) · Services intro + list · Why Choose Us (shared) · Testimonials · Team · Blog (latest 3) · Contact (shared) · Location map (shared) |
 | `about` | `/about` | Page hero · Our Story (eyebrow, title, paragraphs, sector chips, 2 images, CTA) · Stats (4 items) · Clients · Why Choose Us · Team · Testimonials · Contact |
 | `services` | `/services` | Page hero · Services grid heading/intro + "Not sure" CTA card · Why Choose Us · Clients · Testimonials · Contact |
+
+Shared sections on the dynamic routes (not template pages): `/services/[slug]` also renders How It Works, Why Choose Us, Testimonials and Contact; `/blog` and `/blog/[slug]` render Contact. Contact therefore appears on all 7 routes.
 | `blog` | `/blog` | Page hero · featured article picker · filter bar (categories with `showInFilter`) · search · pagination size |
 | `contact` | `/contact` | Page hero · Contact (shared, title "Ways to Reach Us") · Quote form (heading, intro, next-steps[], urgent box, form copy) · Location map |
 | `privacy`, `terms` | `/privacy`, `/terms` | Legal template (as SP) |
@@ -194,20 +196,20 @@ Cannot be automated (spec §10):
 
 ## 9. Field inventory summary
 
-Full list: `docs/brief-inventory.json`. Validate with `pnpm dlx tsx scripts/check-inventory.ts`. The validator checks kinds, target roots, unique ids, source line range, and that each value appears verbatim in its source file after collapsing whitespace and decoding JSX entities. Dynamic values (template literals) are recorded as written in the source. A `kind:"list"` entry holds the item count in `value` and the array identifier in `array`; there is one entry per distinct item field, never one per item. For array fields, `value` is the first item's literal as a representative.
+Full list: `docs/brief-inventory.json`. Validate with `pnpm dlx tsx scripts/check-inventory.ts`. The validator checks kinds, target roots, unique ids, source line range, and that each value appears verbatim in its source file after collapsing whitespace and decoding JSX entities. Dynamic values (template literals) are recorded as written in the source. Entries carry optional flags: `template: true` marks a field whose seeded value is an SP-style interpolation string, recorded in `seed` using `{identifier}` placeholders only (SP `lib/interpolate.ts`; e.g. `"Learn more about {title}"`, `"Tel: {office} Ext {officeExtension}"`). `value` keeps the source text and is verbatim-checked; `seed` is not verbatim-checked but must contain only `{identifier}` placeholders (no `${...}`), and every `template` entry must have one. `derived: true` marks a usage computed from another field (route hrefs from a slug, `tel:`/`mailto:` hrefs from the contact facts, the star count from `rating`); it is not an editable field, and needs a non-derived source entry for its target or a `note`. Entries sharing a target must carry the same literal value unless derived, template or a render-time binding (`{x.y}`). Contact facts have a single source under `settings.contact.*` (`phone24h`, `office`, `officeExtension`, `mobile`, `email`, `hours`, `addressLine1`, `addressLine2`); every other occurrence is a template or derived. SEO lives under `seo.*`: per-page `pages.<key>.seo.title|description`, and service/article titles through `settings.seo.defaults.titleTemplate` (`"{title} | Cleaning Partners Ltd."`). Source files are read from baseline commit `3689369` via `git show`, so the validator keeps working after Phase 3 moves the components. A `kind:"list"` entry holds the item count in `value` and the array identifier in `array`; there is one entry per distinct item field, never one per item. For array fields, `value` is the first item's literal as a representative.
 
 Placement rule: a literal rendered on more than one page goes to its `settings.*` key. A literal on one page goes to `pages.<key>`. Per-page overrides get their own entry (`pages.contact.contactTitle` = "Ways to Reach Us").
 
-Total: **346 entries**.
+Total: **366 entries**.
 
 By kind:
 
 | kind | count |
 |---|---|
-| text | 204 |
+| text | 217 |
 | image | 39 |
+| href | 32 |
 | list | 27 |
-| href | 25 |
 | meta | 14 |
 | aria | 13 |
 | alt | 11 |
@@ -221,36 +223,36 @@ By target root:
 |---|---|
 | `pages.home` | 27 |
 | `pages.about` | 21 |
-| `pages.services` (grid, hero, detail labels) | 30 |
+| `pages.services` (grid, hero, detail labels) | 29 |
 | `pages.blog` (list and article labels) | 32 |
-| `pages.contact` (hero, quote form) | 34 |
-| `services[]` | 35 |
-| `articles[]` | 30 |
-| `categories[]` | 3 |
+| `pages.contact` (hero, quote form) | 35 |
+| `services[]` | 34 |
+| `articles[]` | 34 |
+| `categories[]` | 5 |
 | `team[]` | 6 |
 | `clients[]` | 4 |
-| `testimonials[]` | 4 |
+| `testimonials[]` | 5 |
 | `groupCompanies[]` | 6 |
 | `settings.site` | 9 |
-| `settings.contact` | 10 |
+| `settings.contact` | 21 |
 | `settings.navigation` | 10 |
-| `settings.footer` | 11 |
-| `settings.sections.*` | 49 |
-| `settings.seo.defaults` | 2 |
-| `settings.consent` | 1 |
-| `settings.microcopy` | 22 |
+| `settings.footer` | 12 |
+| `settings.sections.*` | 51 |
+| `settings.seo.defaults` | 4 |
+| `settings.consent` | 0 |
+| `settings.microcopy` | 21 |
 
 By page (entries that render on the URL; shared entries count once per page):
 
 | URL | entries |
 |---|---|
-| `/` | 137 |
-| `/about` | 112 |
-| `/services` | 122 |
-| `/services/[slug]` | 126 |
-| `/blog` | 88 |
-| `/blog/[slug]` | 132 |
-| `/contact` | 119 |
+| `/` | 154 |
+| `/about` | 125 |
+| `/services` | 135 |
+| `/services/[slug]` | 139 |
+| `/blog` | 105 |
+| `/blog/[slug]` | 152 |
+| `/contact` | 132 |
 
 `/privacy` and `/terms` do not exist yet (B9); their fields are added when Task 3.2 creates the legal template.
 

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process"
 import { readFileSync } from "node:fs"
 
 type Entry = {
@@ -8,7 +9,27 @@ type Entry = {
   target: string
   pages: string[]
   template?: unknown
+  derived?: unknown
+  seed?: unknown
+  note?: unknown
   array?: string
+}
+
+// Sources are read from this commit, not the working tree, so the validator
+// survives Phase 3.4 moving/rewriting the components.
+const BASELINE = "3689369"
+const sourceCache = new Map<string, string>()
+const baselineSource = (file: string) => {
+  let text = sourceCache.get(file)
+  if (text === undefined) {
+    text = execFileSync("git", ["show", `${BASELINE}:${file}`], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+      maxBuffer: 16 * 1024 * 1024,
+    })
+    sourceCache.set(file, text)
+  }
+  return text
 }
 
 const KINDS = new Set([
@@ -54,7 +75,12 @@ const normSource = (s: string) =>
   )
 const normValue = (s: string) => collapse(s.replace(/ /g, " "))
 
-const raw = JSON.parse(readFileSync("docs/brief-inventory.json", "utf8")) as {
+const raw = JSON.parse(
+  readFileSync(
+    process.env.INVENTORY_FILE ?? "docs/brief-inventory.json",
+    "utf8"
+  )
+) as {
   version: number
   entries: Entry[]
 }
@@ -72,7 +98,13 @@ for (const e of raw.entries) {
     continue
   }
   const [file, line] = e.source.split(":")
-  const text = readFileSync(file, "utf8")
+  let text: string
+  try {
+    text = baselineSource(file)
+  } catch {
+    errors.push(`${e.id}: ${file} not found at ${BASELINE}`)
+    continue
+  }
   const lines = text.split("\n")
   if (Number(line) < 1 || Number(line) > lines.length)
     errors.push(`${e.id}: line out of range`)
@@ -80,6 +112,24 @@ for (const e of raw.entries) {
     errors.push(`${e.id}: pages empty`)
   if (e.template !== undefined && typeof e.template !== "boolean")
     errors.push(`${e.id}: template must be boolean`)
+  if (e.derived !== undefined && typeof e.derived !== "boolean")
+    errors.push(`${e.id}: derived must be boolean`)
+  if (e.template === true && e.derived === true)
+    errors.push(`${e.id}: template and derived are mutually exclusive`)
+  // seed = SP interpolate syntax ({identifier}); never verbatim-checked.
+  if (e.template === true) {
+    if (typeof e.seed !== "string" || e.seed === "")
+      errors.push(`${e.id}: template entry needs a "seed" string`)
+  } else if (e.seed !== undefined) {
+    errors.push(`${e.id}: seed only allowed on template entries`)
+  }
+  if (typeof e.seed === "string") {
+    const rest = e.seed.replace(/\{[a-zA-Z][a-zA-Z0-9]*\}/g, "")
+    if (e.seed.includes("$") || /[{}]/.test(rest))
+      errors.push(
+        `${e.id}: seed must use only {identifier} placeholders (no \${…}): ${e.seed}`
+      )
+  }
   // Stale line numbers fail: value (or array declaration) must be in a
   // window of lines (line-1 .. line+8) around the stated source line.
   const windowText = lines
@@ -109,6 +159,37 @@ for (const e of raw.entries) {
     errors.push(
       `${e.id}: placeholder value without template: true and no source entry for ${e.target}`
     )
+}
+// A derived entry is a usage computed from another field. It needs a
+// non-derived source entry for its target, or a note saying where it comes from.
+const isLiteral = (o: Entry) =>
+  o.derived !== true &&
+  o.template !== true &&
+  o.kind !== "list" &&
+  !o.value.includes("{")
+for (const e of raw.entries) {
+  if (e.derived !== true) continue
+  const hasSource = raw.entries.some(
+    (o) => o !== e && o.target === e.target && isLiteral(o)
+  )
+  if (!hasSource && typeof e.note !== "string")
+    errors.push(
+      `${e.id}: derived entry has no source entry for ${e.target} and no note`
+    )
+}
+// Single source: literal (non-derived, non-template, non-binding) entries that
+// share a target must carry the same value.
+const byTarget = new Map<string, Entry[]>()
+for (const e of raw.entries)
+  if (isLiteral(e))
+    byTarget.set(e.target, [...(byTarget.get(e.target) ?? []), e])
+for (const [target, group] of byTarget) {
+  const first = normValue(group[0].value)
+  for (const o of group.slice(1))
+    if (normValue(o.value) !== first)
+      errors.push(
+        `${o.id}: value differs from ${group[0].id} for shared target ${target} (mark one derived/template or split the target)`
+      )
 }
 if (raw.entries.length < 200)
   errors.push(`only ${raw.entries.length} entries — inventory incomplete`)

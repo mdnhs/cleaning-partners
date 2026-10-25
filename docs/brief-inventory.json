@@ -38,7 +38,7 @@
       "source": "app/about/page.tsx:16",
       "kind": "meta",
       "value": "About Us | Cleaning Partners Ltd.",
-      "target": "pages.about.meta.title",
+      "target": "pages.about.seo.title",
       "pages": [
         "/about"
       ]
@@ -48,7 +48,7 @@
       "source": "app/about/page.tsx:18",
       "kind": "meta",
       "value": "Over fifteen years of combined experience cleaning homes and businesses across Ireland from our base in Mountmellick, Co. Laois.",
-      "target": "pages.about.meta.description",
+      "target": "pages.about.seo.description",
       "pages": [
         "/about"
       ]
@@ -58,7 +58,7 @@
       "source": "app/services/page.tsx:14",
       "kind": "meta",
       "value": "Our Services | Cleaning Partners Ltd.",
-      "target": "pages.services.meta.title",
+      "target": "pages.services.seo.title",
       "pages": [
         "/services"
       ]
@@ -68,7 +68,7 @@
       "source": "app/services/page.tsx:16",
       "kind": "meta",
       "value": "Medical, education, commercial and retail cleaning plus ULV fogging for hospitals, GP clinics, schools, offices, shops and homes across Ireland.",
-      "target": "pages.services.meta.description",
+      "target": "pages.services.seo.description",
       "pages": [
         "/services"
       ]
@@ -78,7 +78,7 @@
       "source": "app/blog/page.tsx:11",
       "kind": "meta",
       "value": "Our Blog | Cleaning Partners Ltd.",
-      "target": "pages.blog.meta.title",
+      "target": "pages.blog.seo.title",
       "pages": [
         "/blog"
       ]
@@ -88,7 +88,7 @@
       "source": "app/blog/page.tsx:12",
       "kind": "meta",
       "value": "Cleaning tips, hygiene advice and news from the Clean Team.",
-      "target": "pages.blog.meta.description",
+      "target": "pages.blog.seo.description",
       "pages": [
         "/blog"
       ]
@@ -98,7 +98,7 @@
       "source": "app/contact/page.tsx:12",
       "kind": "meta",
       "value": "Contact Us | Cleaning Partners Ltd.",
-      "target": "pages.contact.meta.title",
+      "target": "pages.contact.seo.title",
       "pages": [
         "/contact"
       ]
@@ -108,7 +108,7 @@
       "source": "app/contact/page.tsx:14",
       "kind": "meta",
       "value": "Get in touch with the Clean Team for a free, no-obligation quote. 24hr contact: (085) 8062369.",
-      "target": "pages.contact.meta.description",
+      "target": "pages.contact.seo.description",
       "pages": [
         "/contact"
       ]
@@ -118,11 +118,12 @@
       "source": "app/services/[slug]/page.tsx:27",
       "kind": "meta",
       "value": "${service.title} | Cleaning Partners Ltd.",
-      "target": "services[].meta.title",
+      "target": "settings.seo.defaults.titleTemplate",
       "pages": [
         "/services/[slug]"
       ],
-      "template": true
+      "template": true,
+      "seed": "{title} | Cleaning Partners Ltd."
     },
     {
       "id": "meta.service.description",
@@ -132,18 +133,20 @@
       "target": "services[].heroDescription",
       "pages": [
         "/services/[slug]"
-      ]
+      ],
+      "derived": true
     },
     {
       "id": "meta.article.title",
       "source": "app/blog/[slug]/page.tsx:24",
       "kind": "meta",
       "value": "${post.title} | Cleaning Partners Ltd.",
-      "target": "articles[].meta.title",
+      "target": "settings.seo.defaults.titleTemplate",
       "pages": [
         "/blog/[slug]"
       ],
-      "template": true
+      "template": true,
+      "seed": "{title} | Cleaning Partners Ltd."
     },
     {
       "id": "meta.article.description",
@@ -153,14 +156,15 @@
       "target": "articles[].excerpt",
       "pages": [
         "/blog/[slug]"
-      ]
+      ],
+      "derived": true
     },
     {
       "id": "header.phone.href",
       "source": "components/home/site-header.tsx:25",
       "kind": "tel",
       "value": "tel:+353858062369",
-      "target": "settings.contact.phone24Href",
+      "target": "settings.contact.phone24h",
       "pages": [
         "/",
         "/about",
@@ -169,7 +173,8 @@
         "/blog",
         "/blog/[slug]",
         "/contact"
-      ]
+      ],
+      "derived": true
     },
     {
       "id": "header.phone.label",
@@ -185,14 +190,16 @@
         "/blog",
         "/blog/[slug]",
         "/contact"
-      ]
+      ],
+      "template": true,
+      "seed": "24hr contact: {phone24h}"
     },
     {
-      "id": "header.email.href",
-      "source": "components/home/site-header.tsx:29",
-      "kind": "mailto",
-      "value": "mailto:info@cleaningpartners.ie",
-      "target": "settings.contact.emailHref",
+      "id": "contact.phone24h",
+      "source": "components/home/site-header.tsx:26",
+      "kind": "tel",
+      "value": "(085) 8062369",
+      "target": "settings.contact.phone24h",
       "pages": [
         "/",
         "/about",
@@ -202,6 +209,23 @@
         "/blog/[slug]",
         "/contact"
       ]
+    },
+    {
+      "id": "header.email.href",
+      "source": "components/home/site-header.tsx:29",
+      "kind": "mailto",
+      "value": "mailto:info@cleaningpartners.ie",
+      "target": "settings.contact.email",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "derived": true
     },
     {
       "id": "header.email.label",
@@ -462,11 +486,94 @@
       "array": "contactLines"
     },
     {
-      "id": "footer.contactLines.item",
+      "id": "footer.contactLines.address1",
       "source": "components/home/site-footer.tsx:8",
       "kind": "text",
       "value": "Derryguile, Mountmellick",
-      "target": "settings.footer.contactLines[]",
+      "target": "settings.contact.addressLine1",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "footer.contactLines.address2",
+      "source": "components/home/site-footer.tsx:9",
+      "kind": "text",
+      "value": "Co. Laois, R32 YX49",
+      "target": "settings.footer.addressLine2",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "note": "Footer-specific wording (no \"Ireland.\"); the contact info card uses settings.contact.addressLine2."
+    },
+    {
+      "id": "footer.contactLines.office",
+      "source": "components/home/site-footer.tsx:10",
+      "kind": "text",
+      "value": "Tel: 057 8697670 Ext 4",
+      "target": "settings.footer.contactOfficeLine",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "template": true,
+      "seed": "Tel: {office} Ext {officeExtension}"
+    },
+    {
+      "id": "footer.contactLines.email",
+      "source": "components/home/site-footer.tsx:11",
+      "kind": "text",
+      "value": "info@cleaningpartners.ie",
+      "target": "settings.contact.email",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.office",
+      "source": "components/home/site-footer.tsx:10",
+      "kind": "text",
+      "value": "057 8697670",
+      "target": "settings.contact.office",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.officeExtension",
+      "source": "components/home/site-footer.tsx:10",
+      "kind": "text",
+      "value": "4",
+      "target": "settings.contact.officeExtension",
       "pages": [
         "/",
         "/about",
@@ -529,7 +636,7 @@
     {
       "id": "groupCompanies.phone",
       "source": "components/home/site-footer.tsx:17",
-      "kind": "tel",
+      "kind": "text",
       "value": "Tel: (085) 8591299",
       "target": "groupCompanies[].phone",
       "pages": [
@@ -589,7 +696,7 @@
         "/blog/[slug]",
         "/contact"
       ],
-      "template": true
+      "derived": true
     },
     {
       "id": "footer.copyright",
@@ -1201,20 +1308,24 @@
         "/about",
         "/services",
         "/services/[slug]"
-      ]
+      ],
+      "template": true,
+      "seed": "{rating} out of 5 stars"
     },
     {
-      "id": "testimonials.stars",
+      "id": "testimonials.rating",
       "source": "components/home/testimonials.tsx:48",
       "kind": "text",
-      "value": "★★★★★",
-      "target": "settings.sections.testimonials.stars",
+      "value": "5",
+      "target": "testimonials[].rating",
       "pages": [
         "/",
         "/about",
         "/services",
         "/services/[slug]"
-      ]
+      ],
+      "derived": true,
+      "note": "Star glyph count and the starsAria {rating} placeholder derive from this rating (1..5); the literal glyph string is no longer a field."
     },
     {
       "id": "testimonials.verified",
@@ -1504,6 +1615,126 @@
         "/blog",
         "/blog/[slug]",
         "/contact"
+      ],
+      "template": true,
+      "seed": "Tel: {office} Ext {officeExtension}"
+    },
+    {
+      "id": "contact.infoCards.mobileLine",
+      "source": "components/home/contact.tsx:13",
+      "kind": "text",
+      "value": "Mobile: 085 806 2369",
+      "target": "settings.sections.contact.infoCards[].lines[]",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "template": true,
+      "seed": "Mobile: {mobile}"
+    },
+    {
+      "id": "contact.mobile",
+      "source": "components/home/contact.tsx:13",
+      "kind": "text",
+      "value": "085 806 2369",
+      "target": "settings.contact.mobile",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.infoCards.phone24Line",
+      "source": "components/home/contact.tsx:14",
+      "kind": "text",
+      "value": "24hr contact: (085) 8062369",
+      "target": "settings.sections.contact.infoCards[].lines[]",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "template": true,
+      "seed": "24hr contact: {phone24h}"
+    },
+    {
+      "id": "contact.infoCards.emailLine",
+      "source": "components/home/contact.tsx:20",
+      "kind": "text",
+      "value": "info@cleaningpartners.ie",
+      "target": "settings.contact.email",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.infoCards.addressLine1",
+      "source": "components/home/contact.tsx:25",
+      "kind": "text",
+      "value": "Derryguile, Mountmellick,",
+      "target": "settings.sections.contact.infoCards[].lines[]",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ],
+      "template": true,
+      "seed": "{addressLine1},"
+    },
+    {
+      "id": "contact.infoCards.addressLine2",
+      "source": "components/home/contact.tsx:25",
+      "kind": "text",
+      "value": "Co. Laois, Ireland. R32 YX49",
+      "target": "settings.contact.addressLine2",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
+      ]
+    },
+    {
+      "id": "contact.infoCards.hoursLine",
+      "source": "components/home/contact.tsx:30",
+      "kind": "text",
+      "value": "Mon–Fri: 9am – 6pm",
+      "target": "settings.contact.hours",
+      "pages": [
+        "/",
+        "/about",
+        "/services",
+        "/services/[slug]",
+        "/blog",
+        "/blog/[slug]",
+        "/contact"
       ]
     },
     {
@@ -1746,7 +1977,8 @@
         "/",
         "/contact"
       ],
-      "template": true
+      "template": true,
+      "seed": "/images/home/tiles/tile-{index}.png"
     },
     {
       "id": "map.href",
@@ -2170,7 +2402,7 @@
       "pages": [
         "/services"
       ],
-      "template": true
+      "derived": true
     },
     {
       "id": "services.grid.learnMore.aria",
@@ -2181,7 +2413,8 @@
       "pages": [
         "/services"
       ],
-      "template": true
+      "template": true,
+      "seed": "Learn more about {title}"
     },
     {
       "id": "services.grid.learnMore.label",
@@ -2268,10 +2501,11 @@
       "source": "components/services/services-grid.tsx:115",
       "kind": "tel",
       "value": "tel:+353578697670",
-      "target": "pages.services.grid.helpCard.callHref",
+      "target": "settings.contact.office",
       "pages": [
         "/services"
-      ]
+      ],
+      "derived": true
     },
     {
       "id": "services.grid.help.call.label",
@@ -2281,7 +2515,9 @@
       "target": "pages.services.grid.helpCard.callLabel",
       "pages": [
         "/services"
-      ]
+      ],
+      "template": true,
+      "seed": "Or call {office} Ext {officeExtension}"
     },
     {
       "id": "serviceDetail.hero.parent.href",
@@ -2452,7 +2688,7 @@
       "pages": [
         "/services/[slug]"
       ],
-      "template": true
+      "derived": true
     },
     {
       "id": "serviceDetail.sidebarItem.title",
@@ -2493,17 +2729,19 @@
       "target": "pages.services.detail.officeHours.hours",
       "pages": [
         "/services/[slug]"
-      ]
+      ],
+      "note": "Deliberate separate field: rendered as \"Mon – Fri: 9am – 6pm\" (spaced dashes), which differs from settings.contact.hours \"Mon–Fri: 9am – 6pm\"; kept distinct for 0 px visual parity."
     },
     {
       "id": "serviceDetail.officeHours.phone.href",
       "source": "components/services/service-overview.tsx:145",
       "kind": "tel",
       "value": "tel:+353858062369",
-      "target": "settings.contact.phone24Href",
+      "target": "settings.contact.phone24h",
       "pages": [
         "/services/[slug]"
-      ]
+      ],
+      "derived": true
     },
     {
       "id": "serviceDetail.officeHours.phone.label",
@@ -2513,7 +2751,9 @@
       "target": "settings.contact.phone24Label",
       "pages": [
         "/services/[slug]"
-      ]
+      ],
+      "template": true,
+      "seed": "24hr contact: {phone24h}"
     },
     {
       "id": "quoteCard.title",
@@ -2542,11 +2782,12 @@
       "source": "components/home/quote-card.tsx:15",
       "kind": "tel",
       "value": "tel:+353578697670",
-      "target": "settings.microcopy.quoteCard.telHref",
+      "target": "settings.contact.office",
       "pages": [
         "/services/[slug]",
         "/blog/[slug]"
-      ]
+      ],
+      "derived": true
     },
     {
       "id": "quoteCard.tel.label",
@@ -2557,7 +2798,9 @@
       "pages": [
         "/services/[slug]",
         "/blog/[slug]"
-      ]
+      ],
+      "template": true,
+      "seed": "Tel: {office} Ext {officeExtension}"
     },
     {
       "id": "quoteCard.cta.href",
@@ -2748,6 +2991,32 @@
       ]
     },
     {
+      "id": "blog.list.featuredTitleHref",
+      "source": "components/blog/blog-list.tsx:134",
+      "kind": "href",
+      "value": "/blog/${featured.slug}",
+      "target": "articles[].slug",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ],
+      "derived": true
+    },
+    {
+      "id": "blog.list.featuredReadHref",
+      "source": "components/blog/blog-list.tsx:144",
+      "kind": "href",
+      "value": "/blog/${featured.slug}",
+      "target": "articles[].slug",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ],
+      "derived": true
+    },
+    {
       "id": "blog.card.readArticle",
       "source": "components/blog/post-card.tsx:42",
       "kind": "text",
@@ -2758,6 +3027,32 @@
         "/blog",
         "/blog/[slug]"
       ]
+    },
+    {
+      "id": "blog.card.titleHref",
+      "source": "components/blog/post-card.tsx:31",
+      "kind": "href",
+      "value": "/blog/${post.slug}",
+      "target": "articles[].slug",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ],
+      "derived": true
+    },
+    {
+      "id": "blog.card.readHref",
+      "source": "components/blog/post-card.tsx:39",
+      "kind": "href",
+      "value": "/blog/${post.slug}",
+      "target": "articles[].slug",
+      "pages": [
+        "/",
+        "/blog",
+        "/blog/[slug]"
+      ],
+      "derived": true
     },
     {
       "id": "blog.list.empty",
@@ -2878,6 +3173,17 @@
       "pages": [
         "/blog/[slug]"
       ]
+    },
+    {
+      "id": "article.header.categoryHref",
+      "source": "components/blog/article.tsx:40",
+      "kind": "href",
+      "value": "/blog?category=${encodeURIComponent(post.category)}",
+      "target": "categories[].name",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "derived": true
     },
     {
       "id": "article.header.title",
@@ -3080,6 +3386,17 @@
       ]
     },
     {
+      "id": "article.sidebar.categoryHref",
+      "source": "components/blog/article.tsx:252",
+      "kind": "href",
+      "value": "/blog?category=${encodeURIComponent(category)}",
+      "target": "categories[].name",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "derived": true
+    },
+    {
       "id": "article.sidebar.recentHeading",
       "source": "components/blog/article.tsx:275",
       "kind": "text",
@@ -3098,6 +3415,17 @@
       "pages": [
         "/blog/[slug]"
       ]
+    },
+    {
+      "id": "article.sidebar.recentHref",
+      "source": "components/blog/article.tsx:279",
+      "kind": "href",
+      "value": "/blog/${item.slug}",
+      "target": "articles[].slug",
+      "pages": [
+        "/blog/[slug]"
+      ],
+      "derived": true
     },
     {
       "id": "article.sidebar.recentDate",
@@ -3199,7 +3527,8 @@
       "pages": [
         "/blog/[slug]"
       ],
-      "template": true
+      "template": true,
+      "seed": "https://www.facebook.com/sharer/sharer.php?u={url}"
     },
     {
       "id": "article.share.aria",
@@ -3210,7 +3539,8 @@
       "pages": [
         "/blog/[slug]"
       ],
-      "template": true
+      "template": true,
+      "seed": "Share on {network}"
     },
     {
       "id": "contact.page.hero.crumb",
@@ -3338,10 +3668,11 @@
       "source": "components/contact/quote-form.tsx:142",
       "kind": "tel",
       "value": "tel:+353858062369",
-      "target": "settings.contact.phone24Href",
+      "target": "settings.contact.phone24h",
       "pages": [
         "/contact"
-      ]
+      ],
+      "derived": true
     },
     {
       "id": "quoteForm.urgent.label",
@@ -3351,7 +3682,9 @@
       "target": "settings.contact.phone24Label",
       "pages": [
         "/contact"
-      ]
+      ],
+      "template": true,
+      "seed": "24hr contact: {phone24h}"
     },
     {
       "id": "quoteForm.formTitle",
@@ -3538,7 +3871,7 @@
       "source": "components/contact/quote-form.tsx:247",
       "kind": "text",
       "value": "I agree to be contacted about my enquiry.",
-      "target": "settings.consent.quoteForm.label",
+      "target": "pages.contact.quoteForm.fields.consent.label",
       "pages": [
         "/contact"
       ]
@@ -3562,7 +3895,8 @@
       "pages": [
         "/contact"
       ],
-      "template": true
+      "template": true,
+      "seed": "Quote request from {name}"
     },
     {
       "id": "quoteForm.sent",
@@ -3573,7 +3907,8 @@
       "pages": [
         "/contact"
       ],
-      "template": true
+      "template": true,
+      "seed": "Your email app should open with your request. If it doesn't, email us at {email}."
     },
     {
       "id": "services",
