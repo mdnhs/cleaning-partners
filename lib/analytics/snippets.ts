@@ -9,9 +9,9 @@ import type {
  * Window event ConsentProvider dispatches (from an effect, never during
  * render) once the choice is known and after each new choice. The custom
  * code loader (components/consent/custom-code.tsx) listens for it, but
- * reads the choice from `window.__spConsent`, never from the event.
+ * reads the choice from `window.__cpConsent`, never from the event.
  */
-export const CONSENT_EVENT = "sp:consent"
+export const CONSENT_EVENT = "cp:consent"
 
 const trimSlash = (path: string) =>
   path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path
@@ -79,21 +79,21 @@ export function snippetAllowed(
  * Window event the site layout dispatches after a client-side navigation
  * (components/consent/route-change-event.tsx); the loader re-checks then.
  */
-export const NAVIGATE_EVENT = "sp:navigate"
+export const NAVIGATE_EVENT = "cp:navigate"
 
 /**
- * The loader's copy of routeMatches (spMatches), "routes empty or one
- * matches" (spRoutesMatch) and snippetAllowed (spAllowed), as browser
+ * The loader's copy of routeMatches (cpMatches), "routes empty or one
+ * matches" (cpRoutesMatch) and snippetAllowed (cpAllowed), as browser
  * JavaScript inlined into the loader (components/consent/custom-code.tsx).
  * tests/unit/analytics/snippets.test.ts runs this text against the
  * TypeScript functions above, so the two cannot drift. Keep it free of
  * "<" (it is inlined into a <script>).
  */
 export const SNIPPET_RULES_JS = [
-  'function spTrim(x){return x.length>1&&x.slice(-1)==="/"?x.slice(0,-1):x}',
-  'function spMatches(p,path){path=spTrim(path);if(p.slice(-2)==="/*"){var b=spTrim(p.slice(0,-2)||"/");return b==="/"||path===b||path.indexOf(b+"/")===0}return spTrim(p)===path}',
-  "function spRoutesMatch(r,path){return r.length===0||r.some(function(p){return spMatches(p,path)})}",
-  'function spAllowed(s,c){return s.category==="necessary"||(!!c&&c[s.category]===true)}',
+  'function cpTrim(x){return x.length>1&&x.slice(-1)==="/"?x.slice(0,-1):x}',
+  'function cpMatches(p,path){path=cpTrim(path);if(p.slice(-2)==="/*"){var b=cpTrim(p.slice(0,-2)||"/");return b==="/"||path===b||path.indexOf(b+"/")===0}return cpTrim(p)===path}',
+  "function cpRoutesMatch(r,path){return r.length===0||r.some(function(p){return cpMatches(p,path)})}",
+  'function cpAllowed(s,c){return s.category==="necessary"||(!!c&&c[s.category]===true)}',
 ].join("")
 
 const hasCode = (html: string) => /\S/.test(html)

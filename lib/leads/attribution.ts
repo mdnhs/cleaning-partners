@@ -8,7 +8,7 @@ import type { AnalyticsWindow } from "@/lib/analytics/events"
  * sessionStorage on the first page of a visit and sent only with the
  * contact form's POST; it never goes to analytics.
  */
-export const ATTRIBUTION_KEY = "sp_attribution"
+export const ATTRIBUTION_KEY = "cp_attribution"
 export const UTM_KEYS = [
   "utm_source",
   "utm_medium",
@@ -186,7 +186,7 @@ export function submittedAttribution(raw: unknown): Attribution | null {
  * undefined = not published (tracking off, or the provider has not run).
  */
 export function analyticsConsent(): boolean | undefined {
-  const consent = (window as AnalyticsWindow).__spConsent
+  const consent = (window as AnalyticsWindow).__cpConsent
   if (consent === undefined) return undefined
   return consent?.analytics === true
 }

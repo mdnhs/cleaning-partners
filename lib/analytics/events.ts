@@ -106,9 +106,9 @@ export type AnalyticsWindow = Window & {
   fbq?: Fbq
   _fbq?: Fbq
   /** Set by ConsentProvider; undefined when tracking is off (no banner). */
-  __spConsent?: ConsentChoice | null
+  __cpConsent?: ConsentChoice | null
   /** Set by startTracking once the direct GA4 tag (gtag.js) is configured. */
-  __spGa4Id?: string
+  __cpGa4Id?: string
 }
 
 const browserWindow = () =>
@@ -127,7 +127,7 @@ export function track(
   event: AnalyticsEvent,
   win: AnalyticsWindow | undefined = browserWindow()
 ): boolean {
-  const consent = win?.__spConsent
+  const consent = win?.__cpConsent
   if (!win || !consent) return false
   let sent = false
   if (consent.analytics) {
@@ -136,7 +136,7 @@ export function track(
     // gtag commands share the dataLayer, and GTM processes them as events
     // too, so send one only when the direct GA4 tag is there to receive it
     // (a GTM-only setup would otherwise see every event twice).
-    if (win.__spGa4Id && win.gtag) {
+    if (win.__cpGa4Id && win.gtag) {
       // gtag keeps the config's page_location for automatic hits (scroll,
       // outbound click, user_engagement): move it along on each SPA page
       // change so they report the current page (review D2.4 N1).

@@ -3,7 +3,7 @@
 // (settings.consent.reconsentMonths, 1–6 months) and only under the current
 // consent version (settings.consent.version). Isomorphic, no React.
 
-export const CONSENT_COOKIE = "sp_consent"
+export const CONSENT_COOKIE = "cp_consent"
 const SKEW_MS = 5 * 60_000
 /** The longest re-consent interval (settings.consent.reconsentMonths max). */
 export const MAX_RECONSENT_MONTHS = 6
