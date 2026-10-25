@@ -1,10 +1,9 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs"
+import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 
 import { describe, expect, it } from "vitest"
 
 function walk(dir: string): string[] {
-  if (!existsSync(dir)) return [] // no server/ yet (Phase 1 builds it up)
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name)
     if (entry.isDirectory())
@@ -16,7 +15,7 @@ function walk(dir: string): string[] {
 describe('every file under server/ starts with import "server-only"', () => {
   const files = walk("server")
 
-  it.skipIf(!existsSync("server"))("finds server files", () => {
+  it("finds server files", () => {
     expect(files.length).toBeGreaterThan(0)
   })
 
