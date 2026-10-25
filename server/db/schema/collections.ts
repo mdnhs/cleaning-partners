@@ -49,7 +49,7 @@ export const testimonials = pgTable(
   "testimonials",
   {
     id: id(),
-    name: text("name").notNull(),
+    name: text("name").notNull().unique(),
     initials: text("initials").notNull(),
     quote: text("quote").notNull(),
     rating: integer("rating").notNull().default(5),

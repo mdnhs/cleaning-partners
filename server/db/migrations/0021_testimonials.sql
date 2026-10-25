@@ -7,5 +7,6 @@ CREATE TABLE "testimonials" (
 	"sort_order" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "testimonials_name_unique" UNIQUE("name"),
 	CONSTRAINT "testimonials_rating_check" CHECK ("testimonials"."rating" between 1 and 5)
 );

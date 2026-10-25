@@ -1,5 +1,5 @@
 {
-  "id": "1b1f60a8-cc97-4859-ab66-8b0bb10d9e75",
+  "id": "e3b22e28-611f-4a3f-a3af-d931231a3ea5",
   "prevId": "fef706a6-3aa8-46ff-b6d1-b82def995419",
   "version": "7",
   "dialect": "postgresql",
@@ -1797,7 +1797,15 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "testimonials_name_unique": {
+          "name": "testimonials_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {
         "testimonials_rating_check": {
