@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest"
 
+import { fixtureSiteSources } from "@/server/db/seed/fixtures/sources"
 import { consentBannerCopy } from "@/templates/shared/consent"
 import { PAGE_HERO_GROUPS } from "@/templates/shared/editor-groups"
 import { pageMetadata, siteMetadata } from "@/templates/shared/page-meta"
+import type { SiteSources } from "@/templates/shared/sources"
 import {
+  articleJsonLdFor,
   breadcrumbJsonLd,
   organizationJsonLd,
+  serviceJsonLd,
+  siteJsonLd,
 } from "@/templates/shared/structured-data"
 
 const org = {
@@ -57,96 +62,161 @@ describe("structured data", () => {
 })
 
 describe("page metadata", () => {
-  const defaults = {
-    title: "Cleaning Partners Ltd.",
-    titleTemplate: "{title} | Cleaning Partners Ltd.",
-    description: "Cleaning across Ireland. Call {office}.",
-  }
-  const values = { office: "057 8697670" }
+  const s = fixtureSiteSources()
+  const withSeo = (
+    key: "about" | "privacy",
+    seo: SiteSources["pages"]["about"]["seo"]
+  ): SiteSources => ({
+    ...s,
+    pages: { ...s.pages, [key]: { ...s.pages[key], seo } },
+  })
 
   it("home uses the site title; inner pages use the template", () => {
-    expect(
-      pageMetadata({
-        key: "home",
-        path: "/",
-        siteName: "Cleaning Partners Ltd.",
-        defaults,
-        values,
-        seo: {},
-        heroTitle: null,
-      }).title
-    ).toBe("Cleaning Partners Ltd.")
-    const about = pageMetadata({
-      key: "about",
-      path: "/about",
-      siteName: "Cleaning Partners Ltd.",
-      defaults,
-      values,
-      seo: {},
-      heroTitle: "About Us",
-    })
+    expect(pageMetadata(s, "home").title).toBe(
+      "Cleaning Partners Ltd. | The Clean Team"
+    )
+    const about = pageMetadata(withSeo("about", {}), "about")
     expect(about.title).toBe("About Us | Cleaning Partners Ltd.")
-    expect(about.description).toBe("Cleaning across Ireland. Call 057 8697670.")
+    expect(about.description).toBe(
+      "Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond."
+    )
     expect(about.alternates?.canonical).toBe("/about")
+    expect(about.openGraph).toMatchObject({
+      type: "website",
+      url: "/about",
+      siteName: "Cleaning Partners Ltd.",
+    })
   })
 
   it("an own title and noindex win", () => {
-    const m = pageMetadata({
-      key: "privacy",
-      path: "/privacy",
-      siteName: "Cleaning Partners Ltd.",
-      defaults,
-      values,
-      seo: { title: "Own", noindex: true },
-      heroTitle: "Privacy Policy",
-    })
+    const m = pageMetadata(
+      withSeo("privacy", { title: "Own", noindex: true }),
+      "privacy"
+    )
     expect(m.title).toBe("Own")
     expect(m.robots).toEqual({ index: false, follow: true })
   })
 
-  it("site metadata sets the base and the default description", () => {
-    const m = siteMetadata({
-      origin: "https://cleaningpartners.ie",
-      defaults,
-      values,
-      favicon: null,
-      robots: "index",
-    })
+  it("falls back to the generated share card until an image is set", () => {
+    expect(pageMetadata(s, "about").openGraph?.images).toEqual([
+      { url: "/og/page/about", width: 1200, height: 630 },
+    ])
+  })
+
+  it("site metadata sets the base, the default title and description", () => {
+    const m = siteMetadata(s, "https://cleaningpartners.ie")
     expect(String(m.metadataBase)).toBe("https://cleaningpartners.ie/")
-    expect(m.description).toBe("Cleaning across Ireland. Call 057 8697670.")
+    expect(m.title).toBe("Cleaning Partners Ltd. | The Clean Team")
+    expect(m.description).toBe(
+      "Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond."
+    )
     expect(m.icons).toEqual({ icon: "/favicon.ico" })
+    expect(m.robots).toBeUndefined()
+    expect(m.verification).toBeUndefined()
+  })
+
+  it("site-wide noindex and verification tokens reach the root metadata", () => {
+    const defaults = s.settings["seo.defaults"]
+    const m = siteMetadata(
+      {
+        ...s,
+        settings: {
+          ...s.settings,
+          "seo.defaults": {
+            ...defaults,
+            robots: "noindex",
+            verification: { google: "g-token", bing: "b-token" },
+          },
+        },
+      },
+      "https://cleaningpartners.ie"
+    )
+    expect(m.robots).toEqual({ index: false, follow: false })
+    expect(m.verification).toEqual({
+      google: "g-token",
+      other: { "msvalidate.01": "b-token" },
+    })
+  })
+})
+
+describe("structured data over the site sources", () => {
+  const s = fixtureSiteSources()
+  const origin = "https://cleaningpartners.ie"
+
+  it("the business node lists the services and carries no other company", () => {
+    const json = siteJsonLd(s, origin)
+    expect(json["@type"]).toBe("LocalBusiness")
+    expect(json.name).toBe("Cleaning Partners Ltd.")
+    expect(json.telephone).toBe("057 8697670")
+    expect(json.logo).toBe("https://cleaningpartners.ie/images/home/logo.png")
+    expect(json.makesOffer).toHaveLength(s.services.length)
+    expect(json.makesOffer[0].itemOffered.url).toBe(
+      "https://cleaningpartners.ie/services/medical-cleaning"
+    )
+    expect(JSON.stringify(json)).not.toMatch(/Security|SecurityService/)
+  })
+
+  it("a service has Home > Services > service breadcrumbs", () => {
+    const [crumbs] = serviceJsonLd(s, "medical-cleaning", origin)!
+    expect(crumbs.itemListElement.map((i) => i.name)).toEqual([
+      "Home",
+      "Services",
+      "Medical Cleaning",
+    ])
+    expect(serviceJsonLd(s, "nope", origin)).toBeNull()
+  })
+
+  it("an article has Article and Home > Blog > article", () => {
+    const [article, crumbs] = articleJsonLdFor(
+      s,
+      "5-signs-your-office-needs-a-professional-clean",
+      origin
+    )!
+    expect(article).toMatchObject({
+      "@type": "Article",
+      headline: "5 Signs Your Office Needs a Professional Clean",
+      datePublished: "2026-09-15T09:00:00.000Z",
+      articleSection: "Commercial",
+      author: { name: "The Clean Team" },
+      image: "https://cleaningpartners.ie/images/home/vacuuming.png",
+    })
+    expect(
+      (crumbs as { itemListElement: { name: string }[] }).itemListElement.map(
+        (i) => i.name
+      )
+    ).toEqual([
+      "Home",
+      "Blog",
+      "5 Signs Your Office Needs a Professional Clean",
+    ])
+    expect(articleJsonLdFor(s, "nope", origin)).toBeNull()
   })
 })
 
 describe("consent copy", () => {
-  it("fills placeholders and routes the policy link through the resolver", () => {
-    const copy = consentBannerCopy(
-      {
-        title: "Cookies at {name}",
-        body: "Body",
-        acceptLabel: "Accept",
-        rejectLabel: "Reject",
-        customiseLabel: "Customise",
-        saveLabel: "Save",
-        manageLabel: "Cookie settings",
-        closeLabel: "Close",
-        policyLink: { label: "Policy", href: "/privacy" },
-        categories: {
-          necessary: { label: "N", description: "d" },
-          analytics: { label: "A", description: "d" },
-          marketing: { label: "M", description: "d" },
-        },
-        version: 2,
-        reconsentMonths: 3,
+  it("fills placeholders and routes the policy link through linkView", () => {
+    const s = fixtureSiteSources()
+    const copy = consentBannerCopy(s, {
+      title: "Cookies at {phone24h}",
+      body: "Body",
+      acceptLabel: "Accept",
+      rejectLabel: "Reject",
+      customiseLabel: "Customise",
+      saveLabel: "Save",
+      manageLabel: "Cookie settings",
+      closeLabel: "Close",
+      policyLink: { label: "Policy", href: "javascript:alert(1)" },
+      categories: {
+        necessary: { label: "N", description: "d" },
+        analytics: { label: "A", description: "d" },
+        marketing: { label: "M", description: "d" },
       },
-      { name: "Cleaning Partners" },
-      (href) => `resolved:${href}`
-    )
-    expect(copy.title).toBe("Cookies at Cleaning Partners")
-    expect(copy.policyLink).toEqual({
-      label: "Policy",
-      href: "resolved:/privacy",
+      version: 2,
+      reconsentMonths: 3,
     })
+    expect(copy.title).toBe("Cookies at (085) 8062369")
+    // linkView re-checks the href: an unsafe one renders "#".
+    expect(copy.policyLink).toEqual({ label: "Policy", href: "#" })
     expect(copy.version).toBe(2)
   })
 })

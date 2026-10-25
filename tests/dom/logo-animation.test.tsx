@@ -31,10 +31,46 @@ import {
   LOTTIE_WASM_URL,
   LogoAnimation,
 } from "@/components/home/logo-animation"
+import { SiteFooter, type SiteFooterProps } from "@/components/home/site-footer"
+import { SiteHeader, type SiteHeaderProps } from "@/components/home/site-header"
 
-// Phase 3 restores the SiteHeader / SiteFooter cases when they take the logo
-// as props; here the player is exercised through LogoAnimation itself.
 const SRC = "/api/v1/media/file/2026/10/a.json"
+
+const header = (animation?: string): SiteHeaderProps => ({
+  topBar: {
+    phone: "24hr contact: 1",
+    phoneHref: "tel:+1",
+    email: "a@b.ie",
+    emailHref: "mailto:a@b.ie",
+    hours: "Always",
+  },
+  logo: {
+    src: "/images/logo.png",
+    alt: "Cleaning Partners Ltd.",
+    href: "/",
+    ...(animation ? { animation } : {}),
+  },
+  links: [{ label: "About", href: "/about" }],
+  cta: { label: "Quote", href: "#contact" },
+  menuAria: "Menu",
+})
+
+const footer = (animation?: string): SiteFooterProps => ({
+  logo: {
+    src: "/images/logo.png",
+    alt: "Cleaning Partners Ltd.",
+    ...(animation ? { animation } : {}),
+  },
+  tagline: "Tagline",
+  quickLinks: { title: "Links", links: [{ label: "About", href: "/about" }] },
+  contact: { title: "Contact", lines: ["a", "b"] },
+  group: { title: "Group", companies: [] },
+  copyright: "(c)",
+  legal: {
+    privacy: { label: "Privacy", href: "#" },
+    terms: { label: "Terms", href: "#" },
+  },
+})
 
 function Logo({ animation }: { animation?: string }) {
   return (
@@ -63,6 +99,34 @@ beforeEach(() => {
 })
 
 describe("animated logo (settings.site.logoAnimation)", () => {
+  it("without an animation the header and footer render only the static logo", () => {
+    for (const html of [
+      renderToStaticMarkup(<SiteHeader {...header()} />),
+      renderToStaticMarkup(<SiteFooter {...footer()} />),
+    ]) {
+      expect(html).toContain('alt="Cleaning Partners Ltd."')
+      expect(html).not.toContain("<canvas")
+      expect(html).not.toContain("data-logo-animation")
+    }
+  })
+
+  it("the header and footer mount the player in their logo box", async () => {
+    const { unmount } = render(<SiteHeader {...header(SRC)} />)
+    await waitFor(() => expect(players).toHaveLength(1))
+    const headerCanvas = players[0].config.canvas as HTMLCanvasElement
+    const headerImg = screen.getByAltText("Cleaning Partners Ltd.")
+    expect(headerCanvas.parentElement).toBe(headerImg.parentElement)
+    expect(headerImg.parentElement).toHaveAttribute("href", "/")
+    unmount()
+
+    render(<SiteFooter {...footer(SRC)} />)
+    await waitFor(() => expect(players).toHaveLength(2))
+    const footerCanvas = players[1].config.canvas as HTMLCanvasElement
+    expect(footerCanvas.parentElement).toBe(
+      screen.getByAltText("Cleaning Partners Ltd.").parentElement
+    )
+  })
+
   it("server HTML with an animation is the static logo only (the player is client-only)", () => {
     const html = renderToStaticMarkup(<Logo animation={SRC} />)
     expect(html).not.toContain("<canvas")

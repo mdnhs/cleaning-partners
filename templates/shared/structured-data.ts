@@ -1,11 +1,15 @@
-import { interpolate, type Placeholders } from "@/lib/interpolate"
+import { interpolate } from "@/lib/interpolate"
+import { absoluteUrl } from "@/lib/seo/urls"
 import type { OrganizationSettings } from "@/lib/schemas/settings/seo-defaults"
 
-// schema.org JSON-LD (spec §10) as plain objects: the business on every page
-// and BreadcrumbList on detail pages. Every value comes from settings
-// (site, contact, seo.defaults.organization) and the services collection;
-// nothing about the business is written here. Phase 8 wires these into the
-// layouts and pages.
+import type { SiteSources } from "./sources"
+import { placeholders } from "./views"
+
+// schema.org JSON-LD (spec §10) as plain objects: the business on every
+// page, Article on articles and BreadcrumbList on detail pages. Every value
+// comes from settings (site, contact, seo.defaults.organization), the
+// services collection and the page templates; nothing about the business is
+// written here. Phase 8 renders them in the layouts and pages.
 
 export type OrganizationInput = {
   type: OrganizationSettings["type"]
@@ -104,26 +108,32 @@ export function breadcrumbJsonLd(
   }
 }
 
-/** Settings values the site-wide node needs; services are already published ones. */
-export type SiteJsonLdSources = {
-  origin: string
-  site: { name: string; legalName: string; logoUrl: string }
-  contact: { office: string; email: string }
-  organization: OrganizationSettings
-  services: { title: string; slug: string }[]
-  values: Placeholders
+export type ArticleJsonLd = {
+  "@context": "https://schema.org"
+  "@type": "Article"
+  headline: string
+  description: string
+  image: string
+  url: string
+  datePublished?: string
+  articleSection: string
+  author: { "@type": "Organization"; name: string }
+  publisher: { "@id": string }
 }
 
-export function siteJsonLd(s: SiteJsonLdSources): OrganizationJsonLd {
-  const { organization: org } = s
+/** The business on every page, from SiteSources (origin: the public origin). */
+export function siteJsonLd(s: SiteSources, origin: string): OrganizationJsonLd {
+  const { site, contact } = s.settings
+  const org = s.settings["seo.defaults"].organization
+  const values = placeholders(s)
   return organizationJsonLd({
     type: org.type,
-    url: s.origin,
-    name: s.site.name,
-    legalName: s.site.legalName,
-    logo: new URL(s.site.logoUrl, s.origin).toString(),
-    telephone: s.contact.office,
-    email: s.contact.email,
+    url: origin,
+    name: site.name,
+    legalName: site.legalName,
+    logo: absoluteUrl(origin, site.logo.url),
+    telephone: contact.office,
+    email: contact.email,
     address: {
       streetAddress: org.streetAddress,
       addressLocality: org.addressLocality,
@@ -134,8 +144,76 @@ export function siteJsonLd(s: SiteJsonLdSources): OrganizationJsonLd {
     areaServed: org.areaServed,
     sameAs: org.sameAs,
     services: s.services.map((service) => ({
-      name: interpolate(service.title, s.values),
-      url: new URL(`/services/${service.slug}`, s.origin).toString(),
+      name: interpolate(service.content.title, values),
+      url: absoluteUrl(origin, `/services/${service.slug}`),
     })),
   })
+}
+
+/** Home > Services > the service; null for an unknown slug. */
+export function serviceJsonLd(
+  s: SiteSources,
+  slug: string,
+  origin: string
+): BreadcrumbJsonLd[] | null {
+  const service = s.services.find((x) => x.slug === slug)
+  if (!service) return null
+  const { detail } = s.pages.services.data
+  return [
+    breadcrumbJsonLd([
+      {
+        name: s.settings.navigation.breadcrumbHome,
+        url: absoluteUrl(origin, "/"),
+      },
+      {
+        name: detail.breadcrumbLabel,
+        url: absoluteUrl(origin, "/services"),
+      },
+      {
+        name: interpolate(service.content.title, placeholders(s)),
+        url: absoluteUrl(origin, `/services/${slug}`),
+      },
+    ]),
+  ]
+}
+
+/** Article + Home > Blog > the article; null for an unknown slug. */
+export function articleJsonLdFor(
+  s: SiteSources,
+  slug: string,
+  origin: string
+): (ArticleJsonLd | BreadcrumbJsonLd)[] | null {
+  const article = s.articles.find((a) => a.slug === slug)
+  if (!article) return null
+  const values = placeholders(s)
+  const copy = s.pages.blog.data.article
+  const headline = interpolate(article.content.title, values)
+  const url = absoluteUrl(origin, `/blog/${slug}`)
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline,
+      description: interpolate(article.content.excerpt, values),
+      image: absoluteUrl(
+        origin,
+        article.seo.ogImage?.url ?? article.content.cover.url
+      ),
+      url,
+      ...(article.publishedAt
+        ? { datePublished: article.publishedAt.toISOString() }
+        : {}),
+      articleSection: article.category.name,
+      author: { "@type": "Organization", name: copy.authorName },
+      publisher: { "@id": organizationId(origin) },
+    },
+    breadcrumbJsonLd([
+      {
+        name: s.settings.navigation.breadcrumbHome,
+        url: absoluteUrl(origin, "/"),
+      },
+      { name: copy.breadcrumbBlog, url: absoluteUrl(origin, "/blog") },
+      { name: headline, url },
+    ]),
+  ]
 }

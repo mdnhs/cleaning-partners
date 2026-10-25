@@ -1,38 +1,35 @@
 "use client"
 
-const networks = [
-  {
-    label: "f",
-    name: "Facebook",
-    url: (u: string) => `https://www.facebook.com/sharer/sharer.php?u=${u}`,
-  },
-  {
-    label: "in",
-    name: "LinkedIn",
-    url: (u: string) =>
-      `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
-  },
-  {
-    label: "X",
-    name: "X",
-    url: (u: string) => `https://x.com/intent/post?url=${u}`,
-  },
-]
+import { interpolate, shareHref } from "@/lib/interpolate"
 
-export function ShareLinks() {
+export type ShareLinksProps = {
+  label: string
+  /** Accessible name template; {network} is the network's name */
+  aria: string
+  /** The article's title, for {title} in a network's address template */
+  title: string
+  networks: {
+    label: string
+    name: string
+    /** Address template; {url} (and {title}) are filled in encoded */
+    url: string
+  }[]
+}
+
+export function ShareLinks({ label, aria, title, networks }: ShareLinksProps) {
   return (
     <div className="flex items-center gap-2">
       <p className="font-heading text-base/[normal] font-bold text-ink">
-        Share:
+        {label}
       </p>
       {networks.map((network) => (
         <button
           key={network.name}
           type="button"
-          aria-label={`Share on ${network.name}`}
+          aria-label={interpolate(aria, { network: network.name })}
           onClick={() =>
             window.open(
-              network.url(encodeURIComponent(window.location.href)),
+              shareHref(network.url, { url: window.location.href, title }),
               "_blank",
               "noopener,noreferrer,width=600,height=540"
             )

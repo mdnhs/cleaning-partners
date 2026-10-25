@@ -3,12 +3,32 @@ import Image from "next/image"
 import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/home/section-heading"
 
-export function Hero() {
+type CtaLink = { label: string; href: string }
+
+export type HeroProps = {
+  background: string
+  logo: { src: string; alt: string }
+  title: string
+  subtitle: string
+  primaryCta: CtaLink
+  secondaryCta: CtaLink
+  member: { label: string; logo: string; logoAlt: string }
+}
+
+export function Hero({
+  background,
+  logo,
+  title,
+  subtitle,
+  primaryCta,
+  secondaryCta,
+  member,
+}: HeroProps) {
   return (
     <section data-hero className="relative overflow-hidden">
       <div aria-hidden data-hero-bg className="absolute inset-0">
         <Image
-          src="/images/home/hero.png"
+          src={background}
           alt=""
           fill
           sizes="100vw"
@@ -29,8 +49,8 @@ export function Hero() {
         >
           <div className="relative h-[130px] w-[146px] md:h-40 md:w-[180px]">
             <Image
-              src="/images/home/cleaning-partners-logo.png"
-              alt="Cleaning Partners"
+              src={logo.src}
+              alt={logo.alt}
               fill
               sizes="180px"
               className="object-contain"
@@ -44,15 +64,14 @@ export function Hero() {
           data-hero-title
           className="font-heading text-[44px] leading-[1.05] font-bold text-white md:text-[64px]"
         >
-          Cleaning Partners Ltd.
+          {title}
         </h1>
         <p
           data-intro
           data-hero-copy
           className="max-w-[640px] text-lg leading-[1.55] text-white/90 md:text-xl"
         >
-          The Clean Team. Medical, commercial and domestic cleaning you can rely
-          on, across the midlands and beyond.
+          {subtitle}
         </p>
 
         <div
@@ -61,19 +80,19 @@ export function Hero() {
           className="flex flex-wrap justify-center gap-4 pt-2"
         >
           <a
-            href="#contact"
+            href={primaryCta.href}
             className={buttonVariants({ variant: "brand", size: "pill" })}
           >
-            Get a Free Quote
+            {primaryCta.label}
           </a>
           <a
-            href="#services"
+            href={secondaryCta.href}
             className={buttonVariants({
               variant: "outline-light",
               size: "pill",
             })}
           >
-            Our Services
+            {secondaryCta.label}
           </a>
         </div>
 
@@ -82,11 +101,11 @@ export function Hero() {
           data-hero-member
           className="flex items-center gap-3 pt-3"
         >
-          <p className="text-sm font-medium text-white/80">Proud member of</p>
+          <p className="text-sm font-medium text-white/80">{member.label}</p>
           <div className="relative h-[42px] w-20">
             <Image
-              src="/images/home/icca.png"
-              alt="Irish Contract Cleaning Association"
+              src={member.logo}
+              alt={member.logoAlt}
               fill
               sizes="80px"
               className="object-contain"

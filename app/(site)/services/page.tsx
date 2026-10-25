@@ -1,41 +1,26 @@
 import type { Metadata } from "next"
+import { connection } from "next/server"
 
-import { Clients } from "@/components/home/clients"
-import { Contact } from "@/components/home/contact"
-import { PageHero } from "@/components/home/page-hero"
-import { SiteFooter } from "@/components/home/site-footer"
-import { SiteHeader } from "@/components/home/site-header"
-import { Testimonials } from "@/components/home/testimonials"
-import { WhyChooseUs } from "@/components/home/why-choose-us"
-import { HomeMotion } from "@/components/motion/home-motion"
-import { ServicesGrid } from "@/components/services/services-grid"
+import { SiteThemed } from "@/components/site-themed"
+import { loadSiteSources } from "@/server/modules/pages/sources"
+import { ServicesTemplate } from "@/templates/services/render"
+import { servicesView } from "@/templates/services/view"
+import { pageMetadata } from "@/templates/shared/page-meta"
 
-export const metadata: Metadata = {
-  title: "Our Services | Cleaning Partners Ltd.",
-  description:
-    "Medical, education, commercial and retail cleaning plus ULV fogging for hospitals, GP clinics, schools, offices, shops and homes across Ireland.",
+export async function generateMetadata(): Promise<Metadata> {
+  await connection()
+  return pageMetadata(await loadSiteSources(), "services")
 }
 
 export default function ServicesPage() {
   return (
-    <HomeMotion>
-      <div className="bg-white text-ink">
-        <SiteHeader active="Services" />
-        <main>
-          <PageHero
-            crumb="Services"
-            title="Our Services"
-            description="Cleaning for hospitals, health centres and GP clinics, schools and colleges, offices, shops and homes."
-            image="/images/home/cleaning-the-counter.png"
-          />
-          <ServicesGrid />
-          <WhyChooseUs />
-          <Clients />
-          <Testimonials />
-          <Contact />
-        </main>
-        <SiteFooter />
-      </div>
-    </HomeMotion>
+    <SiteThemed>
+      <Content />
+    </SiteThemed>
   )
+}
+
+async function Content() {
+  await connection()
+  return <ServicesTemplate view={servicesView(await loadSiteSources())} />
 }

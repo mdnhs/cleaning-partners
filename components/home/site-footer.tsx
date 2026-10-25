@@ -1,30 +1,30 @@
 import Image from "next/image"
 import Link from "next/link"
 
+import { LogoAnimation } from "@/components/home/logo-animation"
 import { Container } from "@/components/home/section-heading"
-import { navLinks } from "@/components/home/site-header"
 
-const contactLines = [
-  "Derryguile, Mountmellick",
-  "Co. Laois, R32 YX49",
-  "Tel: 057 8697670 Ext 4",
-  "info@cleaningpartners.ie",
-]
+type FooterLink = { label: string; href: string }
 
-const groupCompanies = [
-  {
-    name: "Security Partners",
-    phone: "Tel: (085) 8591299",
-    site: "www.securitypartnersltd.ie",
-    logo: "/images/home/security-partners.png",
-  },
-  {
-    name: "MJS Eco",
-    phone: "Tel: 087 294 8880",
-    site: "www.mjseco.ie",
-    logo: "/images/home/mjs-eco.png",
-  },
-]
+export type SiteFooterProps = {
+  /** animation: Lottie file URL (settings.site.logoAnimation); absent = none */
+  logo: { src: string; alt: string; animation?: string }
+  tagline: string
+  quickLinks: { title: string; links: FooterLink[] }
+  contact: { title: string; lines: string[] }
+  group: {
+    title: string
+    companies: {
+      name: string
+      phone: string
+      site: string
+      href: string
+      logo: string
+    }[]
+  }
+  copyright: string
+  legal: { privacy: FooterLink; terms: FooterLink }
+}
 
 function ColumnTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -34,7 +34,15 @@ function ColumnTitle({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function SiteFooter() {
+export function SiteFooter({
+  logo,
+  tagline,
+  quickLinks,
+  contact,
+  group,
+  copyright,
+  legal,
+}: SiteFooterProps) {
   return (
     <footer className="bg-navy-dark pt-20 pb-8">
       <Container className="flex flex-col gap-12">
@@ -46,25 +54,25 @@ export function SiteFooter() {
             <div className="rounded-2xl bg-white px-3 py-2">
               <div className="relative h-[76px] w-[84px]">
                 <Image
-                  src="/images/home/logo.png"
-                  alt="Cleaning Partners"
+                  src={logo.src}
+                  alt={logo.alt}
                   fill
                   sizes="84px"
                   className="object-contain"
                 />
+                {logo.animation ? <LogoAnimation src={logo.animation} /> : null}
               </div>
             </div>
             <p className="text-[15px] leading-[1.65] text-white/70">
-              The Clean Team. Medical, commercial and domestic cleaning from
-              Mountmellick, Co. Laois.
+              {tagline}
             </p>
           </div>
 
           <nav className="flex flex-col gap-3.5">
-            <ColumnTitle>QUICK LINKS</ColumnTitle>
-            {navLinks.map((link) => (
+            <ColumnTitle>{quickLinks.title}</ColumnTitle>
+            {quickLinks.links.map((link) => (
               <Link
-                key={link.label}
+                key={link.href}
                 href={link.href}
                 className="text-[15px] leading-[1.5] text-white/80 hover:text-white"
               >
@@ -74,8 +82,8 @@ export function SiteFooter() {
           </nav>
 
           <div className="flex flex-col gap-3.5">
-            <ColumnTitle>CONTACT</ColumnTitle>
-            {contactLines.map((line) => (
+            <ColumnTitle>{contact.title}</ColumnTitle>
+            {contact.lines.map((line) => (
               <p key={line} className="text-[15px] leading-[1.5] text-white/80">
                 {line}
               </p>
@@ -83,11 +91,11 @@ export function SiteFooter() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <ColumnTitle>OTHER SERVICES IN THE GROUP</ColumnTitle>
-            {groupCompanies.map((company) => (
+            <ColumnTitle>{group.title}</ColumnTitle>
+            {group.companies.map((company) => (
               <a
                 key={company.name}
-                href={`https://${company.site}`}
+                href={company.href}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-3.5 rounded-2xl bg-white/7 px-4 py-3.5 transition-colors hover:bg-white/12"
@@ -122,14 +130,14 @@ export function SiteFooter() {
         <div className="h-px w-full bg-white/12" />
 
         <div className="flex flex-col justify-between gap-2 text-sm/[normal] text-white/60 sm:flex-row">
-          <p>© 2026 Cleaning Partners Ltd. All rights reserved.</p>
+          <p>{copyright}</p>
           <p className="flex gap-3">
-            <Link href="#" className="hover:text-white">
-              Privacy Policy
+            <Link href={legal.privacy.href} className="hover:text-white">
+              {legal.privacy.label}
             </Link>
             <span aria-hidden>·</span>
-            <Link href="#" className="hover:text-white">
-              Terms
+            <Link href={legal.terms.href} className="hover:text-white">
+              {legal.terms.label}
             </Link>
           </p>
         </div>

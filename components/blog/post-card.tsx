@@ -1,9 +1,29 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import type { BlogPost } from "@/lib/blog-posts"
+/** An article as the cards and lists show it (built by templates/shared/views.ts). */
+export type PostCardData = {
+  slug: string
+  /** The article's page */
+  href: string
+  title: string
+  excerpt: string
+  category: string
+  /** ISO calendar date, for <time dateTime> */
+  date: string
+  displayDate: string
+  cover: string
+  /** "5 min read"; null when the article has none */
+  readTime: string | null
+}
 
-export function PostCard({ post }: { post: BlogPost }) {
+export function PostCard({
+  post,
+  readArticle,
+}: {
+  post: PostCardData
+  readArticle: string
+}) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-[0px_10px_30px_0px_rgba(13,38,64,0.06)] transition-[translate,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.12)]">
       <div className="relative h-[230px] w-full overflow-hidden">
@@ -28,7 +48,7 @@ export function PostCard({ post }: { post: BlogPost }) {
           </time>
         </div>
         <h3 className="line-clamp-2 font-heading text-2xl leading-[1.2] font-bold text-ink">
-          <Link href={`/blog/${post.slug}`} className="hover:text-navy">
+          <Link href={post.href} className="hover:text-navy">
             {post.title}
           </Link>
         </h3>
@@ -36,10 +56,10 @@ export function PostCard({ post }: { post: BlogPost }) {
           {post.excerpt}
         </p>
         <Link
-          href={`/blog/${post.slug}`}
+          href={post.href}
           className="font-heading text-base/[normal] font-bold text-navy hover:text-brand"
         >
-          Read Article&nbsp;&nbsp;→
+          {readArticle}
         </Link>
       </div>
     </article>

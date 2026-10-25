@@ -1,58 +1,43 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { connection } from "next/server"
 
-import { Contact } from "@/components/home/contact"
-import { PageHero } from "@/components/home/page-hero"
-import { SiteFooter } from "@/components/home/site-footer"
-import { SiteHeader } from "@/components/home/site-header"
-import { Testimonials } from "@/components/home/testimonials"
-import { WhyChooseUs } from "@/components/home/why-choose-us"
-import { HomeMotion } from "@/components/motion/home-motion"
-import { HowItWorks } from "@/components/services/how-it-works"
-import { ServiceOverview } from "@/components/services/service-overview"
-import { getService, services } from "@/lib/services"
+import { SiteThemed } from "@/components/site-themed"
+import { loadSiteSources } from "@/server/modules/pages/sources"
+import { ServiceDetailTemplate } from "@/templates/services/render"
+import { serviceDetailView } from "@/templates/services/view"
+import { serviceMetadata } from "@/templates/shared/page-meta"
 
-export function generateStaticParams() {
-  return services.map((service) => ({ slug: service.slug }))
+// Interim, while the sources are fixture-backed: Task 9 drops it when the
+// page reads the database.
+export async function generateStaticParams() {
+  return (await loadSiteSources()).services.map((s) => ({ slug: s.slug }))
 }
 
 export async function generateMetadata({
   params,
 }: PageProps<"/services/[slug]">): Promise<Metadata> {
-  const service = getService((await params).slug)
-  if (!service) return {}
-  return {
-    title: `${service.title} | Cleaning Partners Ltd.`,
-    description: service.heroDescription,
-  }
+  await connection()
+  const { slug } = await params
+  return serviceMetadata(await loadSiteSources(), slug)
 }
 
-export default async function ServicePage({
-  params,
-}: PageProps<"/services/[slug]">) {
-  const service = getService((await params).slug)
-  if (!service) notFound()
-
+export default function ServicePage({ params }: PageProps<"/services/[slug]">) {
   return (
-    <HomeMotion>
-      <div className="bg-white text-ink">
-        <SiteHeader active="Services" />
-        <main>
-          <PageHero
-            parents={[{ label: "Services", href: "/services" }]}
-            crumb={service.title}
-            title={service.title}
-            description={service.heroDescription}
-            image={service.cover}
-          />
-          <ServiceOverview service={service} />
-          <HowItWorks />
-          <WhyChooseUs />
-          <Testimonials />
-          <Contact />
-        </main>
-        <SiteFooter />
-      </div>
-    </HomeMotion>
+    <SiteThemed>
+      <Content params={params} />
+    </SiteThemed>
   )
+}
+
+async function Content({
+  params,
+}: Pick<PageProps<"/services/[slug]">, "params">) {
+  await connection()
+  const { slug } = await params
+  const view = serviceDetailView(await loadSiteSources(), slug)
+  // Unknown slugs: a soft 404 (the status can't change once the shell has
+  // streamed), noindex'ed by Next.
+  if (!view) notFound()
+  return <ServiceDetailTemplate view={view} />
 }

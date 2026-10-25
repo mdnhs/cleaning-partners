@@ -1,4 +1,4 @@
-import { interpolate, type Placeholders } from "@/lib/interpolate"
+import { interpolate } from "@/lib/interpolate"
 import type { Link } from "@/lib/schemas/common"
 import {
   type ConsentSettings,
@@ -6,6 +6,9 @@ import {
   DEFAULT_CONSENT_VERSION,
   DEFAULT_RECONSENT_MONTHS,
 } from "@/lib/schemas/settings/consent"
+
+import type { SiteSources } from "./sources"
+import { linkView, placeholders } from "./views"
 
 type CategoryCopy = { label: string; description: string }
 
@@ -30,14 +33,16 @@ export type ConsentBannerCopy = {
 }
 
 /**
- * Banner copy with {placeholders} filled. The policy link goes through
- * `resolveHref` (the view layer's placeholder-and-safety check on hrefs).
+ * Banner copy with {placeholders} filled; the policy link goes through
+ * linkView (placeholders filled, href re-checked). `consent` is the
+ * published settings.consent (read apart from the page sources: it is not a
+ * page setting).
  */
 export function consentBannerCopy(
-  consent: ConsentSettings,
-  values: Placeholders,
-  resolveHref: (href: string) => string
+  s: SiteSources,
+  consent: ConsentSettings
 ): ConsentBannerCopy {
+  const values = placeholders(s)
   const t = (text: string) => interpolate(text, values)
   const category = (c: CategoryCopy) => ({
     label: t(c.label),
@@ -54,10 +59,7 @@ export function consentBannerCopy(
     // Public reads are not re-parsed: a value stored before closeLabel
     // existed has none, so the schema default applies here too.
     closeLabel: t(consent.closeLabel || DEFAULT_CLOSE_LABEL),
-    policyLink: {
-      label: consent.policyLink.label,
-      href: resolveHref(consent.policyLink.href),
-    },
+    policyLink: linkView(s, consent.policyLink),
     categories: {
       necessary: category(consent.categories.necessary),
       analytics: category(consent.categories.analytics),

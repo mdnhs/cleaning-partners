@@ -1,34 +1,26 @@
-import { Blog } from "@/components/home/blog"
-import { Clients } from "@/components/home/clients"
-import { Contact } from "@/components/home/contact"
-import { HomeMotion } from "@/components/motion/home-motion"
-import { Hero } from "@/components/home/hero"
-import { LocationMap } from "@/components/home/location-map"
-import { Services } from "@/components/home/services"
-import { SiteFooter } from "@/components/home/site-footer"
-import { SiteHeader } from "@/components/home/site-header"
-import { Team } from "@/components/home/team"
-import { Testimonials } from "@/components/home/testimonials"
-import { WhyChooseUs } from "@/components/home/why-choose-us"
+import type { Metadata } from "next"
+import { connection } from "next/server"
 
-export default function Page() {
+import { SiteThemed } from "@/components/site-themed"
+import { loadSiteSources } from "@/server/modules/pages/sources"
+import { HomeTemplate } from "@/templates/home/render"
+import { homeView } from "@/templates/home/view"
+import { pageMetadata } from "@/templates/shared/page-meta"
+
+export async function generateMetadata(): Promise<Metadata> {
+  await connection()
+  return pageMetadata(await loadSiteSources(), "home")
+}
+
+export default function HomePage() {
   return (
-    <HomeMotion>
-      <div className="bg-white text-ink">
-        <SiteHeader />
-        <main>
-          <Hero />
-          <Clients />
-          <Services />
-          <WhyChooseUs />
-          <Testimonials />
-          <Team />
-          <Blog />
-          <Contact />
-          <LocationMap />
-        </main>
-        <SiteFooter />
-      </div>
-    </HomeMotion>
+    <SiteThemed>
+      <Content />
+    </SiteThemed>
   )
+}
+
+async function Content() {
+  await connection()
+  return <HomeTemplate view={homeView(await loadSiteSources())} />
 }

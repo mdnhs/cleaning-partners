@@ -4,24 +4,31 @@ import Link from "next/link"
 import { buttonVariants } from "@/components/ui/button"
 import { Container, SectionHeading } from "@/components/home/section-heading"
 
-const services = [
-  {
-    title: "Medical Cleaning",
-    description:
-      "Hygienic, compliant cleaning for clinics and healthcare settings.",
-  },
-  {
-    title: "Commercial Cleaning",
-    description:
-      "Offices, schools and workplaces kept spotless, on your schedule.",
-  },
-  {
-    title: "Domestic Cleaning",
-    description: "Reliable home cleaning, from regular visits to deep cleans.",
-  },
-]
+type Picture = { src: string; alt: string }
 
-export function Services() {
+export type ServicesProps = {
+  imageA: Picture
+  imageB: Picture
+  eyebrow: string
+  title: string
+  description: string
+  items: { title: string; description: string }[]
+  itemIcon: string
+  moreText: string
+  cta: { label: string; href: string }
+}
+
+export function Services({
+  imageA,
+  imageB,
+  eyebrow,
+  title,
+  description,
+  items,
+  itemIcon,
+  moreText,
+  cta,
+}: ServicesProps) {
   return (
     <section
       id="services"
@@ -35,8 +42,8 @@ export function Services() {
             className="relative aspect-[280/440] flex-1 overflow-hidden rounded-[28px] lg:h-[440px] lg:w-[280px] lg:flex-none"
           >
             <Image
-              src="/images/home/cleaning-the-counter.png"
-              alt="Cleaner wiping down a counter"
+              src={imageA.src}
+              alt={imageA.alt}
               fill
               sizes="(min-width: 1024px) 280px, 50vw"
               className="object-cover"
@@ -48,8 +55,8 @@ export function Services() {
               className="relative aspect-[280/440] overflow-hidden rounded-[28px] lg:h-[440px] lg:w-[280px]"
             >
               <Image
-                src="/images/home/vacuuming.png"
-                alt="Cleaner vacuuming an office"
+                src={imageB.src}
+                alt={imageB.alt}
                 fill
                 sizes="(min-width: 1024px) 280px, 50vw"
                 className="object-cover"
@@ -61,20 +68,20 @@ export function Services() {
         <div className="flex min-w-0 flex-1 flex-col items-start gap-6">
           <SectionHeading
             align="left"
-            eyebrow="CHECK OUT"
-            title="Our Services"
-            description="Clean as a button! Professional cleaning tailored to your space, delivered by trained and trusted teams."
+            eyebrow={eyebrow}
+            title={title}
+            description={description}
           />
 
           <ul className="flex w-full flex-col gap-3.5">
-            {services.map((service) => (
+            {items.map((service) => (
               <li
                 key={service.title}
                 data-service-item
                 className="flex items-center gap-4 rounded-[18px] border border-line bg-white px-5 py-[18px]"
               >
                 <Image
-                  src="/images/home/check.svg"
+                  src={itemIcon}
                   alt=""
                   width={26}
                   height={26}
@@ -93,12 +100,12 @@ export function Services() {
           </ul>
 
           <div data-services-more className="flex flex-col items-start gap-6">
-            <p className="text-base text-body italic">and more...</p>
+            <p className="text-base text-body italic">{moreText}</p>
             <Link
-              href="/services"
+              href={cta.href}
               className={buttonVariants({ variant: "navy", size: "pill" })}
             >
-              View All Services
+              {cta.label}
             </Link>
           </div>
         </div>

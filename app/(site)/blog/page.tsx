@@ -1,58 +1,51 @@
 import type { Metadata } from "next"
-import { Suspense } from "react"
+import { connection } from "next/server"
 
 import { BlogList } from "@/components/blog/blog-list"
-import { Contact } from "@/components/home/contact"
-import { PageHero } from "@/components/home/page-hero"
-import { SiteFooter } from "@/components/home/site-footer"
-import { SiteHeader } from "@/components/home/site-header"
-import { HomeMotion } from "@/components/motion/home-motion"
+import { SiteThemed } from "@/components/site-themed"
+import { loadSiteSources } from "@/server/modules/pages/sources"
+import { BlogTemplate } from "@/templates/blog/render"
+import { blogView } from "@/templates/blog/view"
+import { pageMetadata } from "@/templates/shared/page-meta"
 
-export const metadata: Metadata = {
-  title: "Our Blog | Cleaning Partners Ltd.",
-  description: "Cleaning tips, hygiene advice and news from the Clean Team.",
+export async function generateMetadata(): Promise<Metadata> {
+  await connection()
+  return pageMetadata(await loadSiteSources(), "blog")
 }
 
-// `searchParams` is runtime data: under Cache Components it is read inside
-// <Suspense>, so the page can still prerender a shell.
+// `searchParams` is runtime data: it is read inside <Suspense> (SiteThemed),
+// so the page can still prerender a shell.
 export default function BlogPage({ searchParams }: PageProps<"/blog">) {
   return (
-    <Suspense>
-      <BlogContent searchParams={searchParams} />
-    </Suspense>
+    <SiteThemed>
+      <Content searchParams={searchParams} />
+    </SiteThemed>
   )
 }
 
-async function BlogContent({
+async function Content({
   searchParams,
-}: {
-  searchParams: PageProps<"/blog">["searchParams"]
-}) {
-  const { category, q } = await searchParams
+}: Pick<PageProps<"/blog">, "searchParams">) {
+  await connection()
+  const [{ category, q }, sources] = await Promise.all([
+    searchParams,
+    loadSiteSources(),
+  ])
+  const view = blogView(sources)
   const initialCategory = typeof category === "string" ? category : undefined
   const initialQuery = typeof q === "string" ? q : undefined
-
   return (
-    <HomeMotion>
-      <div className="bg-white text-ink">
-        <SiteHeader active="Blog" />
-        <main>
-          <PageHero
-            crumb="Blog"
-            title="Our Blog"
-            description="Cleaning tips, hygiene advice and news from the Clean Team."
-            image="/images/home/vacuuming.png"
-          />
-          <BlogList
-            // Remount when arriving from a sidebar category or search link
-            key={`${initialCategory}|${initialQuery}`}
-            initialCategory={initialCategory}
-            initialQuery={initialQuery}
-          />
-          <Contact />
-        </main>
-        <SiteFooter />
-      </div>
-    </HomeMotion>
+    <BlogTemplate
+      view={view}
+      posts={
+        <BlogList
+          {...view.posts}
+          // Remount when arriving from a sidebar category or search link
+          key={`${initialCategory}|${initialQuery}`}
+          initialCategory={initialCategory}
+          initialQuery={initialQuery}
+        />
+      }
+    />
   )
 }

@@ -3,9 +3,42 @@ import Link from "next/link"
 
 import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/home/section-heading"
-import { services } from "@/lib/services"
 
-export function ServicesGrid() {
+export type ServicesGridProps = {
+  eyebrow: string
+  title: string
+  intro: string
+  priceBadge: string
+  services: {
+    slug: string
+    title: string
+    icon: string
+    summary: string
+    tags: string[]
+    href: string
+    learnMoreAria: string
+  }[]
+  learnMore: string
+  quoteCta: { label: string; href: string }
+  helpCard: {
+    icon: string
+    title: string
+    body: string
+    cta: { label: string; href: string }
+    call: { label: string; href: string }
+  }
+}
+
+export function ServicesGrid({
+  eyebrow,
+  title,
+  intro,
+  priceBadge,
+  services,
+  learnMore,
+  quoteCta,
+  helpCard,
+}: ServicesGridProps) {
   return (
     <section id="services" className="bg-surface py-16 md:py-28">
       <Container className="flex flex-col items-center gap-14">
@@ -14,17 +47,16 @@ export function ServicesGrid() {
             data-reveal
             className="font-heading text-[15px]/[normal] font-bold tracking-[1.5px] text-brand"
           >
-            CHECK OUT
+            {eyebrow}
           </p>
           <h2
             data-split
             className="font-heading text-4xl leading-[1.15] font-bold text-ink md:text-5xl"
           >
-            Clean as a Button!
+            {title}
           </h2>
           <p data-reveal className="text-lg leading-[1.6] text-body">
-            Professional cleaning tailored to your space, delivered by trained
-            and trusted teams. Prices vary, so every quote is tailored to you.
+            {intro}
           </p>
         </div>
 
@@ -42,7 +74,7 @@ export function ServicesGrid() {
                   <Image src={service.icon} alt="" width={32} height={32} />
                 </div>
                 <span className="rounded-full bg-surface px-3.5 py-1.5 font-heading text-sm/[normal] font-semibold text-navy">
-                  Prices Vary
+                  {priceBadge}
                 </span>
               </div>
               <h3 className="font-heading text-[26px]/[normal] font-bold text-ink">
@@ -64,21 +96,21 @@ export function ServicesGrid() {
               <div aria-hidden className="flex-1" />
               <div className="flex items-center justify-between gap-4">
                 <Link
-                  href={`/services/${service.slug}`}
-                  aria-label={`Learn more about ${service.title}`}
+                  href={service.href}
+                  aria-label={service.learnMoreAria}
                   className="font-heading text-base/[normal] font-bold text-navy hover:text-brand"
                 >
-                  Learn More&nbsp;&nbsp;→
+                  {learnMore}
                 </Link>
                 <a
-                  href="#contact"
+                  href={quoteCta.href}
                   className={buttonVariants({
                     variant: "brand",
                     size: "pill-sm",
                     className: "px-[22px] py-[11px] text-[15px]/[normal]",
                   })}
                 >
-                  Get A Quote
+                  {quoteCta.label}
                 </a>
               </div>
             </li>
@@ -86,36 +118,30 @@ export function ServicesGrid() {
 
           <li className="flex flex-col items-start gap-4 rounded-3xl bg-navy px-8 py-9">
             <div className="flex size-16 items-center justify-center rounded-[18px] bg-white/14">
-              <Image
-                src="/images/services/icon-help.svg"
-                alt=""
-                width={32}
-                height={32}
-              />
+              <Image src={helpCard.icon} alt="" width={32} height={32} />
             </div>
             <h3 className="font-heading text-[28px]/[normal] font-bold text-white">
-              Not sure what you need?
+              {helpCard.title}
             </h3>
             <p className="text-base leading-[1.6] text-white/85">
-              Tell us about your space and we&apos;ll put together a cleaning
-              plan and price that suits you.
+              {helpCard.body}
             </p>
             <div aria-hidden className="flex-1" />
             <a
-              href="#contact"
+              href={helpCard.cta.href}
               className={buttonVariants({
                 variant: "light",
                 size: "pill",
                 className: "text-navy",
               })}
             >
-              Contact Us
+              {helpCard.cta.label}
             </a>
             <a
-              href="tel:+353578697670"
+              href={helpCard.call.href}
               className="text-[15px]/[normal] font-medium text-white/85 hover:text-white"
             >
-              Or call 057 8697670 Ext 4
+              {helpCard.call.label}
             </a>
           </li>
         </ul>

@@ -1,14 +1,11 @@
 import { Container } from "@/components/home/section-heading"
 import { cn } from "@/lib/utils"
 
-const stats = [
-  { value: "15+", label: "Years of combined experience" },
-  { value: "5", label: "Sectors served, from HSE to residential" },
-  { value: "24hr", label: "Contact line: (085) 8062369" },
-  { value: "Nationwide", label: "Homes and businesses across Ireland" },
-]
+export type StatsProps = {
+  stats: { value: string; label: string }[]
+}
 
-export function Stats() {
+export function Stats({ stats }: StatsProps) {
   return (
     <section className="bg-navy py-[72px]">
       <Container>

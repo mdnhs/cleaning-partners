@@ -1,47 +1,41 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { connection } from "next/server"
 
-import { ArticleBody, ArticleHeader } from "@/components/blog/article"
-import { RelatedPosts } from "@/components/blog/related-posts"
-import { Contact } from "@/components/home/contact"
-import { SiteFooter } from "@/components/home/site-footer"
-import { SiteHeader } from "@/components/home/site-header"
-import { HomeMotion } from "@/components/motion/home-motion"
-import { blogPosts, getPost } from "@/lib/blog-posts"
+import { SiteThemed } from "@/components/site-themed"
+import { loadSiteSources } from "@/server/modules/pages/sources"
+import { ArticleTemplate } from "@/templates/blog/render"
+import { articleView } from "@/templates/blog/view"
+import { articleMetadata } from "@/templates/shared/page-meta"
 
-export function generateStaticParams() {
-  return blogPosts.map((post) => ({ slug: post.slug }))
+// Interim, while the sources are fixture-backed: Task 9 drops it when the
+// page reads the database.
+export async function generateStaticParams() {
+  return (await loadSiteSources()).articles.map((a) => ({ slug: a.slug }))
 }
 
 export async function generateMetadata({
   params,
 }: PageProps<"/blog/[slug]">): Promise<Metadata> {
-  const post = getPost((await params).slug)
-  if (!post) return {}
-  return {
-    title: `${post.title} | Cleaning Partners Ltd.`,
-    description: post.excerpt,
-  }
+  await connection()
+  const { slug } = await params
+  return articleMetadata(await loadSiteSources(), slug)
 }
 
-export default async function BlogPostPage({
-  params,
-}: PageProps<"/blog/[slug]">) {
-  const post = getPost((await params).slug)
-  if (!post) notFound()
-
+export default function ArticlePage({ params }: PageProps<"/blog/[slug]">) {
   return (
-    <HomeMotion>
-      <div className="bg-white text-ink">
-        <SiteHeader active="Blog" />
-        <main>
-          <ArticleHeader post={post} />
-          <ArticleBody post={post} />
-          <RelatedPosts post={post} />
-          <Contact />
-        </main>
-        <SiteFooter />
-      </div>
-    </HomeMotion>
+    <SiteThemed>
+      <Content params={params} />
+    </SiteThemed>
   )
+}
+
+async function Content({ params }: Pick<PageProps<"/blog/[slug]">, "params">) {
+  await connection()
+  const { slug } = await params
+  const view = articleView(await loadSiteSources(), slug)
+  // Unknown slugs: a soft 404 (the status can't change once the shell has
+  // streamed), noindex'ed by Next.
+  if (!view) notFound()
+  return <ArticleTemplate view={view} />
 }

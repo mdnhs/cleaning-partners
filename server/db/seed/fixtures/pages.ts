@@ -185,6 +185,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           breadcrumbBlogHref: "/blog",
           breadcrumbBlog: "Blog",
           authorName: "The Clean Team",
+          readTime: "{n} min read",
           tagsLabel: "Tags:",
           writtenBy: "Written by The Clean Team",
           authorBio:

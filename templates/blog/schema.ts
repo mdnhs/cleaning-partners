@@ -21,6 +21,8 @@ export const blogTemplate = z.object({
     breadcrumbBlogHref: href,
     breadcrumbBlog: text,
     authorName: text,
+    /** {n} is the article's read time in minutes. */
+    readTime: text,
     tagsLabel: text,
     writtenBy: text,
     authorBio: text,

@@ -1,12 +1,49 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import { QuoteCard } from "@/components/home/quote-card"
+import { QuoteCard, type QuoteCardProps } from "@/components/home/quote-card"
 import { Container } from "@/components/home/section-heading"
+import { renderInline } from "@/lib/rich-text/render"
+import type { ParagraphsDoc } from "@/lib/schemas/common"
 import { cn } from "@/lib/utils"
-import { services, type Service } from "@/lib/services"
 
-export function ServiceOverview({ service }: { service: Service }) {
+export type ServiceOverviewProps = {
+  service: {
+    cover: string
+    overviewTitle: string
+    overview: ParagraphsDoc
+    included: string[]
+    places: string[]
+  }
+  overviewEyebrow: string
+  includedHeading: string
+  placesHeading: string
+  checkIcon: string
+  nav: {
+    ariaLabel: string
+    heading: string
+    items: { slug: string; title: string; href: string }[]
+    activeSlug: string
+  }
+  quoteCard: QuoteCardProps
+  officeHours: {
+    title: string
+    hours: string
+    phone: string
+    phoneHref: string
+  }
+}
+
+export function ServiceOverview({
+  service,
+  overviewEyebrow,
+  includedHeading,
+  placesHeading,
+  checkIcon,
+  nav,
+  quoteCard,
+  officeHours,
+}: ServiceOverviewProps) {
   const half = Math.ceil(service.included.length / 2)
   const columns = [
     service.included.slice(0, half),
@@ -35,7 +72,7 @@ export function ServiceOverview({ service }: { service: Service }) {
               data-reveal
               className="font-heading text-[15px]/[normal] font-bold tracking-[1.5px] text-brand"
             >
-              SERVICE OVERVIEW
+              {overviewEyebrow}
             </p>
             <h2
               data-split
@@ -45,18 +82,18 @@ export function ServiceOverview({ service }: { service: Service }) {
             </h2>
           </div>
 
-          {service.overview.map((text) => (
+          {service.overview.content.map((paragraph, i) => (
             <p
-              key={text.slice(0, 24)}
+              key={i}
               data-reveal
               className="text-[17px] leading-[1.7] text-body"
             >
-              {text}
+              {renderInline(paragraph.content)}
             </p>
           ))}
 
           <h3 className="font-heading text-[28px]/[normal] font-bold text-ink">
-            What&apos;s Included
+            {includedHeading}
           </h3>
           <div data-stagger className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
             {columns.map((items, i) => (
@@ -67,7 +104,7 @@ export function ServiceOverview({ service }: { service: Service }) {
                     className="flex items-center gap-3 rounded-[14px] bg-surface px-[18px] py-4"
                   >
                     <Image
-                      src="/images/services/check.svg"
+                      src={checkIcon}
                       alt=""
                       width={24}
                       height={24}
@@ -83,7 +120,7 @@ export function ServiceOverview({ service }: { service: Service }) {
           </div>
 
           <h3 className="font-heading text-[28px]/[normal] font-bold text-ink">
-            Where We Clean
+            {placesHeading}
           </h3>
           <ul className="flex flex-wrap gap-2.5">
             {service.places.map((place) => (
@@ -99,18 +136,18 @@ export function ServiceOverview({ service }: { service: Service }) {
 
         <aside className="flex flex-col gap-6 lg:sticky lg:top-8">
           <nav
-            aria-label="Our services"
+            aria-label={nav.ariaLabel}
             className="flex flex-col gap-2 rounded-3xl border border-line bg-white p-7"
           >
             <h2 className="mb-3.5 font-heading text-[22px]/[normal] font-bold text-ink">
-              Our Services
+              {nav.heading}
             </h2>
-            {services.map((item) => {
-              const active = item.slug === service.slug
+            {nav.items.map((item) => {
+              const active = item.slug === nav.activeSlug
               return (
                 <Link
                   key={item.slug}
-                  href={`/services/${item.slug}`}
+                  href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "group flex items-center justify-between rounded-xl px-[18px] py-3.5 font-heading text-[17px]/[normal] font-semibold transition-colors",
@@ -134,18 +171,18 @@ export function ServiceOverview({ service }: { service: Service }) {
             })}
           </nav>
 
-          <QuoteCard />
+          <QuoteCard {...quoteCard} />
 
           <div className="flex flex-col gap-2.5 rounded-3xl bg-surface p-7 leading-[normal]">
             <h2 className="font-heading text-xl/[normal] font-bold text-ink">
-              Office Hours
+              {officeHours.title}
             </h2>
-            <p className="text-base/[normal] text-body">Mon – Fri: 9am – 6pm</p>
+            <p className="text-base/[normal] text-body">{officeHours.hours}</p>
             <a
-              href="tel:+353858062369"
+              href={officeHours.phoneHref}
               className="text-base/[normal] font-medium text-navy hover:text-brand"
             >
-              24hr contact: (085) 8062369
+              {officeHours.phone}
             </a>
           </div>
         </aside>

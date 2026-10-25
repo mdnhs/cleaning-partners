@@ -1,31 +1,35 @@
 import { buttonVariants } from "@/components/ui/button"
 
+export type QuoteCardProps = {
+  title: string
+  body: string
+  tel: { label: string; href: string }
+  cta: { label: string; href: string }
+}
+
 /** Sidebar call-to-action shared by service and blog detail pages */
-export function QuoteCard() {
+export function QuoteCard({ title, body, tel, cta }: QuoteCardProps) {
   return (
     <div className="flex flex-col gap-3.5 rounded-3xl bg-navy p-8">
       <h2 className="font-heading text-[28px]/[normal] font-bold text-white">
-        Need a Quote?
+        {title}
       </h2>
-      <p className="text-base leading-[1.6] text-white/85">
-        Tell us about your space and we&apos;ll put together a cleaning plan and
-        price that suits you.
-      </p>
+      <p className="text-base leading-[1.6] text-white/85">{body}</p>
       <a
-        href="tel:+353578697670"
+        href={tel.href}
         className="text-base/[normal] font-medium text-white hover:text-sky"
       >
-        Tel: 057 8697670 Ext 4
+        {tel.label}
       </a>
       <a
-        href="#contact"
+        href={cta.href}
         className={buttonVariants({
           variant: "brand",
           size: "pill",
           className: "w-full",
         })}
       >
-        Get a Free Quote
+        {cta.label}
       </a>
     </div>
   )

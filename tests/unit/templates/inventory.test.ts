@@ -58,6 +58,7 @@ const STRUCTURAL_PAGE_LEAVES = new Set([
   "home:blog.count", // posts shown on the home strip (seeded 3)
   "blog:pageSize", // blog posts per page (seeded 6)
   "blog:featuredArticle", // slug picker; null = newest
+  "blog:article.readTime", // "{n} min read": the inventory's readTime is the articles column
 ])
 
 function expectInventoryCovered(

@@ -3,11 +3,16 @@ import "server-only"
 import { type MediaView, replaceMediaRefs } from "@/lib/media"
 import { PUBLIC_SETTINGS_KEYS } from "@/lib/schemas/settings"
 import { PAGE_KEYS } from "@/templates/registry"
+import type { SiteSources } from "@/templates/shared/sources"
 
 import { contentFixtures } from "./index"
 import { fixtureMediaKey, fixtureMediaLookup, MEDIA } from "./media"
 
-/** A fixture image served from public/ (no dimensions: the site does not use them). */
+/**
+ * A fixture image served from public/. No dimensions: DB rows carry the real
+ * ones, but the views pass only `url` to the components (which size their
+ * images themselves), so neither source renders differently.
+ */
 function staticMedia(id: string): MediaView {
   const key = fixtureMediaKey(id)
   return {
@@ -24,10 +29,10 @@ function staticMedia(id: string): MediaView {
  * The public site's data built straight from the seed fixtures, without a
  * database, with every { mediaId } resolved to its static MediaView (url =
  * the /images/... path). It is the expected value for the DB-backed loader
- * (tests/integration) and the interim data source of the public pages.
- * Task 7 (templates/shared/sources.ts) gives it the SiteSources type.
+ * (tests/integration) and the interim data source of the public pages
+ * (server/modules/pages/sources.ts) until Task 9 reads the database.
  */
-export function fixtureSiteSources() {
+export function fixtureSiteSources(): SiteSources {
   const fx = contentFixtures(fixtureMediaLookup)
   const categories = fx.categories.map((c) => ({
     id: `category:${c.slug}`,
@@ -42,6 +47,8 @@ export function fixtureSiteSources() {
       readTimeMinutes: a.readTimeMinutes,
       seo: a.seo,
       category: { slug: category.slug, name: category.name },
+      // Bylines come from users (the design shows the template's author name).
+      author: null,
       content: a.content,
     }
   })
@@ -75,5 +82,5 @@ export function fixtureSiteSources() {
       ...t,
     })),
   }
-  return replaceMediaRefs(sources, staticMedia)
+  return replaceMediaRefs(sources, staticMedia) as SiteSources
 }

@@ -1,44 +1,26 @@
 import type { Metadata } from "next"
+import { connection } from "next/server"
 
-import { OurStory } from "@/components/about/our-story"
-import { Stats } from "@/components/about/stats"
-import { Clients } from "@/components/home/clients"
-import { Contact } from "@/components/home/contact"
-import { PageHero } from "@/components/home/page-hero"
-import { SiteFooter } from "@/components/home/site-footer"
-import { SiteHeader } from "@/components/home/site-header"
-import { Team } from "@/components/home/team"
-import { Testimonials } from "@/components/home/testimonials"
-import { WhyChooseUs } from "@/components/home/why-choose-us"
-import { HomeMotion } from "@/components/motion/home-motion"
+import { SiteThemed } from "@/components/site-themed"
+import { loadSiteSources } from "@/server/modules/pages/sources"
+import { AboutTemplate } from "@/templates/about/render"
+import { aboutView } from "@/templates/about/view"
+import { pageMetadata } from "@/templates/shared/page-meta"
 
-export const metadata: Metadata = {
-  title: "About Us | Cleaning Partners Ltd.",
-  description:
-    "Over fifteen years of combined experience cleaning homes and businesses across Ireland from our base in Mountmellick, Co. Laois.",
+export async function generateMetadata(): Promise<Metadata> {
+  await connection()
+  return pageMetadata(await loadSiteSources(), "about")
 }
 
 export default function AboutPage() {
   return (
-    <HomeMotion>
-      <div className="bg-white text-ink">
-        <SiteHeader active="About" />
-        <main>
-          <PageHero
-            crumb="About"
-            title="About Us"
-            description="We at Cleaning Partners Ltd strive to meet the high standards our clients expect."
-          />
-          <OurStory />
-          <Stats />
-          <Clients />
-          <WhyChooseUs />
-          <Team />
-          <Testimonials />
-          <Contact />
-        </main>
-        <SiteFooter />
-      </div>
-    </HomeMotion>
+    <SiteThemed>
+      <Content />
+    </SiteThemed>
   )
+}
+
+async function Content() {
+  await connection()
+  return <AboutTemplate view={aboutView(await loadSiteSources())} />
 }

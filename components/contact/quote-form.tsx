@@ -5,25 +5,43 @@ import Image from "next/image"
 
 import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/home/section-heading"
-import { services } from "@/lib/services"
+import { interpolate } from "@/lib/interpolate"
 import { cn } from "@/lib/utils"
 
-const EMAIL = "info@cleaningpartners.ie"
+type FieldCopy = { label: string; placeholder: string }
 
-const steps = [
-  {
-    title: "Send your request",
-    description: "Fill in the form with a few details about your space.",
-  },
-  {
-    title: "We get in touch",
-    description: "Our team contacts you to talk through what you need.",
-  },
-  {
-    title: "Your custom plan",
-    description: "We customise a cleaning schedule and price to suit you.",
-  },
-]
+// A client component: every string arrives as a prop from the server view.
+export type QuoteFormProps = {
+  eyebrow: string
+  title: string
+  intro: string
+  stepsHeading: string
+  steps: { title: string; description: string }[]
+  urgent: { title: string; phone: string; phoneHref: string }
+  formTitle: string
+  fields: {
+    name: FieldCopy
+    phone: FieldCopy
+    email: FieldCopy
+    service: FieldCopy & {
+      /** Every service, then the extras */
+      options: string[]
+      /** Written in the enquiry when no service is picked */
+      fallback: string
+    }
+    address: FieldCopy
+    message: FieldCopy
+    consent: { label: string }
+  }
+  chevron: string
+  submitLabel: string
+  /** Where the enquiry is sent (mailto: until the lead API, Task 7.3) */
+  email: string
+  /** {name} is the visitor's name */
+  mailSubject: string
+  /** {email} is the recipient address */
+  sentMessage: string
+}
 
 const fieldClass =
   "w-full rounded-xl border border-[#d6e3ea] bg-[#f9fcfd] px-[18px] py-[15px] text-base/[normal] text-ink outline-none transition-colors placeholder:text-[#8a949e] focus:border-navy"
@@ -59,7 +77,21 @@ function Field({
   )
 }
 
-export function QuoteForm() {
+export function QuoteForm({
+  eyebrow,
+  title,
+  intro,
+  stepsHeading,
+  steps,
+  urgent,
+  formTitle,
+  fields,
+  chevron,
+  submitLabel,
+  email,
+  mailSubject,
+  sentMessage,
+}: QuoteFormProps) {
   const [sent, setSent] = useState(false)
 
   // No backend yet: hand the enquiry to the visitor's email app
@@ -68,16 +100,16 @@ export function QuoteForm() {
     const data = new FormData(e.currentTarget)
     const value = (key: string) => String(data.get(key) ?? "").trim()
     const body = [
-      `Name: ${value("name")}`,
-      `Phone: ${value("phone")}`,
-      `Email: ${value("email")}`,
-      `Service: ${value("service") || "Not sure"}`,
-      `Address / Eircode: ${value("address")}`,
+      `${fields.name.label}: ${value("name")}`,
+      `${fields.phone.label}: ${value("phone")}`,
+      `${fields.email.label}: ${value("email")}`,
+      `${fields.service.label}: ${value("service") || fields.service.fallback}`,
+      `${fields.address.label}: ${value("address")}`,
       "",
       value("message"),
     ].join("\n")
-    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(
-      `Quote request from ${value("name")}`
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(
+      interpolate(mailSubject, { name: value("name") })
     )}&body=${encodeURIComponent(body)}`
     setSent(true)
   }
@@ -91,23 +123,22 @@ export function QuoteForm() {
               data-reveal
               className="font-heading text-[15px]/[normal] font-bold tracking-[1.5px] text-brand"
             >
-              FREE QUOTE
+              {eyebrow}
             </p>
             <h2
               data-split
               className="font-heading text-4xl leading-[1.15] font-bold text-ink md:text-5xl"
             >
-              Request a Quote
+              {title}
             </h2>
             <p data-reveal className="text-lg leading-[1.6] text-body">
-              Tell us about your space and we&apos;ll put together a cleaning
-              plan and price that suits you.
+              {intro}
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
             <h3 className="font-heading text-[22px]/[normal] font-bold text-ink">
-              What happens next
+              {stepsHeading}
             </h3>
             <ol data-stagger className="flex flex-col gap-4">
               {steps.map((step, i) => (
@@ -136,13 +167,13 @@ export function QuoteForm() {
             className="flex flex-col gap-1 rounded-[18px] bg-navy px-6 py-[22px]"
           >
             <p className="font-heading text-[19px]/[normal] font-bold text-white">
-              Need us urgently?
+              {urgent.title}
             </p>
             <a
-              href="tel:+353858062369"
+              href={urgent.phoneHref}
               className="text-base/[normal] font-medium text-white/90 hover:text-white"
             >
-              24hr contact: (085) 8062369
+              {urgent.phone}
             </a>
           </div>
         </div>
@@ -153,43 +184,43 @@ export function QuoteForm() {
           className="flex flex-col gap-5 rounded-[28px] bg-white p-6 shadow-[0px_16px_48px_0px_rgba(41,99,143,0.08)] sm:p-10"
         >
           <h3 className="font-heading text-[28px]/[normal] font-bold text-ink">
-            Send us your details
+            {formTitle}
           </h3>
 
           <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
-            <Field label="Full Name" htmlFor="quote-name" required>
+            <Field label={fields.name.label} htmlFor="quote-name" required>
               <input
                 id="quote-name"
                 name="name"
                 required
                 autoComplete="name"
-                placeholder="John Murphy"
+                placeholder={fields.name.placeholder}
                 className={fieldClass}
               />
             </Field>
-            <Field label="Phone Number" htmlFor="quote-phone" required>
+            <Field label={fields.phone.label} htmlFor="quote-phone" required>
               <input
                 id="quote-phone"
                 name="phone"
                 type="tel"
                 required
                 autoComplete="tel"
-                placeholder="085 000 0000"
+                placeholder={fields.phone.placeholder}
                 className={fieldClass}
               />
             </Field>
-            <Field label="Email Address" htmlFor="quote-email" required>
+            <Field label={fields.email.label} htmlFor="quote-email" required>
               <input
                 id="quote-email"
                 name="email"
                 type="email"
                 required
                 autoComplete="email"
-                placeholder="you@email.com"
+                placeholder={fields.email.placeholder}
                 className={fieldClass}
               />
             </Field>
-            <Field label="Service Required" htmlFor="quote-service">
+            <Field label={fields.service.label} htmlFor="quote-service">
               <div className="relative">
                 <select
                   id="quote-service"
@@ -200,15 +231,13 @@ export function QuoteForm() {
                     "appearance-none pr-11 has-[option[value='']:checked]:text-[#8a949e]"
                   )}
                 >
-                  <option value="">Select a service</option>
-                  {services.map((service) => (
-                    <option key={service.slug}>{service.title}</option>
+                  <option value="">{fields.service.placeholder}</option>
+                  {fields.service.options.map((option) => (
+                    <option key={option}>{option}</option>
                   ))}
-                  <option>Domestic Cleaning</option>
-                  <option>Other</option>
                 </select>
                 <Image
-                  src="/images/contact/chevron.svg"
+                  src={chevron}
                   alt=""
                   width={16}
                   height={16}
@@ -218,21 +247,21 @@ export function QuoteForm() {
             </Field>
           </div>
 
-          <Field label="Address / Eircode" htmlFor="quote-address">
+          <Field label={fields.address.label} htmlFor="quote-address">
             <input
               id="quote-address"
               name="address"
               autoComplete="street-address"
-              placeholder="e.g. Mountmellick, R32 YX49"
+              placeholder={fields.address.placeholder}
               className={fieldClass}
             />
           </Field>
 
-          <Field label="Tell us about your space" htmlFor="quote-message">
+          <Field label={fields.message.label} htmlFor="quote-message">
             <textarea
               id="quote-message"
               name="message"
-              placeholder="Type of building, size, how often you need cleaning…"
+              placeholder={fields.message.placeholder}
               className={cn(fieldClass, "h-[140px] resize-y")}
             />
           </Field>
@@ -244,7 +273,7 @@ export function QuoteForm() {
               required
               className="size-[22px] shrink-0 cursor-pointer rounded-md border border-[#b9cbd6] accent-brand"
             />
-            I agree to be contacted about my enquiry.
+            {fields.consent.label}
           </label>
 
           <button
@@ -255,7 +284,7 @@ export function QuoteForm() {
               className: "w-full",
             })}
           >
-            Send Request
+            {submitLabel}
           </button>
 
           <p
@@ -265,8 +294,7 @@ export function QuoteForm() {
               !sent && "sr-only"
             )}
           >
-            {sent &&
-              `Your email app should open with your request. If it doesn't, email us at ${EMAIL}.`}
+            {sent && interpolate(sentMessage, { email })}
           </p>
         </form>
       </Container>

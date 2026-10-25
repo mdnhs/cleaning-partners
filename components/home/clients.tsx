@@ -2,24 +2,17 @@ import Image from "next/image"
 
 import { Container, SectionHeading } from "@/components/home/section-heading"
 
-const clients = [
-  { name: "HSE", logo: "/images/home/client-hse.png" },
-  {
-    name: "Department of Education",
-    logo: "/images/home/client-department-of-education.png",
-  },
-  { name: "IDS", logo: "/images/home/client-ids.png" },
-  { name: "Martin Reddin", logo: "/images/home/client-martin-reddin.png" },
-  { name: "Ortus", logo: "/images/home/client-ortus.png" },
-  { name: "OPW", logo: "/images/home/client-opw.png" },
-  { name: "ALS Life Sciences", logo: "/images/home/client-als.png" },
-]
+export type ClientsProps = {
+  eyebrow: string
+  title: string
+  clients: { name: string; logo: string }[]
+}
 
-export function Clients() {
+export function Clients({ eyebrow, title, clients }: ClientsProps) {
   return (
     <section className="bg-white py-16 md:py-24">
       <Container className="flex flex-col items-center gap-14">
-        <SectionHeading eyebrow="TRUSTED PARTNERS" title="Who We Work With" />
+        <SectionHeading eyebrow={eyebrow} title={title} />
 
         <ul data-stagger className="flex w-full flex-wrap justify-center gap-5">
           {clients.map((client) => (

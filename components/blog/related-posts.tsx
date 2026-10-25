@@ -1,18 +1,24 @@
 import Link from "next/link"
 
-import { PostCard } from "@/components/blog/post-card"
+import { PostCard, type PostCardData } from "@/components/blog/post-card"
 import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/home/section-heading"
-import { blogPosts, type BlogPost } from "@/lib/blog-posts"
 
-export function RelatedPosts({ post }: { post: BlogPost }) {
-  const others = blogPosts.filter((p) => p.slug !== post.slug)
-  // Same category first, then newest
-  const related = [
-    ...others.filter((p) => p.category === post.category),
-    ...others.filter((p) => p.category !== post.category),
-  ].slice(0, 3)
+export type RelatedPostsProps = {
+  eyebrow: string
+  title: string
+  viewAll: { label: string; href: string }
+  readArticle: string
+  posts: PostCardData[]
+}
 
+export function RelatedPosts({
+  eyebrow,
+  title,
+  viewAll,
+  readArticle,
+  posts,
+}: RelatedPostsProps) {
   return (
     <section className="bg-surface py-16 md:py-28">
       <Container className="flex flex-col gap-14">
@@ -22,31 +28,31 @@ export function RelatedPosts({ post }: { post: BlogPost }) {
               data-reveal
               className="font-heading text-[15px]/[normal] font-bold tracking-[1.5px] text-brand"
             >
-              KEEP READING
+              {eyebrow}
             </p>
             <h2
               data-split
               className="font-heading text-4xl leading-[1.15] font-bold text-ink md:text-5xl"
             >
-              Related Articles
+              {title}
             </h2>
           </div>
           <Link
-            href="/blog"
+            href={viewAll.href}
             className={buttonVariants({
               variant: "outline-navy",
               size: "pill-sm",
               className: "px-[22px] py-[11px] text-[15px]/[normal]",
             })}
           >
-            View All Posts&nbsp;&nbsp;→
+            {viewAll.label}
           </Link>
         </div>
 
         <ul data-stagger className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {related.map((item) => (
+          {posts.map((item) => (
             <li key={item.slug}>
-              <PostCard post={item} />
+              <PostCard post={item} readArticle={readArticle} />
             </li>
           ))}
         </ul>

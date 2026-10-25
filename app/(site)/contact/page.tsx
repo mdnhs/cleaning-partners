@@ -1,36 +1,26 @@
 import type { Metadata } from "next"
+import { connection } from "next/server"
 
-import { QuoteForm } from "@/components/contact/quote-form"
-import { Contact } from "@/components/home/contact"
-import { LocationMap } from "@/components/home/location-map"
-import { PageHero } from "@/components/home/page-hero"
-import { SiteFooter } from "@/components/home/site-footer"
-import { SiteHeader } from "@/components/home/site-header"
-import { HomeMotion } from "@/components/motion/home-motion"
+import { SiteThemed } from "@/components/site-themed"
+import { loadSiteSources } from "@/server/modules/pages/sources"
+import { ContactTemplate } from "@/templates/contact/render"
+import { contactView } from "@/templates/contact/view"
+import { pageMetadata } from "@/templates/shared/page-meta"
 
-export const metadata: Metadata = {
-  title: "Contact Us | Cleaning Partners Ltd.",
-  description:
-    "Get in touch with the Clean Team for a free, no-obligation quote. 24hr contact: (085) 8062369.",
+export async function generateMetadata(): Promise<Metadata> {
+  await connection()
+  return pageMetadata(await loadSiteSources(), "contact")
 }
 
 export default function ContactPage() {
   return (
-    <HomeMotion>
-      <div className="bg-white text-ink">
-        <SiteHeader active="Contact" />
-        <main>
-          <PageHero
-            crumb="Contact"
-            title="Contact Us"
-            description="Get in touch with the Clean Team for a free, no-obligation quote."
-          />
-          <Contact title="Ways to Reach Us" />
-          <QuoteForm />
-          <LocationMap />
-        </main>
-        <SiteFooter />
-      </div>
-    </HomeMotion>
+    <SiteThemed>
+      <Content />
+    </SiteThemed>
   )
+}
+
+async function Content() {
+  await connection()
+  return <ContactTemplate view={contactView(await loadSiteSources())} />
 }

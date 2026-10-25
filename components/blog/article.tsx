@@ -1,43 +1,63 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import { ShareLinks } from "@/components/blog/share-links"
-import { QuoteCard } from "@/components/home/quote-card"
+import { ShareLinks, type ShareLinksProps } from "@/components/blog/share-links"
+import { QuoteCard, type QuoteCardProps } from "@/components/home/quote-card"
 import { Container } from "@/components/home/section-heading"
-import {
-  blogCategories,
-  blogPosts,
-  type ArticleBlock,
-  type BlogPost,
-} from "@/lib/blog-posts"
+import { ArticleBlocks } from "@/lib/rich-text/render"
+import type { RichTextDoc } from "@/lib/schemas/common"
+import type { WithMedia } from "@/lib/media"
 import { cn } from "@/lib/utils"
 
-const LOGO = "/images/home/cleaning-partners-logo.png"
+type Crumb = { label: string; href: string }
 
-export function ArticleHeader({ post }: { post: BlogPost }) {
+export type ArticleHeaderProps = {
+  article: {
+    title: string
+    category: string
+    /** /blog filtered to the article's category */
+    categoryHref: string
+    /** ISO calendar date, for <time dateTime> */
+    date: string
+    displayDate: string
+    /** "5 min read"; null when the article has none */
+    readTime: string | null
+    author: string
+    cover: string
+  }
+  /** Round author badge (the larger site logo) */
+  logo: string
+  breadcrumb: { ariaLabel: string; home: Crumb; blog: Crumb }
+}
+
+export function ArticleHeader({
+  article: post,
+  logo,
+  breadcrumb,
+}: ArticleHeaderProps) {
   return (
     <section className="bg-surface pt-12 pb-16 md:pt-[72px] md:pb-20">
       <Container className="flex flex-col items-center gap-6 text-center">
         <nav
-          aria-label="Breadcrumb"
+          aria-label={breadcrumb.ariaLabel}
           data-intro
           data-hero-copy
           className="flex flex-wrap justify-center gap-2.5 font-heading text-[15px]/[normal] font-medium text-body"
         >
-          <Link href="/" className="hover:text-navy">
-            Home
+          <Link href={breadcrumb.home.href} className="hover:text-navy">
+            {breadcrumb.home.label}
           </Link>
           <span aria-hidden className="text-body/50">
             /
           </span>
-          <Link href="/blog" className="hover:text-navy">
-            Blog
+          <Link href={breadcrumb.blog.href} className="hover:text-navy">
+            {breadcrumb.blog.label}
           </Link>
           <span aria-hidden className="text-body/50">
             /
           </span>
           <Link
-            href={`/blog?category=${encodeURIComponent(post.category)}`}
+            href={post.categoryHref}
             className="font-bold text-navy hover:text-brand"
           >
             {post.category}
@@ -66,11 +86,11 @@ export function ArticleHeader({ post }: { post: BlogPost }) {
           className="flex items-center gap-3.5 text-left"
         >
           <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-line bg-white">
-            <Image src={LOGO} alt="" width={36} height={32} />
+            <Image src={logo} alt="" width={36} height={32} />
           </div>
           <div className="flex flex-col gap-0.5">
             <p className="font-heading text-base/[normal] font-bold text-ink">
-              The Clean Team
+              {post.author}
             </p>
             <p className="text-sm/[normal] text-body">
               <time dateTime={post.date}>{post.displayDate}</time>
@@ -97,56 +117,6 @@ export function ArticleHeader({ post }: { post: BlogPost }) {
   )
 }
 
-function Block({ block }: { block: ArticleBlock }) {
-  switch (block.type) {
-    case "lead":
-      return <p className="text-xl leading-[1.7] text-ink">{block.text}</p>
-    case "h2":
-      return (
-        <h2 className="font-heading text-[26px] leading-[1.25] font-bold text-ink md:text-[30px]">
-          {block.text}
-        </h2>
-      )
-    case "p":
-      return (
-        <p className="text-[17px] leading-[1.75] text-body">{block.text}</p>
-      )
-    case "quote":
-      return (
-        <figure className="flex gap-5 rounded-[20px] bg-surface px-8 py-7">
-          <div aria-hidden className="w-1 shrink-0 rounded-xs bg-brand" />
-          <div className="flex flex-col gap-2.5">
-            <blockquote className="font-heading text-[22px] leading-[1.4] font-semibold text-ink">
-              &ldquo;{block.text}&rdquo;
-            </blockquote>
-            <figcaption className="text-[15px]/[normal] font-medium text-navy">
-              — {block.cite}
-            </figcaption>
-          </div>
-        </figure>
-      )
-    case "checklist":
-      return (
-        <ul className="flex flex-col gap-3">
-          {block.items.map((item) => (
-            <li key={item} className="flex items-center gap-3">
-              <Image
-                src="/images/services/check.svg"
-                alt=""
-                width={24}
-                height={24}
-                className="shrink-0"
-              />
-              <span className="text-[17px]/[normal] font-medium text-ink">
-                {item}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )
-  }
-}
-
 function SidebarCard({
   title,
   className,
@@ -171,26 +141,60 @@ function SidebarCard({
   )
 }
 
-export function ArticleBody({ post }: { post: BlogPost }) {
-  const body = post.body ?? [{ type: "lead", text: post.excerpt }]
-  const recent = blogPosts.filter((p) => p.slug !== post.slug).slice(0, 3)
+export type ArticleBodyProps = {
+  /** The TipTap body, or the excerpt as a lead paragraph (built by the view) */
+  body: WithMedia<RichTextDoc>
+  tags: { label: string; items: string[] }
+  share: ShareLinksProps
+  author: { logo: string; writtenBy: string; bio: string }
+  search: {
+    action: string
+    icon: string
+    label: string
+    placeholder: string
+  }
+  categories: {
+    heading: string
+    items: { name: string; href: string; active: boolean }[]
+  }
+  recent: {
+    heading: string
+    posts: {
+      slug: string
+      href: string
+      title: string
+      cover: string
+      date: string
+      displayDate: string
+    }[]
+  }
+  quoteCard: QuoteCardProps
+}
 
+export function ArticleBody({
+  body,
+  tags,
+  share,
+  author,
+  search,
+  categories,
+  recent,
+  quoteCard,
+}: ArticleBodyProps) {
   return (
     <section className="bg-white py-16 md:py-20">
       <Container className="grid items-start gap-16 lg:grid-cols-[minmax(0,776px)_1fr]">
         <article className="flex flex-col gap-5">
-          {body.map((block, i) => (
-            <Block key={i} block={block} />
-          ))}
+          <ArticleBlocks doc={body} />
 
           <div className="h-px w-full bg-line" />
 
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-heading text-base/[normal] font-bold text-ink">
-                Tags:
+                {tags.label}
               </p>
-              {(post.tags ?? [post.category]).map((tag) => (
+              {tags.items.map((tag) => (
                 <span
                   key={tag}
                   className="rounded-full bg-surface px-3.5 py-1.5 text-sm/[normal] font-medium text-navy"
@@ -199,20 +203,19 @@ export function ArticleBody({ post }: { post: BlogPost }) {
                 </span>
               ))}
             </div>
-            <ShareLinks />
+            <ShareLinks {...share} />
           </div>
 
           <div className="flex items-center gap-5 rounded-[20px] bg-surface p-7">
             <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-white">
-              <Image src={LOGO} alt="" width={60} height={54} />
+              <Image src={author.logo} alt="" width={60} height={54} />
             </div>
             <div className="flex flex-col gap-1.5">
               <p className="font-heading text-xl/[normal] font-bold text-ink">
-                Written by The Clean Team
+                {author.writtenBy}
               </p>
               <p className="text-[15px] leading-[1.6] text-body">
-                Cleaning Partners Ltd. Medical, commercial and domestic cleaning
-                from Mountmellick, Co. Laois.
+                {author.bio}
               </p>
             </div>
           </div>
@@ -220,63 +223,60 @@ export function ArticleBody({ post }: { post: BlogPost }) {
 
         <aside className="flex flex-col gap-6 lg:sticky lg:top-8">
           <form
-            action="/blog"
+            action={search.action}
             role="search"
             className="flex items-center gap-2.5 rounded-full border border-line bg-white px-5 py-3.5 focus-within:border-navy"
           >
             <Image
-              src="/images/blog/search.svg"
+              src={search.icon}
               alt=""
               width={18}
               height={18}
               className="shrink-0"
             />
             <label htmlFor="article-search" className="sr-only">
-              Search articles
+              {search.label}
             </label>
             <input
               id="article-search"
               type="search"
               name="q"
-              placeholder="Search articles…"
+              placeholder={search.placeholder}
               className="w-full min-w-0 bg-transparent text-base/[normal] text-ink outline-none placeholder:text-[#8a949e]"
             />
           </form>
 
-          <SidebarCard title="Categories" className="gap-2">
-            {blogCategories.map((category) => {
-              const active = category === post.category
-              return (
-                <Link
-                  key={category}
-                  href={`/blog?category=${encodeURIComponent(category)}`}
+          <SidebarCard title={categories.heading} className="gap-2">
+            {categories.items.map((category) => (
+              <Link
+                key={category.name}
+                href={category.href}
+                className={cn(
+                  "group flex items-center justify-between rounded-xl px-4 py-3 font-heading text-base/[normal] font-semibold transition-colors",
+                  category.active
+                    ? "bg-brand text-white"
+                    : "bg-surface text-ink hover:bg-brand-soft"
+                )}
+              >
+                {category.name}
+                <span
+                  aria-hidden
                   className={cn(
-                    "group flex items-center justify-between rounded-xl px-4 py-3 font-heading text-base/[normal] font-semibold transition-colors",
-                    active
-                      ? "bg-brand text-white"
-                      : "bg-surface text-ink hover:bg-brand-soft"
+                    "font-bold transition-transform group-hover:translate-x-1",
+                    !category.active && "text-navy"
                   )}
                 >
-                  {category}
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "font-bold transition-transform group-hover:translate-x-1",
-                      !active && "text-navy"
-                    )}
-                  >
-                    →
-                  </span>
-                </Link>
-              )
-            })}
+                  →
+                </span>
+              </Link>
+            ))}
           </SidebarCard>
 
-          <SidebarCard title="Recent Posts" className="gap-[18px]">
-            {recent.map((item) => (
+          <SidebarCard title={recent.heading} className="gap-[18px]">
+            {recent.posts.map((item) => (
               <Link
                 key={item.slug}
-                href={`/blog/${item.slug}`}
+                href={item.href}
                 className="group flex items-center gap-3.5"
               >
                 <div className="relative size-20 shrink-0 overflow-hidden rounded-[14px]">
@@ -303,7 +303,7 @@ export function ArticleBody({ post }: { post: BlogPost }) {
             ))}
           </SidebarCard>
 
-          <QuoteCard />
+          <QuoteCard {...quoteCard} />
         </aside>
       </Container>
     </section>

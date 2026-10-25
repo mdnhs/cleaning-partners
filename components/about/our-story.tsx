@@ -2,16 +2,32 @@ import Image from "next/image"
 
 import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/home/section-heading"
+import { renderInline } from "@/lib/rich-text/render"
+import type { ParagraphsDoc } from "@/lib/schemas/common"
 
-const paragraphs = [
-  "With combined experience of over fifteen years, our objective has always been to provide a first-class service to all our customers. Since our establishment, we have greatly expanded and are continuously growing our customer base.",
-  "We have a dedicated team of experienced, trained and long-standing staff who clean within a variety of sectors.",
-  "Based in the Midlands, in our offices in Derryguile, Mountmellick, Co. Laois. This central hub allows us to provide services to homes and businesses across Ireland.",
-]
+type Picture = { src: string; alt: string }
 
-const sectors = ["HSE", "County Council", "Retail", "Commercial", "Residential"]
+export type OurStoryProps = {
+  imageA: Picture
+  imageB: Picture
+  eyebrow: string
+  title: string
+  paragraphs: ParagraphsDoc
+  sectorsHeading: string
+  sectors: string[]
+  cta: { label: string; href: string }
+}
 
-export function OurStory() {
+export function OurStory({
+  imageA,
+  imageB,
+  eyebrow,
+  title,
+  paragraphs,
+  sectorsHeading,
+  sectors,
+  cta,
+}: OurStoryProps) {
   return (
     <section className="bg-white py-16 md:py-28">
       <Container className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
@@ -21,8 +37,8 @@ export function OurStory() {
         >
           <div className="relative aspect-[280/440] flex-1 overflow-hidden rounded-[28px] lg:h-[440px] lg:w-[280px] lg:flex-none">
             <Image
-              src="/images/home/cleaning-the-counter.png"
-              alt="Cleaner wiping down a bathroom counter"
+              src={imageA.src}
+              alt={imageA.alt}
               fill
               sizes="(min-width: 1024px) 280px, 50vw"
               className="object-cover"
@@ -31,8 +47,8 @@ export function OurStory() {
           <div className="flex-1 pt-[60px] lg:flex-none">
             <div className="relative aspect-[280/440] overflow-hidden rounded-[28px] lg:h-[440px] lg:w-[280px]">
               <Image
-                src="/images/home/vacuuming.png"
-                alt="Cleaner vacuuming an office"
+                src={imageB.src}
+                alt={imageB.alt}
                 fill
                 sizes="(min-width: 1024px) 280px, 50vw"
                 className="object-cover"
@@ -47,29 +63,29 @@ export function OurStory() {
               data-reveal
               className="font-heading text-[15px]/[normal] font-bold tracking-[1.5px] text-brand"
             >
-              WHO WE ARE
+              {eyebrow}
             </p>
             <h2
               data-split
               className="font-heading text-4xl leading-[1.15] font-bold text-ink md:text-5xl"
             >
-              About Cleaning Partners
+              {title}
             </h2>
           </div>
 
-          {paragraphs.map((text) => (
+          {paragraphs.content.map((paragraph, i) => (
             <p
-              key={text.slice(0, 24)}
+              key={i}
               data-reveal
               className="text-[17px] leading-[1.65] text-body"
             >
-              {text}
+              {renderInline(paragraph.content)}
             </p>
           ))}
 
           <div data-reveal className="flex w-full flex-col gap-3">
             <h3 className="font-heading text-lg/[normal] font-bold text-ink">
-              Sectors we clean in
+              {sectorsHeading}
             </h3>
             <ul className="flex flex-wrap gap-2.5">
               {sectors.map((sector) => (
@@ -85,10 +101,10 @@ export function OurStory() {
 
           <a
             data-reveal
-            href="#contact"
+            href={cta.href}
             className={buttonVariants({ variant: "brand", size: "pill" })}
           >
-            Get a Free Quote
+            {cta.label}
           </a>
         </div>
       </Container>

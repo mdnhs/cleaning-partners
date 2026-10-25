@@ -1,34 +1,32 @@
 import { Container, SectionHeading } from "@/components/home/section-heading"
 
-const testimonials = [
-  {
-    name: "Thomas Murray",
-    initials: "TM",
-    quote:
-      "Great service – easy to arrange, friendly people. The drapes look amazing, not a trace from the red wine stain. I am very happy! Will definitely be using their service again and will recommend to friends and family!",
-  },
-  {
-    name: "Charlotte Smith",
-    initials: "CS",
-    quote:
-      "We are happy with their consistently high standard of service and value the longstanding vendor relationship we have with Cleaning Partners Ltd. We happily recommend their services to any firm considering them for office cleaning services.",
-  },
-  {
-    name: "Stephanie Lyon",
-    initials: "SL",
-    quote:
-      "Cleaning Partners provides a reliable and efficient service for a very good price. I have tried many companies offering office cleaning and none of them matches their quality. Highly recommended!",
-  },
-]
+export type TestimonialsProps = {
+  eyebrow: string
+  title: string
+  verifiedLabel: string
+  items: {
+    name: string
+    initials: string
+    quote: string
+    /** One star glyph per rating point */
+    stars: string
+    starsAria: string
+  }[]
+}
 
-export function Testimonials() {
+export function Testimonials({
+  eyebrow,
+  title,
+  verifiedLabel,
+  items,
+}: TestimonialsProps) {
   return (
     <section className="bg-white py-16 md:py-28">
       <Container className="flex flex-col items-center gap-14">
-        <SectionHeading eyebrow="TESTIMONIALS" title="What Our Customers Say" />
+        <SectionHeading eyebrow={eyebrow} title={title} />
 
         <ul data-stagger className="grid w-full gap-6 lg:grid-cols-3">
-          {testimonials.map((t) => (
+          {items.map((t) => (
             <li
               key={t.name}
               className="flex flex-col gap-[18px] rounded-3xl bg-surface px-8 py-9"
@@ -42,10 +40,10 @@ export function Testimonials() {
                 </span>
                 <span
                   role="img"
-                  aria-label="5 out of 5 stars"
+                  aria-label={t.starsAria}
                   className="text-lg text-star"
                 >
-                  ★★★★★
+                  {t.stars}
                 </span>
               </div>
               <blockquote className="flex-1 text-base leading-[1.65] text-ink-soft">
@@ -60,7 +58,7 @@ export function Testimonials() {
                     {t.name}
                   </p>
                   <p className="text-[13px]/[normal] text-body">
-                    Verified customer
+                    {verifiedLabel}
                   </p>
                 </div>
               </div>

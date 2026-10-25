@@ -30,6 +30,10 @@ export const blogEditorMeta: EditorMeta = {
     "article.breadcrumbBlogHref": { label: "Breadcrumb link" },
     "article.breadcrumbBlog": { label: "Breadcrumb label" },
     "article.authorName": { label: "Author name" },
+    "article.readTime": {
+      label: "Read-time label",
+      help: "{n} is the number of minutes (the article's read time).",
+    },
     "article.tagsLabel": { label: "Tags label" },
     "article.writtenBy": { label: "Written-by line" },
     "article.authorBio": { label: "Author bio", rows: 3 },

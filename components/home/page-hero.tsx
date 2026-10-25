@@ -6,13 +6,17 @@ import { Container } from "@/components/home/section-heading"
 
 type Crumb = { label: string; href: string }
 
-type PageHeroProps = {
+export type PageHeroProps = {
   crumb: string
   /** Pages between Home and the current one */
   parents?: Crumb[]
   title: string
   description: string
-  image?: string
+  image: string
+  /** The breadcrumb's first crumb */
+  home: Crumb
+  /** Accessible name of the breadcrumb */
+  ariaLabel: string
 }
 
 export function PageHero({
@@ -20,7 +24,9 @@ export function PageHero({
   parents = [],
   title,
   description,
-  image = "/images/home/hero.png",
+  image,
+  home,
+  ariaLabel,
 }: PageHeroProps) {
   return (
     <section data-hero className="relative overflow-hidden">
@@ -41,12 +47,12 @@ export function PageHero({
         className="flex min-h-[460px] flex-col items-center justify-center gap-5 py-16 text-center"
       >
         <nav
-          aria-label="Breadcrumb"
+          aria-label={ariaLabel}
           data-intro
           data-hero-copy
           className="flex flex-wrap items-center justify-center gap-2.5 rounded-full bg-white/14 px-[18px] py-2 font-heading text-[15px]/[normal]"
         >
-          {[{ label: "Home", href: "/" }, ...parents].map((parent) => (
+          {[home, ...parents].map((parent) => (
             <Fragment key={parent.href}>
               <Link
                 href={parent.href}

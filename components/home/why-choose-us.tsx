@@ -2,35 +2,26 @@ import Image from "next/image"
 
 import { Container, SectionHeading } from "@/components/home/section-heading"
 
-const features = [
-  {
-    title: "Skilled Cleaners",
-    description: "Trained, vetted staff who take pride in their work.",
-    icon: "/images/home/feature-skilled-cleaners.png",
-  },
-  {
-    title: "Trusted Service",
-    description: "Long-standing relationships with clients across Ireland.",
-    icon: "/images/home/feature-trusted-service.png",
-  },
-  {
-    title: "Competitive Price",
-    description: "Quality cleaning at a fair, transparent price.",
-    icon: "/images/home/feature-competitive-price.png",
-  },
-  {
-    title: "Timely",
-    description: "On time, every time, working around your schedule.",
-    icon: "/images/home/feature-timely.png",
-  },
-]
+export type WhyChooseUsProps = {
+  background: string
+  eyebrow: string
+  title: string
+  description: string
+  features: { title: string; description: string; icon: string }[]
+}
 
-export function WhyChooseUs() {
+export function WhyChooseUs({
+  background,
+  eyebrow,
+  title,
+  description,
+  features,
+}: WhyChooseUsProps) {
   return (
     <section className="relative overflow-hidden py-16 md:py-28">
       <div aria-hidden className="absolute inset-0">
         <Image
-          src="/images/home/why-choose-us.png"
+          src={background}
           alt=""
           fill
           sizes="100vw"
@@ -43,9 +34,9 @@ export function WhyChooseUs() {
       <Container className="flex flex-col items-center gap-14">
         <SectionHeading
           tone="inverted"
-          eyebrow="CLEANING PARTNERS"
-          title="Why Choose Us?"
-          description="We at Cleaning Partners Ltd strive to meet the high standards our clients expect."
+          eyebrow={eyebrow}
+          title={title}
+          description={description}
         />
 
         <ul
