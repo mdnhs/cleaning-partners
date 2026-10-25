@@ -12,6 +12,8 @@ export type LegalView = {
   chrome: ChromeView
   hero: PageHeroProps
   body: WithMedia<RichTextDoc>
+  /** Checklist bullet icon url (settings.microcopy.checkIcon) */
+  checkIcon: string
 }
 
 export function legalView(s: SiteSources, key: "privacy" | "terms"): LegalView {
@@ -20,5 +22,6 @@ export function legalView(s: SiteSources, key: "privacy" | "terms"): LegalView {
     chrome: chromeView(s),
     hero: pageHeroView(s, page.hero),
     body: page.body,
+    checkIcon: s.settings.microcopy.checkIcon.url,
   }
 }

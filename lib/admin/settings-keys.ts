@@ -127,7 +127,8 @@ export const SETTINGS_ENTRIES: Record<
   },
   "sections.howItWorks": {
     label: "How it works",
-    description: "Heading and numbered steps on the Services page.",
+    description:
+      "Heading and numbered steps on every service page (/services/[slug]).",
     group: "Shared sections",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,

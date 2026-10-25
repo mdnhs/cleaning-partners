@@ -35,10 +35,12 @@ export const contactEditorMeta: EditorMeta = {
     "quoteForm.fields.email": { label: "Email" },
     "quoteForm.fields.service": {
       label: "Service",
-      help: "The options are the services, then the two extra options.",
+      help: "The options are the services, then the extra options.",
     },
-    "quoteForm.fields.service.extraOption1": { label: "Extra option 1" },
-    "quoteForm.fields.service.extraOption2": { label: "Extra option 2" },
+    "quoteForm.fields.service.extraOptions": {
+      label: "Extra options",
+      itemName: "Option",
+    },
     "quoteForm.fields.service.fallback": {
       label: "Wording when none is picked",
     },
@@ -56,6 +58,7 @@ export const contactEditorMeta: EditorMeta = {
       label: "Message after sending",
       help: "{email} is the contact email (Settings › Contact).",
       rows: 2,
+      widget: "textarea",
     },
   },
   groups: {

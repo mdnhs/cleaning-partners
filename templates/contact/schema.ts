@@ -23,8 +23,7 @@ export const contactTemplate = z.object({
       email: field,
       service: field.extend({
         /** Options added after the services collection. */
-        extraOption1: text,
-        extraOption2: text,
+        extraOptions: z.array(text),
         /** Shown in the enquiry when no service is picked. */
         fallback: text,
       }),

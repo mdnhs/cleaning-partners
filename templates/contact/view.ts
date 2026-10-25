@@ -51,8 +51,7 @@ export function contactView(s: SiteSources): ContactView {
           placeholder: form.fields.service.placeholder,
           options: [
             ...s.services.map((service) => service.content.title),
-            form.fields.service.extraOption1,
-            form.fields.service.extraOption2,
+            ...form.fields.service.extraOptions,
           ],
           fallback: form.fields.service.fallback,
         },

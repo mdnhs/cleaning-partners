@@ -24,8 +24,8 @@ import { describe, expect, it } from "vitest"
 //     a word in any string leaf (the shape of the data arrays this task
 //     removed: `const socials = [{ label: "Facebook", href: "#" }]`).
 // ALLOWLIST (the only literals a public component may contain):
-//   - JSX text of separators and glyphs only: `·`, `/`, `*`, `“`, `→` and
-//     the `&nbsp;` entity (aria-hidden separators between items, the
+//   - JSX text of separators and glyphs only: `·`, `/`, `*`, `“`, `”`, `—`, `→`
+//     and the `&nbsp;`, `&ldquo;` and `&rdquo;` entities (aria-hidden separators between items, the
 //     required marker, the decorative quote, the hover arrow, the gap);
 //   - the empty string (`alt=""` marks a decorative image);
 //   - `data-*` attribute values (CSS-only hooks the motion code reads);
@@ -42,6 +42,7 @@ const PUBLIC_DIRS = [
   "components/blog",
   "components/contact",
   "templates",
+  "lib/rich-text",
 ]
 const CHECKED_PROPS = new Set([
   "alt",
@@ -63,7 +64,7 @@ const TECHNICAL_CONSTS: Record<string, string[]> = {
   "components/home/logo-animation.tsx": ["LOTTIE_WASM_URL", "REDUCE_MOTION"],
 }
 /** Separators and glyphs with no words (after removing &nbsp;). */
-const GLYPHS = /^[\s\u00a0·/*“→]*$/
+const GLYPHS = /^[\s\u00a0·/*“”—→]*$/
 /** A string that contains a word (a letter or digit). */
 const hasWord = (text: string) => /[\p{L}\p{N}]/u.test(text)
 const CLASS_NAME = /(Class|_CLASS)$/
@@ -261,7 +262,7 @@ export function findLiterals(source: string, file = "file.tsx"): string[] {
   const technical = TECHNICAL_CONSTS[file] ?? []
   const visit = (node: ts.Node) => {
     if (ts.isJsxText(node)) {
-      const text = node.getText(sf).replace(/&nbsp;/g, "")
+      const text = node.getText(sf).replace(/&(nbsp|ldquo|rdquo);/g, "")
       if (!GLYPHS.test(text))
         at(node, `JSX text ${JSON.stringify(node.getText(sf).trim())}`)
     } else if (ts.isJsxAttribute(node) && node.initializer) {

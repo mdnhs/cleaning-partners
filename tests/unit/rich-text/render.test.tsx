@@ -22,7 +22,11 @@ const resolved = (...blocks: RichTextBlock[]) =>
   doc(...blocks) as WithMedia<RichTextDoc>
 
 const render = (...blocks: RichTextBlock[]) =>
-  renderToStaticMarkup(<ArticleBlocks doc={resolved(...blocks)} />)
+  renderToStaticMarkup(
+    <ArticleBlocks doc={resolved(...blocks)} checkIcon={CHECK_ICON} />
+  )
+
+const CHECK_ICON = "/images/services/check.svg"
 
 const text = (t: string) => [{ type: "text" as const, text: t }]
 const item = (t: string) => ({
@@ -46,7 +50,10 @@ describe("ArticleBlocks reproduces the frozen ArticleBody markup", () => {
     })) as unknown as { slug: string; content: { body: unknown } }[]
     const article = articles.find((a) => a.slug.startsWith("5-signs"))!
     const html = renderToStaticMarkup(
-      <ArticleBlocks doc={article.content.body as WithMedia<RichTextDoc>} />
+      <ArticleBlocks
+        doc={article.content.body as WithMedia<RichTextDoc>}
+        checkIcon={CHECK_ICON}
+      />
     )
     expect(html).toBe(frozen.WHOLE)
   })
@@ -82,6 +89,7 @@ describe("ArticleBlocks frozen contract for nodes without a baseline block", () 
             ],
           } as unknown as WithMedia<RichTextDoc>
         }
+        checkIcon={CHECK_ICON}
       />
     )
     expect(html).toBe(frozen.IMAGE)

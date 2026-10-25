@@ -9,7 +9,11 @@ export const homeEditorMeta: EditorMeta = {
     },
     "hero.background": { label: "Background image" },
     "hero.title": { label: "Heading" },
-    "hero.subtitle": { label: "Introduction", rows: 3 },
+    "hero.subtitle": {
+      label: "Introduction",
+      rows: 3,
+      widget: "textarea",
+    },
     "hero.primaryCta": { label: "Primary button" },
     "hero.secondaryCta": { label: "Secondary button" },
     "hero.memberLabel": { label: "Membership label" },

@@ -165,6 +165,7 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       "24hr",
       "Nationwide",
     ])
+    expect(view.stats.stats[2].label).toBe("Contact line: (085) 8062369")
   })
 
   it("contact: hero, ways-to-reach-us title and the form copy", () => {

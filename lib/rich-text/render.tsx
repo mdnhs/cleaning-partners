@@ -76,7 +76,13 @@ function renderParagraphs(paragraphs: ParagraphNode[]): ReactNode {
   ))
 }
 
-function ArticleBlock({ block }: { block: WithMedia<RichTextBlock> }) {
+function ArticleBlock({
+  block,
+  checkIcon,
+}: {
+  block: WithMedia<RichTextBlock>
+  checkIcon: string
+}) {
   switch (block.type) {
     case "paragraph":
       return block.attrs?.variant === "lead" ? (
@@ -112,7 +118,7 @@ function ArticleBlock({ block }: { block: WithMedia<RichTextBlock> }) {
           {block.content.map((item, i) => (
             <li key={i} className="flex items-center gap-3">
               <Image
-                src="/images/services/check.svg"
+                src={checkIcon}
                 alt=""
                 width={24}
                 height={24}
@@ -185,10 +191,19 @@ function isEmptyParagraph(block: { type: string }): boolean {
  * Trailing empty paragraphs are skipped: the editor keeps one there so the
  * cursor can move below a final list, quote or image.
  */
-export function ArticleBlocks({ doc }: { doc: WithMedia<RichTextDoc> }) {
+export function ArticleBlocks({
+  doc,
+  checkIcon,
+}: {
+  doc: WithMedia<RichTextDoc>
+  /** Checklist bullet (settings.microcopy.checkIcon). */
+  checkIcon: string
+}) {
   let end = doc.content.length
   while (end > 0 && isEmptyParagraph(doc.content[end - 1])) end--
   return doc.content
     .slice(0, end)
-    .map((block, i) => <ArticleBlock key={i} block={block} />)
+    .map((block, i) => (
+      <ArticleBlock key={i} block={block} checkIcon={checkIcon} />
+    ))
 }

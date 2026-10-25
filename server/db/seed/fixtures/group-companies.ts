@@ -6,7 +6,7 @@ import type { MediaLookup } from "./media"
 
 /**
  * components/home/site-footer.tsx at 3689369, "Other services in the group".
- * Display order = sortOrder. The tel: href derives from `phone`. This row is
+ * Display order = sortOrder. `phone` is display text (no tel: link is rendered); the link is https://{site}. This row is
  * the one sanctioned mention of the sister company (branding gate).
  */
 export function groupCompaniesFixture(media: MediaLookup): GroupCompanyInput[] {

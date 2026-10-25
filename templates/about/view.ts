@@ -15,6 +15,7 @@ import {
   linkView,
   pageHeroView,
   teamView,
+  textView,
   testimonialsView,
   whyChooseUsView,
 } from "@/templates/shared/views"
@@ -47,7 +48,12 @@ export function aboutView(s: SiteSources): AboutView {
       sectors: story.sectors,
       cta: linkView(s, story.cta),
     },
-    stats: { stats: page.stats },
+    stats: {
+      stats: page.stats.map((stat) => ({
+        ...stat,
+        label: textView(s, stat.label),
+      })),
+    },
     clients: clientsView(s),
     whyChooseUs: whyChooseUsView(s),
     team: teamView(s),

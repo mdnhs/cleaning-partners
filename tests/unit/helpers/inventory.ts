@@ -20,7 +20,10 @@ export const inventory = (
 
 /** "articles[18-years-…].title" → "articles[].title". */
 export const normalise = (target: string) =>
-  target.replace(/\[[a-z0-9-]+\]/g, "[]")
+  target
+    .replace(/\[[a-z0-9-]+\]/g, "[]")
+    // The two quote-form extra options are items of one `extraOptions` list.
+    .replace(/\.extraOption\d$/, ".extraOptions[]")
 
 /**
  * Settings paths the site derives at render instead of storing: the footer's

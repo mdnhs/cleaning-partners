@@ -71,7 +71,6 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
     },
     about: {
       seo: {
-        title: "About Us | Cleaning Partners Ltd.",
         description:
           "Over fifteen years of combined experience cleaning homes and businesses across Ireland from our base in Mountmellick, Co. Laois.",
       },
@@ -107,14 +106,13 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
         stats: [
           { value: "15+", label: "Years of combined experience" },
           { value: "5", label: "Sectors served, from HSE to residential" },
-          { value: "24hr", label: "Contact line: (085) 8062369" },
+          { value: "24hr", label: "Contact line: {phone24h}" },
           { value: "Nationwide", label: "Homes and businesses across Ireland" },
         ],
       },
     },
     services: {
       seo: {
-        title: "Our Services | Cleaning Partners Ltd.",
         description:
           "Medical, education, commercial and retail cleaning plus ULV fogging for hospitals, GP clinics, schools, offices, shops and homes across Ireland.",
       },
@@ -157,7 +155,6 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
     },
     blog: {
       seo: {
-        title: "Our Blog | Cleaning Partners Ltd.",
         description:
           "Cleaning tips, hygiene advice and news from the Clean Team.",
       },
@@ -220,9 +217,8 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
     },
     contact: {
       seo: {
-        title: "Contact Us | Cleaning Partners Ltd.",
         description:
-          "Get in touch with the Clean Team for a free, no-obligation quote. 24hr contact: (085) 8062369.",
+          "Get in touch with the Clean Team for a free, no-obligation quote. 24hr contact: {phone24h}.",
       },
       data: {
         hero: {
@@ -264,8 +260,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
             service: {
               label: "Service Required",
               placeholder: "Select a service",
-              extraOption1: "Domestic Cleaning",
-              extraOption2: "Other",
+              extraOptions: ["Domestic Cleaning", "Other"],
               fallback: "Not sure",
             },
             address: {

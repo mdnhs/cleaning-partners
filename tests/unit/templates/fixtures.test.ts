@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 
+import { contactPlaceholders, interpolate } from "@/lib/interpolate"
 import { PAGE_KEYS, PAGES, templates } from "@/templates/registry"
 import {
   fixtureMediaKey,
@@ -7,11 +8,16 @@ import {
   MEDIA,
 } from "@/server/db/seed/fixtures/media"
 import { pagesFixture } from "@/server/db/seed/fixtures/pages"
+import { settingsFixture } from "@/server/db/seed/fixtures/settings"
 
 import { frozenArray } from "../helpers/frozen"
 import { inventory, normalise } from "../helpers/inventory"
 
 const fixture = pagesFixture(fixtureMediaLookup)
+const settings = settingsFixture(fixtureMediaLookup)
+/** {placeholders} (phone24h …) as the views fill them in. */
+const fill = (text: string) =>
+  interpolate(text, contactPlaceholders(settings.contact))
 
 /** A paragraphsText doc as its paragraphs' plain text (the inventory lists them one by one). */
 function paragraphTexts(value: unknown): unknown {
@@ -82,7 +88,19 @@ describe("page fixtures (master 3.2)", () => {
       const isSeo = rest[0] === "seo"
       const root = isSeo ? fixture[pageKey].seo : fixture[pageKey].data
       const path = (isSeo ? rest.slice(1) : rest).join(".")
-      const found = valuesAt(root, path)
+      let found = valuesAt(root, path)
+      // A blank seo.title is derived: settings.seo.defaults.titleTemplate
+      // applied to the page's hero title (M1).
+      if (isSeo && path === "title" && found[0] === undefined)
+        found = [
+          interpolate(settings["seo.defaults"].titleTemplate, {
+            title: (fixture[pageKey].data as { hero: { title: string } }).hero
+              .title,
+          }),
+        ]
+      // Stored text keeps {placeholders}; the inventory has the filled value.
+      if (!e.template)
+        found = found.map((v) => (typeof v === "string" ? fill(v) : v))
       if (e.array) {
         // "3" = the number of items in the list.
         const list = found[0] as unknown[]
@@ -103,12 +121,10 @@ describe("page fixtures (master 3.2)", () => {
     expect(fixture.services.data.detail.officeHours.hours).toBe(
       "Mon – Fri: 9am – 6pm"
     )
-    expect(fixture.contact.data.quoteForm.fields.service.extraOption1).toBe(
-      "Domestic Cleaning"
-    )
-    expect(fixture.contact.data.quoteForm.fields.service.extraOption2).toBe(
-      "Other"
-    )
+    expect(fixture.contact.data.quoteForm.fields.service.extraOptions).toEqual([
+      "Domestic Cleaning",
+      "Other",
+    ])
     expect(fixture.about.data.stats).toHaveLength(4)
     expect(fixture.about.data.story.sectors).toHaveLength(5)
     expect(fixture.contact.data.quoteForm.steps).toHaveLength(3)
@@ -120,9 +136,12 @@ describe("page fixtures (master 3.2)", () => {
   // item with the static site's own arrays at 3689369.
   describe("every list item equals the static site's", () => {
     it("about stats", () => {
-      expect(fixture.about.data.stats).toEqual(
-        frozenArray("components/about/stats.tsx", "stats")
-      )
+      expect(
+        fixture.about.data.stats.map((stat) => ({
+          ...stat,
+          label: fill(stat.label),
+        }))
+      ).toEqual(frozenArray("components/about/stats.tsx", "stats"))
     })
 
     it("about story paragraphs", () => {
@@ -169,10 +188,13 @@ describe("page fixtures (master 3.2)", () => {
     expect(fixture.privacy.data.hero.image).toBeDefined()
   })
 
-  it("home has no seo override; the four inner pages carry theirs", () => {
+  it("home has no seo title; the inner pages take theirs from titleTemplate", () => {
     expect(fixture.home.seo).toEqual({})
     for (const key of ["about", "services", "blog", "contact"] as const)
-      expect(fixture[key].seo.title).toMatch(/\| Cleaning Partners Ltd\.$/)
+      expect(fixture[key].seo.title).toBeUndefined()
+    expect(settings["seo.defaults"].titleTemplate).toBe(
+      "{title} | Cleaning Partners Ltd."
+    )
   })
 
   it("uses only library images", () => {

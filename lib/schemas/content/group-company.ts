@@ -2,7 +2,7 @@ import { z } from "zod"
 
 import { mediaRef, text } from "../common"
 
-/** Footer "Other services in the group"; tel: href derived from phone, link is https://{site}. */
+/** Footer "Other services in the group"; phone is display text (not linked), link is https://{site}. */
 export const groupCompanySchema = z.object({
   name: text,
   phone: text,

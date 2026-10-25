@@ -123,6 +123,7 @@ export function articleView(s: SiteSources, slug: string): ArticleView | null {
       },
     },
     body: {
+      checkIcon: microcopy.checkIcon.url,
       // An article without a designed body shows its lead (else its excerpt).
       body: content.body ?? {
         type: "doc",

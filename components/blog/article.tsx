@@ -144,6 +144,8 @@ function SidebarCard({
 export type ArticleBodyProps = {
   /** The TipTap body, or the excerpt as a lead paragraph (built by the view) */
   body: WithMedia<RichTextDoc>
+  /** Checklist bullet icon url (settings.microcopy.checkIcon) */
+  checkIcon: string
   tags: { label: string; items: string[] }
   share: ShareLinksProps
   author: { logo: string; writtenBy: string; bio: string }
@@ -173,6 +175,7 @@ export type ArticleBodyProps = {
 
 export function ArticleBody({
   body,
+  checkIcon,
   tags,
   share,
   author,
@@ -185,7 +188,7 @@ export function ArticleBody({
     <section className="bg-white py-16 md:py-20">
       <Container className="grid items-start gap-16 lg:grid-cols-[minmax(0,776px)_1fr]">
         <article className="flex flex-col gap-5">
-          <ArticleBlocks doc={body} />
+          <ArticleBlocks doc={body} checkIcon={checkIcon} />
 
           <div className="h-px w-full bg-line" />
 
