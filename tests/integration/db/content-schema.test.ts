@@ -48,7 +48,10 @@ const serviceContent = {
   tags: [],
   heroDescription: "D",
   overviewTitle: "H",
-  overview: ["P"],
+  overview: {
+    type: "doc" as const,
+    content: [{ type: "paragraph" as const }],
+  },
   included: ["x"],
   places: [],
 }

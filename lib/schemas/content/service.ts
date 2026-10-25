@@ -1,11 +1,11 @@
 import { z } from "zod"
 
-import { mediaRef, slug, text } from "../common"
+import { mediaRef, paragraphsText, slug, text } from "../common"
 
 /**
  * The draft/published payload of a service, in CP's shape (lib/services.ts,
  * R3-3). slug and sortOrder are columns; SEO is the shared `seo` object.
- * `overview` is a list of paragraphs, each rendered as its own <p>.
+ * `overview` is a TipTap doc of paragraphs only (one <p> each).
  */
 export const serviceContent = z.object({
   title: text,
@@ -15,7 +15,7 @@ export const serviceContent = z.object({
   tags: z.array(text),
   heroDescription: text,
   overviewTitle: text,
-  overview: z.array(text).min(1),
+  overview: paragraphsText,
   included: z.array(text).min(1),
   places: z.array(text),
 })

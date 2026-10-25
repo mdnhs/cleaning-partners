@@ -6,6 +6,7 @@ import { clientSchema } from "@/lib/schemas/content/client"
 import { groupCompanySchema } from "@/lib/schemas/content/group-company"
 import { serviceSchema } from "@/lib/schemas/content/service"
 import { teamMemberSchema } from "@/lib/schemas/content/team-member"
+import { paragraphs } from "@/server/db/seed/fixtures/rich-text"
 
 import { schemaPaths } from "../helpers/schema-paths"
 
@@ -33,7 +34,7 @@ describe("serviceSchema (R3-3: CP shape from lib/services.ts)", () => {
     tags: ["Daily cleaning", "Deep cleaning"],
     heroDescription: "Hygienic, high-standard cleaning for hospitals.",
     overviewTitle: "Cleaning to Healthcare Standards",
-    overview: ["First paragraph.", "Second paragraph."],
+    overview: paragraphs("First paragraph.", "Second paragraph."),
     included: ["Daily cleaning of clinical and public areas"],
     places: ["Hospitals", "GP clinics"],
   }
@@ -55,8 +56,10 @@ describe("serviceSchema (R3-3: CP shape from lib/services.ts)", () => {
       ].sort()
     )
     const paths = schemaPaths(serviceSchema)
-    for (const list of ["tags", "overview", "included", "places"])
+    for (const list of ["tags", "included", "places"])
       expect(paths.lists.has(list), list).toBe(true)
+    // A paragraphs doc is one leaf, not a list.
+    expect(paths.leaves.has("overview")).toBe(true)
   })
 
   it("round-trips a service unchanged", () => {
@@ -67,9 +70,12 @@ describe("serviceSchema (R3-3: CP shape from lib/services.ts)", () => {
     expect(
       serviceSchema.safeParse({ ...service, slug: "Medical" }).success
     ).toBe(false)
-    expect(serviceSchema.safeParse({ ...service, overview: [] }).success).toBe(
-      false
-    )
+    expect(
+      serviceSchema.safeParse({
+        ...service,
+        overview: { type: "doc", content: [] },
+      }).success
+    ).toBe(false)
     expect(serviceSchema.safeParse({ ...service, included: [] }).success).toBe(
       false
     )

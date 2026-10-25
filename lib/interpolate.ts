@@ -74,7 +74,7 @@ export function shareHref(
   })
 }
 
-/** "(085) 8018746" → "tel:+353858018746" (Irish numbers; +/00 kept international). */
+/** "(085) 8062369" → "tel:+353858062369" (Irish numbers; +/00 kept international). */
 export function telHref(phone: string): string {
   const digits = phone.replace(/[^\d+]/g, "")
   if (digits.startsWith("+")) return `tel:${digits}`
