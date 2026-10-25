@@ -43,3 +43,12 @@ next-env.d.ts
 test-results/
 playwright-report/
 .data/
+
+# vitest
+/.vitest/
+
+# local dev env
+.env.development
+
+# bundled ops scripts (Docker builder output)
+/scripts/dist/
