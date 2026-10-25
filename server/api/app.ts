@@ -5,8 +5,10 @@ import { secureHeaders } from "hono/secure-headers"
 
 import { HSTS } from "@/lib/security-headers"
 import type { AppEnv } from "@/server/api/context"
+import { limitAdminBody, limitBody } from "@/server/api/middleware/body-limit"
 import { notFoundHandler, onError } from "@/server/api/middleware/error"
 import { requestIdMiddleware } from "@/server/api/middleware/request-id"
+import { sameOrigin } from "@/server/api/middleware/same-origin"
 import { healthRoutes } from "@/server/modules/health/routes"
 
 /**
@@ -31,6 +33,14 @@ export function createApp() {
   })
   api.onError(onError)
   api.notFound(notFoundHandler)
+
+  // 3. Public endpoints: 64 KB body
+  api.use("/v1/public/*", limitBody("public"))
+
+  // 4. Admin endpoints: same origin → body limit (1 MB; uploads 20 MB).
+  // Phase 2 inserts session + signedIn before sameOrigin.
+  api.use("/v1/admin/*", sameOrigin(), limitAdminBody)
+  api.route("/v1/admin", adminRoutes)
 
   // 5. Health
   api.route("/v1/health", healthRoutes)

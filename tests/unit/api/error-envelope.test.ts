@@ -37,6 +37,13 @@ app.post(
   ),
   (c) => c.json({ ok: true })
 )
+app.post("/v1/public/__test/echo", async (c) =>
+  c.json({ size: (await c.req.text()).length })
+)
+app.post("/v1/admin/__test/echo", async (c) =>
+  c.json({ size: (await c.req.text()).length })
+)
+
 const ORIGIN = "http://localhost:3000"
 
 beforeAll(() => {
@@ -206,5 +213,84 @@ describe("API error envelope", () => {
       expect(res.headers.get("strict-transport-security")).toContain("max-age=")
       expect(res.headers.get("x-robots-tag")).toBe("noindex")
     }
+  })
+})
+
+describe("body limits", () => {
+  it("public: 64 KB ok, larger → 413 envelope", async () => {
+    const ok = await app.request("/api/v1/public/__test/echo", {
+      method: "POST",
+      body: "a".repeat(64 * 1024),
+    })
+    expect(ok.status).toBe(200)
+    const tooBig = await app.request("/api/v1/public/__test/echo", {
+      method: "POST",
+      body: "a".repeat(64 * 1024 + 1),
+    })
+    expect(tooBig.status).toBe(413)
+    expect((await tooBig.json()).error.code).toBe("VALIDATION_FAILED")
+  })
+
+  it("admin: 1 MB ok, larger → 413 envelope", async () => {
+    const headers = { origin: ORIGIN }
+    const ok = await app.request("/api/v1/admin/__test/echo", {
+      method: "POST",
+      headers,
+      body: "a".repeat(1024 * 1024),
+    })
+    expect(ok.status).toBe(200)
+    const tooBig = await app.request("/api/v1/admin/__test/echo", {
+      method: "POST",
+      headers,
+      body: "a".repeat(1024 * 1024 + 1),
+    })
+    expect(tooBig.status).toBe(413)
+  })
+})
+
+describe("sameOrigin on /api/v1/admin/*", () => {
+  const post = (headers: Record<string, string>) =>
+    app.request("/api/v1/admin/__test/echo", {
+      method: "POST",
+      headers,
+      body: "x",
+    })
+
+  it("allows the app origin", async () => {
+    expect((await post({ origin: ORIGIN })).status).toBe(200)
+  })
+
+  it("allows Sec-Fetch-Site: same-origin when Origin is absent", async () => {
+    expect((await post({ "sec-fetch-site": "same-origin" })).status).toBe(200)
+  })
+
+  it("rejects a foreign origin with 403 FORBIDDEN", async () => {
+    const res = await post({ origin: "https://evil.example" })
+    expect(res.status).toBe(403)
+    expect((await res.json()).error.code).toBe("FORBIDDEN")
+  })
+
+  it("rejects a foreign Origin even with Sec-Fetch-Site: same-origin (Origin wins)", async () => {
+    const res = await post({
+      origin: "https://evil.example",
+      "sec-fetch-site": "same-origin",
+    })
+    expect(res.status).toBe(403)
+    expect((await res.json()).error.code).toBe("FORBIDDEN")
+  })
+
+  it("rejects Sec-Fetch-Site: same-site when Origin is absent", async () => {
+    expect((await post({ "sec-fetch-site": "same-site" })).status).toBe(403)
+  })
+
+  it("rejects an unsafe request with neither header", async () => {
+    expect((await post({})).status).toBe(403)
+  })
+
+  it("lets safe methods through", async () => {
+    const res = await app.request("/api/v1/admin/__test/missing", {
+      headers: { origin: "https://evil.example" },
+    })
+    expect(res.status).toBe(404)
   })
 })
