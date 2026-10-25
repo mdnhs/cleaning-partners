@@ -14,6 +14,7 @@ export const SCRIPT_ENTRIES = [
   "migrate",
   "admin-create",
   "owner-recover",
+  "demo-seed",
 ] as const
 
 /** `server-only` throws outside Next's react-server bundles; scripts get an empty module. */
