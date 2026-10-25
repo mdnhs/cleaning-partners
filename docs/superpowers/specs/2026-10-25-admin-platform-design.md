@@ -29,7 +29,7 @@ Owner's words: "same lagbe, just core feature gulo thik rekhe" — the same, wit
 ## 4. Anti-goals (would be a failure even if it "works")
 
 - Any visible change to the existing public pages after seeding.
-- CP code or data reaching SP (shared DB, shared R2 prefix, shared cookies, a copied `BETTER_AUTH_SECRET`).
+- CP code or data reaching SP (shared DB, writing outside the `cp/` R2 prefix, shared cookies, a copied `BETTER_AUTH_SECRET`).
 - Security Partners names, copy, logos, colours, emails or domains left anywhere in CP's admin, emails, seed data, OG images or docs.
 - A "lighter" admin: missing screens, missing roles, or features stubbed out.
 
@@ -42,14 +42,18 @@ Owner's words: "same lagbe, just core feature gulo thik rekhe" — the same, wit
 | O1 | CP is a fully separate copy of the SP platform: own database, own admin login and users, own settings, own domain. |
 | O2 | The admin is the same as SP's in every section and setting; only content and branding change. |
 | O3 | Core features are kept exactly as SP has them. |
+| O4 | **SP is followed for the admin panel and backend only.** CP's public site is not SP's: none of SP's public section components or SP-only builder blocks (`iconCards`, `enquireBanner`, `departments`, SP's `hero.page` / `about` / `stats` visuals) are ported. |
+| O5 | **The public UI is final and frozen.** It was built from Figma and is pushed to `main` at commit `3689369`; that commit is the visual baseline. |
+| O6 | **Every public section is dynamic** (editable from the admin). This is CP's core feature. |
+| O7 | **R2: same bucket as SP, key prefix `cp`** (SP uses prefix `sp` in that bucket). |
 
 ### 5.2 Builder's calls (made on the owner's behalf; marked so the owner can correct)
 
 | # | Call |
 |---|---|
-| B1 | **Port, don't rebuild.** Bring SP's code into this repo (server/, lib/, blocks/, templates/, emails/, scripts/, components/admin, app/(admin), app/api, app/og, tests, docker, CI, docs/runbook) and adapt it. Rebuilding from the starter prompt would drift from "exact same". |
+| B1 | **Port, don't rebuild, for admin + backend.** Bring SP's admin and backend code into this repo (server/, lib/, the block/template *machinery*, emails/, scripts/, components/admin, app/(admin), app/api, app/og, tests, docker, CI, docs/runbook) and adapt it. SP's public components (`components/site`, SP block/template views) are not ported (O4); CP's existing components become the template and block views. |
 | B2 | The admin's section name "Insights" becomes **"Blog"** to match CP's public site; routes `/admin/blog/*`. Everything else keeps SP's names. |
-| B3 | Cookie prefix `cp`; app/package name `cleaning-partners`; Docker service `cleaning-web` (already used in this repo's `docker-compose.yml`); image `ghcr.io/mdnhs/cleaning-partners`; Postgres role/db `cp`; R2 key prefix `cp` (in CP's own bucket, see B12). |
+| B3 | Cookie prefix `cp`; app/package name `cleaning-partners`; Docker service `cleaning-web` (already used in this repo's `docker-compose.yml`); image `ghcr.io/mdnhs/cleaning-partners`; Postgres role/db `cp`; R2 key prefix `cp` (shared bucket, see O7). |
 | B4 | Admin colours: SP's admin token structure with a **`cleaning-partners` preset** derived from CP brand tokens (`--color-brand #11b1d1`, `brand-deep #0e93ad`, `brand-soft #e3f6fa`, `navy #28648f`, `navy-dark #1c3f5a`), replacing SP's green/navy. Same admin font (Plus Jakarta Sans), same shell. Contrast-tuned `destructive`/`warning` kept from SP. |
 | B5 | Public theme default emits no `<style>` and equals today's `app/globals.css` values (SP ruling 4). |
 | B6 | Env stays exactly SP's three: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`. SMTP, R2, Turnstile and AI are configured in Settings ▸ Integrations. |
@@ -58,7 +62,7 @@ Owner's words: "same lagbe, just core feature gulo thik rekhe" — the same, wit
 | B9 | Privacy and Terms pages are added as `legal` templates (SP has them; CP's footer already links to them). Placeholder legal copy, marked for owner review. |
 | B10 | SP's `/team` page is **not** added: CP has no team page; the Team section lives on Home and About. Team stays a collection. |
 | B11 | **Branch + cut-over, like SP.** All work happens on `feat/dynamic-platform`; `main` (auto-deployed to Dokploy) keeps serving today's static site until full parity, then merges in one cut-over. Local dev uses a Docker Postgres. The owner only needs to provision the Dokploy Postgres and env vars before cut-over, not on day 1. No half-built `/admin` or DB-driven page is ever public. |
-| B12 | **Own R2 bucket and token**, not a `cp` prefix in SP's bucket (follows O1 and §4: one shared token could read SP's objects and backups). `r2:bootstrap`, backup and export defaults read `CP_R2_*` input vars; key prefix inside CP's bucket stays `cp`. |
+| B12 | R2 per O7: every CP object key (media, backups, exports) starts with `cp/`; code never lists or reads outside that prefix. `r2:bootstrap` input vars renamed `CP_R2_*`. |
 
 ## 6. What gets built
 
@@ -81,7 +85,9 @@ CP's current pages become fixed templates (layout and section order in code, fie
 | `contact` | `/contact` | Page hero · Contact (shared, title "Ways to Reach Us") · Quote form (heading, intro, next-steps[], urgent box, form copy) · Location map |
 | `privacy`, `terms` | `/privacy`, `/terms` | Legal template (as SP) |
 
-Detail routes come from collections: `/services/[slug]` (service detail: hero, overview, included[], places[], How It Works, sidebar) and `/blog/[slug]` (article: header, body, tags, share, author box, sidebar, related). Builder pages: `/p/[slug]` with SP's block registry, extended with CP blocks for any CP section not in SP's registry (Our Story, Testimonials, How It Works, Quote form).
+Detail routes come from collections: `/services/[slug]` (service detail: hero, overview, included[], places[], How It Works, sidebar) and `/blog/[slug]` (article: header, body, tags, share, author box, sidebar, related). Builder pages: `/p/[slug]` with SP's block-builder machinery (registry, editor, ordering, draft/publish), but the block library is **CP's own sections only** (O4): Hero, Page hero, Our Story, Stats, Services, Why Choose Us, Clients, Team, Testimonials, Blog, How It Works, Contact, Quote form, Location map, Rich text.
+
+**Every section is dynamic (O6).** No visible string, image, link, list item or CTA on any public page stays hard-coded in a component; each one is a template field, a global, or a collection row. Components keep only layout and styling. The field inventory in phase 0 lists every one, and a test fails if a public component renders a literal user-visible string.
 
 ### 6.3 Content model (CP mapping onto SP's model)
 
@@ -91,7 +97,7 @@ Detail routes come from collections: `/services/[slug]` (service detail: hero, o
 
 ### 6.4 Visual gate
 
-Take Playwright visual baselines of today's public site **before** any refactor (desktop 1440×900 and mobile 390×844, animations off), using SP's `tests/visual` harness. After seeding, every page must match at 0 px, in every phase. Same for the consent banner (hidden while tracking is off).
+Take Playwright visual baselines of the public site at commit `3689369` (O5) **before** any refactor (desktop 1440×900 and mobile 390×844, animations off), using SP's `tests/visual` harness. After seeding, every page must match at 0 px, in every phase. Same for the consent banner (hidden while tracking is off).
 
 ### 6.5 Forms
 
@@ -122,8 +128,6 @@ Replace in code, copy, emails, OG cards, JSON-LD, seed data, docs, CI and Docker
 
 ## 10. Owner must do (cannot be automated)
 
-- Before cut-over: create the Dokploy compose app + Postgres for `cleaning.raynx.ie` and set the three env vars (new `BETTER_AUTH_SECRET`, never SP's).
-- Create a separate R2 bucket + API token for CP.
-- Run `admin:create` in the production container for the first owner.
+- Before cut-over: create the Dokploy compose app + Postgres for `cleaning.raynx.ie` and set the three env vars (new `BETTER_AUTH_SECRET`, never SP's).- Run `admin:create` in the production container for the first owner.
 - Enter SMTP, R2, Turnstile and AI credentials in Settings ▸ Integrations.
 - Review placeholder privacy/terms copy and the service detail copy for the four services Figma did not cover.
