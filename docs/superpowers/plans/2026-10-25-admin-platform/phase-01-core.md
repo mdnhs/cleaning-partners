@@ -31,7 +31,7 @@ The public site is untouched and stays at 0 px.
 
 - The master plan's Global Constraints apply in full. In particular:
   - the **branding map**;
-  - dev ports **5433** (Postgres), **1026/8026** (Mailpit) and **3200** (Playwright);
+  - dev ports **5434** (Postgres), **1026/8026** (Mailpit) and **3200** (Playwright);
   - the three env vars only;
   - `next build` with no env and no DB;
   - `import "server-only"` first in every `server/**` file;
@@ -57,7 +57,7 @@ The public site is untouched and stays at 0 px.
   - `next.config.ts`: SP's `SECURITY_HEADERS` and `headers()`, `output: "standalone"`, `poweredByHeader: false`. **Not** `ADMIN_LEGACY_REDIRECTS` (never in CP), `htmlLimitedBots` (Task 8.1), `cacheComponents` (Task 3.5), `outputFileTracingIncludes` (Task 8.1) or `experimental.authInterrupts` (Task 2.3).
 - **R5.** `instrumentation.ts` is not created in Phase 1. Task 5.4 creates it with the scheduler. `server/lib/shutdown.ts` comes with it.
 - **R6.** `server/api/middleware/auth.ts` waits for Task 2.3. It needs Better Auth.
-- **R7.** In CI, the Postgres service keeps container port 5432 but maps the host port to **5433** (`ports: ["5433:5432"]`), and Mailpit maps `1026:1025`, `8026:8025`. Test code then needs no env differences. Database names and roles are `cp`/`cp_*`.
+- **R7.** In CI, the Postgres service keeps container port 5432 but maps the host port to **5434** (`ports: ["5434:5432"]`), and Mailpit maps `1026:1025`, `8026:8025`. Test code then needs no env differences. Database names and roles are `cp`/`cp_*`.
 
 ---
 
@@ -140,7 +140,7 @@ The public site is untouched and stays at 0 px.
   - `lib/auth/roles.ts` (`Actor.roles` needs it; Task 2.1 adds `permissions.ts` and must not change this file)
   - `lib/{ids,json,format,interpolate,hidden-chars,href,link-rules,request-path,utils}.ts`, merging SP's `utils.ts` into CP's existing one: keep CP's `cn`, add SP's exports
   - `lib/seo/urls.ts` if `site-origin` needs it
-  - `.env.example` (SP's, rebranded: `postgres://cp:cp@127.0.0.1:5433/cp_dev`, `BETTER_AUTH_URL=http://localhost:3000`, SP's example secret)
+  - `.env.example` (SP's, rebranded: `postgres://cp:cp@127.0.0.1:5434/cp_dev`, `BETTER_AUTH_URL=http://localhost:3000`, SP's example secret)
 - Test (port): the SP unit tests for each file: `env`, `errors`, `crypto`, `ids`, `json`, `format`, `format-dublin`, `interpolate`, `hidden-chars`, `link-rules`, `ip`, `internal-signature`, `post-dates` if `format` needs it.
 
 **Interfaces:** SP's, verbatim: `getEnv()`, `parseEnv()`, `AppError`, `fieldErrorsFromIssues()`, `deriveKey()`, `encryptSecret()`, `decryptSecret()`, `secretHint()`, `Actor`, `getSiteEnv()`, `siteOrigin()`, `hashIp()`, `clientIp()`.
@@ -172,7 +172,7 @@ The public site is untouched and stays at 0 px.
 
 **Files:**
 - Create (port):
-  - `docker-compose.dev.yml`: project `cleaning-partners-dev`; `postgres:17.11` with user/password `cp`, db `cp_dev`, ports `127.0.0.1:5433:5432`; Mailpit `127.0.0.1:1026:1025`, `127.0.0.1:8026:8025`; healthcheck `-U cp -d cp_dev`
+  - `docker-compose.dev.yml`: project `cleaning-partners-dev`; `postgres:17.11` with user/password `cp`, db `cp_dev`, ports `127.0.0.1:5434:5432`; Mailpit `127.0.0.1:1026:1025`, `127.0.0.1:8026:8025`; healthcheck `-U cp -d cp_dev`
   - `docker/postgres-init.sql` (`cp_test`, `cp_e2e`)
   - `drizzle.config.ts`
   - `server/db/{client,migrate,like}.ts`
@@ -187,7 +187,7 @@ The public site is untouched and stays at 0 px.
 
 **Interfaces:**
 - SP's: `getDb()`, `closeDb()`, `pingDb()`, `Db`, `DbOrTx`, `runMigrations(url)`, `resetDb()` (tests).
-- Test DB URL default: `postgres://cp:cp@127.0.0.1:5433/cp_test`, overridable by `TEST_DATABASE_URL`.
+- Test DB URL default: `postgres://cp:cp@127.0.0.1:5434/cp_test`, overridable by `TEST_DATABASE_URL`.
 - E2E DB URL: `cp_e2e`.
 
 **Steps:**
@@ -200,7 +200,7 @@ The public site is untouched and stays at 0 px.
 - [ ] **Step 3:** Port the client, migrator, schema (R2) and the migrations verbatim.
 - [ ] **Step 4:** Run `pnpm db:migrate`.
 
-  Expected: 21 migrations applied to `cp_dev`. Then `psql postgres://cp:cp@127.0.0.1:5433/cp_dev -c '\dt'` lists SP's tables, including `builder_pages` and `rate_limits`, with no newsletter table.
+  Expected: 21 migrations applied to `cp_dev`. Then `psql postgres://cp:cp@127.0.0.1:5434/cp_dev -c '\dt'` lists SP's tables, including `builder_pages` and `rate_limits`, with no newsletter table.
 
 - [ ] **Step 5:** Run `pnpm db:generate`.
 
@@ -269,7 +269,7 @@ The public site is untouched and stays at 0 px.
   ```bash
   docker build -t cp-web:phase1 .
   docker run --rm -d --name cp-web-p1 -p 3300:3000 \
-    -e DATABASE_URL=postgres://cp:cp@host.docker.internal:5433/cp_dev \
+    -e DATABASE_URL=postgres://cp:cp@host.docker.internal:5434/cp_dev \
     -e BETTER_AUTH_SECRET="$(openssl rand -base64 32)" -e BETTER_AUTH_URL=http://localhost:3300 cp-web:phase1
   sleep 8; docker logs cp-web-p1 | tail -20; curl -s localhost:3300/api/v1/health/live; curl -sI localhost:3300/ | head -1
   docker rm -f cp-web-p1
