@@ -59,6 +59,8 @@ const FINER_CHECKS: Record<string, string> = {}
 const EXPECTED: Record<string, PermissionRequest | null> = {
   "page.tsx": null,
   "account/page.tsx": null,
+  "pages/page.tsx": { page: ["read"] },
+  "pages/[key]/page.tsx": { page: ["read"] },
 }
 
 const rel = (file: string) => file.slice(ROOT.length + 1)

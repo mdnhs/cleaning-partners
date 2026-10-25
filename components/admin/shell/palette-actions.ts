@@ -70,14 +70,7 @@ export function buildActions({
       permission: { article: ["create"] },
       run: () => navigate("/admin/blog/new"),
     },
-    {
-      id: "new-page",
-      label: "New page",
-      keywords: ["create", "add", "builder", "landing"],
-      permission: { page: ["create"] },
-      // Pages opens its New page dialog for ?new=1 (D5.5).
-      run: () => navigate("/admin/pages?new=1"),
-    },
+    // "New page" (builder) returns in Phase 10.
     {
       id: "new-service",
       label: "New service",

@@ -44,7 +44,6 @@ describe("buildActions", () => {
   it("lists the MK actions in order for an owner", () => {
     expect(actionsFor(["owner"]).actions.map((a) => a.id)).toEqual([
       "new-article",
-      "new-page",
       "new-service",
       "open-site",
       "theme-light",

@@ -123,7 +123,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: FileText,
     permission: { page: ["read"] },
     match: "prefix",
-    keywords: ["home page", "about", "contact", "builder", "custom pages"],
+    keywords: ["home page", "about", "contact"],
   },
   {
     id: "blog",
