@@ -207,30 +207,71 @@ test("two editors: the stale one gets the conflict dialog and reloads theirs", a
   await expect(saveStatus(page)).toHaveText("Saved")
 })
 
-// Leaves the home page as seeded (the visual run also reseeds cp_e2e).
-test("restore the seeded home page", async ({ page, browser }) => {
+// Shift+Tab focus must land clear of the sticky editor bar (WCAG 2.4.11).
+test("a field focused with Shift+Tab is scrolled clear of the sticky header (WCAG 2.4.11)", async ({
+  page,
+}) => {
   const { editor } = readFixtures()
   await signIn(page, editor.email, editor.name)
-  type Dto = {
-    version: number
-    published: { hero: Record<string, unknown> } & Record<string, unknown>
+  const hero = await openHomeEditor(page)
+  const heading = hero.getByRole("textbox", { name: "Heading" })
+  const intro = hero.getByRole("textbox", { name: "Introduction" })
+  const bar = page.locator('[data-slot="editor-bar"]')
+  const bottomOf = async () => {
+    const box = await bar.boundingBox()
+    return box!.y + box!.height
   }
-  const current = (await (
-    await page.request.get("/api/v1/admin/pages/home")
-  ).json()) as Dto
-  // The first test published a new heading: put the seeded one back.
-  const original = structuredClone(current.published)
-  original.hero.title = ORIGINAL
-  const saved = await page.request.put("/api/v1/admin/pages/home/draft", {
-    headers: { origin: BASE_URL },
-    data: { version: current.version, draft: original },
-  })
-  expect(saved.status()).toBe(200)
-  const { version } = (await saved.json()) as { version: number }
-  const published = await page.request.post(
-    "/api/v1/admin/pages/home/publish",
-    { headers: { origin: BASE_URL }, data: { version } }
+  // Scroll the panel until the Heading input sits just under the stuck bar
+  // (inside the panel, so the browser alone would not scroll it into view).
+  await page.locator("main#main").evaluate((main, offset) => {
+    main.scrollTop = offset
+  }, 0)
+  const headingTop = (await heading.boundingBox())!.y
+  const barBottom = await bottomOf()
+  await page
+    .locator("main#main")
+    .evaluate((main, by) => (main.scrollTop += by), headingTop - barBottom + 10)
+  expect((await heading.boundingBox())!.y).toBeLessThan(await bottomOf())
+  await intro.focus()
+  await page.keyboard.press("Shift+Tab")
+  await expect(heading).toBeFocused()
+  expect((await heading.boundingBox())!.y).toBeGreaterThanOrEqual(
+    await bottomOf()
   )
-  expect(published.status()).toBe(200)
-  expect(await publicHeading(browser)).toBe(ORIGINAL)
+})
+
+// Leaves the home page as seeded even under --grep or a failed test (the
+// visual run also reseeds cp_e2e).
+test.afterAll(async ({ browser }) => {
+  const { editor } = readFixtures()
+  const context = await browser.newContext({
+    extraHTTPHeaders: { "x-forwarded-for": clientIpFor("restore home") },
+  })
+  try {
+    const page = await context.newPage()
+    await signIn(page, editor.email, editor.name)
+    type Dto = {
+      version: number
+      published: { hero: Record<string, unknown> } & Record<string, unknown>
+    }
+    const current = (await (
+      await page.request.get("/api/v1/admin/pages/home")
+    ).json()) as Dto
+    const original = structuredClone(current.published)
+    original.hero.title = ORIGINAL
+    const saved = await page.request.put("/api/v1/admin/pages/home/draft", {
+      headers: { origin: BASE_URL },
+      data: { version: current.version, draft: original },
+    })
+    expect(saved.status()).toBe(200)
+    const { version } = (await saved.json()) as { version: number }
+    const published = await page.request.post(
+      "/api/v1/admin/pages/home/publish",
+      { headers: { origin: BASE_URL }, data: { version } }
+    )
+    expect(published.status()).toBe(200)
+    expect(await publicHeading(browser)).toBe(ORIGINAL)
+  } finally {
+    await context.close()
+  }
 })

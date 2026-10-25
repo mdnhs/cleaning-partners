@@ -15,7 +15,7 @@ import {
 
 /**
  * Editor for one fixed page (master 4.4). The SEO tab and "Copy to new page"
- * arrive with Phases 9 and 10.
+ * arrive with Phases 8 (SeoPanel, master 8.1) and 10.
  */
 export function PageEditor({ pageKey }: { pageKey: PageKey }) {
   const canEdit = usePermission({ page: ["update"] })
