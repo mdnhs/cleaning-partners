@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
+    "test:e2e": "playwright test tests/e2e",
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:integration": "vitest run --project integration",

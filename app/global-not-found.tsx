@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import NotFound from "next/dist/client/components/builtin/not-found"
 
 import "./globals.css"
@@ -5,6 +6,13 @@ import { SmoothScroll } from "@/components/motion/smooth-scroll"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 import { barlow, fontMono, roboto } from "@/app/fonts"
+
+// Same title and description as app/(site)/layout.tsx.
+export const metadata: Metadata = {
+  title: "Cleaning Partners Ltd. | The Clean Team",
+  description:
+    "Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond.",
+}
 
 // Next 16 global 404: unmatched URLs bypass every layout (there is no root
 // layout once the public site lives in app/(site)), so this reproduces the

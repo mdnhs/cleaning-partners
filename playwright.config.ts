@@ -1,10 +1,13 @@
 import { defineConfig, devices } from "@playwright/test"
 
-const PORT = Number(process.env.PW_PORT ?? 3200)
+import { PORT, SERVER_ENV } from "./tests/e2e/env"
+
+// Full Chromium (new headless), not the separate headless shell: the 40
+// public baselines were shot with it. Every project keeps it.
+const channel = "chromium"
 
 export default defineConfig({
   testDir: "tests",
-  testMatch: ["visual/**/*.spec.ts"],
   fullyParallel: false,
   workers: 1,
   retries: 0,
@@ -20,34 +23,61 @@ export default defineConfig({
     },
   },
   use: {
-    // Full Chromium (new headless), not the separate headless shell.
-    channel: "chromium",
     baseURL: `http://127.0.0.1:${PORT}`,
     contextOptions: { reducedMotion: "reduce" },
   },
   projects: [
     {
       name: "desktop",
-      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+      testMatch: "visual/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        channel,
+        viewport: { width: 1440, height: 900 },
+      },
     },
     {
       name: "mobile",
+      testMatch: "visual/**/*.spec.ts",
       use: {
         ...devices["Desktop Chrome"],
+        channel,
         viewport: { width: 390, height: 844 },
         deviceScaleFactor: 1,
         isMobile: false,
         hasTouch: true,
       },
     },
+    // Admin E2E: migrate + seed cp_e2e first (tests/e2e/global.setup.ts).
+    { name: "e2e-setup", testMatch: "e2e/global.setup.ts", use: { channel } },
+    {
+      name: "e2e",
+      testMatch: "e2e/**/*.spec.ts",
+      dependencies: ["e2e-setup"],
+      use: {
+        ...devices["Desktop Chrome"],
+        channel,
+        viewport: { width: 1440, height: 900 },
+      },
+    },
   ],
   webServer: {
-    // Ruling C: `next start` refuses output: standalone, so run the standalone server.
+    // Build (no DB), copy static assets next to the standalone server (as
+    // the Dockerfile does), reset + seed cp_e2e (tests/visual/seed.ts), then
+    // run the production server.js — not `next start`, which refuses
+    // output: "standalone".
     command:
-      "pnpm build && node scripts/prepare-standalone.mjs && node .next/standalone/server.js",
-    env: { PORT: String(PORT), HOSTNAME: "127.0.0.1" },
+      "pnpm build && node scripts/prepare-standalone.mjs && pnpm tsx:server tests/visual/seed.ts && node .next/standalone/server.js",
     url: `http://127.0.0.1:${PORT}`,
+    // Always start our own server: a stale one on the port would serve old
+    // code or lack the E2E env (port must be free).
     reuseExistingServer: false,
     timeout: 300_000,
+    // server.js never reads .env.development; the server gets the E2E
+    // database, auth env, PORT and HOSTNAME here (the build itself needs none).
+    env: SERVER_ENV,
+    // Server logs go to the runner's output (CI scans them for secrets).
+    stdout: "pipe",
+    stderr: "pipe",
   },
 })

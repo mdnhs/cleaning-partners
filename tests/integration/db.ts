@@ -14,13 +14,23 @@ export function assertCpTestDatabase(name: string): void {
     throw new Error(`Refusing to reset non-CP test database ${name}`)
 }
 
+/**
+ * resetDb also serves the visual and E2E seeds (tests/e2e/seed.ts,
+ * tests/visual/seed.ts), which truncate cp_e2e; those seeds additionally run
+ * assertE2eDatabase (loopback host, *_e2e name) before connecting.
+ */
+export function assertCpResettableDatabase(name: string): void {
+  if (name === "cp_e2e") return
+  assertCpTestDatabase(name)
+}
+
 /** Truncates every table in the public schema (migration bookkeeping lives in the "drizzle" schema). */
 export async function resetDb(): Promise<void> {
   const db = getDb()
   const current = await db.execute<{ name: string }>(
     sql`select current_database() as name`
   )
-  assertCpTestDatabase(current.rows[0].name)
+  assertCpResettableDatabase(current.rows[0].name)
   const { rows } = await db.execute<{ tablename: string }>(
     sql`select tablename from pg_tables where schemaname = 'public'`
   )

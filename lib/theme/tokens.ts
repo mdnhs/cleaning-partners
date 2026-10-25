@@ -2,28 +2,30 @@
 import { ADMIN_TOKEN_NAMES, type AdminTokenName } from "./cp-admin"
 
 // Public colour tokens the theme can override: app/globals.css @theme
-// `--color-brand-*`, in declaration order.
+// `--color-*` brand palette, in declaration order. Names equal globals.css.
 export const SITE_TOKENS = [
-  "brand-navy",
-  "brand-blue",
-  "brand-blue-deep",
-  "brand-green",
-  "brand-green-dark",
-  "brand-mint",
-  "brand-surface",
-  "brand-line",
-  "brand-ink",
-  "brand-muted",
-  "brand-placeholder",
-  "brand-map",
+  "brand",
+  "brand-deep",
+  "brand-soft",
+  "navy",
+  "navy-dark",
+  "ink",
+  "ink-soft",
+  "body",
+  "subtle",
+  "line",
+  "surface",
+  "sky",
+  "sky-soft",
+  "star",
 ] as const
 export type SiteToken = (typeof SITE_TOKENS)[number]
 
 // Page backgrounds: "fix automatically" moves the other colour (MK R6).
 export const SITE_SURFACES: readonly SiteToken[] = [
-  "brand-surface",
-  "brand-mint",
-  "brand-map",
+  "surface",
+  "brand-soft",
+  "sky-soft",
 ]
 
 // One list: A1's admin token names (app/(admin)/admin/admin.css, minus
