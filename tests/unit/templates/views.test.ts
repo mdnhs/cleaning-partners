@@ -133,7 +133,10 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       starsAria: "5 out of 5 stars",
     })
     expect(view.team.members).toHaveLength(3)
-    expect(view.team.members[0].photo).toBe("/images/home/team-temp.png")
+    expect(view.team.members[0].photo).toEqual({
+      src: "/images/home/team-temp.png",
+      placeholder: true,
+    })
     expect(view.contact.cards[0].lines).toEqual([
       "Tel: 057 8697670 Ext 4",
       "Mobile: 085 806 2369",

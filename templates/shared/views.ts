@@ -185,6 +185,14 @@ export function testimonialsView(s: SiteSources): TestimonialsProps {
   }
 }
 
+/**
+ * The placeholder photo every member shares until real headshots are
+ * uploaded (the seeded library image, public/images/home/team-temp.png). A
+ * member whose photo is this file keeps the design's crop (the baseline's
+ * TEMP_PHOTO branch); any other photo fills the box.
+ */
+export const TEAM_PLACEHOLDER_PHOTO = "/images/home/team-temp.png"
+
 export function teamView(s: SiteSources): TeamProps {
   const section = s.settings["sections.team"]
   return {
@@ -196,7 +204,12 @@ export function teamView(s: SiteSources): TeamProps {
       name: m.name,
       role: m.role,
       bio: m.bio,
-      photo: m.photo?.url ?? null,
+      photo: m.photo
+        ? {
+            src: m.photo.url,
+            placeholder: m.photo.url === TEAM_PLACEHOLDER_PHOTO,
+          }
+        : null,
     })),
   }
 }

@@ -87,7 +87,7 @@ export type ServiceDetailView = {
   contact: ContactProps
 }
 
-/** /services/[slug]; null for an unknown or unpublished slug (→ 404). */
+/** /services/[slug]; null for an unknown or unpublished slug (the page then calls notFound()). */
 export function serviceDetailView(
   s: SiteSources,
   slug: string

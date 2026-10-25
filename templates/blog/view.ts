@@ -80,7 +80,7 @@ export type ArticleView = {
   contact: ContactProps
 }
 
-/** /blog/[slug]; null for an unknown or unpublished slug (→ 404). */
+/** /blog/[slug]; null for an unknown or unpublished slug (the page then calls notFound()). */
 export function articleView(s: SiteSources, slug: string): ArticleView | null {
   const article = s.articles.find((a) => a.slug === slug)
   if (!article) return null

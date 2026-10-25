@@ -11,8 +11,11 @@ export type TeamProps = {
     name: string
     role: string
     bio: string
-    /** Image URL; null = no photo */
-    photo: string | null
+    /**
+     * null = no photo. `placeholder`: the shared placeholder image, drawn
+     * with the design's crop; a real headshot fills the box (object-cover).
+     */
+    photo: { src: string; placeholder: boolean } | null
   }[]
 }
 
@@ -58,17 +61,25 @@ export function Team({
                 data-team-photo
                 className="relative h-[300px] w-full overflow-hidden"
               >
-                {member.photo && (
-                  // Matches Figma crop of the shared photo (186% tall, offset up)
+                {member.photo?.placeholder ? (
+                  // Matches Figma crop of the shared placeholder photo (186% tall, offset up)
                   <Image
-                    src={member.photo}
+                    src={member.photo.src}
                     alt={member.name}
                     width={720}
                     height={1047}
                     sizes="(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw"
                     className="absolute top-[-14.95%] left-0 h-[186.13%] w-full max-w-none"
                   />
-                )}
+                ) : member.photo ? (
+                  <Image
+                    src={member.photo.src}
+                    alt={member.name}
+                    fill
+                    sizes="(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                ) : null}
               </div>
               <div className="flex flex-col gap-3.5 px-7 pt-7 pb-8">
                 <div className="flex flex-col gap-1">

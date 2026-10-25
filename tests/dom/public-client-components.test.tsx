@@ -5,6 +5,7 @@ import { BlogList, type BlogListProps } from "@/components/blog/blog-list"
 import type { PostCardData } from "@/components/blog/post-card"
 import { ShareLinks } from "@/components/blog/share-links"
 import { QuoteForm, type QuoteFormProps } from "@/components/contact/quote-form"
+import { Team, type TeamProps } from "@/components/home/team"
 import { SiteLocale } from "@/components/site-locale"
 
 // The three public client components get every string as a prop (R3-7).
@@ -283,5 +284,37 @@ describe("SiteLocale", () => {
     render(<SiteLocale lang="en-IE" />)
     expect(document.documentElement.lang).toBe("en-IE")
     document.documentElement.lang = ""
+  })
+})
+
+describe("Team photo layouts", () => {
+  const props = (photo: TeamProps["members"][number]["photo"]): TeamProps => ({
+    background: "/bg.png",
+    eyebrow: "E",
+    title: "T",
+    description: "D",
+    members: [{ name: "Ann", role: "R", bio: "B", photo }],
+  })
+
+  it("draws the shared placeholder with the design's crop", () => {
+    render(<Team {...props({ src: "/team-temp.png", placeholder: true })} />)
+    const img = screen.getByAltText("Ann")
+    expect(img.className).toContain("h-[186.13%]")
+    expect(img.className).not.toContain("object-cover")
+    expect(img).toHaveAttribute("width", "720")
+    expect(img).toHaveAttribute("height", "1047")
+  })
+
+  it("fills the box with a real headshot", () => {
+    render(<Team {...props({ src: "/ann.jpg", placeholder: false })} />)
+    const img = screen.getByAltText("Ann")
+    expect(img.className).toContain("object-cover")
+    expect(img.className).not.toContain("h-[186.13%]")
+    expect(img).toHaveAttribute("data-nimg", "fill")
+  })
+
+  it("renders no image without a photo", () => {
+    render(<Team {...props(null)} />)
+    expect(screen.queryByAltText("Ann")).toBeNull()
   })
 })

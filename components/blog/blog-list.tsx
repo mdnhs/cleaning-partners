@@ -8,10 +8,10 @@ import { PostCard, type PostCardData } from "@/components/blog/post-card"
 import { Container } from "@/components/home/section-heading"
 import { cn } from "@/lib/utils"
 
-const pillBase =
+const pillBaseClass =
   "flex items-center justify-center rounded-full font-heading font-bold transition-colors"
-const pillIdle = "border border-line bg-white text-ink hover:border-navy"
-const pillActive = "bg-navy text-white"
+const pillIdleClass = "border border-line bg-white text-ink hover:border-navy"
+const pillActiveClass = "bg-navy text-white"
 
 // A client component: every string arrives as a prop from the server view.
 export type BlogListProps = {
@@ -96,9 +96,9 @@ export function BlogList({
                   setPage(1)
                 }}
                 className={cn(
-                  pillBase,
+                  pillBaseClass,
                   "px-5 py-2.5 text-[15px]/[normal] font-semibold",
-                  name === category ? pillActive : pillIdle
+                  name === category ? pillActiveClass : pillIdleClass
                 )}
               >
                 {name}
@@ -202,8 +202,8 @@ export function BlogList({
             disabled={current === 1}
             onClick={() => setPage(current - 1)}
             className={cn(
-              pillBase,
-              pillIdle,
+              pillBaseClass,
+              pillIdleClass,
               "size-12 text-base disabled:opacity-40"
             )}
           >
@@ -216,9 +216,9 @@ export function BlogList({
               aria-current={n === current ? "page" : undefined}
               onClick={() => setPage(n)}
               className={cn(
-                pillBase,
+                pillBaseClass,
                 "size-12 text-base",
-                n === current ? pillActive : pillIdle
+                n === current ? pillActiveClass : pillIdleClass
               )}
             >
               {n}
@@ -230,8 +230,8 @@ export function BlogList({
             disabled={current === pageCount}
             onClick={() => setPage(current + 1)}
             className={cn(
-              pillBase,
-              pillIdle,
+              pillBaseClass,
+              pillIdleClass,
               "size-12 text-base disabled:opacity-40"
             )}
           >

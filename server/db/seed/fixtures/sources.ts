@@ -1,8 +1,7 @@
 import "server-only"
 
 import { type MediaView, replaceMediaRefs } from "@/lib/media"
-import { PUBLIC_SETTINGS_KEYS } from "@/lib/schemas/settings"
-import { PAGE_KEYS } from "@/templates/registry"
+import type { Seo } from "@/lib/schemas/common"
 import type { SiteSources } from "@/templates/shared/sources"
 
 import { contentFixtures } from "./index"
@@ -32,6 +31,11 @@ function staticMedia(id: string): MediaView {
  * (tests/integration) and the interim data source of the public pages
  * (server/modules/pages/sources.ts) until Task 9 reads the database.
  */
+const pageOf = <D>(page: { data: D; seo: Seo }) => ({
+  data: page.data,
+  seo: page.seo,
+})
+
 export function fixtureSiteSources(): SiteSources {
   const fx = contentFixtures(fixtureMediaLookup)
   const categories = fx.categories.map((c) => ({
@@ -53,15 +57,30 @@ export function fixtureSiteSources(): SiteSources {
     }
   })
   const sources = {
-    settings: Object.fromEntries(
-      PUBLIC_SETTINGS_KEYS.map((key) => [key, fx.settings[key]])
-    ),
-    pages: Object.fromEntries(
-      PAGE_KEYS.map((key) => [
-        key,
-        { data: fx.pages[key].data, seo: fx.pages[key].seo },
-      ])
-    ),
+    settings: {
+      site: fx.settings["site"],
+      contact: fx.settings["contact"],
+      navigation: fx.settings["navigation"],
+      footer: fx.settings["footer"],
+      "sections.clients": fx.settings["sections.clients"],
+      "sections.whyChooseUs": fx.settings["sections.whyChooseUs"],
+      "sections.testimonials": fx.settings["sections.testimonials"],
+      "sections.team": fx.settings["sections.team"],
+      "sections.contact": fx.settings["sections.contact"],
+      "sections.map": fx.settings["sections.map"],
+      "sections.howItWorks": fx.settings["sections.howItWorks"],
+      "seo.defaults": fx.settings["seo.defaults"],
+      microcopy: fx.settings["microcopy"],
+    },
+    pages: {
+      home: pageOf(fx.pages.home),
+      about: pageOf(fx.pages.about),
+      services: pageOf(fx.pages.services),
+      blog: pageOf(fx.pages.blog),
+      contact: pageOf(fx.pages.contact),
+      privacy: pageOf(fx.pages.privacy),
+      terms: pageOf(fx.pages.terms),
+    },
     services: fx.services.map((s, sortOrder) => ({
       id: `service:${s.slug}`,
       slug: s.slug,
@@ -82,5 +101,5 @@ export function fixtureSiteSources(): SiteSources {
       ...t,
     })),
   }
-  return replaceMediaRefs(sources, staticMedia) as SiteSources
+  return replaceMediaRefs(sources, staticMedia)
 }

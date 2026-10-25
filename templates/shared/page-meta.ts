@@ -39,7 +39,7 @@ type ShareImage = {
   alt?: string
 }
 
-/** Trimmed text, or null when blank (a cleared field means "use the fallback"). */
+/** The text as stored, or null when blank or whitespace only (a cleared field means "use the fallback"). It is not trimmed. */
 const filled = (value: string | null | undefined) =>
   value && value.trim() !== "" ? value : null
 
