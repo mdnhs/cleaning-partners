@@ -78,12 +78,24 @@ async function enrolTotp(
 const twoFactor = { email: "twofactor@e2e.test", name: "Tess Twofactor" }
 const twoFactorUri = await enrolTotp(twoFactor, ["admin"])
 
-// Phase 4+ add the account, owner/admin, author, intake, demo and reset users.
+// Account page user (Task 2.6): turns 2FA on through the UI.
+const account = { email: "account@e2e.test", name: "Avery Account" }
+await auth.api.createUser({
+  body: { ...account, role: ["editor"], password: E2E_PASSWORD },
+})
+
+// account.spec turns 2FA off for this one.
+const twoFactorOff = { email: "twofactor-off@e2e.test", name: "Toby Twofactor" }
+const twoFactorOffUri = await enrolTotp(twoFactorOff, ["editor"])
+
+// Phase 4+ add the owner/admin, author, intake, demo and reset users.
 
 const fixtures: E2EFixtures = {
   editor,
   invitee: { ...invitee, inviteUrl },
   twoFactor: { ...twoFactor, totpUri: twoFactorUri },
+  account,
+  twoFactorOff: { ...twoFactorOff, totpUri: twoFactorOffUri },
 }
 mkdirSync(dirname(FIXTURES_FILE), { recursive: true })
 writeFileSync(FIXTURES_FILE, JSON.stringify(fixtures, null, 2))

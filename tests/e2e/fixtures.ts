@@ -10,7 +10,10 @@ export type E2EFixtures = {
   editor: { email: string; name: string }
   invitee: { email: string; name: string; inviteUrl: string }
   twoFactor: { email: string; name: string; totpUri: string }
-  // Later phases add their users here (account, author, intake, reset …).
+  account: { email: string; name: string }
+  /** 2FA on; account.spec turns it off. */
+  twoFactorOff: { email: string; name: string; totpUri: string }
+  // Later phases add their users here (author, intake, reset …).
 }
 
 /**

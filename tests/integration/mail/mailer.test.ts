@@ -48,6 +48,7 @@ describe("SMTP mailer against Mailpit (master 7.2)", () => {
     expect(mail.HTML).toContain(`href="${LINK}"`)
     expect(mail.Text).toContain("Hi Dinn Rí,")
   })
+
   it("invite email arrives in Mailpit and the API reports emailDelivered:true", async () => {
     await configureSmtp()
     const { cookie } = await signedInUser(["admin"])

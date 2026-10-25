@@ -7,7 +7,7 @@ import { requireSession } from "@/server/auth/session"
 
 /**
  * Minimal signed-in frame until the Phase 4 shell replaces it (sidebar, ⌘K,
- * impersonation banner). The session is read fresh inside Suspense (Cache
+ * impersonation banner, user menu). The session is read fresh inside Suspense (Cache
  * Components: request data never in the static shell).
  */
 export default function PanelLayout({
@@ -37,6 +37,12 @@ async function PanelFrame({ children }: { children: React.ReactNode }) {
               className="text-muted-foreground hover:text-foreground"
             >
               Dashboard
+            </Link>
+            <Link
+              href="/admin/account"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Account
             </Link>
           </nav>
           <div className="ml-auto flex items-center gap-3">
