@@ -34,8 +34,8 @@ async function Content({
   const { slug } = await params
   const sources = await loadSiteSources()
   const view = serviceDetailView(sources, slug)
-  // Unknown slugs: a soft 404 (the status can't change once the shell has
-  // streamed), noindex'ed by Next.
+  // proxy.ts returns a real 404 for unknown slugs; this branch only runs in
+  // draft or preview, where the proxy lets the request through.
   if (!view) notFound()
   const nodes = serviceJsonLd(
     sources,

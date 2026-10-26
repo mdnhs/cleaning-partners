@@ -11,7 +11,7 @@ import { placeholders } from "./views"
 // <head> metadata per public URL (spec §10): title/description with
 // fallbacks to seo.defaults, canonical, robots, Open Graph and Twitter
 // cards. Relative URLs resolve against the metadataBase set by
-// app/(site)/layout.tsx (siteMetadata). Phase 8 adds the SEO UI on top.
+// app/(site)/layout.tsx (siteMetadata). The SEO screens edit these fields.
 
 type SiteSeo = SiteSources["pages"]["home"]["seo"]
 

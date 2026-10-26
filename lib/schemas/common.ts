@@ -162,7 +162,7 @@ export const iconCard = z.object({
   icon: mediaRef,
 })
 
-/** Per page/service/article SEO overrides (Phase 8 adds the UI and fallbacks). */
+/** Per page/service/article SEO overrides (edited in the SEO screens; empty fields fall back to seo.defaults). */
 export const seo = z.object({
   title: z.string().max(200).optional(),
   description: z.string().max(500).optional(),

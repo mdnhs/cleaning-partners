@@ -48,8 +48,8 @@ const can = (actor: Actor, req: PermissionRequest) =>
   hasPermission(actor.roles, req)
 
 /**
- * Keys edited elsewhere (consent/tracking/customCode → Marketing, Phase 8;
- * seo.defaults → SEO; integrations → Phase 7) are 404 here (master 4.5).
+ * Keys edited elsewhere (consent/tracking/customCode → Marketing;
+ * seo.defaults → SEO; integrations → Integrations) are 404 here (master 4.5).
  */
 function entryFor(actor: Actor, key: string, action: "read" | "update") {
   if (!isEditableSettingsKey(key)) throw notFound("Settings")

@@ -35,6 +35,8 @@ export const SECURITY_HEADERS = [
 // ships a small server.js instead of the full node_modules.
 const nextConfig: NextConfig = {
   output: "standalone",
+  // The share-card route reads its fonts from disk (standalone trace).
+  outputFileTracingIncludes: { "/og/**": ["./assets/fonts/**"] },
   poweredByHeader: false,
   // Everything is dynamic unless a query opts in with "use cache" (notes §1).
   cacheComponents: true,

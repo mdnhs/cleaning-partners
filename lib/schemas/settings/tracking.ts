@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 /**
- * settings.tracking — off by default; Phase 8 loads scripts only after
+ * settings.tracking — off by default; scripts load only after
  * consent. `enabled` shows the consent banner; each channel also needs its
  * own switch (values saved before the switches existed parse as off).
  */

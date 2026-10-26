@@ -381,6 +381,58 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
         - The leads-attribution "attribution only on the lead row" case reads `lead_events` from the DB instead of SP's admin DTO check.
         - `lead-cleanup.ts` lists only `pageSize=100`.
 
+  - **Phase 8 outcome.**
+    - **Cut-over status.** The "Don't cut over before 8.2" blocker is cleared:
+      - `recordMove` is restored at all 4 service and article sites;
+      - the proxy now answers moved URLs with 301 and missing pages with a real 404 through `/_cp-missing` → `global-not-found`.
+
+      Cut-over still waits for Phases 9–11 and the owner (B11).
+    - **Shipped.** All of these come from settings, and tracking is off by default with 0 px:
+      - JSON-LD with CP details;
+      - OG cards in CP colours, with Barlow and Roboto fonts from `@fontsource` 5.3.0 under `assets/fonts` (OFL);
+      - Lighthouse SEO 100 on `/`;
+      - sitemap with 19 URLs, and robots;
+      - SEO API, screens and an SEO tab in the editors;
+      - redirects with CSV;
+      - consent banner, tracking, events, owner-only custom code, and the marketing screens.
+    - **Deferrals by owning task:**
+      - **9.1:** `SiteThemeStyle` in `components/site-extras.tsx`.
+      - **9.3:**
+        - AI suggest hooks in SeoPanel, with `elementId` anchors via `sf-<path>-card`;
+        - the dashboard AI Next-up item and the `it.todo` at `tests/integration/api/dashboard.test.ts:345`.
+      - **10.3 (builder pages):**
+        - the `/p/<slug>` slug check in `server/modules/redirects/resolve.ts`;
+        - sitemap inclusion in `server/modules/seo/queries.ts`, which turns the 19-URL count in `sitemap.test.ts` and `seo.spec.ts` into 19+n;
+        - OG kind `builder` in `app/og/[kind]/[slug]/route.tsx`;
+        - `BUILDER_ENTITY`/`builderPath` imported from `lib/schemas/api/builder-pages.ts`, and `FIX_BASE.builder` (`/admin/pages/custom`) made a real route;
+        - builder-page `recordMove` on rename and delete (ledger ruling; no code marker yet);
+        - flip the builder exclusion tests.
+      - **11.1:**
+        - the `pnpm custom-code:off` script and its test, since the kill-switch help already names it;
+        - `assertCpInput` CopySource bucket check (from Phase 6).
+      - **11.2:**
+        - **Proxy lookup cost.** `resolvePublicPath` runs one uncached indexed query per detail page, unknown path or RSC prefetch, from the shared pool of 10, with no statement timeout. Consider a timeout race. This is SP parity.
+        - CSP for custom code.
+        - `check-log-secrets`.
+      - **11.3:**
+        - Admin visual baselines for:
+          - SEO overview, sheet and defaults;
+          - the redirects list (populated), its dialog and the CSV import preview (mid-word wrap is SP's layout);
+          - marketing tracking, consent, code and events.
+        - Banner-on public baselines (SP `tests/visual/consent-banner.spec.ts`).
+        - Admin a11y URLs for the new screens.
+      - **11.5 (runbook and launch):**
+        - `docs/runbook.md` sections "Custom code and Content-Security-Policy" (the notices already say "see the runbook"; snippet HTML ships inert before consent) and "Verify domains by DNS".
+        - Robots noindex mode (`Disallow: /`) blocks crawlers from seeing noindex. Serve noindex before switching.
+        - **Launch checklist:** set `settings.site.productionUrl` to the production origin. Until then, canonical, sitemap, JSON-LD and OG fall back to `BETTER_AUTH_URL`, and staging is indexable.
+      - **11.x (parked minors):**
+        - the attribution e2e lacks referer-strip and escaped-markup asserts;
+        - a junk `__prerender_bypass` cookie skips the slug check (soft 404);
+        - the `banner-preview-style` test is brittle (it matches every `--color-*` hex);
+        - the Cookie-settings pill contrast note;
+        - the OG eyebrow repeats the site name on the home card (SP behaviour);
+        - `tag.redirects` is expired but unread (the proxy lookup is uncached). Wire it if a cache is ever added.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.

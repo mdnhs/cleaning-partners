@@ -8,7 +8,7 @@ export const DEFAULT_CLOSE_LABEL = "Close"
 export const DEFAULT_CONSENT_VERSION = 1
 export const DEFAULT_RECONSENT_MONTHS = 6
 
-/** settings.consent — banner copy (Phase 8 renders it only when tracking is enabled). */
+/** settings.consent — banner copy (rendered only when tracking is enabled). */
 export const consentSettings = z.object({
   title: text,
   body: text,

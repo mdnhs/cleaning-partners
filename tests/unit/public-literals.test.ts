@@ -24,7 +24,7 @@ import { describe, expect, it } from "vitest"
 //     a word in any string leaf (the shape of the data arrays this task
 //     removed: `const socials = [{ label: "Facebook", href: "#" }]`).
 // ALLOWLIST (the only literals a public component may contain):
-//   - JSX text of separators and glyphs only: `·`, `/`, `*`, `“`, `”`, `—`, `→`
+//   - JSX text of separators and glyphs only: `·`, `/`, `*`, `“`, `”`, `—`, `→`, `×` (the aria-hidden close glyph)
 //     and the `&nbsp;`, `&ldquo;` and `&rdquo;` entities (aria-hidden separators between items, the
 //     required marker, the decorative quote, the hover arrow, the gap);
 //   - the empty string (`alt=""` marks a decorative image);
@@ -42,6 +42,9 @@ const PUBLIC_DIRS = [
   "components/blog",
   "components/contact",
   "templates",
+  "components/consent",
+  "components/site-extras.tsx",
+  "components/attribution-capture.tsx",
   "lib/rich-text",
 ]
 const CHECKED_PROPS = new Set([
@@ -62,9 +65,12 @@ const CHECKED_PROPS = new Set([
 ])
 const TECHNICAL_CONSTS: Record<string, string[]> = {
   "components/home/logo-animation.tsx": ["LOTTIE_WASM_URL", "REDUCE_MOTION"],
+  // Consent category keys (never shown), a state sentinel and a Tailwind class.
+  "components/consent/consent-banner-view.tsx": ["OPTIONAL", "ON_LIGHT"],
+  "components/consent/consent-provider.tsx": ["PENDING"],
 }
 /** Separators and glyphs with no words (after removing &nbsp;). */
-const GLYPHS = /^[\s\u00a0·/*“”—→]*$/
+const GLYPHS = /^[\s\u00a0·/*“”—→×]*$/
 /** A string that contains a word (a letter or digit). */
 const hasWord = (text: string) => /[\p{L}\p{N}]/u.test(text)
 const CLASS_NAME = /(Class|_CLASS)$/
@@ -84,6 +90,7 @@ const isClassList = (text: string) =>
   text.split(/\s+/).filter(Boolean).every(isClassToken)
 
 function files(dir: string): string[] {
+  if (/\.tsx$/.test(dir)) return [dir]
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) return files(path)

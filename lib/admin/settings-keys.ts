@@ -3,8 +3,8 @@ import type { SettingsKey } from "@/lib/schemas/settings"
 
 /**
  * Settings edited under Settings (master 4.5). consent/tracking (Marketing)
- * and customCode (owner) live in the Phase 8 module; seo.defaults in the
- * Phase 8 SEO screen; integrations.* in Phase 7.
+ * and customCode (owner) live in the Marketing module; seo.defaults in the
+ * SEO screen; integrations.* in the Integrations screen.
  */
 export const EDITABLE_SETTINGS_KEYS = [
   "site",
