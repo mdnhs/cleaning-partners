@@ -305,7 +305,7 @@ export function RichTextToolbar({
       ? ([
           ["Heading", !locked],
           ["Subheading", !locked],
-          ["Lead paragraph", !locked && state.leadAllowed],
+          ["Lead paragraph", !locked && (state.leadAllowed || state.lead)],
           ["Bulleted list", !locked],
           ["Checklist", !locked],
           ["Numbered list", !locked],
@@ -388,7 +388,7 @@ export function RichTextToolbar({
           <ToolButton
             label="Lead paragraph"
             pressed={state.lead}
-            disabled={locked || !state.leadAllowed}
+            disabled={locked || (!state.leadAllowed && !state.lead)}
             roving={roving("Lead paragraph")}
             onClick={() =>
               editor

@@ -289,22 +289,25 @@ html[data-admin] .rich-text-content a {
  * Lead: the article's larger opening paragraph. Checklist: the tick list.
  * The ticks are CSS only (not part of the stored document).
  */
-html[data-admin] .rich-text-content p[data-variant="lead"] {
+html[data-admin] .rich-text-content > p[data-variant="lead"] {
   font-size: 1.1875rem;
   line-height: 1.7;
   font-weight: 500;
   border-left: 3px solid var(--primary);
   padding-left: 0.75rem;
 }
-html[data-admin] .rich-text-content ul[data-variant="checklist"] {
+html[data-admin] .rich-text-content > ul[data-variant="checklist"] {
   list-style: none;
   padding-left: 0;
 }
-html[data-admin] .rich-text-content ul[data-variant="checklist"] > li {
+html[data-admin] .rich-text-content > ul[data-variant="checklist"] > li {
   position: relative;
   padding-left: 1.75rem;
 }
-html[data-admin] .rich-text-content ul[data-variant="checklist"] > li::before {
+html[data-admin]
+  .rich-text-content
+  > ul[data-variant="checklist"]
+  > li::before {
   content: "\2713";
   position: absolute;
   left: 0;

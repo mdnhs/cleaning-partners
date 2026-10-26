@@ -92,10 +92,10 @@ describe("new article (master 5.3)", () => {
     )
     await user.type(
       await screen.findByRole("textbox", { name: "Title" }),
-      "Office Clean & Key Holding"
+      "Office Clean & Deep Clean"
     )
     expect(screen.getByLabelText("Address")).toHaveValue(
-      "office-clean-and-key-holding"
+      "office-clean-and-deep-clean"
     )
     await user.type(
       screen.getByRole("textbox", { name: "Excerpt" }),
@@ -129,11 +129,11 @@ describe("new article (master 5.3)", () => {
     await user.click(screen.getByRole("button", { name: "Create draft" }))
     await waitFor(() => expect(posted).toHaveLength(1))
     expect(posted[0]).toEqual({
-      slug: "office-clean-and-key-holding",
+      slug: "office-clean-and-deep-clean",
       categoryId: CATEGORY,
       authorId: "u1",
       draft: {
-        title: "Office Clean & Key Holding",
+        title: "Office Clean & Deep Clean",
         excerpt: "What a deep clean covers.",
         cover: { mediaId: IMAGE.id },
         lead: null,
@@ -187,7 +187,7 @@ describe("new article (master 5.3)", () => {
     await waitFor(() => expect(posted).toHaveLength(1))
     expect(posted[0]).not.toHaveProperty("authorId")
     expect(posted[0]).toMatchObject({
-      slug: "office-clean-and-key-holding",
+      slug: "office-clean-and-deep-clean",
       categoryId: CATEGORY,
     })
   })
@@ -218,7 +218,7 @@ function renderForm(roles: Role[]) {
 async function fillBasics(user: ReturnType<typeof userEvent.setup>) {
   await user.type(
     await screen.findByRole("textbox", { name: "Title" }),
-    "Office Clean & Key Holding"
+    "Office Clean & Deep Clean"
   )
   await user.type(
     screen.getByRole("textbox", { name: "Excerpt" }),

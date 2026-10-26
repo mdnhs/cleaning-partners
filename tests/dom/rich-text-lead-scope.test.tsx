@@ -78,22 +78,30 @@ describe("Lead toggle scope (R5-3)", () => {
     await waitFor(() => expect(lead()).toBeDisabled())
   })
 
-  it("never writes a variant into a list item or quote", async () => {
+  it.each([
+    ["Bulleted list", "bulletList"],
+    ["Numbered list", "orderedList"],
+    ["Quote", "blockquote"],
+  ])(
+    "wrapping a lead paragraph in %s clears its variant",
+    async (button, type) => {
+      const user = userEvent.setup()
+      const onChange = mount(doc(p("Opening", { variant: "lead" })))
+      await user.click(await screen.findByText("Opening"))
+      await user.click(screen.getByRole("button", { name: button }))
+      await waitFor(() => expect(onChange).toHaveBeenCalled())
+      const saved = onChange.mock.calls.at(-1)![0]
+      expect(saved.content![0].type).toBe(type)
+      expect(JSON.stringify(saved)).not.toContain("variant")
+    }
+  )
+
+  it("a pressed Lead button stays clickable so it can be cleared", async () => {
     const user = userEvent.setup()
-    const onChange = mount(
-      doc({
-        type: "bulletList",
-        content: [{ type: "listItem", content: [p("Item one")] }],
-      })
-    )
-    await user.click(await screen.findByText("Item one"))
-    await waitFor(() => expect(lead()).toBeDisabled())
-    await user.click(lead())
-    await user.keyboard("!")
-    await waitFor(() => expect(onChange).toHaveBeenCalled())
-    expect(JSON.stringify(onChange.mock.calls.at(-1)![0])).not.toContain(
-      "variant"
-    )
+    mount(doc(p("Opening", { variant: "lead" })))
+    await user.click(await screen.findByText("Opening"))
+    await waitFor(() => expect(lead()).toBeEnabled())
+    expect(lead()).toHaveAttribute("aria-pressed", "true")
   })
 })
 
@@ -127,13 +135,13 @@ describe("variant styling hooks (R5-3)", () => {
       "utf8"
     )
     expect(css).toMatch(
-      /\.rich-text-content p\[data-variant="lead"\]\s*\{[^}]*font-size/
+      /\.rich-text-content > p\[data-variant="lead"\]\s*\{[^}]*font-size/
     )
     expect(css).toMatch(
-      /\.rich-text-content ul\[data-variant="checklist"\]\s*\{[^}]*list-style: none/
+      /\.rich-text-content > ul\[data-variant="checklist"\]\s*\{[^}]*list-style: none/
     )
     expect(css).toMatch(
-      /ul\[data-variant="checklist"\] > li::before\s*\{[^}]*content/
+      /ul\[data-variant="checklist"\]\s*>\s*li::before\s*\{[^}]*content/
     )
   })
 })

@@ -101,9 +101,20 @@ export const VariantAttributes = Extension.create({
  * as the editor emits them.
  */
 export function normalizeRichTextDoc<T extends JSONContent>(node: T): T {
+  return normalizeNode(node, undefined) as T
+}
+
+function normalizeNode(
+  node: JSONContent,
+  parent: string | undefined
+): JSONContent {
   const { attrs, content, ...rest } = node
   let nextAttrs = attrs
-  if (attrs && "variant" in attrs && attrs.variant == null) {
+  // A lead paragraph wrapped into a list or quote is no longer top-level: the
+  // renderer ignores the variant there, so it is dropped (R5-3).
+  const dropVariant =
+    node.type === "paragraph" && parent !== undefined && parent !== "doc"
+  if (attrs && "variant" in attrs && (attrs.variant == null || dropVariant)) {
     nextAttrs = Object.fromEntries(
       Object.entries(attrs).filter(([key]) => key !== "variant")
     )
@@ -113,8 +124,10 @@ export function normalizeRichTextDoc<T extends JSONContent>(node: T): T {
     ...(nextAttrs && Object.keys(nextAttrs).length > 0
       ? { attrs: nextAttrs }
       : {}),
-    ...(content ? { content: content.map(normalizeRichTextDoc) } : {}),
-  } as T
+    ...(content
+      ? { content: content.map((child) => normalizeNode(child, node.type)) }
+      : {}),
+  }
 }
 
 /** List items hold paragraphs only (no nested lists). */
