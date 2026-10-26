@@ -37,6 +37,16 @@ async function signInAdmin(page: Page) {
 async function shootMain(page: Page, path: string): Promise<Buffer> {
   const response = await page.goto(path, { waitUntil: "networkidle" })
   expect(response?.status(), path).toBe(200)
+  // An error boundary or an empty page would be byte-equal on both sides.
+  await expect(
+    page.getByRole("heading", { name: "Something went wrong" }),
+    path
+  ).toHaveCount(0)
+  await expect(page.locator("main h1").first(), path).toBeVisible()
+  expect(
+    ((await page.locator("main").innerText()) ?? "").trim().length,
+    path
+  ).toBeGreaterThan(0)
   await freezeMotion(page)
   return page.locator("main").screenshot({
     animations: "disabled",
@@ -65,12 +75,14 @@ for (const [key, fixedPath] of COPIES) {
         published: PageData<PageKey>
       }
 
+      const blocks = blocksFromTemplate(key, published)
+      expect(blocks.length).toBeGreaterThan(0)
       const res = await api.request.post(API, {
         headers,
         data: {
           slug,
           title: `${key} copy check`,
-          seed: { blocks: blocksFromTemplate(key, published) },
+          seed: { blocks },
         },
       })
       expect(res.status()).toBe(201)
@@ -84,7 +96,18 @@ for (const [key, fixedPath] of COPIES) {
 
       const fixedMain = await shootMain(page, fixedPath)
       const copyMain = await shootMain(page, `/p/${slug}`)
-      expect(copyMain.equals(fixedMain)).toBe(true)
+      const same = copyMain.equals(fixedMain)
+      if (!same) {
+        await testInfo.attach("fixed-main", {
+          body: fixedMain,
+          contentType: "image/png",
+        })
+        await testInfo.attach("copy-main", {
+          body: copyMain,
+          contentType: "image/png",
+        })
+      }
+      expect(same).toBe(true)
     } finally {
       try {
         if (created) {
@@ -93,9 +116,11 @@ for (const [key, fixedPath] of COPIES) {
           const version = current.ok()
             ? ((await current.json()) as Dto).version
             : created.version
-          await api.request.delete(`${API}/${created.id}?version=${version}`, {
-            headers,
-          })
+          const del = await api.request.delete(
+            `${API}/${created.id}?version=${version}`,
+            { headers }
+          )
+          expect(del.ok()).toBe(true)
         }
       } finally {
         await admin.close()
