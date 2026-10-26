@@ -226,7 +226,9 @@ export async function findBylineCandidate(
   const [row] = await db
     .select({
       role: users.role,
-      signsArticle: sql<boolean>`exists (select 1 from ${articles} where ${articles.authorId} = ${users.id})`,
+      // "users"."id" is spelled out: drizzle renders ${users.id} unqualified in
+      // a single-table select, which the subquery would read as articles.id.
+      signsArticle: sql<boolean>`exists (select 1 from ${articles} where ${articles.authorId} = "users"."id")`,
     })
     .from(users)
     .where(eq(users.id, id))

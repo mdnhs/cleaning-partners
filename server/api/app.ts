@@ -14,6 +14,7 @@ import { notFoundHandler, onError } from "@/server/api/middleware/error"
 import { requestIdMiddleware } from "@/server/api/middleware/request-id"
 import { sameOrigin } from "@/server/api/middleware/same-origin"
 import { getAuth } from "@/server/auth/auth"
+import { articlesRoutes } from "@/server/modules/articles/routes"
 import { auditRoutes } from "@/server/modules/audit/routes"
 import {
   categoriesRoutes,
@@ -47,6 +48,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/users", usersRoutes)
   .route("/search", searchRoutes)
   .route("/pages", pagesRoutes)
+  .route("/articles", articlesRoutes)
   .route("/services", servicesRoutes)
   .route("/team", teamRoutes)
   .route("/clients", clientsRoutes)

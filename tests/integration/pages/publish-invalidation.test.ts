@@ -19,6 +19,12 @@ import {
   updateCollectionItem,
 } from "@/server/modules/collections/service"
 import {
+  getArticleAdmin,
+  listArticlesAdmin,
+  publishArticle,
+  saveArticleDraft,
+} from "@/server/modules/articles/service"
+import {
   getPage,
   publishPage,
   savePageDraft,
@@ -136,5 +142,31 @@ describe("publish-path invalidation proof: services, testimonials, categories (R
     revalidateTag.mockClear()
     await deleteCollectionItem(owner, "categories", created.id)
     expect(revalidateTag).toHaveBeenCalledWith(tag.categories, { expire: 0 })
+  })
+})
+
+describe("publish-path invalidation proof: articles (master 5.1)", () => {
+  it("publishing an article through the articles service expires tag.articles and tag.article(slug)", async () => {
+    const { items } = await listArticlesAdmin(owner, {
+      q: "stubborn",
+      page: 1,
+      pageSize: 10,
+      sort: { field: "updatedAt", dir: "desc" },
+    })
+    const article = await getArticleAdmin(owner, items[0].id)
+    const saved = await saveArticleDraft(owner, article.id, {
+      draft: article.draft,
+      version: article.version,
+    })
+    expect(revalidateTag).not.toHaveBeenCalled()
+
+    await publishArticle(owner, article.id, { version: saved.version })
+    expect(revalidateTag.mock.calls).toEqual([
+      [tag.articles, { expire: 0 }],
+      [
+        tag.article("how-to-get-stubborn-stains-out-of-curtains"),
+        { expire: 0 },
+      ],
+    ])
   })
 })
