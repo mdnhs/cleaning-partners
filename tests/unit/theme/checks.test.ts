@@ -29,6 +29,9 @@ describe("checkTheme", () => {
       ["subtle", "surface", 3],
       ["navy-dark", "brand-soft", 4.5],
       ["navy", "surface", 4.5],
+      ["white", "brand", 2.5],
+      ["white", "navy-dark", 4.5],
+      ["sky", "navy-dark", 4.5],
     ])
   })
 
@@ -108,6 +111,25 @@ describe("fix automatically", () => {
       4.5
     )
     expect(fixed.site.tokens.surface).toBeUndefined()
+  })
+
+  it("a pale brand fails white on brand and fixAll repairs it", () => {
+    const config = withSite({ brand: "#9fe3f0" })
+    const issue = checkTheme(config).find(
+      (i) => i.text === "white" && i.surface === "brand"
+    )!
+    expect(issue).toMatchObject({ scope: "site", min: 2.5 })
+    expect(describeIssue(issue)).toMatch(
+      /^White text on Brand is \d\.\d{2}:1; it needs 2\.5:1 \(today's design\)\.$/
+    )
+    const fixed = fixIssue(config, issue)!
+    expect(Object.keys(fixed.site.tokens)).not.toContain("white")
+    expect(
+      checkTheme(fixed).some((i) => i.text === "white" && i.surface === "brand")
+    ).toBe(false)
+    const all = fixAll(config)
+    expect(all.remaining).toEqual([])
+    expect(checkTheme(all.config)).toEqual([])
   })
 
   it("moves the navy text, never the brand-soft page surface", () => {

@@ -1,12 +1,19 @@
 // lib/theme/checks.ts
 import { buildAdminTokens } from "./admin"
-import { contrast, formatOklch, nudge, parseColor, type Oklch } from "./color"
+import {
+  contrast,
+  formatOklch,
+  nudge,
+  parseColor,
+  WHITE,
+  type Oklch,
+} from "./color"
 import type { ThemeConfigValue } from "./schema"
 import { BRAND_FAMILY, resolveSiteTokens } from "./site"
 import { ADMIN_CONTRAST_PAIRS } from "./cp-admin"
 import { SITE_SURFACES, type AdminToken, type SiteToken } from "./tokens"
 
-type Min = 3 | 4.5
+type Min = 2.5 | 3 | 4.5
 type Scope = "site" | "admin-light" | "admin-dark"
 export type ContrastIssue = {
   scope: Scope
@@ -17,13 +24,22 @@ export type ContrastIssue = {
 }
 export type PairRating = ContrastIssue & { rating: "AAA" | "AA" | "fail" }
 
+// White text on the brand (`bg-brand text-white`) is 2.55:1 today and the
+// public colours are frozen, so the floor sits just under today's design.
+export const BRAND_TEXT_FLOOR = 2.5
+
+type SiteText = SiteToken | "white"
+
 // The pairs today's public components draw. All pass for CP_SITE as-is.
-export const SITE_PAIRS: [SiteToken, SiteToken, Min][] = [
+export const SITE_PAIRS: [SiteText, SiteToken, Min][] = [
   ["ink-soft", "surface", 4.5],
   ["body", "surface", 4.5],
   ["subtle", "surface", 3],
   ["navy-dark", "brand-soft", 4.5],
   ["navy", "surface", 4.5],
+  ["white", "brand", BRAND_TEXT_FLOOR],
+  ["white", "navy-dark", 4.5],
+  ["sky", "navy-dark", 4.5],
 ]
 
 // One list with A1 (tests/unit/admin/admin-tokens.test.ts enforces it on
@@ -87,13 +103,15 @@ const ADMIN_LABELS: Partial<Record<AdminToken, string>> = {
 
 export function tokenLabel(scope: Scope, token: string): string {
   return scope === "site"
-    ? (SITE_LABELS[token as SiteToken] ?? token)
+    ? token === "white"
+      ? "White text"
+      : (SITE_LABELS[token as SiteToken] ?? token)
     : (ADMIN_LABELS[token as AdminToken] ?? token)
 }
 
 export function rating(ratio: number, min: Min): "AAA" | "AA" | "fail" {
   if (ratio < min) return "fail"
-  return ratio >= (min === 3 ? 4.5 : 7) ? "AAA" : "AA"
+  return ratio >= (min < 4.5 ? 4.5 : 7) ? "AAA" : "AA"
 }
 
 export function pairRatings(config: ThemeConfigValue): PairRating[] {
@@ -104,7 +122,7 @@ export function pairRatings(config: ThemeConfigValue): PairRating[] {
     pairs: [string, string, Min][]
   ) => {
     for (const [text, surface, min] of pairs) {
-      const ratio = contrast(t[text]!, t[surface]!)
+      const ratio = contrast(text === "white" ? WHITE : t[text]!, t[surface]!)
       rows.push({
         scope,
         text,
@@ -142,7 +160,12 @@ const SCOPE_PREFIX: Record<Scope, string> = {
 // Floors to 2 places, so a failing 4.499 never prints as "4.50".
 export function describeIssue(issue: ContrastIssue): string {
   const ratio = (Math.floor(issue.ratio * 100) / 100).toFixed(2)
-  const use = issue.min === 3 ? "large text and controls" : "body text"
+  const use =
+    issue.min === 2.5
+      ? "today's design"
+      : issue.min === 3
+        ? "large text and controls"
+        : "body text"
   return `${SCOPE_PREFIX[issue.scope]}${tokenLabel(issue.scope, issue.text)} on ${tokenLabel(issue.scope, issue.surface)} is ${ratio}:1; it needs ${issue.min}:1 (${use}).`
 }
 
@@ -182,19 +205,24 @@ export function fixIssue(
 ): ThemeConfigValue | null {
   if (issue.scope === "site") {
     const tokens = resolveSiteTokens(config.site)
-    const text = issue.text as SiteToken
     const surface = issue.surface as SiteToken
+    // White is a fixed colour, not a token: the surface always moves.
+    const fixedWhite = issue.text === "white"
+    const text = issue.text as SiteToken
     const moveSurface =
+      fixedWhite ||
       SITE_SURFACES.includes(text) ||
       (BRAND_FAMILY.includes(surface) && !SITE_SURFACES.includes(surface))
     const preferred = moveSurface ? surface : text
     const other = moveSurface ? text : surface
-    const sides = SITE_SURFACES.includes(other)
-      ? [preferred]
-      : [preferred, other]
+    const sides =
+      fixedWhite || SITE_SURFACES.includes(other)
+        ? [preferred]
+        : [preferred, other]
     for (const moving of sides) {
       const fixedToken = moving === preferred ? other : preferred
-      const next = nudge(tokens[moving], tokens[fixedToken], issue.min)
+      const fixedColor = fixedWhite ? WHITE : tokens[fixedToken as SiteToken]
+      const next = nudge(tokens[moving], fixedColor, issue.min)
       if (!next) continue
       const value = formatOklch(next)
       // brand moves through `site.brand`; a locked brand is the user's

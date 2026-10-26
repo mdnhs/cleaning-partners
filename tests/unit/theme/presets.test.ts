@@ -19,6 +19,24 @@ import {
 } from "@/lib/theme/cp-admin"
 import { ADMIN_TOKENS, SITE_SURFACES, SITE_TOKENS } from "@/lib/theme/tokens"
 
+const adminCss = readFileSync(
+  path.join(import.meta.dirname, "../../../app/(admin)/admin/admin.css"),
+  "utf8"
+)
+
+/** Custom properties declared in the first `<selector> {` block. */
+function cssDeclarations(source: string, selector: string) {
+  const start = source.indexOf(`${selector} {`)
+  if (start === -1) throw new Error(`no "${selector} {" block`)
+  const body = source.slice(start, source.indexOf("}", start))
+  return Object.fromEntries(
+    [...body.matchAll(/--([\w-]+):\s*([^;]+);/g)].map(([, name, value]) => [
+      name,
+      value!.trim().toLowerCase(),
+    ])
+  )
+}
+
 const globals = readFileSync(
   path.join(import.meta.dirname, "../../../app/globals.css"),
   "utf8"
@@ -49,6 +67,31 @@ describe("base tables", () => {
     expect([...SITE_SURFACES].sort()).toEqual(
       ["sky-soft", "brand-soft", "surface"].sort()
     )
+  })
+
+  it("resolveSiteTokens(DEFAULT_THEME.site) is the hex in globals.css", () => {
+    const tokens = resolveSiteTokens(DEFAULT_THEME.site)
+    for (const t of SITE_TOKENS) {
+      const m = globals.match(new RegExp(`--color-${t}:\\s*(#[0-9a-fA-F]{6});`))
+      expect(m, t).not.toBeNull()
+      expect(toHex(tokens[t]), t).toBe(m![1]!.toLowerCase())
+    }
+  })
+
+  it("buildAdminTokens(DEFAULT_THEME.admin, mode) is the hex in admin.css", () => {
+    const light = cssDeclarations(adminCss, "html[data-admin]")
+    const dark = {
+      ...light,
+      ...cssDeclarations(adminCss, "html[data-admin].dark"),
+    }
+    for (const [mode, decl] of [
+      ["light", light],
+      ["dark", dark],
+    ] as const) {
+      const tokens = buildAdminTokens(DEFAULT_THEME.admin, mode)
+      for (const t of ADMIN_TOKENS)
+        expect(toHex(tokens[t]), `${mode} ${t}`).toBe(decl[t])
+    }
   })
 
   it("SITE_DEFAULT is CP_SITE", () => {
