@@ -76,11 +76,26 @@ describe("PresetGallery", () => {
     ).getAllByRole("button")
     expect(buttons[0]).toHaveAccessibleName("Cleaning Partners")
     expect(buttons[0]).toHaveAttribute("aria-pressed", "true")
-    expect(
-      Array.from(
-        buttons[0]!.querySelectorAll<HTMLElement>("[data-swatch]")
-      ).map((s) => s.style.backgroundColor)
-    ).toHaveLength(3)
+    const swatches = Array.from(
+      buttons[0]!.querySelectorAll<HTMLElement>("[data-swatch]")
+    ).map((s) => s.style.backgroundColor)
+    expect(swatches).toHaveLength(3)
+    expect(swatches[0]).toBe("rgb(17, 177, 209)")
+  })
+
+  it("presses the default admin preset first (R9-5)", () => {
+    render(
+      <PresetGallery
+        scope="admin"
+        label="Admin preset"
+        value={DEFAULT_THEME.admin.preset}
+        onChange={() => undefined}
+      />
+    )
+    const first = within(
+      screen.getByRole("group", { name: "Admin preset" })
+    ).getAllByRole("button")[0]!
+    expect(first).toHaveAttribute("aria-pressed", "true")
   })
 
   it("draws admin swatches too", () => {
@@ -345,6 +360,25 @@ describe("ContrastPanel", () => {
     expect(onFix).toHaveBeenCalledTimes(1)
     const next = onFix.mock.calls[0]![0]
     expect(checkTheme(next).filter((i) => i.scope === "site")).toEqual([])
+  })
+
+  it("shows a locked failing brand as not auto-fixable, with no Fix button", () => {
+    const locked = ThemeConfig.parse({
+      site: { tokens: { brand: "#9fe3f0" } },
+    })
+    render(<ContrastPanel config={locked} scope="site" onFix={vi.fn()} />)
+    const row = screen
+      .getAllByRole("row")
+      .find((r) => within(r).queryByText("White text on Brand"))!
+    expect(within(row).getByText("Fails")).toBeInTheDocument()
+    const issue = row.nextElementSibling as HTMLElement
+    expect(issue).toHaveAttribute("data-issue")
+    expect(
+      within(issue).getByText(/Can't be fixed automatically/)
+    ).toBeInTheDocument()
+    expect(
+      within(issue).queryByRole("button", { name: /Fix automatically/ })
+    ).toBeNull()
   })
 
   it("rates passing pairs and fixes all of this scope only", async () => {

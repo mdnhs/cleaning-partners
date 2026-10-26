@@ -155,9 +155,11 @@ export function ContrastPanel({
                     >
                       <div className="text-danger flex flex-wrap items-center gap-2">
                         <p>{describeIssue(row)}</p>
-                        {disabled ? null : stuck.includes(key) ? (
+                        {disabled ? null : stuck.includes(key) ||
+                          fixIssue(config, row) === null ? (
                           <span className="text-muted-foreground">
-                            Pick a different colour
+                            Can&apos;t be fixed automatically. Pick a different
+                            colour.
                           </span>
                         ) : (
                           <Button

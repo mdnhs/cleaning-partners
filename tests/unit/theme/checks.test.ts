@@ -113,6 +113,15 @@ describe("fix automatically", () => {
     expect(fixed.site.tokens.surface).toBeUndefined()
   })
 
+  it("a locked failing brand token is unfixable (null)", () => {
+    const config = withSite({ tokens: { brand: "#9fe3f0" } })
+    const issue = checkTheme(config).find(
+      (i) => i.text === "white" && i.surface === "brand"
+    )!
+    expect(issue).toBeDefined()
+    expect(fixIssue(config, issue)).toBeNull()
+  })
+
   it("a pale brand fails white on brand and fixAll repairs it", () => {
     const config = withSite({ brand: "#9fe3f0" })
     const issue = checkTheme(config).find(

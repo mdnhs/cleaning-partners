@@ -3,6 +3,7 @@ import { expect, type Page, test } from "@playwright/test"
 import { E2E_OWNER } from "./admin-accounts"
 import { BASE_URL } from "./env"
 import { clientIpFor, E2E_PASSWORD } from "./fixtures"
+import { restoreThemeSnapshot, takeThemeSnapshot } from "./theme-snapshot"
 
 // R9-2: a published, non-default brand reaches the public site as a :root
 // override; restoring the default removes it again.
@@ -57,8 +58,14 @@ test("a published brand overrides the public colours; the default restores", asy
       document.body.appendChild(probe)
       const value = getComputedStyle(probe).color
       probe.remove()
-      return value
+      // The computed value is oklch(): paint one pixel to read it as rgb.
+      const ctx = document.createElement("canvas").getContext("2d")!
+      ctx.fillStyle = value
+      ctx.fillRect(0, 0, 1, 1)
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data
+      return `rgb(${r}, ${g}, ${b})`
     })
+  const before = await takeThemeSnapshot(page.request)
   let overridden = ""
   try {
     await publishBrand(page, BRAND)
@@ -69,10 +76,10 @@ test("a published brand overrides the public colours; the default restores", asy
     expect(css).toMatch(/^:root\{--color-brand:/)
     await expect(site.locator("style#site-theme-extras")).toHaveCount(1)
     overridden = await brandColour(site)
-    expect(overridden).not.toBe("")
+    expect(overridden).toBe("rgb(88, 136, 182)")
     await visitor.close()
   } finally {
-    await publishBrand(page, null)
+    await restoreThemeSnapshot(page.request, before)
   }
   const after = await browser.newContext()
   const site = await after.newPage()
