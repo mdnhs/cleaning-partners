@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process"
 
-import { eq, sql } from "drizzle-orm"
+import { eq, like, sql } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { SETTINGS_KEYS } from "@/lib/schemas/settings"
@@ -171,6 +171,21 @@ describe("seedContent (master Task 3.4)", () => {
       expect(row.width).toBeGreaterThan(0)
       expect(row.height).toBeGreaterThan(0)
     }
+  })
+
+  it("seeds no image that is missing alt text (decorative images are flagged, R6-4)", async () => {
+    await seedContent(getDb())
+    const rows = await getDb()
+      .select()
+      .from(media)
+      .where(like(media.mime, "image/%"))
+    expect(rows.length).toBe(41)
+    expect(rows.filter((r) => r.alt === "" && !r.isDecorative)).toEqual([])
+    // Decorative means no alt text; described images are not decorative.
+    for (const row of rows) expect(row.isDecorative).toBe(row.alt === "")
+    expect(rows.some((r) => r.isDecorative)).toBe(true)
+    const icon = rows.find((r) => r.key === "/images/home/map-pin.svg")
+    expect(icon?.isDecorative).toBe(true)
   })
 })
 

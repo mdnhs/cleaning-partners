@@ -7,7 +7,8 @@ import type { MediaRef } from "@/lib/schemas/common"
  * with driver "static" and key = URL path, so rendered src stays identical.
  * The 32 map tiles (public/images/home/tiles/) stay in public/ and are not in
  * the library: the map builds their paths from settings.sections.map.
- * `alt` is the library's default alternative text, "" for decorative images.
+ * `alt` is the library's default alternative text; "" marks a decorative image,
+ * which is seeded with isDecorative: true (R6-4).
  */
 export const MEDIA = [
   { key: "/images/home/logo.png", alt: "Cleaning Partners" },

@@ -26,6 +26,7 @@ import {
 import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
 import { internalRoutes } from "@/server/modules/internal/routes"
+import { integrationsRoutes } from "@/server/modules/integrations/routes"
 import { mediaFileRoutes, mediaRoutes } from "@/server/modules/media/routes"
 import { pagesRoutes } from "@/server/modules/pages/routes"
 import {
@@ -59,6 +60,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/reorder", reorderRoutes)
   .route("/settings", settingsRoutes)
   .route("/media", mediaRoutes)
+  .route("/integrations", integrationsRoutes)
   .route("/revisions", revisionsRoutes)
   .route("/preview", adminPreviewRoutes)
 export type AdminApi = typeof adminRoutes
@@ -109,7 +111,7 @@ export function createApp() {
   api.use("/v1/internal/*", limitBody("public"))
   api.route("/v1/internal", internalRoutes)
 
-  // 6. Media files (disk; R2 in Phase 6), public and cacheable (spec §11)
+  // 6. Media files (disk or R2), public and cacheable (spec §11)
   api.route("/v1/media/file", mediaFileRoutes)
 
   return api

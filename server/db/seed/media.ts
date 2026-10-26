@@ -18,6 +18,8 @@ export type StaticMediaRow = {
   height: number | null
   blurDataUrl: string | null
   alt: string
+  /** True for images seeded with alt "": purely decorative (R6-4), so the missing-alt counter skips them. */
+  isDecorative: boolean
   originalName: string
 }
 
@@ -51,6 +53,7 @@ export async function readStaticMedia(
           ? `data:image/webp;base64,${blur.toString("base64")}`
           : null,
         alt,
+        isDecorative: alt === "",
         originalName: basename(key),
       }
     })

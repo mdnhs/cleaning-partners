@@ -2,10 +2,18 @@ import { existsSync } from "node:fs"
 import { readdir } from "node:fs/promises"
 import { resolve } from "node:path"
 
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  NoSuchKey,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3"
 import { and, eq, isNotNull, sql } from "drizzle-orm"
 import sharp from "sharp"
 import {
   afterAll,
+  afterEach,
   beforeAll,
   beforeEach,
   describe,
@@ -32,12 +40,19 @@ import {
   media,
   mediaUsages,
   services,
+  settings,
   teamMembers,
 } from "@/server/db/schema"
 import { seedContent } from "@/server/db/seed"
+import type { Actor } from "@/server/lib/actor"
 import { AppError } from "@/server/lib/errors"
 import { syncMediaUsages } from "@/server/lib/media-usages"
+import { resetR2Client } from "@/server/lib/r2-client"
 import { defaultUploadsRoot, diskStorage } from "@/server/lib/storage"
+import {
+  deleteIntegration,
+  saveIntegration,
+} from "@/server/modules/integrations/service"
 import {
   deleteMediaRow,
   lockMediaRow,
@@ -67,10 +82,11 @@ async function deleteRetiredFiles(mediaId: string): Promise<string[]> {
   for (const row of rows) await deleteRetiredMediaFile(row.payload)
   return rows.map((row) => (row.payload as { key: string }).key).sort()
 }
-import { adminRequest, ORIGIN, signedInUser } from "../helpers/auth"
+import { adminRequest, createUser, ORIGIN, signedInUser } from "../helpers/auth"
 
 let editor: string
 let author: string
+let owner: Actor
 const created: string[] = []
 
 beforeAll(async () => {
@@ -78,6 +94,14 @@ beforeAll(async () => {
   await seedContent(getDb())
   editor = (await signedInUser(["editor"])).cookie
   author = (await signedInUser(["author"])).cookie
+  const user = await createUser({ roles: ["owner"] })
+  owner = {
+    userId: user.id,
+    roles: ["owner"],
+    ip: null,
+    userAgent: null,
+    impersonatorId: null,
+  }
 })
 beforeEach(() => revalidateTag.mockClear())
 afterAll(async () => {
@@ -464,5 +488,115 @@ describe("races (409 or 422, never 500)", () => {
     expect(res.status).toBe(404)
     expect((await readdir(dir)).sort()).toEqual(before)
     expect(await rowOf(body.id)).toBeUndefined()
+  })
+})
+
+const R2_VALUES = {
+  accountId: "0123456789abcdef0123456789abcdef",
+  jurisdiction: "default",
+  bucket: "cp-media",
+  accessKeyId: "AKIDEXAMPLE1234",
+  secretAccessKey: "SECRETEXAMPLE1234",
+}
+
+describe("replace to R2 (same guard as upload)", () => {
+  const objects = new Map<string, Uint8Array>()
+  let onPut: (() => Promise<void>) | null = null
+  let r2Version = 0
+
+  beforeEach(async () => {
+    objects.clear()
+    onPut = null
+    await getDb().delete(media).where(eq(media.driver, "r2"))
+    await getDb().delete(settings).where(eq(settings.key, "integrations.r2"))
+    r2Version = (
+      await saveIntegration(owner, "integrations.r2", {
+        version: 0,
+        values: R2_VALUES,
+      })
+    ).version
+    vi.spyOn(S3Client.prototype, "send").mockImplementation((async (
+      command: unknown
+    ) => {
+      if (command instanceof PutObjectCommand) {
+        await onPut?.()
+        objects.set(command.input.Key!, command.input.Body as Uint8Array)
+        return {}
+      }
+      if (command instanceof GetObjectCommand) {
+        const bytes = objects.get(command.input.Key!)
+        if (!bytes) throw new NoSuchKey({ message: "missing", $metadata: {} })
+        return {
+          ContentLength: bytes.byteLength,
+          Body: {
+            transformToByteArray: async () => bytes,
+            transformToWebStream: () =>
+              new Response(new Uint8Array(bytes)).body!,
+          },
+        }
+      }
+      if (command instanceof DeleteObjectCommand) {
+        objects.delete(command.input.Key!)
+        return {}
+      }
+      return {}
+    }) as never)
+  })
+
+  afterEach(async () => {
+    vi.restoreAllMocks()
+    resetR2Client()
+    await getDb().delete(settings).where(eq(settings.key, "integrations.r2"))
+  })
+
+  async function diskUpload() {
+    // Uploaded while R2 is not configured, so it lands on disk.
+    await getDb().delete(settings).where(eq(settings.key, "integrations.r2"))
+    const { body } = await send("/upload", await png(), "d.png")
+    r2Version = (
+      await saveIntegration(owner, "integrations.r2", {
+        version: 0,
+        values: R2_VALUES,
+      })
+    ).version
+    return body
+  }
+
+  it("moves a disk file to R2 and retires the disk file (deleted by its job)", async () => {
+    const first = await diskUpload()
+    expect(first.driver).toBe("disk")
+    const { status, body } = await send(
+      `/${first.id}/replace`,
+      await png("#333"),
+      "r2.png"
+    )
+    expect(status).toBe(200)
+    expect(body.driver).toBe("r2")
+    expect(objects.has(`cp/${keyOf(body)}`)).toBe(true)
+    expect(await diskStorage().read(keyOf(first))).not.toBeNull()
+    expect(await deleteRetiredFiles(first.id)).toEqual([keyOf(first)])
+    expect(await diskStorage().read(keyOf(first))).toBeNull()
+    expect(revalidateTag).toHaveBeenCalledWith(`media:${first.id}`, {
+      expire: 0,
+    })
+  })
+
+  it("refuses (409) when R2 is disconnected mid-put: new object removed, row and old file kept", async () => {
+    const first = await diskUpload()
+    onPut = async () => {
+      await deleteIntegration(owner, "integrations.r2", r2Version)
+    }
+    const { status, body } = await send(
+      `/${first.id}/replace`,
+      await png("#444"),
+      "late.png"
+    )
+    expect(status).toBe(409)
+    expect(body.error?.message).toMatch(/storage settings changed/i)
+    expect(objects.size).toBe(0)
+    const row = await rowOf(first.id)
+    expect(row).toMatchObject({ key: keyOf(first), driver: "disk" })
+    expect(await diskStorage().read(keyOf(first))).not.toBeNull()
+    expect(revalidateTag).not.toHaveBeenCalled()
   })
 })
