@@ -97,6 +97,7 @@ export const MEDIA_ITEMS: PinnedMedia[] = [
     driver: "static",
   }),
   media(5, {
+    // A document: the tile shows a file icon, the URL is never fetched.
     url: "/files/price-list-2026.pdf",
     alt: "",
     mime: "application/pdf",

@@ -12,9 +12,9 @@ import { BASE_URL } from "./env"
 import { clientIpFor, E2E_PASSWORD, greeting, readFixtures } from "./fixtures"
 import { freezeUploads, pinMedia, PNG_1PX } from "./media-pins"
 
-// WCAG 2.2 AA gate for the admin (spec §8.2, JW tests/e2e/admin/a11y):
-// no serious or critical axe violations, light and dark, on every Phase 4
-// screen and its open overlays. Plus the ledger's own checks: the sticky
+// WCAG 2.2 AA gate for the admin (master 11.3, R11-8): no serious or
+// critical axe violations, light and dark, on every Cleaning Partners admin
+// screen (nav, auth pages, 403/404) and its open overlays. Plus the ledger's own checks: the sticky
 // editor bar keeps focused controls visible (SC 2.4.11) and a sheet traps
 // focus and gives it back.
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]
@@ -81,8 +81,14 @@ async function blocking(page: Page) {
     )
 }
 
+const FORBIDDEN = "You do not have access to this page"
+const NOT_FOUND = "That page doesn't exist"
+
+/** A path, or a path with the heading its screen must show (default: an h1). */
+type Target = string | readonly [path: string, heading: string]
+
 /** Audited signed in as the editor (every panel screen they may open). */
-const PANEL = [
+const PANEL: readonly Target[] = [
   "/admin",
   "/admin/pages",
   "/admin/pages/home",
@@ -122,9 +128,9 @@ const PANEL = [
   "/admin/account?tab=security",
   "/admin/account?tab=devices",
   "/admin/help",
-  "/admin/users", // forbidden (403) for an editor
-  "/admin/design", // forbidden (403) for an editor
-  "/admin/this-page-does-not-exist", // not found (404)
+  ["/admin/users", FORBIDDEN], // 403 for an editor
+  ["/admin/design", FORBIDDEN], // 403 for an editor
+  ["/admin/this-page-does-not-exist", NOT_FOUND], // 404
 ]
 
 test.beforeEach(async ({ context }, testInfo) => {
@@ -143,12 +149,37 @@ async function signIn(page: Page, who: Account) {
   await expect(
     page.getByRole("heading", { name: greeting(who.name) })
   ).toBeVisible()
+  // The run really is in the scheme it names (the theme class on <html>).
+  const scheme = await page.evaluate(
+    () => matchMedia("(prefers-color-scheme: dark)").matches
+  )
+  await expect(page.locator("html")).toHaveClass(
+    scheme ? /\bdark\b/ : /\blight\b/
+  )
 }
 
-async function auditEach(page: Page, paths: readonly string[]) {
+/**
+ * The screen has rendered (the expected heading, an h1 by default) and is
+ * not the error boundary: a blank or crashed page has nothing for axe to
+ * flag, so it must never pass.
+ */
+async function expectRendered(page: Page, label: string, heading?: string) {
+  const expected = heading
+    ? page.getByRole("heading", { name: heading, exact: true })
+    : page.getByRole("heading", { level: 1 })
+  await expect(expected.first(), `${label} rendered`).toBeVisible()
+  // A heading, not any text: the contact editor holds that sentence as content.
+  await expect(
+    page.getByRole("heading", { name: "Something went wrong" })
+  ).toHaveCount(0)
+}
+
+async function auditEach(page: Page, targets: readonly Target[]) {
   const failures: string[] = []
-  for (const path of paths) {
+  for (const target of targets) {
+    const [path, heading] = typeof target === "string" ? [target] : target
     await page.goto(path)
+    await expectRendered(page, path, heading)
     for (const violation of await blocking(page))
       failures.push(`${path} → ${violation}`)
   }
@@ -324,11 +355,13 @@ for (const colorScheme of ["light", "dark"] as const) {
 
     // One test per panel screen: as a single loop the ~20 audits took ~25 s
     // locally and overran the 30 s budget on CI's slower runner.
-    for (const path of PANEL)
+    for (const target of PANEL) {
+      const path = typeof target === "string" ? target : target[0]
       test(`panel screen ${path} in ${colorScheme}`, async ({ page }) => {
         await signIn(page, readFixtures().editor)
-        expect(await auditEach(page, [path])).toEqual([])
+        expect(await auditEach(page, [target])).toEqual([])
       })
+    }
 
     test(`service editor in ${colorScheme}`, async ({ page }) => {
       await signIn(page, readFixtures().editor)
@@ -439,7 +472,7 @@ for (const colorScheme of ["light", "dark"] as const) {
         "/admin/leads?view=table", // the board is the default view (D3.3)
         "/admin/leads?folder=spam",
         `/admin/leads?lead=${LEAD_ID}`,
-        "/admin/leads/not-a-lead", // not found (404)
+        ["/admin/leads/not-a-lead", NOT_FOUND],
       ])
       await page.goto(`/admin/leads/${LEAD_ID}`) // redirects to the drawer
       await page
@@ -936,14 +969,42 @@ for (const colorScheme of ["light", "dark"] as const) {
       await expect(banner).toContainText(
         `You are viewing the admin as ${editor.name}`
       )
-      const failures = await blocking(page)
-      await banner.getByRole("button", { name: "Stop impersonating" }).click()
-      await expect(banner).toHaveCount(0)
+      let failures: string[] = []
+      try {
+        failures = await blocking(page)
+      } finally {
+        await banner.getByRole("button", { name: "Stop impersonating" }).click()
+        await expect(banner).toHaveCount(0)
+      }
       expect(failures).toEqual([])
     })
 
-    test(`sign-in in ${colorScheme}`, async ({ page }) => {
-      expect(await auditEach(page, ["/admin/sign-in"])).toEqual([])
+    test(`sign-in and password screens in ${colorScheme}`, async ({ page }) => {
+      // reset-password and set-password without a token render their
+      // "invalid link" state.
+      expect(
+        await auditEach(page, [
+          ["/admin/sign-in", "Sign in"],
+          ["/admin/forgot-password", "Forgot your password?"],
+          ["/admin/reset-password", "Choose a new password"],
+          ["/admin/set-password", "Set your password"],
+        ])
+      ).toEqual([])
+    })
+
+    test(`two-factor challenge in ${colorScheme}`, async ({ page }) => {
+      // Signed in with the 2FA fixture; the challenge is audited unanswered.
+      const { twoFactor } = readFixtures()
+      await page.goto("/admin/sign-in")
+      await page.getByLabel("Email").fill(twoFactor.email)
+      await page.getByLabel("Password", { exact: true }).fill(E2E_PASSWORD)
+      await page.getByRole("button", { name: "Sign in" }).click()
+      await expect(page).toHaveURL(/\/admin\/two-factor/)
+      expect(
+        await auditEach(page, [
+          ["/admin/two-factor", "Two-factor authentication"],
+        ])
+      ).toEqual([])
     })
   })
 }
