@@ -18,7 +18,19 @@ beforeEach(async () => {
   await resetDb()
   dir = await mkdtemp(join(tmpdir(), "cp-drill-it-"))
 })
-afterEach(() => rm(dir, { recursive: true, force: true }))
+afterEach(async () => {
+  await rm(dir, { recursive: true, force: true })
+  // A failed keepScratch test must not leave the scratch database behind.
+  const client = new Client({ connectionString: TEST_DATABASE_URL })
+  await client.connect()
+  try {
+    await client.query(
+      "drop database if exists cp_test_restore_drill with (force)"
+    )
+  } finally {
+    await client.end()
+  }
+})
 
 async function scratchExists(): Promise<boolean> {
   const client = new Client({ connectionString: TEST_DATABASE_URL })

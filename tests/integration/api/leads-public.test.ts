@@ -417,6 +417,8 @@ describe("POST /api/v1/public/leads (master 7.3)", () => {
     for (let attempt = 0; attempt < 2; attempt++) {
       const res = await post({ ...BODY, turnstileToken: "good" })
       expect(res.status).toBe(422)
+      const body = (await res.json()) as ErrorBody
+      expect(body.error.fieldErrors.turnstileToken).toBeDefined()
     }
     expect(fetchSpy).toHaveBeenCalledTimes(2)
     expect(await getDb().select().from(leads)).toHaveLength(0)

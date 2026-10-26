@@ -29,21 +29,28 @@ export async function deleteLeadsFrom(
     data: { email: E2E_ADMIN.email, password: E2E_PASSWORD },
   })
   expect(signIn.ok()).toBe(true)
-  const list = await request.get(
-    `/api/v1/admin/leads?status=all&pageSize=100&q=${encodeURIComponent(email)}`,
-    { headers }
-  )
-  expect(list.ok()).toBe(true)
-  const { items } = (await list.json()) as {
-    items: { id: string; email: string }[]
-  }
   const match = (value: string) =>
     email.includes("@") ? value === email : value.endsWith(`@${email}`)
-  for (const lead of items.filter((item) => match(item.email))) {
-    const removed = await request.delete(`/api/v1/admin/leads/${lead.id}`, {
-      headers,
-    })
-    expect(removed.ok()).toBe(true)
+  // Deleting shifts the pages, so always re-read page 1 until nothing matches
+  // (a single pageSize=100 read would miss every lead beyond the first 100).
+  const PAGE = 100
+  for (let round = 0; round < 50; round++) {
+    const list = await request.get(
+      `/api/v1/admin/leads?status=all&pageSize=${PAGE}&q=${encodeURIComponent(email)}`,
+      { headers }
+    )
+    expect(list.ok()).toBe(true)
+    const { items } = (await list.json()) as {
+      items: { id: string; email: string }[]
+    }
+    const mine = items.filter((item) => match(item.email))
+    for (const lead of mine) {
+      const removed = await request.delete(`/api/v1/admin/leads/${lead.id}`, {
+        headers,
+      })
+      expect(removed.ok()).toBe(true)
+    }
+    if (mine.length === 0) break
   }
   const badge = await request.get("/api/v1/admin/leads/badge", { headers })
   expect(await badge.json()).toEqual({ newLeads: 0 })

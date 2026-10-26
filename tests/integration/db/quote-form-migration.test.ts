@@ -113,6 +113,7 @@ describe("0024_quote_form_feedback (custom data migration)", () => {
       sentMessage: NEW_SENT,
       ...FEEDBACK,
     })
+    expect(errorsOf(revision.data as Data)).toEqual(FIELD_ERRORS)
   })
 
   it("never overwrites an edit", async () => {

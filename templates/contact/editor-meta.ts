@@ -73,7 +73,10 @@ export const contactEditorMeta: EditorMeta = {
       help: "Shown under the field when it is rejected.",
     },
     "quoteForm.fields.consent.label": { label: "Consent wording" },
-    "quoteForm.fields.consent.error": { label: "Consent error" },
+    "quoteForm.fields.consent.error": {
+      label: "Consent error",
+      help: "Shown under the field when it is rejected.",
+    },
     "quoteForm.chevron": { label: "Select arrow icon", aspect: "square" },
     "quoteForm.submitLabel": { label: "Button" },
     "quoteForm.mailSubject": {

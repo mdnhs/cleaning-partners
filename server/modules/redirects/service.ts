@@ -47,7 +47,7 @@ import {
 
 const STATIC_PATHS = new Set<string>(Object.values(PAGE_PATHS))
 const DETAIL = /^\/(services|blog)\/([^/]+)$/
-/** Builder pages: /p/<slug> (D5.2). */
+/** Builder pages: /p/<slug>. */
 const BUILDER = /^\/p\/([^/]+)$/
 
 function assertCan(actor: Actor, req: PermissionRequest) {

@@ -216,7 +216,7 @@ describe("permission matrix (spec §6.1): every role × resource × action", () 
     expect(ALL_PAIRS).toHaveLength(57)
   })
 
-  it("page:create/delete (builder pages, D5.2) go to owner, admin, editor only", () => {
+  it("page:create/delete (builder pages) go to owner, admin, editor only", () => {
     const holders = (action: string) =>
       ROLES.filter((role) => hasPermission([role], req("page", action)))
     expect(holders("create")).toEqual(["owner", "admin", "editor"])

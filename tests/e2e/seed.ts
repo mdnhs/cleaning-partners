@@ -118,7 +118,26 @@ await auth.api.createUser({
   body: { ...intake, role: ["intake"], password: E2E_PASSWORD },
 })
 
-// Later phases add the demo and reset users.
+// roles.spec.ts: a viewer who can sign in (the invitee has no password yet).
+await auth.api.createUser({
+  body: {
+    email: "viewer@e2e.test",
+    name: "Vera Viewer",
+    role: ["viewer"],
+    password: E2E_PASSWORD,
+  },
+})
+
+// password-reset.spec: the production server refuses the loopback Mailpit
+// (SMTP SSRF guard), so the seed mints the link the email would carry.
+const resetPerson = { email: "reset@e2e.test", name: "Rita Reset" }
+const { user: resetAccount } = await auth.api.createUser({
+  body: { ...resetPerson, role: ["editor"], password: E2E_PASSWORD },
+})
+const resetUrl = passwordUrl(
+  "reset-password",
+  await createPasswordToken(resetAccount.id, INVITE_TOKEN_EXPIRES_IN)
+)
 
 const fixtures: E2EFixtures = {
   owner,
@@ -129,6 +148,7 @@ const fixtures: E2EFixtures = {
   author,
   twoFactorOff: { ...twoFactorOff, totpUri: twoFactorOffUri },
   intake,
+  resetUser: { ...resetPerson, resetUrl },
 }
 mkdirSync(dirname(FIXTURES_FILE), { recursive: true })
 writeFileSync(FIXTURES_FILE, JSON.stringify(fixtures, null, 2))

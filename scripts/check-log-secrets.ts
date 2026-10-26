@@ -47,13 +47,15 @@ if (
   }
   // Every secret the E2E/visual fixtures put into the server.
   const secrets = [
-    SERVER_ENV.BETTER_AUTH_SECRET,
-    E2E_PASSWORD,
-    VISUAL_ADMIN.password,
-    VISUAL_EDITOR.password,
-    VISUAL_OWNER.password,
-    VISUAL_AUTHOR.password,
-    E2E_SMTP_PASSWORD,
+    ...new Set([
+      SERVER_ENV.BETTER_AUTH_SECRET,
+      E2E_PASSWORD,
+      VISUAL_ADMIN.password,
+      VISUAL_EDITOR.password,
+      VISUAL_OWNER.password,
+      VISUAL_AUTHOR.password,
+      E2E_SMTP_PASSWORD,
+    ]),
   ]
   let failed = false
   for (const file of files) {

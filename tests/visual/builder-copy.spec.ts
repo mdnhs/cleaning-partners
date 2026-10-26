@@ -9,6 +9,8 @@ import { clientIpFor } from "../e2e/fixtures"
 import { VISUAL_ADMIN } from "./admin-user"
 import { freezeMotion } from "./freeze-motion"
 
+test.skip(process.platform !== "darwin", "visual baselines are macOS-only")
+
 // A page copied from a fixed page (blocksFromTemplate) must render the same
 // <main> as the fixed page. Both are shot in one visitor context and the two
 // PNG buffers must be byte-equal. Nothing is stored: no baseline is written.

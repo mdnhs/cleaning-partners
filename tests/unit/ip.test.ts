@@ -41,7 +41,7 @@ describe("clientIp (spec §4)", () => {
     ).toBe("198.51.100.5")
   })
 
-  it("R11-6: no proxy header at all gives null (one shared rate-limit bucket)", () => {
+  it("R11-6: a blank X-Forwarded-For and no header at all give null (one shared rate-limit bucket)", () => {
     expect(clientIp(new Headers({ "x-forwarded-for": " , " }))).toBeNull()
     expect(clientIp(new Headers())).toBeNull()
   })

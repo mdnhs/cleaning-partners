@@ -71,8 +71,25 @@ describe("CSRF: every mutating admin route rejects cross-origin requests (spec Â
         body: "{}",
       })
       expect(res.status).toBe(403)
+      expect((await res.json()).error.message).toBe(
+        "Cross-origin request rejected"
+      )
     }
   )
+
+  it("control: a same-origin request without Origin is not refused by the CSRF guard", async () => {
+    const { method, path } = routes[0]!
+    const res = await app.request(path, {
+      method,
+      headers: {
+        cookie,
+        "sec-fetch-site": "same-origin",
+        "content-type": "application/json",
+      },
+      body: "{}",
+    })
+    expect(res.status).not.toBe(403)
+  })
 })
 
 describe("the public leads route is not cookie-gated (SP rule)", () => {

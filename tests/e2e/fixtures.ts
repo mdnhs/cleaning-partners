@@ -22,7 +22,8 @@ export type E2EFixtures = {
   author: { email: string; name: string }
   /** Leads (Phase 7): sees only Dashboard, Leads and Account. */
   intake: { email: string; name: string }
-  // Later phases add their users here (reset …).
+  /** password-reset.spec: a single-use reset link minted by the seed. */
+  resetUser: { email: string; name: string; resetUrl: string }
 }
 
 /**

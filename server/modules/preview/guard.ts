@@ -34,7 +34,7 @@ export const isPreviewing: () => Promise<boolean> = cache(async () => {
  * A verified previewer (isPreviewing) who also holds `req`. Preview is
  * entered per entity (`/admin/preview` checks that entity's read), but the
  * draft cookie covers the whole site: a public route that shows drafts of
- * one kind asks for that kind's permission here (D5.3 review minor 1).
+ * one kind asks for that kind's permission here.
  */
 export async function previewerCan(req: PermissionRequest): Promise<boolean> {
   if (!(await isPreviewing())) return false

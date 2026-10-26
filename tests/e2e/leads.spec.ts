@@ -330,6 +330,9 @@ async function publishTracking(
   }
 }
 
+const MARKUP = "<b>bold</b>"
+const REFERER = "https://search.example/results?q=secret#frag"
+
 test("first-touch attribution travels with the enquiry, only with analytics consent", async ({
   page,
   browser,
@@ -346,7 +349,7 @@ test("first-touch attribution travels with the enquiry, only with analytics cons
     metaEnabled: false,
   }))
   try {
-    const landing = "/?utm_source=e2e&utm_medium=cpc&utm_campaign=cp-test"
+    const landing = `/?utm_source=e2e&utm_medium=cpc&utm_campaign=cp-test&utm_content=${encodeURIComponent(MARKUP)}`
 
     // Accepts analytics on the landing page, then moves on to /contact:
     // the first touch is kept for the visit.
@@ -354,7 +357,7 @@ test("first-touch attribution travels with the enquiry, only with analytics cons
       extraHTTPHeaders: { "x-forwarded-for": clientIpFor(`${name} visitor`) },
     })
     const tab = await visitor.newPage()
-    await tab.goto(landing)
+    await tab.goto(landing, { referer: REFERER })
     await tab
       .locator("[data-consent-banner]")
       .getByRole("button", { name: "Accept all" })
@@ -395,6 +398,41 @@ test("first-touch attribution travels with the enquiry, only with analytics cons
   await expect(source.getByText("e2e", { exact: true })).toBeVisible()
   await expect(source.getByText("cpc", { exact: true })).toBeVisible()
   await expect(source.getByText("cp-test", { exact: true })).toBeVisible()
+  // The referrer is stored as origin + path (query and fragment stripped).
+  await expect(source).toContainText("https://search.example/results")
+  await expect(source).not.toContainText("secret")
+  await expect(source).not.toContainText("frag")
+  // Markup in a UTM tag is shown as text, never parsed into elements.
+  await expect(source.getByText(MARKUP, { exact: true })).toBeVisible()
+  await expect(source.locator("b")).toHaveCount(0)
+
+  // The admin DTO carries the same attribution (not only the drawer).
+  const list = (await (
+    await page.request.get(
+      `/api/v1/admin/leads?status=all&q=${encodeURIComponent(name)}`
+    )
+  ).json()) as { items: { id: string; name: string }[] }
+  const lead = list.items.find((item) => item.name === name)
+  expect(lead).toBeDefined()
+  const dto = (await (
+    await page.request.get(`/api/v1/admin/leads/${lead!.id}`)
+  ).json()) as {
+    attribution: {
+      referrer: string | null
+      landingPath: string
+      utm: Record<string, string>
+    } | null
+  }
+  expect(dto.attribution).toMatchObject({
+    referrer: "https://search.example/results",
+    landingPath: "/",
+    utm: {
+      utm_source: "e2e",
+      utm_medium: "cpc",
+      utm_campaign: "cp-test",
+      utm_content: MARKUP,
+    },
+  })
 
   await page.goto("/admin/leads")
   await showTable(page)
