@@ -35,7 +35,7 @@ Everything lives at `/admin/blog/*`. The public `/blog` and `/blog/[slug]` pages
   - The Lead toggle applies only to **top-level** paragraphs. It is disabled inside lists and blockquotes, matching `lib/rich-text/render.tsx`.
   - The editor styles `[data-variant="lead"]` and `[data-variant="checklist"]` so the owner can see them.
   - Keep `paragraphsText` variant-free on the server too: the stored `paragraphsText` schema rejects or strips `variant`. Add a test.
-- **R5-4 Categories screen** lives at `/admin/blog/categories`. It covers CRUD, reorder and `showInFilter`. Deleting a category that has articles returns 409. Every write invalidates `tag.categories` and `tag.articles`.
+- **R5-4 Categories screen** lives at `/admin/blog/categories`. It covers CRUD, reorder and `showInFilter`. Deleting a category that has articles returns 409. Every write invalidates `tag.categories`. Article caches also carry `tag.categories` (SP parity, pinned by a test), so they refresh too.
 - **R5-5 Scheduler.** Create `instrumentation.ts` (Phase 1 R5) with SP's scheduler and shutdown hooks. Jobs:
   - `publish-scheduled`
   - `prune-revisions`
