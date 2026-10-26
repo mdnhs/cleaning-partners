@@ -224,7 +224,7 @@ describe("cpPrefixGuard on the real client (fix round 1)", () => {
     expect(requests).toHaveLength(2)
   })
 
-  it("assertCpInput without a bucket still refuses a foreign key", () => {
+  it("assertCpInput refuses a foreign CopySource key and allows a cp/ one", () => {
     expect(() =>
       assertCpInput({ CopySource: "b/sp/x" }, "CopyObjectCommand", "b")
     ).toThrow(/outside the cp\/ prefix/)
