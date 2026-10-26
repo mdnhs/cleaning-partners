@@ -1,11 +1,10 @@
 import { expect, test } from "@playwright/test"
 
-// R3-5: an unknown service or article slug calls notFound() inside Suspense
-// (a soft 404: the shell has streamed, so the status stays 200), and must
-// render the same branded 404 page as an unmatched URL, noindex'ed.
-// Verified in Task 8: no app/(site)/not-found.tsx is needed, Next's built-in
-// not-found UI renders under the site layout and is pixel-identical to
-// app/global-not-found.tsx (tests/visual: /this-page-does-not-exist).
+// R8-9: an unknown service or article slug is a real 404 (status 404: the
+// proxy rewrites it to /_cp-missing before anything streams, and
+// app/global-not-found.tsx answers). It must render the same branded 404 page
+// as an unmatched URL, noindex'ed, pixel-identical (tests/visual:
+// /this-page-does-not-exist).
 test.describe("unknown slugs render the site's 404 page", () => {
   for (const path of ["/blog/no-such-article", "/services/no-such-service"]) {
     test(`${path} looks like an unmatched URL`, async ({ page }) => {
@@ -15,7 +14,8 @@ test.describe("unknown slugs render the site's 404 page", () => {
         animations: "disabled",
       })
 
-      await page.goto(path, { waitUntil: "networkidle" })
+      const response = await page.goto(path, { waitUntil: "networkidle" })
+      expect(response?.status()).toBe(404)
       await expect(
         page.getByText("This page could not be found.")
       ).toBeVisible()

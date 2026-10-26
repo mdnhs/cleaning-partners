@@ -12,9 +12,12 @@ import { REDIRECT_SOURCES, type RedirectDto } from "@/lib/schemas/api/redirects"
 import { getDb } from "@/server/db/client"
 import { builderPages, redirects, services } from "@/server/db/schema"
 import { seedContent } from "@/server/db/seed"
+import { resolvePublicPath } from "@/server/modules/redirects/resolve"
 
 import { resetDb } from "../db"
 import { adminRequest, signedInUser } from "../helpers/auth"
+
+const live = { draft: false }
 
 let marketer: string
 let editor: string
@@ -67,20 +70,47 @@ describe("redirects admin (D1.7)", () => {
     const off = await patch(dto.id, { isActive: false })
     expect(off.status).toBe(200)
     expect(((await off.json()) as RedirectDto).isActive).toBe(false)
+    expect(await resolvePublicPath("/gone", live)).toEqual({ kind: "pass" })
     // A missing detail page with only an inactive redirect is a real 404.
     await getDb().insert(redirects).values({
       fromPath: "/blog/nothing-here",
       toPath: "/blog",
       isActive: false,
     })
+    expect(await resolvePublicPath("/blog/nothing-here", live)).toEqual({
+      kind: "missing",
+    })
     // Turning it back on resolves again.
     expect((await patch(dto.id, { isActive: true })).status).toBe(200)
+    expect(await resolvePublicPath("/gone", live)).toMatchObject({
+      kind: "redirect",
+      to: "/services",
+    })
   })
 
-  it("307 and 308 are stored and are kept with their own code", async () => {
+  it("a hit sets lastHitAt (and leaves updatedAt alone)", async () => {
+    const dto = await create({ fromPath: "/hit-me", toPath: "/" })
+    const before = Date.now()
+    const outcome = await resolvePublicPath("/hit-me", live)
+    if (outcome.kind !== "redirect") throw new Error("expected a redirect")
+    await outcome.recordHit()
+    const [row] = await listed("/hit-me")
+    expect(row.hits).toBe(1)
+    expect(row.lastHitAt).not.toBeNull()
+    expect(new Date(row.lastHitAt!).getTime()).toBeGreaterThanOrEqual(
+      before - 1000
+    )
+    expect(row.updatedAt).toBe(dto.updatedAt)
+  })
+
+  it("307 and 308 are stored and resolve with their own code", async () => {
     for (const code of [307, 308] as const) {
       const dto = await create({ fromPath: `/keep-${code}`, toPath: "/", code })
       expect(dto.code).toBe(code)
+      expect(await resolvePublicPath(`/keep-${code}`, live)).toMatchObject({
+        kind: "redirect",
+        code,
+      })
     }
     const switched = await patch((await listed("/keep-307"))[0].id, {
       code: 308,
@@ -149,6 +179,9 @@ describe("redirects admin (D1.7)", () => {
       .update(services)
       .set({ slug: "coming-soon" })
       .where(eq(services.slug, "ulv-fogging"))
+    expect(await resolvePublicPath("/services/coming-soon", live)).toEqual({
+      kind: "pass",
+    })
     const [row] = await listed("coming-soon")
     expect(row.isActive).toBe(false)
 

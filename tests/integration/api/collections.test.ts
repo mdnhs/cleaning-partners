@@ -309,8 +309,13 @@ describe("services (master 4.6): draft/publish, slug, delete", () => {
       .from(redirects)
       .where(eq(redirects.fromPath, "/services/retail-cleaning-plus"))
     expect(deleted).toMatchObject({ toPath: "/services", source: "auto" })
-    // The earlier hop now ends at the new address, so it stays a single hop
-    // from the old one to the new; nothing redirects away from a live page.
+    // The earlier hop was re-pointed at the deleted page's fallback, so the
+    // old address still resolves in a single hop (no chain, no dead end).
+    const [earlier] = await getDb()
+      .select()
+      .from(redirects)
+      .where(eq(redirects.fromPath, "/services/retail-cleaning"))
+    expect(earlier.toPath).toBe("/services")
     const all = await getDb().select().from(redirects)
     expect(all.map((r) => r.fromPath).sort()).toEqual([
       "/services/retail-cleaning",

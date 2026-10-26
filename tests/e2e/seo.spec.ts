@@ -1,4 +1,7 @@
-import { expect, test } from "@playwright/test"
+import { type Browser, expect, type Page, test } from "@playwright/test"
+
+import { BASE_URL } from "./env"
+import { clientIpFor, E2E_PASSWORD, readFixtures } from "./fixtures"
 
 // R8-4: every page carries the business JSON-LD, built from the seeded
 // settings; articles add Article + BreadcrumbList, services BreadcrumbList.
@@ -64,4 +67,182 @@ test.describe("OG cards", () => {
     test(`${path} is 404`, async ({ request }) => {
       expect((await request.get(path)).status()).toBe(404)
     })
+})
+
+// Task 8 (R8-9): cut-over is safe. Renaming a published service and deleting
+// a published article leave the old URLs redirecting, with the hit counted.
+// Throwaway records are cloned from the seed through the admin API (as the
+// editor); afterAll removes them and the redirects they left (as the owner).
+test.describe("moved and deleted pages redirect", () => {
+  const SERVICE_A = "e2e-move-from"
+  const SERVICE_B = "e2e-move-to"
+  const ARTICLE_SLUG = "e2e-delete-me"
+  const headers = { origin: BASE_URL }
+  const made: { service?: string; article?: string } = {}
+
+  async function signIn(browser: Browser, who: { email: string }, tag: string) {
+    const context = await browser.newContext({
+      extraHTTPHeaders: { "x-forwarded-for": clientIpFor(tag) },
+    })
+    const page = await context.newPage()
+    await page.goto("/admin/sign-in")
+    await page.getByLabel("Email").fill(who.email)
+    await page.getByLabel("Password", { exact: true }).fill(E2E_PASSWORD)
+    await page.getByRole("button", { name: "Sign in" }).click()
+    await page.waitForURL((url) => !url.pathname.endsWith("/sign-in"))
+    return { context, page }
+  }
+
+  const api = async <T>(page: Page, path: string) =>
+    (await (await page.request.get(`/api/v1/admin${path}`)).json()) as T
+
+  /** The first redirect response, not followed. */
+  const hop = async (page: Page, path: string) => {
+    const res = await page.request.get(path, { maxRedirects: 0 })
+    return { status: res.status(), location: res.headers()["location"] ?? "" }
+  }
+
+  test("rename a service, delete an article: old URLs redirect and count hits", async ({
+    browser,
+  }) => {
+    const { editor, owner } = readFixtures()
+    const ed = await signIn(browser, editor, "seo cutover editor")
+    const own = await signIn(browser, owner, "seo cutover owner")
+    try {
+      const page = ed.page
+
+      // A published service, cloned from the seed, then renamed.
+      const seeded = await api<{ items: { id: string; slug: string }[] }>(
+        page,
+        "/services?pageSize=50"
+      )
+      const source = await api<{ draft: unknown }>(
+        page,
+        `/services/${seeded.items[0].id}`
+      )
+      const createdService = await page.request.post("/api/v1/admin/services", {
+        headers,
+        data: { slug: SERVICE_A, draft: source.draft },
+      })
+      expect(createdService.status()).toBe(201)
+      const service = (await createdService.json()) as {
+        id: string
+        version: number
+      }
+      made.service = service.id
+      const publishedService = await page.request.post(
+        `/api/v1/admin/services/${service.id}/publish`,
+        { headers, data: { version: service.version } }
+      )
+      expect(publishedService.status()).toBe(200)
+      const live = (await publishedService.json()) as { version: number }
+      expect((await hop(page, `/services/${SERVICE_A}`)).status).toBe(200)
+
+      const renamed = await page.request.patch(
+        `/api/v1/admin/services/${service.id}/slug`,
+        { headers, data: { slug: SERVICE_B, version: live.version } }
+      )
+      expect(renamed.status()).toBe(200)
+      const moved = await hop(page, `/services/${SERVICE_A}`)
+      expect([301, 308]).toContain(moved.status)
+      expect(new URL(moved.location, BASE_URL).pathname).toBe(
+        `/services/${SERVICE_B}`
+      )
+      expect((await hop(page, `/services/${SERVICE_B}`)).status).toBe(200)
+
+      // The hit is written after the response.
+      await expect
+        .poll(async () => {
+          const list = await api<{
+            items: { fromPath: string; hits: number }[]
+          }>(own.page, `/redirects?q=${SERVICE_A}`)
+          return list.items.find((r) => r.fromPath === `/services/${SERVICE_A}`)
+            ?.hits
+        })
+        .toBeGreaterThanOrEqual(1)
+
+      // A published article, cloned from the seed, then deleted.
+      const articles = await api<{ items: { id: string }[] }>(
+        page,
+        "/articles?pageSize=50"
+      )
+      const model = await api<{ draft: object; category: { id: string } }>(
+        page,
+        `/articles/${articles.items[0].id}`
+      )
+      const createdArticle = await page.request.post("/api/v1/admin/articles", {
+        headers,
+        data: {
+          slug: ARTICLE_SLUG,
+          categoryId: model.category.id,
+          draft: model.draft,
+        },
+      })
+      expect(createdArticle.status()).toBe(201)
+      const article = (await createdArticle.json()) as {
+        id: string
+        version: number
+      }
+      made.article = article.id
+      const publishedArticle = await page.request.post(
+        `/api/v1/admin/articles/${article.id}/publish`,
+        { headers, data: { version: article.version } }
+      )
+      expect(publishedArticle.status()).toBe(200)
+      const liveArticle = (await publishedArticle.json()) as { version: number }
+      expect((await hop(page, `/blog/${ARTICLE_SLUG}`)).status).toBe(200)
+
+      const removed = await page.request.delete(
+        `/api/v1/admin/articles/${article.id}?version=${liveArticle.version}`,
+        { headers }
+      )
+      expect(removed.status()).toBe(200)
+      made.article = undefined
+      const gone = await hop(page, `/blog/${ARTICLE_SLUG}`)
+      expect([301, 308]).toContain(gone.status)
+      expect(new URL(gone.location, BASE_URL).pathname).toBe("/blog")
+    } finally {
+      await ed.context.close()
+      await own.context.close()
+    }
+  })
+
+  test.afterAll(async ({ browser }) => {
+    const { editor, owner } = readFixtures()
+    const ed = await signIn(browser, editor, "seo cutover restore editor")
+    const own = await signIn(browser, owner, "seo cutover restore owner")
+    try {
+      if (made.article) {
+        const a = await api<{ version: number }>(
+          ed.page,
+          `/articles/${made.article}`
+        )
+        await ed.page.request.delete(
+          `/api/v1/admin/articles/${made.article}?version=${a.version}`,
+          { headers }
+        )
+      }
+      const services = await api<{
+        items: { id: string; slug: string; version: number }[]
+      }>(ed.page, "/services?pageSize=100")
+      for (const s of services.items.filter((s) =>
+        [SERVICE_A, SERVICE_B].includes(s.slug)
+      ))
+        await ed.page.request.delete(
+          `/api/v1/admin/services/${s.id}?version=${s.version}`,
+          { headers }
+        )
+      const left = await api<{ items: { id: string }[] }>(
+        own.page,
+        "/redirects?q=e2e-&pageSize=100"
+      )
+      for (const r of left.items)
+        await own.page.request.delete(`/api/v1/admin/redirects/${r.id}`, {
+          headers,
+        })
+    } finally {
+      await ed.context.close()
+      await own.context.close()
+    }
+  })
 })

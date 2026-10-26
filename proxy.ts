@@ -1,9 +1,21 @@
 import { getSessionCookie } from "better-auth/cookies"
-import { type NextRequest, NextResponse } from "next/server"
+import {
+  type NextFetchEvent,
+  type NextRequest,
+  NextResponse,
+} from "next/server"
 
 import { isAdminAuthPath } from "@/lib/auth/redirect"
 import { REQUEST_PATH_HEADER } from "@/lib/request-path"
 import { blockingMetadataHeaders } from "@/lib/seo/blocking-metadata"
+import { redirectLocation } from "@/lib/seo/redirects"
+import {
+  MISSING_PATH,
+  resolvePublicPath,
+} from "@/server/modules/redirects/resolve"
+
+/** Next's draft-mode cookie (next/dist/server/api-utils COOKIE_NAME_PRERENDER_BYPASS). */
+const DRAFT_COOKIE = "__prerender_bypass"
 
 /**
  * Admin gate, optimistic only: checks that a session cookie is present (no
@@ -12,6 +24,11 @@ import { blockingMetadataHeaders } from "@/lib/seo/blocking-metadata"
  */
 export function adminGate(request: NextRequest): NextResponse {
   const { pathname, search } = request.nextUrl
+  // A client-sent path header never reaches an admin page either (only
+  // overridden when one was sent, so ordinary requests are untouched).
+  const headers = new Headers(request.headers)
+  const stripPath = headers.has(REQUEST_PATH_HEADER)
+  headers.delete(REQUEST_PATH_HEADER)
   let response: NextResponse
   if (
     !isAdminAuthPath(pathname) &&
@@ -28,20 +45,27 @@ export function adminGate(request: NextRequest): NextResponse {
       307
     )
   } else {
-    response = NextResponse.next()
+    response = stripPath
+      ? NextResponse.next({ request: { headers } })
+      : NextResponse.next()
   }
   response.headers.set("X-Robots-Tag", "noindex")
   return response
 }
 
 /**
- * Public pages (GET/HEAD): documents render with blocking metadata (in
- * <head>; not under next dev) and every page learns its own path
- * (lib/request-path.ts). Any other method has the path header stripped, so a
- * client-sent value never reaches a page. The redirects table and real 404s
- * join this gate in Task 8, fail-open as SP's does.
+ * Public pages (GET/HEAD): real 404 for unknown service/article slugs and
+ * the redirects table, decided before the page streams (with Cache
+ * Components the status is 200 once streaming starts). Documents render
+ * with blocking metadata (in <head>; not under next dev) and every page
+ * learns its own path (lib/request-path.ts). Any other method has the path
+ * header stripped and no lookup. Fail-open: if anything here throws, the
+ * page is served as if the lookup were not there.
  */
-export function publicGate(request: NextRequest): NextResponse {
+export async function publicGate(
+  request: NextRequest,
+  event: Pick<NextFetchEvent, "waitUntil">
+): Promise<NextResponse> {
   if (request.method !== "GET" && request.method !== "HEAD") {
     const headers = new Headers(request.headers)
     headers.delete(REQUEST_PATH_HEADER)
@@ -50,14 +74,33 @@ export function publicGate(request: NextRequest): NextResponse {
   const headers = blockingMetadataHeaders(request.headers)
   const { pathname, search } = request.nextUrl
   headers.set(REQUEST_PATH_HEADER, `${pathname}${search}`)
-  return NextResponse.next({ request: { headers } })
+  const init = { request: { headers } }
+  try {
+    const outcome = await resolvePublicPath(pathname, {
+      draft: request.cookies.has(DRAFT_COOKIE),
+    })
+    if (outcome.kind === "missing")
+      return NextResponse.rewrite(new URL(MISSING_PATH, request.url), init)
+    if (outcome.kind === "redirect") {
+      const location = redirectLocation(outcome.to, new URL(request.url))
+      // The hit is written after the response (never delays it).
+      event.waitUntil(outcome.recordHit())
+      return NextResponse.redirect(location, outcome.code)
+    }
+  } catch {
+    console.error("[proxy] public gate failed; serving the page")
+  }
+  return NextResponse.next(init)
 }
 
-export function proxy(request: NextRequest): NextResponse {
+export async function proxy(
+  request: NextRequest,
+  event: NextFetchEvent
+): Promise<NextResponse> {
   const { pathname } = request.nextUrl
   if (pathname === "/admin" || pathname.startsWith("/admin/"))
     return adminGate(request)
-  return publicGate(request)
+  return publicGate(request, event)
 }
 
 export const config = {
