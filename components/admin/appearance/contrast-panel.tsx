@@ -141,7 +141,12 @@ export function ContrastPanel({
                   <TableCell className="px-0 py-2 text-right">
                     <Badge
                       variant={failed ? "destructive" : "secondary"}
-                      className={cn(!failed && "bg-success-soft text-success")}
+                      className={cn(
+                        !failed &&
+                          (row.rating === "floor"
+                            ? "bg-warning-soft text-warning"
+                            : "bg-success-soft text-success")
+                      )}
                     >
                       {BADGE[row.rating]}
                     </Badge>

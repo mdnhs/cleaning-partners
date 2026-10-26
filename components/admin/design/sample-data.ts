@@ -7,8 +7,8 @@ import type { NextUpItem } from "@/lib/schemas/api/dashboard"
 
 // Fixed sample data for /admin/design (R9-7): client demos, the
 // side-by-side review against the reference and the visual baselines.
-// CP content: services, Irish names, cleaningpartners.ie addresses and lead
-// sources (contact form, Google, referral). Nothing here is read from or written to the database.
+// CP content: services, Irish names and cleaningpartners.ie addresses.
+// Nothing here is read from or written to the database.
 
 /** "Now" for the relative times in Team activity: shots never drift. */
 export const SAMPLE_NOW = Date.parse("2026-10-16T10:00:00Z")

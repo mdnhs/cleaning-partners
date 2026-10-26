@@ -102,6 +102,9 @@ test.describe.serial("custom code snippets (D2.3)", () => {
 
       await site.goto("/")
       await expect(site.locator("footer")).toBeVisible()
+      await expect(
+        site.getByRole("button", { name: "Cookie settings" })
+      ).toBeVisible()
       await site.waitForLoadState("load")
       expect(await probe(site)).toBeUndefined()
       // The loader ships on every page since the D2.3 fix (it checks the

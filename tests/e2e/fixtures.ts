@@ -2,6 +2,8 @@ import { createHash } from "node:crypto"
 import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 
+import type { Page } from "@playwright/test"
+
 /** Written by tests/e2e/seed.ts, read by the specs (gitignored). */
 export const FIXTURES_FILE = resolve("tests/e2e/.state/fixtures.json")
 export const E2E_PASSWORD = "e2e-password-0123456789"
@@ -31,6 +33,17 @@ export type E2EFixtures = {
 export function clientIpFor(testTitle: string): string {
   const [a, b] = createHash("sha256").update(testTitle).digest()
   return `198.18.${a}.${b}`
+}
+
+/**
+ * Resolves once React has hydrated the footer, so a negative assertion that
+ * follows cannot pass before the client effects (consent, trackers) have run.
+ */
+export async function waitForHydration(page: Page): Promise<void> {
+  await page.waitForFunction(() => {
+    const f = document.querySelector("footer")
+    return !!f && Object.keys(f).some((k) => k.startsWith("__reactFiber"))
+  })
 }
 
 export function readFixtures(): E2EFixtures {

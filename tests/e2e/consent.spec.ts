@@ -3,7 +3,7 @@ import { expect, type Page, test } from "@playwright/test"
 
 import { E2E_ADMIN, E2E_MARKETER, E2E_OWNER } from "./admin-accounts"
 import { BASE_URL } from "./env"
-import { clientIpFor, E2E_PASSWORD } from "./fixtures"
+import { clientIpFor, E2E_PASSWORD, waitForHydration } from "./fixtures"
 
 // Master 8.3: no banner/scripts while tracking is off; with tracking on the
 // banner gates GTM, GA4 and the Meta pixel; consent cookie 6 months (the
@@ -105,8 +105,8 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
   }) => {
     const requested = await stubTrackers(page)
     await page.goto("/")
-    await expect(page.locator("footer")).toBeVisible()
-    await page.waitForLoadState("load")
+    await waitForHydration(page)
+    await page.waitForTimeout(500)
     await expect(page.locator("[data-consent-banner]")).toHaveCount(0)
     await expect(
       page.getByRole("button", { name: "Cookie settings" })
@@ -187,11 +187,15 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
         .locator("[data-consent-banner]")
         .getByRole("button", { name: "Reject non-essential" })
         .click()
-      await page2.waitForLoadState("load")
+      await expect(page2.locator("[data-consent-banner]")).toBeHidden()
+      await expect
+        .poll(
+          async () =>
+            (await other.cookies()).find((c) => c.name === "cp_consent")?.value
+        )
+        .toMatch(/^\d+\.0\.0\./)
+      await page2.waitForTimeout(300)
       expect(none).toEqual([])
-      expect(
-        (await other.cookies()).find((c) => c.name === "cp_consent")?.value
-      ).toMatch(/^\d+\.0\.0\./)
       await other.close()
     } finally {
       await publishSetting(page, "tracking", (d) => ({

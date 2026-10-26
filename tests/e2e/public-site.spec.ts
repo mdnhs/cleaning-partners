@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test"
 
+import { waitForHydration } from "./fixtures"
 import { PUBLIC_URLS } from "../visual/urls"
 
 // The public site served from the seeded cp_e2e database (tests/e2e/seed.ts).
@@ -17,6 +18,7 @@ test.describe("public site from the database", () => {
       const response = await page.goto(url, { waitUntil: "load" })
       expect(response?.status()).toBe(200)
       await expect(page.locator("h1").first()).toBeVisible()
+      await waitForHydration(page)
       expect(errors).toEqual([])
     })
   }
