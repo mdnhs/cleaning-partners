@@ -283,7 +283,7 @@ export function useBuilderAutosave(input: {
       clearRetry()
       // Always the server's copy: with keepMine the caller's document now
       // differs from it, so the next flush really sends.
-      // A result older than what was saved since is ignored (R1).
+      // A result older than what was saved since is ignored.
       if (dto.version < version.current) return false
       version.current = dto.version
       const read = readDraft(dto.draft)
