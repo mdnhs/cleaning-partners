@@ -327,6 +327,16 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
 
   - **Phase 4 outcome (Task 6).** Task 8.2 must restore `recordMove` in `server/modules/services/service.ts` `changeServiceSlug` and `deleteService` (markers at `:189` and `:223`). It must also restore the `"redirects"` tag assertion in `tests/integration/api/collections.test.ts`, which has an `it.todo` marker. Until then, a renamed or deleted published service 404s at its old URL. **Don't cut over before 8.2.** Task 8.1 restores the SEO tab in the page and service editors (SeoPanel).
 
+  - **Phase 4 outcome (final).** Deferrals by owning phase:
+    - **6:** port the media library, R2 driver and migrate. Restore `getStorage(db)` / `storageFor(driver, db)` and `migrateDiskMediaToR2` plus the migration-status functions. Fix the stale R2 comments and `deleteStoredFile` throwing for R2 rows after commit. Port the R2 tests.
+    - **7:** leads badge (bell and shell extras for leads); dashboard lead test through the public endpoint.
+    - **8:** the public `publicGate` in `proxy.ts` (set and strip `x-cp-path`, plus an e2e for preview exit `?to`); the SEO tab in page and service editors and the dashboard SEO score (8.1); service `recordMove` plus the redirects tag (8.2).
+    - **9:** AI hooks in versioned-editor, ⌘J, AI Next-up.
+    - **10:** builder keywords, the "New page" palette action, Copy to new page, `pages/custom/[id]`.
+    - **11.5:** the Help "Guides" card, once `docs/runbook.md` exists.
+
+    SchemaForm section card ids are `sf-<path>-card` (CP deviation). The Phase 8 SeoPanel and Phase 9 AI `elementId` anchors must use them.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.
