@@ -209,3 +209,45 @@ describe("editor meta matches its schema in both directions (Task 5 minor)", () 
     )
   })
 })
+
+describe("select widget storage follows the schema type", () => {
+  it("a string field with select options saves a string; a number field a number", async () => {
+    const { z } = await import("zod")
+    const { SchemaForm } =
+      await import("@/components/admin/schema-form/schema-form")
+    const onChange = vi.fn()
+    const user = userEvent.setup()
+    render(
+      <SchemaForm
+        schema={z.object({ size: z.string(), stars: z.number() })}
+        meta={{
+          fields: {
+            size: {
+              widget: "select",
+              label: "Size",
+              options: [
+                { value: "1", label: "One" },
+                { value: "2", label: "Two" },
+              ],
+            },
+            stars: {
+              widget: "select",
+              label: "Stars",
+              options: [{ value: "3", label: "Three" }],
+            },
+          },
+        }}
+        value={{ size: "1", stars: 3 }}
+        onChange={onChange}
+      />
+    )
+    await pickOption(
+      user,
+      screen.getByRole("combobox", { name: "Size" }),
+      "Two"
+    )
+    await waitFor(() =>
+      expect(onChange).toHaveBeenLastCalledWith({ size: "2", stars: 3 })
+    )
+  })
+})

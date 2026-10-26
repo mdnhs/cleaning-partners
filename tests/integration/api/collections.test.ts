@@ -256,6 +256,12 @@ describe("services (master 4.6): draft/publish, slug, delete", () => {
     expect(badSlug.status).toBe(422)
   })
 
+  // Restore markers: server/modules/services/service.ts, "Phase 8.2 records"
+  // in changeServiceSlug (~line 189) and deleteService (~line 223).
+  it.todo(
+    "records a redirect and expires the redirects tag on slug change/delete — restore in Phase 8.2 (recordMove)"
+  )
+
   it("publishes (tags services + service:<slug>), changes the slug, rejects stale versions, deletes", async () => {
     const list = await json<Paginated<ServiceListItem>>(
       await adminRequest("/services?q=medical", { cookie: editor })

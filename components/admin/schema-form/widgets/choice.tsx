@@ -40,10 +40,12 @@ export function SelectWidget({ field, path }: WidgetProps) {
   const help = field.meta.help
   const optional = field.optional || field.nullable
   // A number field with meta.options (testimonial rating 1-5): the options
-  // are strings in the control and numbers in the form.
-  const numeric = !enumValues(field.schema) && !!field.meta.options
-  const items = numeric
-    ? field.meta.options!
+  // are strings in the control and numbers in the form. A string field with
+  // options keeps strings.
+  const numeric =
+    (field.schema as unknown as { def: { type: string } }).def.type === "number"
+  const items = field.meta.options
+    ? field.meta.options
     : choiceItems(field, enumValues(field.schema) ?? [])
   return (
     <FieldShell

@@ -14,7 +14,7 @@ import { zv } from "@/server/api/validate"
 
 import * as service from "./service"
 
-/** CRUD for one small collection (/team, /clients, /group-companies, /categories). */
+/** CRUD for one small collection (/team, /clients, /group-companies, /testimonials, /categories). */
 export function collectionRoutes<C extends CollectionName>(name: C) {
   return new Hono<AppEnv>()
     .get(

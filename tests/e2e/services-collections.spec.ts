@@ -109,8 +109,9 @@ test("create a service → publish → /services shows it", async ({
 })
 
 const TESTIMONIAL = "Thomas Murray"
-const ORIGINAL_QUOTE =
-  "Great service – easy to arrange, friendly people. The drapes look amazing, not a trace from the red wine stain. I am very happy! Will definitely be using their service again and will recommend to friends and family!"
+// The seeded quote, read through the API before the edit (the fixture file
+// is server-only and cannot be imported into a Playwright spec).
+let originalQuote: string | null = null
 const EDITED_QUOTE = "E2E edited quote: tidy, quick and friendly."
 
 test("edit a testimonial → home shows the new quote", async ({
@@ -119,6 +120,10 @@ test("edit a testimonial → home shows the new quote", async ({
 }) => {
   const { editor } = readFixtures()
   await signIn(page, editor.email, editor.name)
+  const seeded = (await (
+    await page.request.get("/api/v1/admin/testimonials?pageSize=100")
+  ).json()) as { items: { name: string; quote: string }[] }
+  originalQuote = seeded.items.find((i) => i.name === TESTIMONIAL)!.quote
   await page.goto("/admin/collections/testimonials")
   await expect(
     page.getByRole("heading", { level: 1, name: "Testimonials" })
@@ -172,13 +177,13 @@ test.afterAll(async ({ browser }) => {
       rating: number
     }>
     const t = list.items.find((i) => i.name === TESTIMONIAL)
-    if (t && t.quote === EDITED_QUOTE) {
+    if (t && originalQuote && t.quote === EDITED_QUOTE) {
       const res = await page.request.put(`/api/v1/admin/testimonials/${t.id}`, {
         headers,
         data: {
           name: t.name,
           initials: t.initials,
-          quote: ORIGINAL_QUOTE,
+          quote: originalQuote,
           rating: t.rating,
         },
       })
