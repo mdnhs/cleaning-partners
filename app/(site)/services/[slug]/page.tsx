@@ -2,10 +2,13 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { connection } from "next/server"
 
+import { JsonLd } from "@/components/seo/json-ld"
 import { SiteThemed } from "@/components/site-themed"
+import { publicOrigin } from "@/server/lib/site-origin"
 import { loadSiteSources } from "@/server/modules/pages/sources"
 import { ServiceDetailTemplate } from "@/templates/services/render"
 import { serviceDetailView } from "@/templates/services/view"
+import { serviceJsonLd } from "@/templates/shared/structured-data"
 import { serviceMetadata } from "@/templates/shared/page-meta"
 
 export async function generateMetadata({
@@ -29,9 +32,21 @@ async function Content({
 }: Pick<PageProps<"/services/[slug]">, "params">) {
   await connection()
   const { slug } = await params
-  const view = serviceDetailView(await loadSiteSources(), slug)
+  const sources = await loadSiteSources()
+  const view = serviceDetailView(sources, slug)
   // Unknown slugs: a soft 404 (the status can't change once the shell has
   // streamed), noindex'ed by Next.
   if (!view) notFound()
-  return <ServiceDetailTemplate view={view} />
+  const nodes =
+    serviceJsonLd(
+      sources,
+      slug,
+      publicOrigin(sources.settings.site.productionUrl)
+    ) ?? []
+  return (
+    <>
+      <ServiceDetailTemplate view={view} />
+      <JsonLd data={nodes} />
+    </>
+  )
 }

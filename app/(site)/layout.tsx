@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import "../globals.css"
 import { barlow, fontMono, roboto } from "@/app/fonts"
 import { PreviewBar } from "@/components/preview-bar"
+import { SiteExtras } from "@/components/site-extras"
 import { SmoothScroll } from "@/components/motion/smooth-scroll"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
@@ -54,6 +55,9 @@ export default function RootLayout({
         </noscript>
         <SmoothScroll />
         <ThemeProvider>{children}</ThemeProvider>
+        <Suspense fallback={null}>
+          <SiteExtras />
+        </Suspense>
         {/* Draft-mode only (admins); renders nothing for visitors. */}
         <Suspense fallback={null}>
           <PreviewBar />

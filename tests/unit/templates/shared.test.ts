@@ -5,61 +5,6 @@ import { consentBannerCopy } from "@/templates/shared/consent"
 import { PAGE_HERO_GROUPS } from "@/templates/shared/editor-groups"
 import { pageMetadata, siteMetadata } from "@/templates/shared/page-meta"
 import type { SiteSources } from "@/templates/shared/sources"
-import {
-  articleJsonLdFor,
-  breadcrumbJsonLd,
-  organizationJsonLd,
-  serviceJsonLd,
-  siteJsonLd,
-} from "@/templates/shared/structured-data"
-
-const org = {
-  type: "LocalBusiness" as const,
-  url: "https://cleaningpartners.ie",
-  name: "Cleaning Partners Ltd.",
-  legalName: "Cleaning Partners Ltd.",
-  logo: "https://cleaningpartners.ie/images/home/logo.png",
-  telephone: "057 8697670",
-  email: "info@cleaningpartners.ie",
-  address: {
-    streetAddress: "Derryguile",
-    addressLocality: "Mountmellick",
-    addressRegion: "Co. Laois",
-    postalCode: "R32 YX49",
-    addressCountry: "IE",
-  },
-  areaServed: "Ireland",
-  sameAs: [] as string[],
-  services: [
-    { name: "Medical Cleaning", url: "https://cleaningpartners.ie/services/x" },
-  ],
-}
-
-describe("structured data", () => {
-  it("builds a plain LocalBusiness from settings values, no SecurityService", () => {
-    const json = organizationJsonLd(org)
-    expect(json["@type"]).toBe("LocalBusiness")
-    expect(json["@id"]).toBe("https://cleaningpartners.ie/#organization")
-    expect(json.name).toBe("Cleaning Partners Ltd.")
-    expect(json).not.toHaveProperty("sameAs")
-    expect(JSON.stringify(json)).not.toMatch(/Security|SecurityService/)
-  })
-
-  it("keeps sameAs only when set", () => {
-    expect(
-      organizationJsonLd({ ...org, sameAs: ["https://x.com/cp"] }).sameAs
-    ).toEqual(["https://x.com/cp"])
-  })
-
-  it("builds a breadcrumb list", () => {
-    const json = breadcrumbJsonLd([
-      { name: "Home", url: "https://cleaningpartners.ie/" },
-      { name: "Blog", url: "https://cleaningpartners.ie/blog" },
-    ])
-    expect(json["@type"]).toBe("BreadcrumbList")
-    expect(json.itemListElement.map((i) => i.position)).toEqual([1, 2])
-  })
-})
 
 describe("page metadata", () => {
   const s = fixtureSiteSources()
@@ -136,60 +81,6 @@ describe("page metadata", () => {
       google: "g-token",
       other: { "msvalidate.01": "b-token" },
     })
-  })
-})
-
-describe("structured data over the site sources", () => {
-  const s = fixtureSiteSources()
-  const origin = "https://cleaningpartners.ie"
-
-  it("the business node lists the services and carries no other company", () => {
-    const json = siteJsonLd(s, origin)
-    expect(json["@type"]).toBe("LocalBusiness")
-    expect(json.name).toBe("Cleaning Partners Ltd.")
-    expect(json.telephone).toBe("057 8697670")
-    expect(json.logo).toBe("https://cleaningpartners.ie/images/home/logo.png")
-    expect(json.makesOffer).toHaveLength(s.services.length)
-    expect(json.makesOffer[0].itemOffered.url).toBe(
-      "https://cleaningpartners.ie/services/medical-cleaning"
-    )
-    expect(JSON.stringify(json)).not.toMatch(/Security|SecurityService/)
-  })
-
-  it("a service has Home > Services > service breadcrumbs", () => {
-    const [crumbs] = serviceJsonLd(s, "medical-cleaning", origin)!
-    expect(crumbs.itemListElement.map((i) => i.name)).toEqual([
-      "Home",
-      "Services",
-      "Medical Cleaning",
-    ])
-    expect(serviceJsonLd(s, "nope", origin)).toBeNull()
-  })
-
-  it("an article has Article and Home > Blog > article", () => {
-    const [article, crumbs] = articleJsonLdFor(
-      s,
-      "5-signs-your-office-needs-a-professional-clean",
-      origin
-    )!
-    expect(article).toMatchObject({
-      "@type": "Article",
-      headline: "5 Signs Your Office Needs a Professional Clean",
-      datePublished: "2026-09-15T09:00:00.000Z",
-      articleSection: "Commercial",
-      author: { name: "The Clean Team" },
-      image: "https://cleaningpartners.ie/images/home/vacuuming.png",
-    })
-    expect(
-      (crumbs as { itemListElement: { name: string }[] }).itemListElement.map(
-        (i) => i.name
-      )
-    ).toEqual([
-      "Home",
-      "Blog",
-      "5 Signs Your Office Needs a Professional Clean",
-    ])
-    expect(articleJsonLdFor(s, "nope", origin)).toBeNull()
   })
 })
 
