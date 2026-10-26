@@ -337,6 +337,8 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
 
     SchemaForm section card ids are `sf-<path>-card` (CP deviation). The Phase 8 SeoPanel and Phase 9 AI `elementId` anchors must use them.
 
+  - **Phase 4 fix-wave outcome.** Phase 6 restores two R2-only cases dropped from `media-manage-hardening`'s "replace to R2" block: "moves a disk file to R2 and retires the disk file" and "refuses (409) when R2 is disconnected mid-put". Phase 8 swaps the local `SEO_FIELDS_META` stub in `tests/unit/admin/resolve-widget.test.ts` back to the import from `@/components/admin/seo/seo-meta`.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.

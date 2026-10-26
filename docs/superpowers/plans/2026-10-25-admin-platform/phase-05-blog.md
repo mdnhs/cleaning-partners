@@ -41,7 +41,7 @@ Everything lives at `/admin/blog/*`. The public `/blog` and `/blog/[slug]` pages
   - `prune-revisions`
   - `delete-retired-media` (Phase 4 deferral)
 
-  `purge-leads` arrives in 7.4 and backup in 11.1. Each job is registered only when its module exists. The scheduler must not start during `next build`. Two concurrent ticks must publish a due article exactly once (`SKIP LOCKED`).
+  `purge-leads` arrives in 7.4 and backup in 11.1. In `tests/integration/api/media-manage.test.ts`, the grace-period case (around line 235) calls `deleteRetiredMediaFile` directly. Restore it to use `tick({ jobs: [deleteRetiredMediaJob] })` as SP does, with the "no job row" assertion going through the scheduler. Also rename the local `officer` in `tests/dom/rich-text-editor.test.tsx:424`. Each job is registered only when its module exists. The scheduler must not start during `next build`. Two concurrent ticks must publish a due article exactly once (`SKIP LOCKED`).
 - **R5-6 Revalidation from jobs.** Jobs can't call `revalidateTag`. Use SP's internal signed route `/api/v1/internal/revalidate`, HKDF purpose `cron`, `x-cp-*` headers.
 - **R5-7 Deferred items restored here:**
   - dashboard "drafts in review" links now land on `/admin/blog`
