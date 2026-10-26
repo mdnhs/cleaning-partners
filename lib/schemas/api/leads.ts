@@ -90,7 +90,8 @@ export const leadSubmission = z.object({
    * Checked against the published services and the contact page's extra
    * options by the service layer (R7-3), not by Zod. Blank becomes null.
    */
-  service: optionalLine(200),
+  // Matches the 5000-char cap on service titles and extra options.
+  service: optionalLine(5000),
   /** Optional on the frozen form; a blank message is stored as "". */
   message: z
     .string()

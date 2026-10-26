@@ -77,7 +77,7 @@ export const contactEditorMeta: EditorMeta = {
     "quoteForm.chevron": { label: "Select arrow icon", aspect: "square" },
     "quoteForm.submitLabel": { label: "Button" },
     "quoteForm.mailSubject": {
-      label: "Staff email subject",
+      label: "Notification email subject",
       help: "Used in the staff notification email only, not on the page. {name} is the visitor's name.",
     },
     "quoteForm.sentMessage": {

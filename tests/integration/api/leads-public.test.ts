@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 import {
   afterEach,
   beforeAll,
@@ -249,6 +249,24 @@ describe("POST /api/v1/public/leads (master 7.3)", () => {
       expect(Object.keys(body.error.fieldErrors)).toEqual(["service"])
       expect(await getDb().select().from(leads)).toHaveLength(0)
     })
+
+    it.each([
+      ["a trailing space", "Office Cleaning ", "Office Cleaning"],
+      ["a double space", "Office  Cleaning", "Office Cleaning"],
+    ])(
+      "a published title with %s accepts the single-spaced value",
+      async (_n, title, posted) => {
+        await getDb().execute(
+          sql`update services set published = jsonb_set(published, '{title}', to_jsonb(${title}::text)) where slug = (select slug from services order by sort_order, slug limit 1)`
+        )
+        expect((await post({ ...BODY, service: posted })).status).toBe(200)
+        const [row] = await getDb().select().from(leads)
+        expect(row.service).toBe(posted)
+        expect(
+          (await post({ ...BODY, service: "Office Cleaning Plus" })).status
+        ).toBe(422)
+      }
+    )
 
     it("published contact data that fails the strict schema still accepts its extra options", async () => {
       const [page] = await getDb()

@@ -352,6 +352,35 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
       - Port SP's `tests/integration/ops/r2-bootstrap.test.ts`.
     - **11.3:** port `tests/e2e/media-pins.ts` with CP fixtures, together with the admin a11y and admin-screens specs. Add admin visual baselines for media (grid, list, details, upload, picker-upload, delete-409) and for the R2 integration with its move panel.
 
+  - **Phase 7 outcome.**
+    - The quote form posts to `/api/v1/public/leads` instead of opening `mailto:`.
+    - The public schema requires `consent: true`. A blank `address` is stored as null (column added in migration 0023).
+    - The service check normalises whitespace before comparing.
+    - The inline field-error wording comes from template data (`quoteForm.fields.<f>.error`, migration 0024), never from server text.
+    - Deferrals by owning task:
+      - **8.3:** restore the first-touch attribution e2e in `tests/e2e/leads.spec.ts` (marker `8.3:`) once the consent banner and `settings.tracking` exist.
+      - **9.3:**
+        - `useAssistantScreen(leadAssistantScreen(...))` in `lead-detail.tsx`;
+        - the `AI_STATUS_KEY` invalidations in `integration-form.tsx`;
+        - `assistant`/`getAiStatus` in `server/lib/admin-shell-extras.ts`;
+        - the AI-status case in `tests/unit/admin/shell-extras.test.ts` and the "lead shared with the assistant" DOM cases;
+        - the owner-only "share enquiry details" switch;
+        - the `integrations.ai` → `/admin/settings/ai-assistant` redirect returns 404 until that screen exists.
+      - **11.1:** port `server/modules/integrations/rotate.ts` with its test (`secrets:rotate`).
+      - **11.2 (launch decisions):**
+        - Confirm the production proxy chain for `clientIp` (leftmost XFF). Traefik must not trust client XFF. If Cloudflare proxies, key on `CF-Connecting-IP` or trust only Cloudflare ranges. Decide what a null IP does; today it shares one bucket.
+        - Decide on two SP-parity behaviours: 422 retries count toward `LEAD_RATE_LIMIT`, and a Turnstile siteverify outage returns 422, so the lead is lost.
+      - **11.3:**
+        - Admin visual baselines for the integrations overview, SMTP (and its failed state), Turnstile, R2 with the move panel, the leads inbox (table and board), drawer, detail, activity, notes, and the delete and CSV dialogs.
+        - Make the "Test connection reaches the dev Mailpit" e2e run in CI (it needs an RFC1918 host), or record it as an accepted skip.
+      - **11.x (parked minors):**
+        - The revision assertion in the 0024 test doesn't check the per-field `error` keys.
+        - 0024 skips rows whose `quoteForm.fields` is not an object.
+        - The consent error has no editor help text.
+        - "Please shorten your message." is shown for any `message` 422, including control characters.
+        - The leads-attribution "attribution only on the lead row" case reads `lead_events` from the DB instead of SP's admin DTO check.
+        - `lead-cleanup.ts` lists only `pageSize=100`.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.

@@ -102,14 +102,21 @@ async function assertHuman(
  * The service must be a published service title or one of the contact
  * page's published extra options (R7-3). Blank (null) is allowed.
  */
-async function assertKnownService(service: string | null): Promise<void> {
-  if (service === null) return
+const normaliseService = (s: string) => s.trim().replace(/\s+/g, " ")
+
+async function assertKnownService(
+  service: string | null
+): Promise<string | null> {
+  if (service === null) return null
+  const wanted = normaliseService(service)
   const db = getDb()
   const [titles, extras] = await Promise.all([
     readPublishedServiceTitles(db),
     readPublishedServiceExtras(db),
   ])
-  if (titles.includes(service) || extras.includes(service)) return
+  // Browsers collapse whitespace in an option's value, so compare normalised.
+  const known = [...titles, ...extras].map(normaliseService)
+  if (known.includes(wanted)) return wanted
   throw new AppError("VALIDATION_FAILED", "Invalid input", {
     fieldErrors: { service: ["Choose a service from the list"] },
   })
@@ -130,7 +137,7 @@ export async function submitLead(
     console.info("[leads] honeypot filled; submission dropped")
     return { ok: true, leadId: null }
   }
-  await assertKnownService(input.service)
+  const service = await assertKnownService(input.service)
   const attribution = submittedAttribution(input.attribution)
   if (attribution === null && input.attribution != null)
     // Never the value itself: it is visitor-supplied and may hold PII.
@@ -142,7 +149,7 @@ export async function submitLead(
       phone: input.phone,
       company: input.company,
       address: input.address,
-      service: input.service,
+      service,
       message: input.message,
       consent: input.consent,
       sourcePage: input.sourcePage ?? null,
