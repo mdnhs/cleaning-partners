@@ -1,13 +1,13 @@
 import { spawnSync } from "node:child_process"
 
-import { eq } from "drizzle-orm"
+import { eq, like } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { getDb } from "@/server/db/client"
 import { users } from "@/server/db/schema"
 
 import { resetDb, TEST_DATABASE_URL } from "../db"
-import { authPost } from "../helpers/auth"
+import { authPost, createUser } from "../helpers/auth"
 
 /** Runs a package script the way an operator does (tsx + server-only hook). */
 function run(script: string, args: string[], env: Record<string, string> = {}) {
@@ -93,5 +93,33 @@ describe("operator scripts", { timeout: 60_000 }, () => {
     expect(result.status).toBe(1)
     expect(result.stderr).toContain("Usage: demo:seed --password")
     expect(result.stderr).toContain("DEMO_PASSWORD")
+  })
+
+  it("pnpm demo:remove refuses without a real owner, then removes the demo accounts", async () => {
+    expect(run("demo:seed", ["--password", "demo-password-123"]).status).toBe(0)
+    const refused = run("demo:remove", [])
+    expect(refused.status).toBe(1)
+    expect(refused.stderr).toContain(
+      "Create a real owner first, or finish setting its password."
+    )
+    expect(
+      await getDb()
+        .select()
+        .from(users)
+        .where(like(users.email, "%@demo.local"))
+    ).toHaveLength(7)
+
+    await createUser({ roles: ["owner"], email: "real.owner@example.test" })
+    const done = run("demo:remove", [])
+    expect(done.status).toBe(0)
+    expect(done.stdout).toContain("[demo:remove] removed owner@demo.local")
+    expect(done.stdout).toContain("7 demo account(s) removed")
+    expect(
+      await getDb()
+        .select()
+        .from(users)
+        .where(like(users.email, "%@demo.local"))
+    ).toHaveLength(0)
+    expect(run("demo:remove", []).stdout).toContain("no demo accounts found")
   })
 })

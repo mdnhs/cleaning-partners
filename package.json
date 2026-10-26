@@ -28,6 +28,9 @@
     "demo:seed": "pnpm tsx:server scripts/demo-seed.ts",
     "backup": "pnpm tsx:server scripts/backup.ts",
     "restore-drill": "pnpm tsx:server scripts/restore-drill.ts",
+    "secrets:rotate": "pnpm tsx:server scripts/secrets-rotate.ts",
+    "demo:remove": "pnpm tsx:server scripts/demo-remove.ts",
+    "custom-code:off": "pnpm tsx:server scripts/custom-code-off.ts",
     "scripts:build": "tsx scripts/build-scripts.ts",
     "audit:deps": "pnpm audit --prod --audit-level high"
   },
