@@ -3,6 +3,7 @@ import "server-only"
 import { sql } from "drizzle-orm"
 import { check, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core"
 
+import type { DraftDocument } from "@/blocks/document"
 import type { Seo } from "@/lib/schemas/common"
 
 import { id, timestamps } from "./_shared"
@@ -22,8 +23,7 @@ export const builderPages = pgTable(
     slug: text("slug").notNull().unique(),
     title: text("title").notNull(),
     seo: jsonb("seo").$type<Seo>().notNull().default({}),
-    // Phase 10 (Task 10.2) restores DraftDocument from @/blocks/document
-    ...versioned<unknown>(),
+    ...versioned<DraftDocument>(),
     createdBy: uuid("created_by").references(() => users.id, {
       onDelete: "set null",
     }),

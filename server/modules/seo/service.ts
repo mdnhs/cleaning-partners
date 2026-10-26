@@ -4,6 +4,7 @@ import { z } from "zod"
 
 import { PAGE_LABELS } from "@/lib/admin/page-labels"
 import { hasPermission, type PermissionRequest } from "@/lib/auth/permissions"
+import { BUILDER_ENTITY, builderPath } from "@/lib/schemas/api/builder-pages"
 import { contactPlaceholders, type Placeholders } from "@/lib/interpolate"
 import type {
   SeoEntry,
@@ -50,10 +51,7 @@ import {
   updateSeoColumn,
 } from "./repo"
 
-// 10.3: both come from lib/schemas/api/builder-pages.ts once builder pages ship;
-// FIX_BASE.builder ("/admin/pages/custom") below is not a route yet either.
-const BUILDER_ENTITY = "builder-page"
-const builderPath = (slug: string) => `/p/${slug}`
+// 10.3: FIX_BASE.builder ("/admin/pages/custom") below is not a route yet.
 
 type Context = {
   defaults: SeoDefaultsSettings
