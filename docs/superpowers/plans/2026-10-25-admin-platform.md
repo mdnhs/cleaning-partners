@@ -466,6 +466,20 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
         - `customCode` and `tracking` records count as site copy for the AI (SP parity).
         - The `ai-setup` e2e Insert test leaves a home draft row.
 
+  - **Phase 10 outcome.**
+    - **Shipped.** The page builder: 15 CP blocks, `builder_pages` (versioned, stale-version 409, duplicate-slug 409), redirects on rename and delete, public `/p/[slug]` inside `SiteThemed`, sitemap, OG and preview, the builder screen with autosave and SEO tab, the pages list, "New page" and ⌘K, and Copy to new page from the five fixed pages. The copy-identity visual check proves a copy renders byte-identical to its fixed page.
+    - **Differences from the plan:**
+      - R10-9 grew to two fixture pages (`/p/visual-fixture` and `/p/visual-fixture-home`) with 4 new baselines. team, testimonials, blog and howItWorks moved to the home fixture, because the mobile full-page capture was 20105 px, over Chromium's 16384 px limit. The 44 existing baselines are untouched.
+      - `builder_pages` stores `versioned<DraftDocument>`, not the plan's `versioned<BuilderDocument>`.
+      - Service-grid errors are keyed `blocks.<i>.data.<layout>`.
+    - **One behavioural difference from SP:** the builder assistant hooks (R10-13). Others: the services `layout` field and shared quote form (R10-4), and the blog copy exception (R10-11).
+    - **Parked for 11.x:**
+      - Deleting a published page without `redirectHome` leaves earlier redirects pointing at its now-404 `/p/<slug>` (same as services and articles).
+      - `exclusive()` in `use-builder-autosave.ts` does not re-check the conflict after waiting on a save that ends in 409.
+      - The visual fixture stats ("20+ Years") disagree with the about page; fixing them means regenerating the 4 fixture baselines.
+      - `D5.x` review ids remain in `server/modules/preview/guard.ts`, `server/modules/redirects/service.ts`, `tests/unit/permissions.test.ts` and `tests/unit/seo/redirects.test.ts`.
+    - Cut-over still waits for Phase 11 and the owner (B11).
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.
