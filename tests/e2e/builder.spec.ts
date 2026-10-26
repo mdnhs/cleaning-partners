@@ -162,7 +162,7 @@ test("renaming a published page's address redirects the old one (301)", async ({
     })
     expect(published.status()).toBe(200)
     await page.goto(`/admin/pages/custom/${dto.id}?tab=seo`)
-    await page.getByLabel("Address").fill(renamed)
+    await page.getByLabel("Address", { exact: true }).fill(renamed)
     const meta = page.waitForResponse(
       (r) =>
         r.url().endsWith(`${API}/${dto.id}/meta`) &&
@@ -216,11 +216,11 @@ test("⌘K New page opens the new page dialog", async ({ browser }) => {
   const { context, page } = await signIn(browser, "builder palette")
   try {
     await page.goto("/admin")
+    await page.waitForLoadState("networkidle")
     await page.keyboard.press("ControlOrMeta+k")
-    await page
-      .getByRole("dialog", { name: "Search the admin" })
-      .getByRole("option", { name: "New page" })
-      .click()
+    const palette = page.getByRole("dialog", { name: "Search the admin" })
+    await expect(palette.getByRole("combobox")).toBeVisible()
+    await palette.getByRole("option", { name: /^New page/ }).click()
     await expect(page).toHaveURL(/\/admin\/pages\?new=1$/)
     await expect(page.getByRole("dialog", { name: "New page" })).toBeVisible()
   } finally {
