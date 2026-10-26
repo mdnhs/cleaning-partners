@@ -7,12 +7,12 @@ import {
   metaFor,
   metaKey,
 } from "@/components/admin/schema-form/editor-meta"
-import { SEO_FIELDS_META } from "@/components/admin/seo/seo-meta"
 import { emptyValue } from "@/components/admin/schema-form/empty-value"
 import {
   arrayBounds,
   resolveWidget,
 } from "@/components/admin/schema-form/resolve-widget"
+import { SEO_FIELDS_META } from "@/components/admin/seo/seo-meta"
 import {
   link,
   mediaRef,

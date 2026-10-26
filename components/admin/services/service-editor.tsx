@@ -41,7 +41,7 @@ import { EditorSeoTab, textAt } from "@/components/admin/seo/editor-seo-tab"
 import { SeoLink } from "@/components/admin/seo/seo-link"
 import { serviceEditorMeta } from "./service-meta"
 
-/** Draft editor for one service + its address (slug) and delete (master 4.6).; SEO tab (master 8.1). */
+/** Draft editor for one service + its address (slug) and delete (master 4.6); SEO tab (master 8.1). */
 export function ServiceEditor({ id, origin }: { id: string; origin?: string }) {
   const canEdit = usePermission({ service: ["update"] })
   const canPublish = usePermission({ service: ["publish"] })
@@ -121,7 +121,7 @@ export function ServiceEditor({ id, origin }: { id: string; origin?: string }) {
                     "title"
                   ),
                   draft: textAt(ctx.draft, "title"),
-                  description: textAt(ctx.draft, "detail", "intro"),
+                  description: textAt(ctx.draft, "heroDescription"),
                 }}
               />
             )

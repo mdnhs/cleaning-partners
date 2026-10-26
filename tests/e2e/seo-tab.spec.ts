@@ -88,6 +88,21 @@ test("an unsaved content edit survives a switch to the SEO tab and back", async 
   )
 })
 
+test("a service's SEO preview uses its hero description", async ({ page }) => {
+  await signIn(page)
+  const id = await serviceId(page, "medical-cleaning")
+  const dto = (await (
+    await page.request.get(`/api/v1/admin/services/${id}`)
+  ).json()) as { draft: { heroDescription: string } }
+  await page.goto(`/admin/services/${id}?tab=seo`)
+  await expect(
+    page.getByRole("figure", { name: "Social card preview" })
+  ).toContainText(dto.draft.heroDescription)
+  const checklist = page.getByRole("list", { name: "SEO checklist" })
+  await expect(checklist).not.toContainText("site-wide default description")
+  await expect(checklist).toContainText(/Description is \d+ characters/)
+})
+
 async function articleId(page: Page) {
   const res = await page.request.get("/api/v1/admin/articles")
   const body = (await res.json()) as { items: { id: string }[] }
