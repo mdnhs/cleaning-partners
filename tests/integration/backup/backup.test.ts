@@ -8,6 +8,7 @@ import { getDb } from "@/server/db/client"
 import { verifications } from "@/server/db/schema"
 import { runBackup } from "@/server/lib/backup"
 import type { BackupManifest } from "@/server/lib/backup/dump"
+import { restoreDrill } from "@/server/lib/backup/restore-drill"
 import { diskBackupStore } from "@/server/lib/backup/store"
 
 import { resetDb, TEST_DATABASE_URL } from "../db"
@@ -93,5 +94,9 @@ describe("runBackup (spec §14 backup)", () => {
       "cp-cp_test-20261016T020000Z.dump",
       "cp-cp_test-20261016T010000Z.dump",
     ])
+    // The kept backups still restore and match their manifests.
+    expect(await restoreDrill({ url: TEST_DATABASE_URL, store })).toMatchObject(
+      { ok: true, mismatches: [] }
+    )
   })
 })

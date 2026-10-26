@@ -1,3 +1,7 @@
+import { chmod, mkdtemp, rm, writeFile } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+
 import { afterEach, describe, expect, it } from "vitest"
 
 import { pgEnv, runPgTool, withDatabase } from "@/server/lib/backup/pg-tools"
@@ -72,5 +76,27 @@ describe("runPgTool", () => {
     ).rejects.toThrow(
       "pg_dump was not found on PATH: install the PostgreSQL 17 client tools"
     )
+  })
+
+  it("redacts the password as *** in the error taken from stderr", async () => {
+    const bin = await mkdtemp(join(tmpdir(), "cp-pgtool-"))
+    try {
+      const stub = join(bin, "pg_dump")
+      await writeFile(
+        stub,
+        '#!/bin/sh\necho "connection to $PGHOST failed: password s3cr@t rejected" >&2\nexit 1\n'
+      )
+      await chmod(stub, 0o755)
+      process.env.PATH = `${bin}:${savedPath}`
+      const error = await runPgTool("pg_dump", [], URL_WITH_PASSWORD).then(
+        () => null,
+        (e: unknown) => e as Error
+      )
+      expect(error?.message).toContain("exited with code 1")
+      expect(error?.message).toContain("password *** rejected")
+      expect(error?.message).not.toContain("s3cr@t")
+    } finally {
+      await rm(bin, { recursive: true, force: true })
+    }
   })
 })

@@ -27,6 +27,7 @@
     "db:seed": "pnpm tsx:server scripts/seed.ts",
     "demo:seed": "pnpm tsx:server scripts/demo-seed.ts",
     "backup": "pnpm tsx:server scripts/backup.ts",
+    "restore-drill": "pnpm tsx:server scripts/restore-drill.ts",
     "scripts:build": "tsx scripts/build-scripts.ts",
     "audit:deps": "pnpm audit --prod --audit-level high"
   },
