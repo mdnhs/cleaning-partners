@@ -5,12 +5,12 @@ import {
   RESERVED_ANCHORS,
 } from "@/blocks/registry"
 import type { AboutTemplate } from "@/templates/about/schema"
+import type { BlogTemplate } from "@/templates/blog/schema"
 import type { ContactTemplate } from "@/templates/contact/schema"
 import type { HomeTemplate } from "@/templates/home/schema"
 import type { LegalTemplate } from "@/templates/legal/schema"
 import type { PageData, PageKey } from "@/templates/registry"
 import type { ServicesTemplate } from "@/templates/services/schema"
-import type { BlogTemplate } from "@/templates/blog/schema"
 
 type Spec = {
   [T in BlockType]: [T, Extract<BlockInstance, { type: T }>["data"]]
@@ -49,7 +49,7 @@ const home = (d: HomeTemplate): Spec[] => [
   ["hero", d.hero],
   sharedBlock("clients"),
   ["services", { layout: "intro", intro: d.services, grid: null }],
-  ["whyChooseUs", shared],
+  sharedBlock("whyChooseUs"),
   sharedBlock("testimonials"),
   sharedBlock("team"),
   ["blog", d.blog],
@@ -62,7 +62,7 @@ const about = (d: AboutTemplate): Spec[] => [
   ["ourStory", d.story],
   ["stats", { items: d.stats }],
   sharedBlock("clients"),
-  ["whyChooseUs", shared],
+  sharedBlock("whyChooseUs"),
   sharedBlock("team"),
   sharedBlock("testimonials"),
   contact(),
@@ -71,7 +71,7 @@ const about = (d: AboutTemplate): Spec[] => [
 const services = (d: ServicesTemplate): Spec[] => [
   ["hero.page", d.hero],
   ["services", { layout: "grid", intro: null, grid: d.grid }],
-  ["whyChooseUs", shared],
+  sharedBlock("whyChooseUs"),
   sharedBlock("clients"),
   sharedBlock("testimonials"),
   contact(),

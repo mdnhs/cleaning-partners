@@ -63,6 +63,7 @@ test("an editor builds, publishes and views a page", async ({ browser }) => {
   const slug = "spring-clean"
   const { context, page } = await signIn(browser, "builder create")
   try {
+    await removePages(page, [slug])
     await page.goto("/admin/pages")
     await page.getByRole("button", { name: "New page" }).click()
     const dialog = page.getByRole("dialog", { name: "New page" })
@@ -86,7 +87,9 @@ test("an editor builds, publishes and views a page", async ({ browser }) => {
       .getByRole("dialog", { name: "Publish changes?" })
       .getByRole("button", { name: "Publish now" })
       .click()
-    await expect(page.getByText("Published", { exact: true })).toBeVisible()
+    await expect(
+      page.getByText("Published", { exact: true }).first()
+    ).toBeVisible()
 
     const visitor = await browser.newContext()
     try {
@@ -111,6 +114,7 @@ test("a stale save opens the conflict dialog; reloading takes their version", as
   const mine = await signIn(browser, "builder conflict mine")
   const theirs = await signIn(browser, "builder conflict theirs")
   try {
+    await removePages(mine.page, [slug])
     const dto = await createWithStats(mine.page, slug, "E2E conflict")
     await mine.page.goto(`/admin/pages/custom/${dto.id}`)
     const value = mine.page
@@ -150,18 +154,22 @@ test("renaming a published page's address redirects the old one (301)", async ({
   const renamed = "e2e-builder-after"
   const { context, page } = await signIn(browser, "builder rename")
   try {
+    await removePages(page, [slug, renamed])
     const dto = await createWithStats(page, slug, "E2E rename")
     const published = await page.request.post(`${API}/${dto.id}/publish`, {
       headers,
       data: { version: dto.version },
     })
     expect(published.status()).toBe(200)
-    const current = (await published.json()) as Dto
-    const patched = await page.request.patch(`${API}/${dto.id}/meta`, {
-      headers,
-      data: { version: current.version, slug: renamed },
-    })
-    expect(patched.status()).toBe(200)
+    await page.goto(`/admin/pages/custom/${dto.id}?tab=seo`)
+    await page.getByLabel("Address").fill(renamed)
+    const meta = page.waitForResponse(
+      (r) =>
+        r.url().endsWith(`${API}/${dto.id}/meta`) &&
+        r.request().method() === "PATCH"
+    )
+    await page.getByRole("button", { name: "Save title and address" }).click()
+    expect((await meta).status()).toBe(200)
 
     const visitor = await browser.newContext()
     try {
@@ -185,6 +193,7 @@ test("a marketer sees the list read-only", async ({ browser }) => {
     email: E2E_MARKETER.email,
   })
   try {
+    await removePages(editor.page, [slug])
     await createWithStats(editor.page, slug, "E2E read only")
     await marketer.page.goto("/admin/pages")
     await expect(
@@ -225,6 +234,7 @@ test("Copy to new page from Contact creates a page with the four blocks", async 
   const slug = "e2e-contact-copy"
   const { context, page } = await signIn(browser, "builder copy")
   try {
+    await removePages(page, [slug])
     await page.goto("/admin/pages/contact")
     await page.getByRole("button", { name: "Copy to new page" }).click()
     const dialog = page.getByRole("dialog", { name: "Copy to a new page" })

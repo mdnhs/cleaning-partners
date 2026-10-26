@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { FileText, Plus } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useState, type ReactNode } from "react"
+import { useId, useState, type ReactNode } from "react"
 
 import {
   BUILDER_PAGES_KEY,
@@ -113,10 +113,13 @@ function Section({
   action?: ReactNode
   children: ReactNode
 }) {
+  const id = useId()
   return (
-    <section className="flex flex-col gap-4">
+    <section aria-labelledby={id} className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold">{title}</h2>
+        <h2 id={id} className="text-card-title">
+          {title}
+        </h2>
         {action}
       </div>
       {children}
@@ -124,15 +127,10 @@ function Section({
   )
 }
 
-const fixedRow = (page: {
-  key: string
-  label: string
-  path: string
-  publishedAt: string | null
-  dirty: boolean
-  updatedAt: string
-  updatedBy: { name: string } | null
-}): PageRow => ({ ...page, href: `/admin/pages/${page.key}` })
+const fixedRow = (page: Omit<PageRow, "href"> & { key: string }): PageRow => ({
+  ...page,
+  href: `/admin/pages/${page.key}`,
+})
 
 /** The seven fixed pages (JW pages list). */
 function SitePagesList() {
