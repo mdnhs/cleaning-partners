@@ -141,6 +141,8 @@ test("public enquiry → lead in the intake inbox, worked by the intake user", a
   ).toBeVisible()
   const activity = drawer.getByRole("region", { name: "Activity" })
   await expect(activity.getByText("Sent from /contact")).toBeVisible()
+  // The stored sourcePage reaches the drawer fact through the DTO, too.
+  await expect(drawer.locator("code", { hasText: /^\/contact$/ })).toBeVisible()
   // Recipients come from settings.leads (seeded info@cleaningpartners.ie);
   // the mailer ran and recorded its outcome.
   const sent = activity.getByText(/^Staff notification sent to 1 recipient/)
@@ -288,7 +290,7 @@ test("6th enquiry from one IP within 10 minutes → 429 with Retry-After", async
   await api.dispose()
 })
 
-// 9.x: the first-touch attribution case (consent banner + settings.tracking)
+// 8.3: the first-touch attribution case (consent banner + settings.tracking)
 // returns with the marketing screens; CP has no consent banner yet. The
 // attribution payload itself is covered by tests/integration/api/leads-attribution.test.ts.
 

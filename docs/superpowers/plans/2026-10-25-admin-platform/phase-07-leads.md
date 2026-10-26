@@ -289,6 +289,6 @@ pnpm lint && pnpm typecheck && pnpm test && env -u DATABASE_URL -u BETTER_AUTH_S
 
 Also confirm the gate's four checks:
 - `git grep -n mailto -- components/contact` finds nothing;
-- `git diff 3689369 -- docs/brief-inventory.json` is empty;
+- `git diff cdc05f3 -- docs/brief-inventory.json` is empty (the inventory file was created after the baseline in Phase 0; this phase must not change it);
 - `git diff cdc05f3 -- tests/visual/__screenshots__` is empty;
 - `server/env.ts` is unchanged since `cdc05f3`.

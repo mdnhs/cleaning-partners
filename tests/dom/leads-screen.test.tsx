@@ -296,7 +296,7 @@ describe("leads screen: Inbox/Spam tabs, view toggle, drawer (D3.2)", () => {
     expect(
       within(drawer).getByRole("heading", { name: "Aoife Byrne" })
     ).toBeInTheDocument()
-    // The address the visitor typed, and a dash for the missing service.
+    // The address the visitor typed.
     expect(
       await within(drawer).findByText("12 Maple Court, Dublin D02 X285")
     ).toBeInTheDocument()
