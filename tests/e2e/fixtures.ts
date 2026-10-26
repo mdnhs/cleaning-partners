@@ -14,7 +14,9 @@ export type E2EFixtures = {
   account: { email: string; name: string }
   /** 2FA on; account.spec turns it off. */
   twoFactorOff: { email: string; name: string; totpUri: string }
-  // Later phases add their users here (author, intake, reset …).
+  /** Articles workflow (Phase 5): drafts and submits, never publishes. */
+  author: { email: string; name: string }
+  // Later phases add their users here (intake, reset …).
 }
 
 /**

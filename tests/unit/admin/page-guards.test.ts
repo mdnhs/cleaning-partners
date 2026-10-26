@@ -43,12 +43,13 @@ function source(file: string): string {
 /**
  * Pages whose action needs more than the registry's read permission for
  * their href: the page must keep its finer check, awaited, next to
- * requirePage. Mutation-checked: commenting out a finer check,
+ * requirePage (services/new, blog/new). Mutation-checked: commenting out a finer check,
  * calling it without `await`, or `void check() // await check` (a trailing
  * comment), fails "keeps its finer check".
  */
 const FINER_CHECKS: Record<string, string> = {
   "services/new/page.tsx": `requirePermission({ service: ["create"] })`,
+  "blog/new/page.tsx": `requirePermission({ article: ["create"] })`,
 }
 
 /**
@@ -67,6 +68,10 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "users/[id]/page.tsx": { user: ["read"] },
   "pages/page.tsx": { page: ["read"] },
   "pages/[key]/page.tsx": { page: ["read"] },
+  "blog/page.tsx": { article: ["read"] },
+  "blog/[id]/page.tsx": { article: ["read"] },
+  "blog/categories/page.tsx": { collection: ["read"] },
+  "blog/new/page.tsx": { article: ["read"] },
   "collections/page.tsx": { collection: ["read"] },
   "collections/clients/page.tsx": { collection: ["read"] },
   "collections/group-companies/page.tsx": { collection: ["read"] },

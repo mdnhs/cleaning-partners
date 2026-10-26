@@ -30,10 +30,26 @@ vi.mock("@/server/auth/session", () => ({
   requirePage: session.requirePage,
 }))
 
+vi.mock("@/components/admin/articles/articles-screen", () => ({
+  ArticlesScreen: () => null,
+}))
+vi.mock("@/components/admin/articles/new-article-form", () => ({
+  NewArticleForm: () => null,
+}))
+vi.mock("@/components/admin/articles/article-editor", () => ({
+  ArticleEditor: () => null,
+}))
+vi.mock("@/components/admin/collections/collection-screen", () => ({
+  CollectionScreen: () => null,
+}))
 vi.mock("@/components/admin/settings/settings-editor", () => ({
   SettingsEditor: () => null,
 }))
 
+import BlogCategoriesPage from "@/app/(admin)/admin/(panel)/blog/categories/page"
+import ArticlePage from "@/app/(admin)/admin/(panel)/blog/[id]/page"
+import BlogPage from "@/app/(admin)/admin/(panel)/blog/page"
+import NewArticlePage from "@/app/(admin)/admin/(panel)/blog/new/page"
 import ActivityPage from "@/app/(admin)/admin/(panel)/activity/page"
 import CollectionsPage from "@/app/(admin)/admin/(panel)/collections/page"
 import UserPage from "@/app/(admin)/admin/(panel)/users/[id]/page"
@@ -165,5 +181,49 @@ describe("dashboard, help, activity and users pages (4.7)", () => {
     session.roles = ["viewer"]
     expect(permissionFor("/admin")).toBeNull()
     expect(permissionFor("/admin/help")).toBeNull()
+  })
+})
+
+describe("Blog pages (5.3)", () => {
+  const ID = "0192abcd-0000-7000-8000-000000000001"
+
+  it("/admin/blog needs article:read; /admin/blog/categories needs collection:read", async () => {
+    session.roles = ["author"]
+    await inner(BlogPage())
+    expect(session.requirePermission).toHaveBeenCalledWith({
+      article: ["read"],
+    })
+    await expect(inner(BlogCategoriesPage())).rejects.toThrow("FORBIDDEN")
+    session.roles = ["editor"]
+    await inner(BlogCategoriesPage())
+    session.roles = ["intake"]
+    await expect(inner(BlogPage())).rejects.toThrow("FORBIDDEN")
+  })
+
+  it("/admin/blog/new also needs article:create (a viewer reads but cannot create)", async () => {
+    session.roles = ["author"]
+    await inner(NewArticlePage())
+    expect(session.requirePermission).toHaveBeenCalledWith({
+      article: ["create"],
+    })
+    session.roles = ["editor"]
+    await inner(NewArticlePage())
+    session.roles = ["viewer"]
+    await expect(inner(NewArticlePage())).rejects.toThrow("FORBIDDEN")
+  })
+
+  it("/admin/blog/[id]: forbidden first, then a bad id 404s, then the editor renders", async () => {
+    session.roles = ["intake"]
+    await expect(
+      inner(ArticlePage({ params: params({ id: "nope" }) } as never))
+    ).rejects.toThrow("FORBIDDEN")
+    session.roles = ["owner"]
+    await expect(
+      inner(ArticlePage({ params: params({ id: "nope" }) } as never))
+    ).rejects.toThrow("NOT_FOUND")
+    const out = await inner(
+      ArticlePage({ params: params({ id: ID }) } as never)
+    )
+    expect(out!.props).toMatchObject({ id: ID })
   })
 })

@@ -101,7 +101,13 @@ await auth.api.createUser({
 const twoFactorOff = { email: "twofactor-off@e2e.test", name: "Toby Twofactor" }
 const twoFactorOffUri = await enrolTotp(twoFactorOff, ["editor"])
 
-// Later phases add the author, intake, demo and reset users.
+// Articles workflow (Phase 5): an author who drafts and submits.
+const author = { email: "author@e2e.test", name: "Arthur Author" }
+await auth.api.createUser({
+  body: { ...author, role: ["author"], password: E2E_PASSWORD },
+})
+
+// Later phases add the intake, demo and reset users.
 
 const fixtures: E2EFixtures = {
   owner,
@@ -109,6 +115,7 @@ const fixtures: E2EFixtures = {
   invitee: { ...invitee, inviteUrl },
   twoFactor: { ...twoFactor, totpUri: twoFactorUri },
   account,
+  author,
   twoFactorOff: { ...twoFactorOff, totpUri: twoFactorOffUri },
 }
 mkdirSync(dirname(FIXTURES_FILE), { recursive: true })
