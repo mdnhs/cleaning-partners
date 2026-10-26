@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 
 import { interpolate } from "@/lib/interpolate"
-import type { MediaView } from "@/lib/media"
+import type { MediaView, WithMedia } from "@/lib/media"
 import { OG_IMAGE_SIZE, type OgKind, ogImagePath } from "@/lib/seo/urls"
+import type { BuilderPageRecord } from "@/server/modules/builder-pages/queries"
 import { PAGE_PATHS, type PageKey } from "@/templates/registry"
 
 import type { SiteSources } from "./sources"
@@ -162,6 +163,35 @@ export function articleMetadata(s: SiteSources, slug: string): Metadata {
       tags: article.content.tags,
       author: article.author?.name ?? null,
     },
+  })
+}
+
+/**
+ * The first block's intro when it is a hero: a page hero's description or
+ * the home hero's subtitle (seo/repo.ts reads the same two fields).
+ */
+export function firstHeroDescription(
+  blocks: readonly { type: string; data: unknown }[]
+): string | null {
+  const first = blocks[0]
+  if (!first) return null
+  const data = first.data as { description?: string; subtitle?: string }
+  if (first.type === "hero.page") return data.description ?? null
+  if (first.type === "hero") return data.subtitle ?? null
+  return null
+}
+
+export function builderPageMetadata(
+  s: SiteSources,
+  page: WithMedia<BuilderPageRecord>
+): Metadata {
+  return metadataFor(s, {
+    kind: "builder",
+    id: page.id,
+    path: `/p/${page.slug}`,
+    seo: page.seo,
+    name: page.title,
+    fallbackDescription: firstHeroDescription(page.blocks),
   })
 }
 

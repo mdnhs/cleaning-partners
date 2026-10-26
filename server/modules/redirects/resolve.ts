@@ -40,7 +40,7 @@ export type PublicPathOutcome =
 const PASS = { kind: "pass" } as const
 const MISSING = { kind: "missing" } as const
 const STATIC_PATHS = new Set<string>(Object.values(PAGE_PATHS))
-const DETAIL = /^\/(services|blog)\/([^/]+)$/
+const DETAIL = /^\/(services|blog|p)\/([^/]+)$/
 
 /**
  * Only the SQLSTATE (or the error's class) is logged: a driver message can
@@ -104,12 +104,10 @@ function countHit(id: string): Promise<void> {
 
 /**
  * What proxy.ts does with a public GET: fixed pages and files pass without
- * a query; /services/:slug and /blog/:slug pass only when published (else a
- * redirect, else a real 404); any other path gets the redirect lookup and
- * otherwise falls through to the app (its own 404 when unmatched). 10.3:
- * builder pages (/p/:slug) join the slug check when they ship; until then
- * /p/* just gets the redirect lookup. Previews (draft mode) skip the
- * slug check. A database failure never blocks the page (fail-open: the
+ * a query; /services/:slug, /blog/:slug and /p/:slug (builder pages) pass
+ * only when published (else a redirect, else a real 404); any other path
+ * gets the redirect lookup and otherwise falls through to the app (its own
+ * 404 when unmatched). Previews (draft mode) skip the slug check. A database failure never blocks the page (fail-open: the
  * page's own error boundary reports it).
  *
  * Cost: a live detail page is one indexed query (unique slug); an unknown
@@ -131,7 +129,12 @@ export async function resolvePublicPath(
     const db = getDb()
     if (detail) {
       const slug = detail[2]
-      const kind = detail[1] === "services" ? "service" : "article"
+      const kind =
+        detail[1] === "services"
+          ? "service"
+          : detail[1] === "p"
+            ? "builder"
+            : "article"
       if (SLUG_PATTERN.test(slug) && (await isPublishedSlug(db, kind, slug)))
         return PASS
     }

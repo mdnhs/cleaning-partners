@@ -82,14 +82,19 @@ const builderColumns = {
   published: sql<boolean>`${builderPages.published} is not null`,
   title: builderPages.title,
   /**
-   * The page hero's intro, as the public meta falls back to it
-   * (firstHeroDescription): only when the first block is a page hero —
-   * a hero must come first if present, but a page need not have one.
+   * The first hero's intro, as the public meta falls back to it
+   * (firstHeroDescription): a page hero's description or the hero's
+   * subtitle, only when that hero is the first block — a hero must come
+   * first if present, but a page need not have one.
    */
   description: sql<
     string | null
-  >`case when ${field(builderPages, "blocks", "0", "type")} = 'hero.page'
-    then ${field(builderPages, "blocks", "0", "data", "description")} end`,
+  >`case ${field(builderPages, "blocks", "0", "type")}
+    when 'hero.page'
+      then ${field(builderPages, "blocks", "0", "data", "description")}
+    when 'hero'
+      then ${field(builderPages, "blocks", "0", "data", "subtitle")}
+    end`,
 }
 
 const page = (row: Omit<SeoRow, "kind" | "slug" | "description">): SeoRow => ({

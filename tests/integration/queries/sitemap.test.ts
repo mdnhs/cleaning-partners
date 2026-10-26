@@ -90,8 +90,7 @@ describe("sitemap entries (published only)", () => {
     expect(urls).toContain(`${origin}/blog/${fx.articles[1].slug}`)
   })
 
-  // 10.3: flips when builder pages ship
-  it("a published builder page is not in the sitemap until 10.3", async () => {
+  it("a published builder page is in the sitemap (20 entries)", async () => {
     await getDb()
       .insert(builderPages)
       .values({
@@ -104,8 +103,34 @@ describe("sitemap entries (published only)", () => {
         seo: {},
       })
     const entries = await listSitemapEntries()
-    expect(entries.map((e) => e.path)).not.toContain("/p/spring-offer")
-    expect(entries).toHaveLength(19)
+    expect(entries.map((e) => e.path)).toContain("/p/spring-offer")
+    expect(entries.find((e) => e.path === "/p/spring-offer")?.noindex).toBe(
+      false
+    )
+    expect(entries).toHaveLength(20)
+  })
+
+  it("a noindex builder page is flagged noindex; an unpublished one is left out", async () => {
+    await getDb()
+      .insert(builderPages)
+      .values([
+        {
+          slug: "hidden-offer",
+          title: "Hidden offer",
+          draft: { blocks: [] },
+          published: { blocks: [] },
+          status: "published",
+          publishedAt: new Date(),
+          seo: { noindex: true },
+        },
+        { slug: "still-draft", title: "Draft", draft: { blocks: [] } },
+      ])
+    const entries = await listSitemapEntries()
+    expect(entries.find((e) => e.path === "/p/hidden-offer")?.noindex).toBe(
+      true
+    )
+    expect(entries.map((e) => e.path)).not.toContain("/p/still-draft")
+    expect(entries).toHaveLength(20)
   })
 
   it("unpublished pages are left out; a blank canonical counts as none", async () => {

@@ -121,3 +121,19 @@ export async function deleteBuilderPageIfVersion(
     .returning({ id: builderPages.id })
   return rows.length > 0
 }
+
+/** One page by slug (draft and published copies); null when unknown. */
+export async function findBuilderPageBySlug(db: DbOrTx, slug: string) {
+  const [row] = await db
+    .select({
+      id: builderPages.id,
+      slug: builderPages.slug,
+      title: builderPages.title,
+      seo: builderPages.seo,
+      draft: builderPages.draft,
+      published: builderPages.published,
+    })
+    .from(builderPages)
+    .where(eq(builderPages.slug, slug))
+  return row ?? null
+}

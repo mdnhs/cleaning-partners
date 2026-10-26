@@ -250,14 +250,32 @@ test.describe("moved and deleted pages redirect", () => {
 
 // R8-10, R8-11: sitemap and robots list absolute CP URLs.
 test.describe("sitemap and robots", () => {
-  test("/sitemap.xml lists the 19 public URLs on the site origin", async ({
+  test("/sitemap.xml lists the 19 + n public URLs on the site origin", async ({
     request,
+    browser,
   }) => {
+    // n: the published builder pages (0 on the e2e seed).
+    const { editor } = readFixtures()
+    const context = await browser.newContext({
+      extraHTTPHeaders: { "x-forwarded-for": clientIpFor("sitemap count") },
+    })
+    const admin = await context.newPage()
+    await admin.goto("/admin/sign-in")
+    await admin.getByLabel("Email").fill(editor.email)
+    await admin.getByLabel("Password", { exact: true }).fill(E2E_PASSWORD)
+    await admin.getByRole("button", { name: "Sign in" }).click()
+    await admin.waitForURL((url) => !url.pathname.endsWith("/sign-in"))
+    const list = (await (
+      await admin.request.get("/api/v1/admin/builder-pages?pageSize=100")
+    ).json()) as { items: { status: string }[] }
+    await context.close()
+    const n = list.items.filter((p) => p.status === "published").length
+
     const response = await request.get("/sitemap.xml")
     expect(response.status()).toBe(200)
     const xml = await response.text()
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])
-    expect(locs).toHaveLength(19)
+    expect(locs).toHaveLength(19 + n)
     for (const loc of locs) expect(loc).toMatch(/^https?:\/\/[^/]+\//)
     const origin = new URL(locs[0]).origin
     expect(locs).toContain(`${origin}/`)

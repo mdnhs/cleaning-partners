@@ -431,6 +431,10 @@ describe("delete", () => {
       "builder-page:landing",
     ])
     expect((await call(editor, `/${page.id}`)).status).toBe(404)
+    // The deleted address is a real 404, never a redirect.
+    expect(await resolvePublicPath("/p/landing", { draft: false })).toEqual({
+      kind: "missing",
+    })
     const [log] = await getDb()
       .select()
       .from(auditLog)
