@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const { cacheTag, preview } = vi.hoisted(() => ({
@@ -22,6 +23,11 @@ import { resetDb } from "../db"
 const draft = ThemeConfig.parse({ site: { brand: "#1d4ed8" } })
 const published = ThemeConfig.parse({ admin: { radius: 1 } })
 
+const insertTheme = (values: { draft: unknown; published: unknown }) =>
+  getDb()
+    .insert(settings)
+    .values({ key: "theme", ...values })
+
 beforeEach(async () => {
   await resetDb()
   preview.on = false
@@ -35,10 +41,30 @@ describe("theme queries", () => {
     expect(cacheTag).toHaveBeenCalledWith("settings:theme")
   })
 
-  it("getPublishedTheme: default when the row is missing or unpublished", async () => {
-    expect(await getPublishedTheme()).toEqual(DEFAULT_THEME)
-    await getDb().insert(settings).values({ key: "theme", draft })
-    expect(await getPublishedTheme()).toEqual(DEFAULT_THEME)
+  it("getPublishedTheme: DEFAULT_THEME when the row is missing or invalid", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    try {
+      expect(await getPublishedTheme()).toEqual(DEFAULT_THEME)
+      expect(warn).not.toHaveBeenCalled()
+      await insertTheme({
+        draft,
+        published: { admin: { primary: "red;}body{" } },
+      })
+      expect(await getPublishedTheme()).toEqual(DEFAULT_THEME)
+      expect(warn).toHaveBeenCalledTimes(1)
+      expect(warn).toHaveBeenCalledWith(
+        "[theme] stored theme invalid; using default",
+        expect.anything()
+      )
+      await getDb()
+        .update(settings)
+        .set({ published: null })
+        .where(eq(settings.key, "theme"))
+      expect(await getPublishedTheme()).toEqual(DEFAULT_THEME)
+      expect(warn).toHaveBeenCalledTimes(1)
+    } finally {
+      warn.mockRestore()
+    }
   })
 
   it("getPreviewableSiteTheme: the draft site for a previewer, else the published one", async () => {

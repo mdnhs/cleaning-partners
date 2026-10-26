@@ -8,6 +8,7 @@ import { barlow, fontMono, roboto } from "@/app/fonts"
 import { AttributionCapture } from "@/components/attribution-capture"
 import { PreviewBar } from "@/components/preview-bar"
 import { SiteExtras } from "@/components/site-extras"
+import { SiteThemeStyle } from "@/components/site-theme-style"
 import { SmoothScroll } from "@/components/motion/smooth-scroll"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
@@ -56,7 +57,10 @@ export default function RootLayout({
         </noscript>
         <SmoothScroll />
         <ThemeProvider>{children}</ThemeProvider>
+        {/* The consent banner uses the brand colours: the overrides share
+            its boundary (each page's content has its own, SiteThemed). */}
         <Suspense fallback={null}>
+          <SiteThemeStyle id="site-theme-extras" />
           <SiteExtras />
         </Suspense>
         <AttributionCapture />

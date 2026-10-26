@@ -308,3 +308,17 @@ test.describe("tracking off (the seed)", () => {
     })
   }
 })
+
+// R9-2 B5: the default public theme emits no theme <style>, on any page.
+test.describe("default theme emits no style (R9-2)", () => {
+  for (const url of PUBLIC_URLS) {
+    test(`${url} has no style#site-theme or style#site-theme-extras`, async ({
+      page,
+    }) => {
+      await page.goto(url, { waitUntil: "load" })
+      await expect(
+        page.locator("style#site-theme, style#site-theme-extras")
+      ).toHaveCount(0)
+    })
+  }
+})
