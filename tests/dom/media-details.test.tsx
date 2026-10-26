@@ -51,7 +51,7 @@ const json = (body: unknown, status = 200) =>
 beforeEach(() => {
   calls = []
   library = [
-    item(1, { alt: "Patrol car" }),
+    item(1, { alt: "Cleaning van" }),
     item(2),
     item(3, {
       mime: "application/pdf",
@@ -141,8 +141,8 @@ describe("Media details: decorative flag, caption, missing alt text (D1.1)", () 
     const alt = within(sheet).getByRole("textbox", {
       name: /^Alternative text/,
     })
-    expect(alt).toHaveValue("Patrol car")
-    expect(within(sheet).getByText("10/500")).toBeVisible()
+    expect(alt).toHaveValue("Cleaning van")
+    expect(within(sheet).getByText("12/500")).toBeVisible()
     expect(alt).not.toHaveAccessibleName(/optional/)
 
     const decorative = within(sheet).getByRole("checkbox", {
@@ -153,7 +153,7 @@ describe("Media details: decorative flag, caption, missing alt text (D1.1)", () 
     expect(decorative).toBeChecked()
     // Still shown, still holding the text, now marked optional.
     expect(alt).toBeVisible()
-    expect(alt).toHaveValue("Patrol car")
+    expect(alt).toHaveValue("Cleaning van")
     expect(alt).toHaveAccessibleName(/Alternative text.*optional/)
 
     const caption = within(sheet).getByRole("textbox", { name: /^Caption/ })
@@ -166,7 +166,7 @@ describe("Media details: decorative flag, caption, missing alt text (D1.1)", () 
       expect(calls.some((c) => c.method === "PATCH")).toBe(true)
     )
     expect(calls.find((c) => c.method === "PATCH")!.body).toEqual({
-      alt: "Patrol car",
+      alt: "Cleaning van",
       isDecorative: true,
       caption: "Night shift",
       focal: null,

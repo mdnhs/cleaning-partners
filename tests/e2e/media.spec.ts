@@ -1,4 +1,10 @@
-import { type Browser, expect, type Page, test } from "@playwright/test"
+import {
+  type Browser,
+  expect,
+  type Locator,
+  type Page,
+  test,
+} from "@playwright/test"
 import sharp from "sharp"
 
 import { BASE_URL } from "./env"
@@ -61,6 +67,19 @@ async function openHomeHero(page: Page) {
   await tab.click()
   await expect(tab).toHaveAttribute("aria-selected", "true")
   return page.getByRole("region", { name: "Hero" })
+}
+
+/** Clicks Save details and waits for its PATCH to answer 200 (not the toast). */
+async function saveDetails(page: Page, details: Locator) {
+  const patched = page.waitForResponse(
+    (r) =>
+      r.request().method() === "PATCH" &&
+      /\/api\/v1\/admin\/media\/[^/?]+$/.test(new URL(r.url()).pathname),
+    { timeout: 15_000 }
+  )
+  await details.getByRole("button", { name: "Save details" }).click()
+  expect((await patched).status()).toBe(200)
+  await expect(page.getByText("File details saved.").last()).toBeVisible()
 }
 
 /** Clicks "Use this image" and waits for the autosaved draft. */
@@ -199,11 +218,9 @@ test("library: upload with progress → alt and decorative → replace → delet
 
   // Alt text, then decorative (alt becomes optional).
   await details.getByLabel("Alternative text").fill("E2E library file")
-  await details.getByRole("button", { name: "Save details" }).click()
-  await expect(page.getByText("File details saved.")).toBeVisible()
+  await saveDetails(page, details)
   await details.getByRole("checkbox", { name: /Decorative image/ }).check()
-  await details.getByRole("button", { name: "Save details" }).click()
-  await expect(page.getByText("File details saved.").first()).toBeVisible()
+  await saveDetails(page, details)
   const list = (await (
     await page.request.get("/api/v1/admin/media?q=e2e-lib")
   ).json()) as {
@@ -218,11 +235,20 @@ test("library: upload with progress → alt and decorative → replace → delet
   })
     .png()
     .toBuffer()
+  const replaceDone = page.waitForResponse(
+    (r) =>
+      r.request().method() === "POST" &&
+      /\/api\/v1\/admin\/media\/[^/]+\/replace$/.test(
+        new URL(r.url()).pathname
+      ),
+    { timeout: 30_000 }
+  )
   await details.locator('input[type="file"]').setInputFiles({
     name: "e2e-lib-2.png",
     mimeType: "image/png",
     buffer: bigger,
   })
+  expect((await replaceDone).status()).toBe(200)
   await expect(page.getByText("File replaced.")).toBeVisible()
   const after = (await (
     await page.request.get(`/api/v1/admin/media/${saved.id}`)
@@ -231,11 +257,17 @@ test("library: upload with progress → alt and decorative → replace → delet
 
   // Unused → deleted (the sheet is now titled after the new file).
   const replaced = page.getByRole("dialog", { name: "e2e-lib-2.png" })
+  const deleted = page.waitForResponse(
+    (r) =>
+      r.request().method() === "DELETE" &&
+      new URL(r.url()).pathname === `/api/v1/admin/media/${saved.id}`
+  )
   await replaced.getByRole("button", { name: "Delete", exact: true }).click()
   await page
     .getByRole("alertdialog", { name: "Delete this file?" })
     .getByRole("button", { name: "Delete" })
     .click()
+  expect((await deleted).status()).toBe(200)
   await expect(page.getByText("File deleted.")).toBeVisible()
   expect(
     (await page.request.get(`/api/v1/admin/media/${saved.id}`)).status()
@@ -264,8 +296,7 @@ test("library upload → hero image in the page editor → publish → public ho
   const details = page.getByRole("dialog", { name: "e2e-hero.png" })
   await expect(details).toBeVisible()
   await details.getByLabel("Alternative text").fill("E2E hero upload")
-  await details.getByRole("button", { name: "Save details" }).click()
-  await expect(page.getByText("File details saved.")).toBeVisible()
+  await saveDetails(page, details)
   const fileUrl = await details
     .getByRole("link", { name: /^Open file/ })
     .getAttribute("href")
@@ -317,11 +348,17 @@ test("library upload → hero image in the page editor → publish → public ho
     .click()
   const sheet = page.getByRole("dialog", { name: /e2e-hero|E2E hero upload/ })
   await expect(sheet.getByRole("heading", { name: "Used in" })).toBeVisible()
+  const refused = page.waitForResponse(
+    (r) =>
+      r.request().method() === "DELETE" &&
+      r.url().includes("/api/v1/admin/media/")
+  )
   await sheet.getByRole("button", { name: "Delete", exact: true }).click()
   await page
     .getByRole("alertdialog", { name: "Delete this file?" })
     .getByRole("button", { name: "Delete" })
     .click()
+  expect((await refused).status()).toBe(409)
   const blocked = sheet.getByRole("alert").filter({ hasText: /./ })
   await expect(
     blocked.getByRole("list", { name: "Where it is used" })
@@ -331,7 +368,8 @@ test("library upload → hero image in the page editor → publish → public ho
 
 test.afterAll(async ({ browser }) => {
   // Restore the seeded hero (visual runs stay deterministic) and drop the
-  // e2e uploads.
+  // e2e uploads. Idempotent: the restored draft is built from the published
+  // page, so only hero.background is swapped back.
   const { editor } = readFixtures()
   const context = await browser.newContext({
     extraHTTPHeaders: { "x-forwarded-for": clientIpFor("restore media hero") },
@@ -340,34 +378,40 @@ test.afterAll(async ({ browser }) => {
     const page = await context.newPage()
     await signIn(page, editor)
     const origin = { origin: BASE_URL }
-    type Dto = {
-      version: number
-      draft: { hero: Record<string, unknown> } & Record<string, unknown>
+    if (seededBackground !== null) {
+      type Dto = {
+        version: number
+        published: { hero: Record<string, unknown> } & Record<string, unknown>
+      }
+      const current = (await (
+        await page.request.get("/api/v1/admin/pages/home")
+      ).json()) as Dto
+      const draft = structuredClone(current.published)
+      draft.hero.background = seededBackground
+      const saved = await page.request.put("/api/v1/admin/pages/home/draft", {
+        headers: origin,
+        data: { version: current.version, draft },
+      })
+      expect(saved.status()).toBe(200)
+      const { version } = (await saved.json()) as { version: number }
+      const published = await page.request.post(
+        "/api/v1/admin/pages/home/publish",
+        { headers: origin, data: { version } }
+      )
+      expect(published.status()).toBe(200)
     }
-    const current = (await (
-      await page.request.get("/api/v1/admin/pages/home")
-    ).json()) as Dto & { published: Dto["draft"] }
-    const draft = structuredClone(current.draft)
-    draft.hero.background = seededBackground
-    const saved = await page.request.put("/api/v1/admin/pages/home/draft", {
-      headers: origin,
-      data: { version: current.version, draft },
-    })
-    expect(saved.status()).toBe(200)
-    const { version } = (await saved.json()) as { version: number }
-    const published = await page.request.post(
-      "/api/v1/admin/pages/home/publish",
-      { headers: origin, data: { version } }
-    )
-    expect(published.status()).toBe(200)
 
     const found = (await (
       await page.request.get("/api/v1/admin/media?q=e2e-")
     ).json()) as { items: { id: string }[] }
-    for (const { id } of found.items)
-      await page.request.delete(`/api/v1/admin/media/${id}`, {
+    const failed: string[] = []
+    for (const { id } of found.items) {
+      const res = await page.request.delete(`/api/v1/admin/media/${id}`, {
         headers: origin,
       })
+      if (!res.ok()) failed.push(`${id}: ${res.status()}`)
+    }
+    expect(failed, `media not deleted: ${failed.join(", ")}`).toEqual([])
   } finally {
     await context.close()
   }

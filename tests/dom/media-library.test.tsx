@@ -211,7 +211,7 @@ describe("MediaLibrary (master 6.3)", () => {
     ).toHaveAttribute("href", "/admin/pages/home")
     await user.type(
       within(sheet).getByLabelText("Alternative text"),
-      "Patrol car"
+      "Cleaning van"
     )
     await user.click(
       within(sheet).getByRole("button", { name: "Save details" })
@@ -220,7 +220,7 @@ describe("MediaLibrary (master 6.3)", () => {
       expect(calls.some((c) => c.method === "PATCH")).toBe(true)
     )
     expect(calls.find((c) => c.method === "PATCH")!.body).toEqual({
-      alt: "Patrol car",
+      alt: "Cleaning van",
       isDecorative: false,
       caption: "",
       focal: null,

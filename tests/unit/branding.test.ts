@@ -142,6 +142,24 @@ describe("branding gate", () => {
     expect(failures, failures.join("\n")).toEqual([])
   })
 
+  it("tests/e2e and tests/dom carry no security-industry fixture wording", () => {
+    const SECURITY_WORDING = /patrol|guards? briefing|night-supervisor/i
+    const failures: string[] = []
+    for (const file of trackedFiles()) {
+      if (!/^tests\/(e2e|dom)\//.test(file)) continue
+      let text: string
+      try {
+        text = readFileSync(file, "utf8")
+      } catch {
+        continue
+      }
+      text.split("\n").forEach((line, i) => {
+        if (SECURITY_WORDING.test(line)) failures.push(`${file}:${i + 1}`)
+      })
+    }
+    expect(failures, failures.join("\n")).toEqual([])
+  })
+
   it("matcher flags a forbidden domain in an inline fixture", () => {
     const hits = findHits(
       "see https://securitypartnersltd.com/contact\nok line"
