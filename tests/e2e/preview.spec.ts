@@ -92,3 +92,30 @@ test("preview shows the draft past the cache; exit returns to published content"
     await setTermsDraftTitle(page, original)
   }
 })
+
+test("preview exit ?to returns to the page, never off-site", async ({
+  page,
+  context,
+}) => {
+  const hero = page.getByRole("heading", { level: 1 })
+  const { editor } = readFixtures()
+  await signIn(page, editor.email, editor.name)
+
+  await page.goto("/api/v1/admin/preview?entity=page&id=terms")
+  await expect(page).toHaveURL(/\/terms$/)
+
+  // The exit link carries the page's own path and query (x-cp-path).
+  await page.goto("/api/v1/preview/exit?to=%2Fterms%3Fx%3D1")
+  await expect(page).toHaveURL(/\/terms\?x=1$/)
+  await expect(hero).toHaveText(PUBLISHED)
+  await expect(page.getByRole("region", { name: "Preview" })).toHaveCount(0)
+  expect((await context.cookies()).map((c) => c.name)).not.toContain(
+    "cp.preview"
+  )
+
+  await page.goto("/api/v1/admin/preview?entity=page&id=terms")
+  await page.goto(
+    `/api/v1/preview/exit?to=${encodeURIComponent("https://example.com")}`
+  )
+  await expect(page).toHaveURL(`${BASE_URL}/`)
+})

@@ -1,6 +1,7 @@
 import type { NextConfig } from "next"
 
 import { HSTS } from "./lib/security-headers"
+import { HTML_LIMITED_BOTS } from "./lib/seo/blocking-metadata"
 
 /**
  * CSP directives that restrict nothing the site loads: no `<base>` hijack,
@@ -37,6 +38,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Everything is dynamic unless a query opts in with "use cache" (notes §1).
   cacheComponents: true,
+  // Only requests proxy.ts marks get blocking metadata (title, description,
+  // canonical in <head> for every user agent; lib/seo/blocking-metadata.ts).
+  htmlLimitedBots: HTML_LIMITED_BOTS,
   // forbidden() / forbidden.tsx for the admin 403 page (requirePermission).
   experimental: { authInterrupts: true, globalNotFound: true },
   async headers() {
