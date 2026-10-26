@@ -19,6 +19,7 @@ import { ServicesGrid } from "@/components/services/services-grid"
 import { BLOCK_TYPES } from "@/blocks/registry"
 import { fixtureSiteSources } from "@/server/db/seed/fixtures/sources"
 import { aboutView } from "@/templates/about/view"
+import { blocksFromTemplate } from "@/templates/builder/from-template"
 import { Section } from "@/templates/builder/render"
 import {
   type ResolvedBlock,
@@ -27,6 +28,8 @@ import {
 } from "@/templates/builder/views"
 import { contactView } from "@/templates/contact/view"
 import { homeView } from "@/templates/home/view"
+import { legalView } from "@/templates/legal/view"
+import type { PageKey } from "@/templates/registry"
 import { servicesView } from "@/templates/services/view"
 import {
   howItWorksView,
@@ -45,7 +48,6 @@ const about = s.pages.about.data
 const services = s.pages.services.data
 const contactPage = s.pages.contact.data
 
-const base = { anchor: "a", hidden: false }
 let n = 0
 const mk = (type: string, data: unknown, anchor = `a${n}`): ResolvedBlock =>
   ({ id: `blk-${n++}`, type, anchor, hidden: false, data }) as ResolvedBlock
@@ -210,4 +212,84 @@ describe("builderView", () => {
     ])
   })
 })
-void base
+
+describe("blocksFromTemplate round trip (R10-11)", () => {
+  // The same site data goes in and the fixed page's own props come out, so
+  // a copied page renders what the fixed page renders.
+  const copy = (key: PageKey) =>
+    blocksFromTemplate(key, s.pages[key].data as never) as ResolvedBlock[]
+  const views = (key: PageKey) => builderView(s, copy(key)).blocks
+  const props = (key: PageKey) => views(key).map((b) => b.view.props)
+  const markup = (key: PageKey) =>
+    views(key).map((b) => renderToStaticMarkup(<Section view={b.view} />))
+
+  it("home", () => {
+    const h = homeView(s)
+    expect(props("home")).toEqual([
+      h.hero,
+      h.clients,
+      h.services,
+      h.whyChooseUs,
+      h.testimonials,
+      h.team,
+      h.blog,
+      h.contact,
+      h.map,
+    ])
+    expect(markup("home")[0]).toBe(renderToStaticMarkup(<Hero {...h.hero} />))
+  })
+
+  it("about", () => {
+    const a = aboutView(s)
+    expect(props("about")).toEqual([
+      a.hero,
+      a.story,
+      a.stats,
+      a.clients,
+      a.whyChooseUs,
+      a.team,
+      a.testimonials,
+      a.contact,
+    ])
+  })
+
+  it("services", () => {
+    const v = servicesView(s)
+    expect(props("services")).toEqual([
+      v.hero,
+      v.grid,
+      v.whyChooseUs,
+      v.clients,
+      v.testimonials,
+      v.contact,
+    ])
+  })
+
+  it("contact", () => {
+    const c = contactView(s)
+    expect(props("contact")).toEqual([c.hero, c.contact, c.form, c.map])
+    expect(markup("contact")).toEqual([
+      renderToStaticMarkup(<PageHero {...c.hero} />),
+      renderToStaticMarkup(<Contact {...c.contact} />),
+      renderToStaticMarkup(<QuoteForm {...c.form} />),
+      renderToStaticMarkup(<LocationMap {...c.map} />),
+    ])
+  })
+
+  it.each(["privacy", "terms"] as const)("%s", (key) => {
+    const l = legalView(s, key)
+    expect(props(key)).toEqual([
+      l.hero,
+      { doc: l.body, checkIcon: l.checkIcon },
+    ])
+  })
+
+  it("each block keeps its own section id", () => {
+    expect(views("contact").map((b) => [b.anchor, b.owned])).toEqual([
+      ["hero-page", false],
+      ["contact", true],
+      ["quote", true],
+      ["map", false],
+    ])
+  })
+})

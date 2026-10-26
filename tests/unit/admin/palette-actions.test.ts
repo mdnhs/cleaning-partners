@@ -44,6 +44,7 @@ describe("buildActions", () => {
   it("lists the MK actions in order for an owner", () => {
     expect(actionsFor(["owner"]).actions.map((a) => a.id)).toEqual([
       "new-article",
+      "new-page",
       "new-service",
       "open-site",
       "theme-light",
@@ -63,10 +64,25 @@ describe("buildActions", () => {
     ])
   })
 
+  it("New page needs page:create and matches builder words", () => {
+    const find = (roles: Role[]) =>
+      actionsFor(roles).actions.find((a) => a.id === "new-page")
+    expect(find(["editor"])).toMatchObject({
+      label: "New page",
+      keywords: ["create", "add", "builder", "landing"],
+    })
+    expect(find(["marketer"])).toBeUndefined()
+    expect(find(["author"])).toBeUndefined()
+    expect(matchesQuery("landing", "New page", find(["owner"])!.keywords)).toBe(
+      true
+    )
+  })
+
   it("runs through the given callbacks", () => {
     const { input, actions } = actionsFor(["owner"])
     const run = (id: string) => actions.find((a) => a.id === id)!.run()
     run("new-article")
+    run("new-page")
     run("new-service")
     run("open-site")
     run("theme-light")
@@ -75,6 +91,7 @@ describe("buildActions", () => {
     run("sign-out")
     expect(input.navigate.mock.calls).toEqual([
       ["/admin/blog/new"],
+      ["/admin/pages?new=1"],
       ["/admin/services/new"],
     ])
     expect(input.open).toHaveBeenCalledWith("/")

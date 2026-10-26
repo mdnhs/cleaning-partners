@@ -93,6 +93,21 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       expect(item.match).toBe(item.href === "/admin" ? "exact" : "prefix")
   })
 
+  it("the Pages item carries the builder keywords and covers custom pages", () => {
+    const pages = NAV_ITEMS.find((item) => item.id === "pages")!
+    expect(pages.keywords).toEqual([
+      "home page",
+      "about",
+      "contact",
+      "builder",
+      "custom pages",
+    ])
+    expect(permissionFor("/admin/pages/custom/x")).toEqual({ page: ["read"] })
+    expect(permissionFor("/admin/pages/custom/x")).toEqual(
+      permissionFor("/admin/pages")
+    )
+  })
+
   it("permissionFor resolves exact, nested and unknown paths", () => {
     expect(permissionFor("/admin")).toBeNull()
     expect(permissionFor("/admin/blog/new")).toEqual({ article: ["read"] })

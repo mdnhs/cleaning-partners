@@ -10,6 +10,12 @@ vi.mock("next/link", () => ({
   ),
 }))
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => "/admin/pages",
+  useSearchParams: () => new URLSearchParams(),
+}))
+
 import { AdminSessionProvider } from "@/components/admin/session-provider"
 import { DataTablePagination } from "@/components/admin/data-table/data-table-pagination"
 import { PagesList } from "@/components/admin/pages/pages-list"
@@ -82,7 +88,7 @@ beforeEach(() => {
 describe("pages list (JW pattern)", () => {
   it("shows Title, Address, Status and Updated in a card table", async () => {
     renderPages()
-    const table = await screen.findByRole("table", { name: "Pages" })
+    const table = await screen.findByRole("table", { name: "Site pages" })
     expect(
       within(table)
         .getAllByRole("columnheader")
@@ -115,7 +121,7 @@ describe("pages list (JW pattern)", () => {
 
   it("lists cards on phones with the same facts", async () => {
     renderPages()
-    const list = await screen.findByRole("list", { name: "Pages" })
+    const list = await screen.findByRole("list", { name: "Site pages" })
     const cards = within(list).getAllByRole("listitem")
     expect(cards).toHaveLength(3)
     expect(cards[2]).toHaveTextContent("Terms")
@@ -131,7 +137,7 @@ describe("pages list (JW pattern)", () => {
 
   it("dates rows relative to the last fetch, exact time on hover", async () => {
     renderPages()
-    const table = await screen.findByRole("table", { name: "Pages" })
+    const table = await screen.findByRole("table", { name: "Site pages" })
     const time = within(table).getAllByText(/2 hours ago/, {
       selector: "time",
     })[0]

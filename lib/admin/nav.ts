@@ -123,8 +123,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     icon: FileText,
     permission: { page: ["read"] },
     match: "prefix",
-    // "builder" / "custom pages" keywords return in Phase 10.
-    keywords: ["home page", "about", "contact"],
+    keywords: ["home page", "about", "contact", "builder", "custom pages"],
   },
   {
     id: "blog",

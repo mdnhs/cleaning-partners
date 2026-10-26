@@ -1,5 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query"
-import { render, screen, within } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import type { ComponentProps } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -9,7 +10,19 @@ vi.mock("next/link", () => ({
   ),
 }))
 
+const nav = vi.hoisted(() => ({
+  replace: vi.fn(),
+  push: vi.fn(),
+  search: "",
+}))
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: nav.replace, push: nav.push, refresh: vi.fn() }),
+  usePathname: () => "/admin/pages",
+  useSearchParams: () => new URLSearchParams(nav.search),
+}))
+
 import { AdminSessionProvider } from "@/components/admin/session-provider"
+import type { Role } from "@/lib/auth/roles"
 import { PagesList } from "@/components/admin/pages/pages-list"
 import { makeQueryClient } from "@/components/admin/providers"
 
@@ -27,7 +40,7 @@ const page = (over: Record<string, unknown>) => ({
   ...over,
 })
 
-function renderPages() {
+function renderPages(role: Role = "editor") {
   return render(
     <AdminSessionProvider
       value={{
@@ -38,7 +51,7 @@ function renderPages() {
           title: null,
           twoFactorEnabled: true,
         },
-        roles: ["editor"],
+        roles: [role],
         impersonatedBy: null,
       }}
     >
@@ -51,12 +64,38 @@ function renderPages() {
 
 const calls: string[] = []
 
+const custom = (over: Record<string, unknown>) => ({
+  id: "0192a-spring",
+  slug: "spring-clean",
+  title: "Spring clean",
+  path: "/p/spring-clean",
+  seo: {},
+  version: 2,
+  status: "published",
+  dirty: true,
+  publishedAt: "2026-10-02T10:00:00Z",
+  updatedAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+  updatedBy: { id: "u2", name: "Mia Marketer" },
+  ...over,
+})
+let customItems: unknown[] = []
+
 beforeEach(() => {
   calls.length = 0
+  nav.search = ""
+  nav.replace.mockClear()
+  customItems = []
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: RequestInfo | URL) => {
       calls.push(String(input))
+      if (String(input).includes("/builder-pages"))
+        return Response.json({
+          items: customItems,
+          page: 1,
+          pageSize: 100,
+          total: customItems.length,
+        })
       return Response.json({
         items: [
           page({}),
@@ -82,7 +121,7 @@ beforeEach(() => {
 describe("pages list (JW pattern)", () => {
   it("shows Title, Address, Status and Updated in a card table", async () => {
     renderPages()
-    const table = await screen.findByRole("table", { name: "Pages" })
+    const table = await screen.findByRole("table", { name: "Site pages" })
     expect(
       within(table)
         .getAllByRole("columnheader")
@@ -115,7 +154,7 @@ describe("pages list (JW pattern)", () => {
 
   it("lists cards on phones with the same facts", async () => {
     renderPages()
-    const list = await screen.findByRole("list", { name: "Pages" })
+    const list = await screen.findByRole("list", { name: "Site pages" })
     const cards = within(list).getAllByRole("listitem")
     expect(cards).toHaveLength(3)
     expect(cards[2]).toHaveTextContent("Terms")
@@ -131,7 +170,7 @@ describe("pages list (JW pattern)", () => {
 
   it("dates rows relative to the last fetch, exact time on hover", async () => {
     renderPages()
-    const table = await screen.findByRole("table", { name: "Pages" })
+    const table = await screen.findByRole("table", { name: "Site pages" })
     const time = within(table).getAllByText(/2 hours ago/, {
       selector: "time",
     })[0]
@@ -159,12 +198,95 @@ describe("pages list (JW pattern)", () => {
     ).toBeInTheDocument()
   })
 
-  it("has no builder section, New page button or builder request until Phase 10", async () => {
+  it("lists custom pages linking to the builder, with status and editor", async () => {
+    customItems = [
+      custom({}),
+      custom({
+        id: "0192b-draft",
+        slug: "draft-page",
+        title: "Draft page",
+        path: "/p/draft-page",
+        publishedAt: null,
+        status: "draft",
+        dirty: false,
+        updatedBy: null,
+      }),
+    ]
     renderPages()
-    await screen.findByRole("table", { name: "Pages" })
-    expect(screen.queryByText(/custom pages/i)).toBeNull()
+    const table = await screen.findByRole("table", { name: "Custom pages" })
+    const rows = within(table).getAllByRole("row").slice(1)
+    expect(
+      within(rows[0]).getByRole("link", { name: "Spring clean" })
+    ).toHaveAttribute("href", "/admin/pages/custom/0192a-spring")
+    expect(rows[0]).toHaveTextContent("/p/spring-clean")
+    expect(rows[0]).toHaveTextContent("PublishedUnpublished changes")
+    expect(rows[0]).toHaveTextContent("3 hours ago · Mia Marketer")
+    expect(rows[1]).toHaveTextContent("Draft")
+    expect(
+      screen.getByRole("heading", { name: "Custom pages" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "Site pages" })
+    ).toBeInTheDocument()
+  })
+
+  it("says so when there are no custom pages", async () => {
+    renderPages()
+    expect(await screen.findByText("No custom pages yet")).toBeInTheDocument()
+  })
+
+  it("shows New page to an editor and opens the dialog", async () => {
+    const user = userEvent.setup()
+    renderPages()
+    await user.click(await screen.findByRole("button", { name: "New page" }))
+    const dialog = await screen.findByRole("dialog", { name: "New page" })
+    expect(within(dialog).getByLabelText("Title")).toBeInTheDocument()
+  })
+
+  it("is read-only for a marketer: no New page, no dialog", async () => {
+    customItems = [custom({})]
+    renderPages("marketer")
+    await screen.findByRole("table", { name: "Custom pages" })
     expect(screen.queryByRole("button", { name: "New page" })).toBeNull()
-    expect(document.querySelector('a[href*="/pages/custom"]')).toBeNull()
-    expect(calls.some((url) => url.includes("builder-pages"))).toBe(false)
+    expect(screen.queryByRole("dialog")).toBeNull()
+  })
+
+  it("?new=1 opens the dialog, and closing it drops the parameter", async () => {
+    nav.search = "new=1"
+    const user = userEvent.setup()
+    renderPages()
+    const dialog = await screen.findByRole("dialog", { name: "New page" })
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }))
+    await waitFor(() =>
+      expect(nav.replace).toHaveBeenCalledWith("/admin/pages")
+    )
+  })
+
+  it("?new=1 does nothing for a role that cannot create", async () => {
+    nav.search = "new=1"
+    renderPages("marketer")
+    await screen.findByRole("table", { name: "Site pages" })
+    expect(screen.queryByRole("dialog")).toBeNull()
+  })
+
+  it("offers Try again when the custom list fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) =>
+        String(input).includes("/builder-pages")
+          ? Response.json(
+              { error: { code: "FORBIDDEN", message: "Not allowed" } },
+              { status: 403 }
+            )
+          : Response.json({ items: [page({})] })
+      )
+    )
+    renderPages()
+    expect(
+      await screen.findByText("The custom pages didn't load")
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("table", { name: "Site pages" })
+    ).toBeInTheDocument()
   })
 })

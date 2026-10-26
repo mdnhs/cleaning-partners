@@ -276,6 +276,7 @@ describe("⌘K command palette (master 4.1)", () => {
       .map((o) => o.textContent)
     expect(actions).toEqual([
       "New article",
+      "New page",
       "New service",
       "Open the live site",
       "Switch to light theme",
@@ -287,6 +288,30 @@ describe("⌘K command palette (master 4.1)", () => {
       within(dialog).getByRole("option", { name: "New service" })
     )
     expect(push).toHaveBeenCalledWith("/admin/services/new")
+  })
+
+  it("New page opens the new page dialog's route, found by builder words", async () => {
+    const user = userEvent.setup()
+    renderShell(["editor"])
+    await user.keyboard("{Control>}k{/Control}")
+    const dialog = await screen.findByRole("dialog", {
+      name: "Search the admin",
+    })
+    await user.type(within(dialog).getByRole("combobox"), "landing")
+    await user.click(within(dialog).getByRole("option", { name: "New page" }))
+    expect(push).toHaveBeenCalledWith("/admin/pages?new=1")
+  })
+
+  it("a role without page:create is not offered New page", async () => {
+    const user = userEvent.setup()
+    renderShell(["marketer"])
+    await user.keyboard("{Control>}k{/Control}")
+    const dialog = await screen.findByRole("dialog", {
+      name: "Search the admin",
+    })
+    expect(
+      within(dialog).queryByRole("option", { name: "New page" })
+    ).toBeNull()
   })
 
   describe("registry destinations and actions (MK B6)", () => {
