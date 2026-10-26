@@ -87,6 +87,8 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "settings/[key]/page.tsx": { settings: ["read"] },
   "settings/integrations/page.tsx": { integration: ["read"] },
   "settings/integrations/[slug]/page.tsx": { integration: ["read"] },
+  "seo/page.tsx": { seo: ["read"] },
+  "seo/defaults/page.tsx": { seo: ["read"] },
 }
 
 const rel = (file: string) => file.slice(ROOT.length + 1)
