@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { leadBadge, getShellNotifications } = vi.hoisted(() => ({
+const { leadBadge, getAiStatus, getShellNotifications } = vi.hoisted(() => ({
   leadBadge: vi.fn(),
+  getAiStatus: vi.fn(),
   getShellNotifications: vi.fn(),
 }))
 vi.mock("@/server/modules/leads/service", () => ({ leadBadge }))
+vi.mock("@/server/modules/ai/service", () => ({ getAiStatus }))
 vi.mock("@/server/modules/dashboard/service", () => ({
   getShellNotifications,
 }))
@@ -20,18 +22,21 @@ const actor = (roles: Actor["roles"]): Actor => ({
   impersonatorId: null,
 })
 
+const status = { available: true } as never
+
 beforeEach(() => {
   leadBadge.mockReset().mockResolvedValue({ newLeads: 3 })
+  getAiStatus.mockReset().mockResolvedValue(status)
   getShellNotifications.mockReset().mockResolvedValue([])
   vi.spyOn(console, "error").mockImplementation(() => {})
 })
 
-// The AI status case returns with the assistant (9.3).
 describe("admin frame extras (SP final review I7)", () => {
-  it("loads the badge and the bell; the bell reuses the badge count", async () => {
+  it("loads the badge, AI status and bell; the bell reuses the badge count", async () => {
     const extras = await loadShellExtras(actor(["intake"]))
     expect(extras).toEqual({
       badges: { "new-leads": 3 },
+      assistant: status,
       notifications: [],
     })
     expect(getShellNotifications).toHaveBeenCalledWith(expect.anything(), 3)
@@ -46,11 +51,13 @@ describe("admin frame extras (SP final review I7)", () => {
 
   it("degrades each part on its own instead of failing the frame", async () => {
     leadBadge.mockRejectedValue(new Error("db hiccup"))
+    getAiStatus.mockRejectedValue(new Error("ai settings unreadable"))
     getShellNotifications.mockRejectedValue(new Error("jobs table locked"))
     await expect(loadShellExtras(actor(["owner"]))).resolves.toEqual({
       badges: {},
+      assistant: undefined,
       notifications: [],
     })
-    expect(console.error).toHaveBeenCalledTimes(2)
+    expect(console.error).toHaveBeenCalledTimes(3)
   })
 })

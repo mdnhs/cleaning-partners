@@ -11,7 +11,12 @@ describe("HelpView ", () => {
     expect(
       screen.getByRole("heading", { name: "Keyboard shortcuts" })
     ).toBeInTheDocument()
-    for (const action of ["Search and go", "Save draft", "Close panels"])
+    for (const action of [
+      "Search and go",
+      "AI assistant",
+      "Save draft",
+      "Close panels",
+    ])
       expect(screen.getByText(action)).toBeInTheDocument()
     expect(screen.getByText("Esc")).toBeInTheDocument()
     expect(

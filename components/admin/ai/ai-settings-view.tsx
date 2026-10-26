@@ -306,8 +306,15 @@ function SettingsForm({ dto }: { dto: IntegrationDto }) {
   // one, the saved key works only for the saved provider and base URL.
   const canListModels = typedKey !== "" || (hasKey && keyFollows)
 
+  // A stored list that left out owner or admin shows them ticked, so the form
+  // would look clean: count it as a change, so Save restores them.
+  const storedRoles = dto.values.allowedRoles
+  const listLacksAlways =
+    Array.isArray(storedRoles) &&
+    ALWAYS.some((role) => !(storedRoles as Role[]).includes(role))
   const dirty =
     JSON.stringify(form) !== JSON.stringify(saved) ||
+    listLacksAlways ||
     typedKey !== "" ||
     removeKey
   const set = <K extends keyof Form>(name: K, value: Form[K]) =>
@@ -672,7 +679,8 @@ function SettingsForm({ dto }: { dto: IntegrationDto }) {
                 <HelpText id={`${id("roles")}-help`}>
                   Owners and admins stay ticked, so saving here always includes
                   them. If a saved list ever left one out, that role has no
-                  access until an owner saves this form again.
+                  access until someone who manages settings saves this form
+                  again.
                 </HelpText>
                 <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1">
                   {AI_ROLES.map((role) => {

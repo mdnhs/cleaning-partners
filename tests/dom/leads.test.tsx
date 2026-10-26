@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
 }))
 
+import { useAssistant } from "@/components/admin/ai/assistant-context"
 import { LeadDrawer } from "@/components/admin/leads/lead-drawer"
 import { LeadsScreen } from "@/components/admin/leads/leads-screen"
 import { makeQueryClient } from "@/components/admin/providers"
@@ -482,7 +483,51 @@ describe("leads inbox (master 7.4)", () => {
   })
 })
 
-// 9.3: the "lead detail shares the lead with the assistant" cases return with the assistant.
+describe("lead detail shares the lead with the assistant (spec §8.3)", () => {
+  /** Shows what the assistant would receive with the next message. */
+  function SharedScreen() {
+    const { screen: info, snapshot } = useAssistant()
+    return (
+      <output data-testid="shared">
+        {info ? JSON.stringify(snapshot()) : "nothing"}
+      </output>
+    )
+  }
+
+  it("shares which lead is open, no personal data (C9 review M5)", async () => {
+    renderAs(
+      ["intake"],
+      <>
+        <SharedScreen />
+        {drawer(ID)}
+      </>
+    )
+    const shared = screen.getByTestId("shared")
+    await waitFor(() => expect(shared).not.toHaveTextContent("nothing"))
+    const sent = JSON.parse(shared.textContent!)
+    // The server reads the lead itself and applies the owner's switch.
+    expect(sent).toEqual({
+      title: "Lead details",
+      entityType: "lead",
+      entityId: ID,
+    })
+    for (const pii of ["aoife@example.com", "085 000 0000", "Line one"])
+      expect(shared.textContent).not.toContain(pii)
+  })
+
+  it("shares nothing for a lead that does not load", async () => {
+    renderAs(
+      ["intake"],
+      <>
+        <SharedScreen />
+        {drawer(GONE)}
+      </>
+    )
+    await screen.findByText("This enquiry no longer exists")
+    expect(screen.getByTestId("shared")).toHaveTextContent("nothing")
+  })
+})
+
 describe("lead screens", () => {
   it("filters keep the table's search and follow Back/Forward (I8, M9)", async () => {
     const user = userEvent.setup()

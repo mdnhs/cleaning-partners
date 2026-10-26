@@ -3,10 +3,12 @@
 import { MailIcon } from "lucide-react"
 import Link from "next/link"
 
+import { AssistantButton } from "@/components/admin/ai/assistant-button"
 import { buttonVariants } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { usePermission } from "@/hooks/use-permission"
 import type { NavBadges } from "@/lib/admin/nav"
+import type { AiStatusDto } from "@/lib/schemas/api/ai"
 import type { ShellNotification } from "@/lib/schemas/api/dashboard"
 import { cn } from "@/lib/utils"
 
@@ -17,13 +19,17 @@ import { SearchPill } from "./search-pill"
 import { UserMenu } from "./user-menu"
 
 /**
- * The 72 px topbar panel (JW): sidebar toggle, search pill,
- * Enquiries (lead readers), the notifications bell, account.
+ * The 72 px topbar panel (JW): sidebar toggle, search pill, AI assistant
+ * (available, or for those who manage settings), Enquiries (lead readers),
+ * the notifications bell, account.
  */
 export function Topbar({
+  assistant,
   notifications,
   badges = {},
 }: {
+  /** AI assistant status for this user (panel layout, server). */
+  assistant?: AiStatusDto
   notifications?: readonly ShellNotification[]
   /** The sidebar's counts; Enquiries shows the same "new-leads". */
   badges?: NavBadges
@@ -38,6 +44,7 @@ export function Topbar({
       <div className="flex min-w-0 flex-1">
         <SearchPill />
       </div>
+      <AssistantButton initialStatus={assistant} />
       {canReadLeads ? <EnquiriesLink count={badges["new-leads"] ?? 0} /> : null}
       <NotificationsButton items={notifications} />
       <UserMenu />
@@ -47,8 +54,9 @@ export function Topbar({
 
 /**
  * The leads inbox as a circular 44 px icon link; the count matches the
- * sidebar. Shown on phones too (MK) from 360 px: below that the
- * controls cannot fit the 296 px topbar, and the sidebar's Enquiries badge covers it.
+ * sidebar. Shown on phones too (MK) from 360 px: below that, with the AI
+ * button on, six 44 px controls cannot fit the 296 px topbar, and the
+ * sidebar's Enquiries badge covers it.
  */
 function EnquiriesLink({ count }: { count: number }) {
   return (

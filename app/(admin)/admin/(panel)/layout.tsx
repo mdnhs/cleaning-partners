@@ -34,9 +34,9 @@ async function PanelFrame({ children }: { children: React.ReactNode }) {
   // Session first: it reads the request, so nothing below (the settings
   // query needs the database) runs while the route is being prerendered.
   const { user, actor, session } = await requireSession()
-  // The bell degrades on its own (loadShellExtras); a settings failure
-  // fails the frame, into app/(admin)/admin/error.tsx. Fresh on every
-  // navigation.
+  // Badge, AI status and bell degrade on their own (loadShellExtras); a
+  // settings failure fails the frame, into app/(admin)/admin/error.tsx.
+  // Fresh on every navigation.
   const [cookieStore, site, extras, brand] = await Promise.all([
     cookies(),
     getSettings("site"),
@@ -50,6 +50,7 @@ async function PanelFrame({ children }: { children: React.ReactNode }) {
       // Set by the sidebar toggle (components/ui/sidebar.tsx).
       defaultSidebarOpen={cookieStore.get(SIDEBAR_COOKIE)?.value !== "false"}
       badges={extras.badges}
+      assistant={extras.assistant}
       brand={brand}
       site={{
         // The configured public origin; this deployment's own until set.

@@ -14,6 +14,13 @@ export const SHORTCUTS: { keys: string[][]; action: string }[] = [
   },
   {
     keys: [
+      ["⌘", "J"],
+      ["Ctrl", "J"],
+    ],
+    action: "AI assistant",
+  },
+  {
+    keys: [
       ["⌘", "S"],
       ["Ctrl", "S"],
     ],

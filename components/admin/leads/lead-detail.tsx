@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation"
 import { useEffect, useId, useRef, useState } from "react"
 import { toast } from "sonner"
 
+import { useAssistantScreen } from "@/components/admin/ai/assistant-context"
+import { leadAssistantScreen } from "@/components/admin/ai/screens"
 import { UnsavedGuard } from "@/components/admin/editor/unsaved-guard"
 import { ADMIN_TEXTAREA } from "@/components/admin/form/form-ui"
 import { CardSkeleton } from "@/components/admin/kit/skeletons"
@@ -262,7 +264,9 @@ export function LeadDetailBody({
     reportedMissing.current = true
     onMissing?.()
   }, [missing, onMissing])
-  // 9.3: re-add useAssistantScreen(leadAssistantScreen(...)) here with the assistant.
+  // "Summarise this lead" (spec §8.3): the assistant sees the open lead once
+  // it has loaded. Hooks run before every early return below.
+  useAssistantScreen(lead.data ? leadAssistantScreen(lead.data) : null)
   const assignees = useQuery({
     queryKey: ["leads", "assignees"],
     queryFn: async () =>

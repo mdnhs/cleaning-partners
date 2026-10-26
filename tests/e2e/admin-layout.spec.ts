@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test"
 
+import { assistantOnHomeEditor } from "./ai-pins"
 import { BASE_URL } from "./env"
 import { clientIpFor, E2E_PASSWORD, greeting, readFixtures } from "./fixtures"
 
@@ -21,6 +22,27 @@ async function signIn(page: Page, who: { email: string; name: string }) {
   await expect(
     page.getByRole("heading", { name: greeting(who.name) })
   ).toBeVisible()
+}
+
+/** Pinned SMTP integration: saving it refetches the (pinned) AI status. */
+const SAVED_SMTP = {
+  key: "integrations.smtp",
+  slug: "smtp",
+  label: "Email (SMTP)",
+  description: "Sends invitations, password resets and enquiry notifications.",
+  configured: true,
+  version: 2,
+  values: {
+    host: "smtp.example.ie",
+    port: 587,
+    secure: false,
+    user: "mailer@example.ie",
+    fromName: "Cleaning Partners",
+    fromAddress: "no-reply@example.ie",
+  },
+  secrets: { password: { set: true, hint: "••••1234" } },
+  updatedAt: "2026-10-16T09:00:00.000Z",
+  updatedBy: { id: "u1", name: "Ada Admin" },
 }
 
 /** Every topbar control lies inside the topbar, which does not scroll. */
@@ -169,11 +191,20 @@ test("impersonating shows the banner with a stop control", async ({ page }) => {
   ).toHaveCount(0)
 })
 
-test("topbar fits at 1024 px with every control shown", async ({ page }) => {
+test("topbar fits at 1024 px with role chip, AI, mail and bell", async ({
+  page,
+}) => {
   const { owner } = readFixtures()
   await page.setViewportSize({ width: 1024, height: 768 })
   await signIn(page, owner)
+  // The seed has no AI integration, so the owner sees the set-up button and
+  // the status query never refetches on its own: turn it on the way Settings
+  // does (pinned status, no provider), then measure the topbar.
+  await assistantOnHomeEditor(page, SAVED_SMTP)
   const topbar = page.locator("[data-slot=topbar]")
+  await expect(
+    topbar.getByRole("button", { name: "AI assistant" })
+  ).toBeVisible()
   await expect(topbar.getByRole("link", { name: /^Enquiries/ })).toBeVisible()
   await expect(
     topbar.getByRole("button", { name: /^Account menu for / })

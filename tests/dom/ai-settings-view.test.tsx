@@ -163,6 +163,26 @@ describe("AiSettingsView (MK parity C7)", () => {
       ).toBeTruthy()
   })
 
+  it("a stored list without owner or admin is a change: Save is enabled and restores them", async () => {
+    routes[`GET ${PATH}`] = () =>
+      json({
+        ...saved,
+        values: { ...saved.values, allowedRoles: ["editor"] },
+      })
+    const user = userEvent.setup()
+    renderView()
+    await ready()
+    const roles = screen.getByRole("group", { name: "Who can use it" })
+    expect(within(roles).getByRole("checkbox", { name: "Owner" })).toBeChecked()
+    const save = screen.getByRole("button", { name: "Save" })
+    expect(save).toBeEnabled()
+    await user.click(save)
+    await waitFor(() => expect(puts()).toHaveLength(1))
+    expect(
+      (puts()[0] as { values: { allowedRoles: string[] } }).values.allowedRoles
+    ).toEqual(expect.arrayContaining(["owner", "admin", "editor"]))
+  })
+
   it("a key error while Remove is chosen focuses the key choice and describes it", async () => {
     routes[`PUT ${PATH}`] = () =>
       json(

@@ -4,6 +4,7 @@ import type { QueryClient } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
 import { type CSSProperties, type ReactNode, useEffect, useRef } from "react"
 
+import { AssistantProvider } from "@/components/admin/ai/assistant-context"
 import { UnsavedChangesProvider } from "@/components/admin/editor/unsaved-guard"
 import { AdminProviders } from "@/components/admin/providers"
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/components/admin/session-provider"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import type { NavBadges } from "@/lib/admin/nav"
+import type { AiStatusDto } from "@/lib/schemas/api/ai"
 import type { ShellNotification } from "@/lib/schemas/api/dashboard"
 
 import { AppSidebar } from "./app-sidebar"
@@ -44,6 +46,7 @@ export function AdminShell({
   site = DEFAULT_SITE,
   brand = null,
   badges,
+  assistant,
   notifications,
 }: {
   session: AdminSession
@@ -57,6 +60,8 @@ export function AdminShell({
   brand?: AdminBrand | null
   /** Counts beside nav items (new unassigned leads). */
   badges?: NavBadges
+  /** AI assistant availability for this user (panel layout, server). */
+  assistant?: AiStatusDto
   /** The bell's items (panel layout, server). */
   notifications?: readonly ShellNotification[]
 }) {
@@ -72,45 +77,51 @@ export function AdminShell({
         <UnsavedChangesProvider>
           <ShellSignOutProvider>
             <CommandPaletteProvider>
-              <a
-                href="#main"
-                className="sr-only z-50 rounded-xl bg-card px-4 py-2 text-sm font-semibold shadow-lg focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:ring-3 focus:ring-ring/50"
-              >
-                Skip to content
-              </a>
-              <SidebarProvider
-                defaultOpen={defaultSidebarOpen}
-                style={{ "--sidebar-width": "20rem" } as CSSProperties}
-              >
-                <AppSidebar site={site} badges={badges} brand={brand} />
-                <div className="flex h-svh min-w-0 flex-1 flex-col gap-4 p-3 [--content-h:calc(100svh-112px)] sm:p-4 sm:[--content-h:calc(100svh-120px)] lg:pl-0">
-                  {/* One header wrapper: the impersonation banner stacks above
+              <AssistantProvider>
+                <a
+                  href="#main"
+                  className="sr-only z-50 rounded-xl bg-card px-4 py-2 text-sm font-semibold shadow-lg focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:ring-3 focus:ring-ring/50"
+                >
+                  Skip to content
+                </a>
+                <SidebarProvider
+                  defaultOpen={defaultSidebarOpen}
+                  style={{ "--sidebar-width": "20rem" } as CSSProperties}
+                >
+                  <AppSidebar site={site} badges={badges} brand={brand} />
+                  <div className="flex h-svh min-w-0 flex-1 flex-col gap-4 p-3 [--content-h:calc(100svh-112px)] sm:p-4 sm:[--content-h:calc(100svh-120px)] lg:pl-0">
+                    {/* One header wrapper: the impersonation banner stacks above
                   the topbar instead of covering it; the sidebar sits beside
                   the column, never underneath (WCAG 2.2 SC 2.4.11). */}
-                  <div
-                    ref={headerRef}
-                    data-slot="admin-header"
-                    className="flex shrink-0 flex-col gap-3"
-                  >
-                    {session.impersonatedBy ? (
-                      <ImpersonationBanner name={session.user.name} />
-                    ) : null}
-                    <Topbar notifications={notifications} badges={badges} />
+                    <div
+                      ref={headerRef}
+                      data-slot="admin-header"
+                      className="flex shrink-0 flex-col gap-3"
+                    >
+                      {session.impersonatedBy ? (
+                        <ImpersonationBanner name={session.user.name} />
+                      ) : null}
+                      <Topbar
+                        assistant={assistant}
+                        notifications={notifications}
+                        badges={badges}
+                      />
+                    </div>
+                    <main
+                      ref={mainRef}
+                      id="main"
+                      tabIndex={-1}
+                      className="rounded-card relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-sidebar p-(--main-pad) outline-none [--main-pad:1rem] sm:[--main-pad:1.5rem] lg:[--main-pad:2rem]"
+                    >
+                      <SiteInfoProvider value={site}>
+                        {/* The active section's sub-pages (MK section rail). */}
+                        <SectionRail>{children}</SectionRail>
+                      </SiteInfoProvider>
+                    </main>
                   </div>
-                  <main
-                    ref={mainRef}
-                    id="main"
-                    tabIndex={-1}
-                    className="rounded-card relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-sidebar p-(--main-pad) outline-none [--main-pad:1rem] sm:[--main-pad:1.5rem] lg:[--main-pad:2rem]"
-                  >
-                    <SiteInfoProvider value={site}>
-                      {/* The active section's sub-pages (MK section rail). */}
-                      <SectionRail>{children}</SectionRail>
-                    </SiteInfoProvider>
-                  </main>
-                </div>
-              </SidebarProvider>
-              <CommandPalette />
+                </SidebarProvider>
+                <CommandPalette />
+              </AssistantProvider>
             </CommandPaletteProvider>
           </ShellSignOutProvider>
         </UnsavedChangesProvider>
