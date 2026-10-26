@@ -4,11 +4,13 @@ import { cacheLife, cacheTag } from "next/cache"
 
 import {
   DEFAULT_THEME,
+  type SiteThemeConfig,
   ThemeConfig,
   type ThemeConfigValue,
 } from "@/lib/theme/schema"
 import { getDb } from "@/server/db/client"
 import { tag } from "@/server/lib/cache-tags"
+import { isPreviewing } from "@/server/modules/preview/guard"
 import { findSettingsRow } from "@/server/modules/settings/repo"
 
 /**
@@ -41,5 +43,14 @@ export async function getPublishedTheme(): Promise<ThemeConfigValue> {
   return readThemeOrDefault(row?.published)
 }
 
-// Phase 9 restores getPreviewableSiteTheme here (the draft for a verified
-// previewer, else the published site theme); it needs server/modules/preview.
+/**
+ * The public site's theme: the draft for a verified previewer (read
+ * uncached, per request), else the published one.
+ */
+export async function getPreviewableSiteTheme(): Promise<SiteThemeConfig> {
+  if (await isPreviewing()) {
+    const row = await findSettingsRow(getDb(), "theme")
+    return readThemeOrDefault(row?.draft).site
+  }
+  return (await getPublishedTheme()).site
+}
