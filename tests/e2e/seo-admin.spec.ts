@@ -192,26 +192,25 @@ test("SEO › Defaults: hiding the site from search is published and restored", 
     name: "Show the site in search results",
   })
   await expect(show).toBeChecked()
+  const noindex = async () =>
+    (await (await page.request.get("/contact")).text()).includes(
+      'name="robots" content="noindex'
+    )
+  let hidden = false
   try {
     await hide.check()
+    hidden = true
     await publishDraft(page)
-    await expect
-      .poll(async () =>
-        (await (await page.request.get("/contact")).text()).includes("noindex")
-      )
-      .toBe(true)
+    await expect.poll(noindex).toBe(true)
   } finally {
-    await page.goto("/admin/seo/defaults")
-    await page
-      .getByRole("radio", { name: "Show the site in search results" })
-      .check()
-    await publishDraft(page)
-    await expect
-      .poll(async () =>
-        (await (await page.request.get("/contact")).text()).includes(
-          'name="robots" content="noindex'
-        )
-      )
-      .toBe(false)
+    // Only undo what this test did: an earlier failure stays visible.
+    if (hidden) {
+      await page.goto("/admin/seo/defaults")
+      await page
+        .getByRole("radio", { name: "Show the site in search results" })
+        .check()
+      await publishDraft(page)
+      await expect.poll(noindex).toBe(false)
+    }
   }
 })
