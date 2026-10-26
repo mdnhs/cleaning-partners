@@ -53,6 +53,8 @@ export async function listSitemapEntries(): Promise<SitemapSource[]> {
   const rows = await listSitemapRows(getDb())
   const out: SitemapSource[] = []
   for (const row of rows) {
+    // 10.3: builder pages (/p/<slug>) join the sitemap with the builder.
+    if (row.kind === "builder") continue
     const path = pathOf(row)
     if (path === null) continue
     out.push({

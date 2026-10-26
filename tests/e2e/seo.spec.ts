@@ -246,3 +246,36 @@ test.describe("moved and deleted pages redirect", () => {
     }
   })
 })
+
+// R8-10, R8-11: sitemap and robots list absolute CP URLs.
+test.describe("sitemap and robots", () => {
+  test("/sitemap.xml lists the 19 public URLs on the site origin", async ({
+    request,
+  }) => {
+    const response = await request.get("/sitemap.xml")
+    expect(response.status()).toBe(200)
+    const xml = await response.text()
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])
+    expect(locs).toHaveLength(19)
+    for (const loc of locs) expect(loc).toMatch(/^https?:\/\/[^/]+\//)
+    const origin = new URL(locs[0]).origin
+    expect(locs).toContain(`${origin}/`)
+    expect(locs).toContain(`${origin}/services/medical-cleaning`)
+    expect(locs).toContain(
+      `${origin}/blog/5-signs-your-office-needs-a-professional-clean`
+    )
+    expect(locs.some((loc) => loc.includes("?"))).toBe(false)
+    expect(xml).not.toMatch(/security/i)
+  })
+
+  test("/robots.txt disallows /admin and /api and names the sitemap", async ({
+    request,
+  }) => {
+    const response = await request.get("/robots.txt")
+    expect(response.status()).toBe(200)
+    const text = await response.text()
+    expect(text).toMatch(/Disallow: \/admin/)
+    expect(text).toMatch(/Disallow: \/api/)
+    expect(text).toMatch(/Sitemap: https?:\/\/[^/\s]+\/sitemap\.xml/)
+  })
+})

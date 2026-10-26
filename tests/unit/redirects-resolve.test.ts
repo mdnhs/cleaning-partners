@@ -72,7 +72,7 @@ describe("resolvePublicPath (proxy.ts)", () => {
     expect(repo.incrementRedirectHits).toHaveBeenCalledWith({}, "r1")
   })
 
-  it("other unknown paths: redirect if one exists, else pass (catch-all 404)", async () => {
+  it("other unknown paths: redirect if one exists, else pass (global-not-found 404)", async () => {
     expect(await resolvePublicPath("/old-page", live)).toEqual({ kind: "pass" })
     repo.findRedirectByFrom.mockResolvedValue({
       id: "r2",

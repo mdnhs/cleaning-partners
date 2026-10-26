@@ -186,7 +186,7 @@ describe("proxy.ts (public pages: real 404 and redirects)", () => {
     )
   })
 
-  it("rewrites a missing record to the catch-all 404", async () => {
+  it("rewrites a missing record to the global-not-found 404", async () => {
     resolvePublicPath.mockResolvedValue({ kind: "missing" })
     const res = await run("/blog/nope")
     // NextRequest normalises loopback hosts to "localhost" (NextURL); at
@@ -285,7 +285,7 @@ describe("proxy.ts (blocking metadata for public documents only)", () => {
     expect(renderedUa(await run("/"))).toBe(BLOCKING_METADATA_MARK)
   })
 
-  it("the catch-all 404 rewrite is marked (its description is in <head>)", async () => {
+  it("the global-not-found rewrite is marked (its description is in <head>)", async () => {
     resolvePublicPath.mockResolvedValue({ kind: "missing" })
     const res = await run("/blog/nope", { headers: { "user-agent": CHROME } })
     expect(res.headers.get("x-middleware-rewrite")).toBe(
