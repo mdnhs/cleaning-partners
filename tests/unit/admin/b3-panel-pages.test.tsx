@@ -30,6 +30,9 @@ vi.mock("@/server/auth/session", () => ({
   requirePage: session.requirePage,
 }))
 
+vi.mock("@/components/admin/media/library", () => ({
+  MediaLibrary: () => null,
+}))
 vi.mock("@/components/admin/articles/articles-screen", () => ({
   ArticlesScreen: () => null,
 }))
@@ -52,6 +55,7 @@ import BlogPage from "@/app/(admin)/admin/(panel)/blog/page"
 import NewArticlePage from "@/app/(admin)/admin/(panel)/blog/new/page"
 import ActivityPage from "@/app/(admin)/admin/(panel)/activity/page"
 import CollectionsPage from "@/app/(admin)/admin/(panel)/collections/page"
+import MediaPage from "@/app/(admin)/admin/(panel)/media/page"
 import UserPage from "@/app/(admin)/admin/(panel)/users/[id]/page"
 import UsersPage from "@/app/(admin)/admin/(panel)/users/page"
 import SettingsKeyPage from "@/app/(admin)/admin/(panel)/settings/[key]/page"
@@ -175,6 +179,13 @@ describe("dashboard, help, activity and users pages (4.7)", () => {
     await expect(
       inner(UserPage({ params: params({ id: "not-a-uuid" }) } as never))
     ).rejects.toThrow("NOT_FOUND")
+  })
+
+  it("/admin/media needs media:read (every role has it) and renders the library", async () => {
+    const out = await inner(MediaPage())
+    expect(session.requirePage).toHaveBeenCalledWith("/admin/media")
+    expect(out).not.toBeNull()
+    expect(permissionFor("/admin/media")).toEqual({ media: ["read"] })
   })
 
   it("the dashboard and Help open for every signed-in role", async () => {
