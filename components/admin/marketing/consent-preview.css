@@ -1,0 +1,46 @@
+/*
+ * The consent banner preview's utilities (Marketing › Consent banner).
+ * The admin stylesheet never scans the public components or reads the
+ * public tokens (spec 2026-10-19-mk-parity §4.1), so the banner's classes
+ * are built here, for the banner's own files only, and scoped to the
+ * preview frame: no utility applies outside [data-consent-preview].
+ * Exception: Tailwind also emits its global `@property --tw-*` rules and
+ * the `@layer properties` fallback (`*, ::before, ::after, ::backdrop`).
+ * They are identical to what admin.css emits only while both are built by
+ * the same Tailwind version: keep this file and admin.css in lockstep.
+ * The preview also inherits the admin font, not the public body font, so
+ * line wraps can differ slightly from the live banner (known difference).
+ * Theme values are inlined (the admin does not define the public scale);
+ * the brand colours stay variables, set on the frame by
+ * BANNER_PREVIEW_STYLE (lib/analytics/banner-preview-style.ts).
+ */
+/* The admin's layer order, whichever stylesheet loads first. */
+@layer properties, theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" theme(reference inline);
+
+@theme inline reference {
+  --color-brand: var(--color-brand);
+  --color-brand-deep: var(--color-brand-deep);
+  --color-brand-soft: var(--color-brand-soft);
+  --color-navy: var(--color-navy);
+  --color-navy-dark: var(--color-navy-dark);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-body: var(--color-body);
+  --color-subtle: var(--color-subtle);
+  --color-line: var(--color-line);
+  --color-surface: var(--color-surface);
+  --color-sky: var(--color-sky);
+  --color-sky-soft: var(--color-sky-soft);
+  --color-star: var(--color-star);
+}
+
+@source "../../consent/consent-banner-view.tsx";
+@source "../../ui/button.tsx";
+
+@layer utilities {
+  @scope ([data-consent-preview]) {
+    @tailwind utilities source(none);
+  }
+}

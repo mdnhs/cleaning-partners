@@ -20,7 +20,7 @@ import { getEnv } from "@/server/env"
 
 import { resetDb } from "../integration/db"
 
-import { E2E_ADMIN, E2E_OWNER } from "./admin-accounts"
+import { E2E_ADMIN, E2E_MARKETER, E2E_OWNER } from "./admin-accounts"
 import { assertE2eDatabase } from "./env"
 import { E2E_PASSWORD, type E2EFixtures, FIXTURES_FILE } from "./fixtures"
 
@@ -41,6 +41,10 @@ await auth.api.createUser({
 // Plain admin for the Users screen's owner-only checks (users-audit.spec).
 await auth.api.createUser({
   body: { ...E2E_ADMIN, role: ["admin"], password: E2E_PASSWORD },
+})
+
+await auth.api.createUser({
+  body: { ...E2E_MARKETER, role: ["marketer"], password: E2E_PASSWORD },
 })
 
 const editor = { email: "editor@e2e.test", name: "Edith Editor" }

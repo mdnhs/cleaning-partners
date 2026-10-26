@@ -64,6 +64,10 @@ test.describe.serial("custom code snippets (D2.3)", () => {
     browser,
   }) => {
     await signIn(page, E2E_OWNER.email)
+    await page.goto("/admin/marketing/code")
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Custom code" })
+    ).toBeVisible()
     await publishSetting(page, "customCode", () => ({
       ...NO_CODE,
       snippets: [
@@ -112,7 +116,10 @@ test.describe.serial("custom code snippets (D2.3)", () => {
     }
   })
 
-  test("the kill switch stops every snippet", async ({ page, browser }) => {
+  test("the kill switch stops every snippet and the admin page says so", async ({
+    page,
+    browser,
+  }) => {
     await signIn(page, E2E_OWNER.email)
     await publishSetting(page, "customCode", () => ({
       ...NO_CODE,
@@ -131,6 +138,10 @@ test.describe.serial("custom code snippets (D2.3)", () => {
       ],
     }))
     try {
+      await page.goto("/admin/marketing/code")
+      await expect(
+        page.getByRole("status").filter({ hasText: "switched off" })
+      ).toBeVisible()
       const visitor = await browser.newContext()
       const site = await visitor.newPage()
       await site.goto("/")

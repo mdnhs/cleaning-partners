@@ -9,3 +9,8 @@ export const E2E_ADMIN = {
   email: "admin@e2e.test",
   name: "Adam Admin",
 } as const
+// Marketing reader (marketing:read, no custom code): consent.spec Event catalogue.
+export const E2E_MARKETER = {
+  email: "marketer@e2e.test",
+  name: "Mara Marketer",
+} as const

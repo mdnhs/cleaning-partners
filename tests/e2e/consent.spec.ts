@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright"
 import { expect, type Page, test } from "@playwright/test"
 
-import { E2E_ADMIN, E2E_OWNER } from "./admin-accounts"
+import { E2E_ADMIN, E2E_MARKETER, E2E_OWNER } from "./admin-accounts"
 import { BASE_URL } from "./env"
 import { clientIpFor, E2E_PASSWORD } from "./fixtures"
 
@@ -118,6 +118,11 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
     browser,
   }, testInfo) => {
     await signIn(page, E2E_OWNER.email)
+    await page.goto("/admin/marketing")
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Tracking" })
+    ).toBeVisible()
+    await expect(page.getByLabel(/^Google Tag Manager ID/)).toBeVisible()
     await publishSetting(page, "tracking", (d) => ({
       ...d,
       enabled: true,
@@ -135,6 +140,8 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
       await site.goto("/")
       const banner = site.locator("[data-consent-banner]")
       await expect(banner).toBeVisible()
+      // Looked at by the implementer, not a baseline (banner-on baselines: 11.3).
+      await site.screenshot({ path: testInfo.outputPath("banner.png") })
       await expect(
         banner.getByRole("heading", { name: "We use cookies" })
       ).toBeVisible()
@@ -148,8 +155,6 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
       expect(axe.violations.map((v) => v.id)).toEqual([])
       await site.waitForLoadState("networkidle")
       expect(requested).toEqual([])
-      // Looked at by the implementer, not a baseline (banner-on baselines: 11.3).
-      await site.screenshot({ path: testInfo.outputPath("banner.png") })
 
       await banner.getByRole("button", { name: "Accept all" }).click()
       await expect(banner).toBeHidden()
@@ -195,7 +200,7 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
     }
   })
 
-  test("channel switches and the test event (D2.1)", async ({
+  test("channel switches, status panel and the test event (D2.1)", async ({
     page,
     browser,
   }) => {
@@ -211,6 +216,16 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
       metaPixelId: null,
     }))
     try {
+      await page.goto("/admin/marketing")
+      const status = page.getByRole("region", { name: "Status" })
+      const rows = status.getByRole("listitem")
+      await expect(rows.nth(0)).toContainText("Off")
+      await expect(rows.nth(1)).toContainText("Ready")
+      await expect(rows.nth(2)).toContainText("Off")
+      await expect(
+        status.getByRole("button", { name: "Send test event" })
+      ).toBeVisible()
+
       const visitor = await browser.newContext()
       const site = await visitor.newPage()
       const requested = await stubTrackers(site)
@@ -259,6 +274,15 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
     ).json()) as { published: { version: number } }
     const v = live.published.version
     try {
+      await page.goto("/admin/marketing/consent")
+      const preview = page.getByRole("region", { name: "Preview" })
+      await expect(
+        preview.getByRole("button", { name: "First layer", pressed: true })
+      ).toBeVisible()
+      await expect(
+        preview.getByRole("heading", { name: "We use cookies" })
+      ).toBeVisible()
+
       const visitor = await browser.newContext()
       const site = await visitor.newPage()
       const requested = await stubTrackers(site)
@@ -304,11 +328,46 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
     }
   })
 
-  test("custom code: admins get 403", async ({ page }) => {
+  test("custom code: admins cannot see or change it", async ({ page }) => {
     await signIn(page, E2E_ADMIN.email)
     expect(
       (await page.request.get("/api/v1/admin/marketing/customCode")).status()
     ).toBe(403)
+    await page.goto("/admin/marketing")
+    await expect(
+      page.getByRole("navigation", { name: "Marketing" })
+    ).not.toContainText("Custom code")
+  })
+
+  test("a marketer sees the Event catalogue tab and table (D2.4)", async ({
+    page,
+  }) => {
+    await signIn(page, E2E_MARKETER.email)
+    await page.goto("/admin/marketing")
+    const tabs = page.getByRole("navigation", { name: "Marketing" })
+    await tabs.getByRole("link", { name: "Event catalogue" }).click()
+    await page.waitForURL("**/admin/marketing/events")
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Event catalogue" })
+    ).toBeVisible()
+    const table = page.getByRole("table")
+    await expect(table.getByRole("columnheader")).toHaveText([
+      "Event",
+      "Fires when",
+      "Params",
+      "GA4",
+      "Meta",
+    ])
+    // Header + 6 events.
+    await expect(table.getByRole("row")).toHaveCount(7)
+    await expect(
+      table.getByRole("row").filter({ hasText: "page_view_virtual" })
+    ).toContainText("page_view")
+    await expect(page.getByText("docs/gtm-container.json")).toBeVisible()
+    const axe = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+      .analyze()
+    expect(axe.violations.map((v) => v.id)).toEqual([])
   })
 
   test("custom code: the owner's snippets run on public pages", async ({
@@ -316,6 +375,10 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
     browser,
   }) => {
     await signIn(page, E2E_OWNER.email)
+    await page.goto("/admin/marketing/code")
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Custom code" })
+    ).toBeVisible()
     await publishSetting(page, "customCode", () => ({
       ...NO_CODE,
       snippets: [
