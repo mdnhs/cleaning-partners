@@ -1,7 +1,13 @@
 import { expect, type Page, test } from "@playwright/test"
 
 import { clientIpFor } from "../e2e/fixtures"
-import { visibleImagesLoaded } from "../e2e/media-pins"
+import {
+  freezeUploads,
+  MEDIA_ITEMS,
+  pinMedia,
+  PNG_1PX,
+  visibleImagesLoaded,
+} from "../e2e/media-pins"
 
 import { VISUAL_ADMIN, VISUAL_AUTHOR, VISUAL_EDITOR } from "./admin-user"
 
@@ -301,6 +307,249 @@ const OFFICE_TITLE = "5 Signs Your Office Needs a Professional Clean"
 const FEATURED = "deep-cleaning-vs-regular-cleaning-what-your-business-needs"
 const FEATURED_TITLE =
   "Deep Cleaning vs Regular Cleaning: What Your Business Needs"
+
+/**
+ * The media screens decode many thumbnails at once; the sidebar logo (scaled
+ * down from a large file) is repainted a frame later. Let the frames pass
+ * after the images settle, then take the mask list.
+ */
+async function mediaMasks(page: Page) {
+  const list = await masks(page)
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+        )
+      )
+  )
+  return list
+}
+
+/** main#main's scrollTop if it is the same across two frames, else null. */
+function settledMainScrollTop(page: Page): Promise<number | null> {
+  return page.evaluate(
+    () =>
+      new Promise<number | null>((resolve) => {
+        const main = document.querySelector("main#main")
+        const before = main?.scrollTop ?? 0
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            const after = main?.scrollTop ?? 0
+            resolve(after === before ? after : null)
+          })
+        )
+      })
+  )
+}
+
+/**
+ * Settings ▸ Integrations, pinned (Phase 6): SMTP saved (with a passed
+ * test), R2 never set up; the overview lists both plus the two others.
+ */
+const INTEGRATION_BASE = {
+  updatedAt: "2026-10-16T09:00:00.000Z",
+  updatedBy: { id: "u1", name: "Vera Visual" },
+}
+const SMTP_SAVED = {
+  key: "integrations.smtp",
+  slug: "smtp",
+  label: "Email (SMTP)",
+  description: "Sends invitations, password resets and enquiry notifications.",
+  configured: true,
+  version: 2,
+  values: {
+    host: "smtp.example.ie",
+    port: 587,
+    secure: false,
+    user: "mailer@example.ie",
+    fromName: "Cleaning Partners",
+    fromAddress: "no-reply@example.ie",
+  },
+  secrets: { password: { set: true, hint: "••••1234" } },
+  ...INTEGRATION_BASE,
+}
+const R2_NEW = {
+  key: "integrations.r2",
+  slug: "r2",
+  label: "Media storage (Cloudflare R2)",
+  description:
+    "Keeps uploaded images and documents. Until it is set up, uploads stay on the server disk.",
+  configured: false,
+  version: 0,
+  values: { accountId: "", jurisdiction: "default", bucket: "" },
+  secrets: {
+    accessKeyId: { set: false, hint: null },
+    secretAccessKey: { set: false, hint: null },
+  },
+  updatedAt: null,
+  updatedBy: null,
+}
+const TURNSTILE_SAVED = {
+  ...R2_NEW,
+  key: "integrations.turnstile",
+  slug: "turnstile",
+  label: "Spam protection (Cloudflare Turnstile)",
+  description: "An invisible check on the contact form.",
+  configured: true,
+  version: 1,
+  values: { enabled: true, siteKey: "1x00000000000000000000AA" },
+  secrets: { secretKey: { set: true, hint: "••••0000" } },
+  updatedAt: "2026-10-16T09:00:00.000Z",
+  updatedBy: { id: "u1", name: "Vera Visual" },
+}
+const INTEGRATION_LIST = {
+  items: [
+    SMTP_SAVED,
+    R2_NEW,
+    TURNSTILE_SAVED,
+    {
+      ...R2_NEW,
+      key: "integrations.ai",
+      slug: "ai",
+      label: "AI assistant",
+      description: "Writing help in the admin for the roles you choose.",
+      values: {},
+      secrets: { apiKey: { set: false, hint: null } },
+    },
+  ],
+}
+
+async function pinIntegrations(page: Page) {
+  await page.route("**/api/v1/admin/integrations", (route) =>
+    route.fulfill({ json: INTEGRATION_LIST })
+  )
+  await page.route("**/api/v1/admin/integrations/integrations.smtp", (route) =>
+    route.fulfill({ json: SMTP_SAVED })
+  )
+  await page.route(
+    "**/api/v1/admin/integrations/integrations.smtp/test",
+    (route) =>
+      route.fulfill({
+        json: {
+          ok: true,
+          message:
+            "Connected to smtp.example.ie:587 and signed in as mailer@example.ie.",
+          testedAt: "2026-10-16T09:00:00.000Z",
+        },
+      })
+  )
+  await page.route(
+    "**/api/v1/admin/integrations/integrations.turnstile",
+    (route) => route.fulfill({ json: TURNSTILE_SAVED })
+  )
+  await page.route("**/api/v1/admin/integrations/integrations.r2", (route) =>
+    route.fulfill({ json: R2_NEW })
+  )
+  await page.route(
+    "**/api/v1/admin/integrations/integrations.r2/migrate-media",
+    (route) =>
+      route.fulfill({
+        json: {
+          r2Configured: false,
+          r2Error: null,
+          failed: [],
+          onDisk: 12,
+          inR2: 0,
+          state: "idle",
+          lastRunAt: null,
+          lastError: null,
+        },
+      })
+  )
+}
+
+/**
+ * The leads inbox and one lead, pinned (Phase 7): the visual seed has no
+ * enquiries, so the list, the detail and the assignee list are served.
+ */
+const LEAD_ID = "0190f0e0-0000-7000-8000-0000000000d1"
+const LEAD_ROWS = [
+  {
+    id: LEAD_ID,
+    name: "Siobhán Byrne",
+    email: "siobhan@harbourlogistics.example.ie",
+    phone: "087 123 4567",
+    company: "Harbour Logistics",
+    status: "new",
+    assignee: null,
+    sourcePage: "/contact",
+    createdAt: "2026-10-16T09:00:00.000Z",
+  },
+  {
+    id: "0190f0e0-0000-7000-8000-0000000000d2",
+    name: "Declan Murphy",
+    email: "declan@murphybuild.example.ie",
+    phone: null,
+    company: "Murphy Build",
+    status: "contacted",
+    assignee: { id: "u1", name: "Vera Visual" },
+    sourcePage: "/services/commercial-cleaning",
+    createdAt: "2026-10-15T14:30:00.000Z",
+  },
+  {
+    id: "0190f0e0-0000-7000-8000-0000000000d3",
+    name: "Aoife Kelly",
+    email: "aoife.kelly@example.ie",
+    phone: "01 555 0101",
+    company: null,
+    status: "won",
+    assignee: { id: "u1", name: "Vera Visual" },
+    sourcePage: null,
+    createdAt: "2026-10-12T11:15:00.000Z",
+  },
+]
+const LEAD_DETAIL = {
+  ...LEAD_ROWS[0],
+  service: "Commercial cleaning",
+  message:
+    "Hello,\n\nWe need evening cleaning for our Dublin Port depot, Monday to Saturday.\nCould someone call me this week?\n\nThanks, Siobhán",
+  consent: true,
+  updatedAt: "2026-10-16T10:00:00.000Z",
+  events: [
+    {
+      id: "e1",
+      type: "created",
+      body: "Sent from /contact",
+      actor: null,
+      createdAt: "2026-10-16T09:00:00.000Z",
+    },
+    {
+      id: "e2",
+      type: "email",
+      body: "Notification sent to enquiries@example.ie",
+      actor: null,
+      createdAt: "2026-10-16T09:00:01.000Z",
+    },
+    {
+      id: "e3",
+      type: "note",
+      body: "Left a voicemail; will try again tomorrow morning.",
+      actor: { id: "u1", name: "Vera Visual" },
+      createdAt: "2026-10-16T10:00:00.000Z",
+    },
+  ],
+}
+
+async function pinLeads(page: Page) {
+  await page.route("**/api/v1/admin/leads?*", (route) =>
+    route.fulfill({
+      json: { items: LEAD_ROWS, page: 1, pageSize: 20, total: 3 },
+    })
+  )
+  await page.route("**/api/v1/admin/leads/assignees", (route) =>
+    route.fulfill({
+      json: {
+        items: [{ id: "u1", name: "Vera Visual", email: VISUAL_ADMIN.email }],
+      },
+    })
+  )
+  await page.route(`**/api/v1/admin/leads/${LEAD_ID}`, (route) =>
+    route.request().method() === "GET"
+      ? route.fulfill({ json: LEAD_DETAIL })
+      : route.abort()
+  )
+}
 
 for (const colorScheme of ["light", "dark"] as const) {
   test.describe(`${colorScheme} theme`, () => {
@@ -816,6 +1065,340 @@ for (const colorScheme of ["light", "dark"] as const) {
       await page.evaluate(() => document.fonts.ready)
       await expect(page).toHaveScreenshot(shot("not-found"), {
         mask: await masks(page),
+      })
+    })
+
+    test(`admin integrations ${colorScheme}`, async ({ page }) => {
+      await pinIntegrations(page)
+      await signIn(page)
+      await page.goto("/admin/settings/integrations")
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Integrations" })
+      ).toBeVisible()
+      await expect(
+        page.getByRole("link", { name: /AI assistant/ })
+      ).toBeVisible()
+      await expect(page).toHaveScreenshot(shot("integrations"), {
+        mask: await masks(page),
+      })
+    })
+
+    test(`admin SMTP integration saved ${colorScheme}`, async ({ page }) => {
+      await pinIntegrations(page)
+      await signIn(page)
+      await page.goto("/admin/settings/integrations/smtp")
+      await expect(page.getByText("Saved · ends in 1234")).toBeVisible()
+      await page.getByRole("button", { name: "Test connection" }).click()
+      await expect(
+        page.getByRole("status", { name: "Connection test" })
+      ).toContainText("Test passed")
+      // The click scrolled the panel to the buttons: back to the top.
+      await page.locator("main#main").evaluate((main) => main.scrollTo(0, 0))
+      await page.evaluate(() => window.scrollTo(0, 0))
+      await expect(page).toHaveScreenshot(shot("integration-smtp"), {
+        mask: await masks(page),
+      })
+    })
+
+    test(`admin SMTP integration test failed ${colorScheme}`, async ({
+      page,
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name !== "desktop",
+        "one failed-result baseline (desktop) is enough"
+      )
+      await pinIntegrations(page)
+      // Added last, so it answers before the passing pin.
+      await page.route(
+        "**/api/v1/admin/integrations/integrations.smtp/test",
+        (route) =>
+          route.fulfill({
+            json: {
+              ok: false,
+              message:
+                "The server did not respond in time (smtp.example.ie:587).",
+              testedAt: "2026-10-16T09:00:00.000Z",
+            },
+          })
+      )
+      await signIn(page)
+      await page.goto("/admin/settings/integrations/smtp")
+      await expect(page.getByText("Saved · ends in 1234")).toBeVisible()
+      await page.getByRole("button", { name: "Test connection" }).click()
+      const result = page.getByRole("status", { name: "Connection test" })
+      await expect(result).toContainText("Test failed")
+      await result.scrollIntoViewIfNeeded()
+      await expect(page).toHaveScreenshot(shot("integration-smtp-failed"), {
+        mask: await masks(page),
+      })
+    })
+
+    test(`admin Turnstile integration ${colorScheme}`, async ({ page }) => {
+      await pinIntegrations(page)
+      await signIn(page)
+      await page.goto("/admin/settings/integrations/turnstile")
+      await expect(
+        page.getByRole("heading", {
+          level: 1,
+          name: "Spam protection (Cloudflare Turnstile)",
+        })
+      ).toBeVisible()
+      await expect(page.getByText("Saved · ends in 0000")).toBeVisible()
+      await page.evaluate(() => document.fonts.ready)
+      await expect(page).toHaveScreenshot(shot("integration-turnstile"), {
+        mask: await masks(page),
+      })
+    })
+
+    test(`admin R2 integration not set up ${colorScheme}`, async ({ page }) => {
+      await pinIntegrations(page)
+      await signIn(page)
+      await page.goto("/admin/settings/integrations/r2")
+      await expect(page.getByLabel("Location")).toContainText("Default")
+      await expect(
+        page.getByText("12 files on the server disk · 0 in R2")
+      ).toBeVisible()
+      await page.evaluate(() => document.fonts.ready)
+      await expect(page).toHaveScreenshot(shot("integration-r2"), {
+        mask: await masks(page),
+      })
+      // The "Move existing uploads" panel sits below the fold: its own shot.
+      await page
+        .getByText("Move existing uploads to R2", { exact: true })
+        .scrollIntoViewIfNeeded()
+      await expect(page).toHaveScreenshot(shot("integration-r2-move"), {
+        mask: await masks(page),
+      })
+    })
+
+    test(`admin media library ${colorScheme}`, async ({ page }) => {
+      await pinMedia(page)
+      await signIn(page)
+      await page.goto("/admin/media")
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Media" })
+      ).toBeVisible()
+      const files = page.getByRole("list", { name: "Files" })
+      await expect(files.getByRole("listitem")).toHaveCount(MEDIA_ITEMS.length)
+      await expect.poll(() => visibleImagesLoaded(page)).toBe(true)
+      await expect(page).toHaveScreenshot(shot("media"), {
+        mask: await mediaMasks(page),
+      })
+      // The list view (Dimensions and Added hidden on phones).
+      await page.getByRole("button", { name: "List", exact: true }).click()
+      await expect(page.getByRole("table", { name: "Files" })).toBeVisible()
+      await expect.poll(() => visibleImagesLoaded(page)).toBe(true)
+      await expect(page).toHaveScreenshot(shot("media-list"), {
+        mask: await mediaMasks(page),
+      })
+    })
+
+    test(`admin media details sheet ${colorScheme}`, async ({ page }) => {
+      await pinMedia(page)
+      await signIn(page)
+      await page.goto("/admin/media")
+      await page.getByRole("button", { name: /^reception-hero\.png/ }).click()
+      const sheet = page.getByRole("dialog", { name: "reception-hero.png" })
+      await expect(
+        sheet.getByRole("link", { name: "Domestic Cleaning" })
+      ).toBeVisible()
+      await expect.poll(() => visibleImagesLoaded(page)).toBe(true)
+      await expect(page).toHaveScreenshot(shot("media-details"), {
+        mask: await overlayOnly(page),
+      })
+    })
+
+    test(`admin media delete refused ${colorScheme}`, async ({
+      page,
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name !== "desktop",
+        "one 409 baseline (desktop) is enough"
+      )
+      await pinMedia(page)
+      await signIn(page)
+      await page.goto("/admin/media")
+      await page.getByRole("button", { name: /^reception-hero\.png/ }).click()
+      const sheet = page.getByRole("dialog", { name: "reception-hero.png" })
+      await sheet.getByRole("button", { name: "Delete" }).click()
+      await page
+        .getByRole("alertdialog", { name: "Delete this file?" })
+        .getByRole("button", { name: "Delete" })
+        .click()
+      const alert = sheet.getByRole("alert")
+      await expect(alert).toContainText("This file is used in 2 places.")
+      await alert.scrollIntoViewIfNeeded()
+      await expect.poll(() => visibleImagesLoaded(page)).toBe(true)
+      await expect(page).toHaveScreenshot(shot("media-delete-409"), {
+        mask: await overlayOnly(page),
+      })
+    })
+
+    test(`admin media upload in progress ${colorScheme}`, async ({ page }) => {
+      await freezeUploads(page)
+      await pinMedia(page)
+      await signIn(page)
+      await page.goto("/admin/media")
+      await expect(
+        page.getByRole("list", { name: "Files" }).getByRole("listitem")
+      ).toHaveCount(MEDIA_ITEMS.length)
+      await page.locator("[data-upload-input]").setInputFiles([
+        {
+          name: "evening-shift-rota.png",
+          mimeType: "image/png",
+          buffer: PNG_1PX,
+        },
+        { name: "fail-scan.tiff", mimeType: "image/tiff", buffer: PNG_1PX },
+      ])
+      const uploads = page.getByRole("list", { name: "Uploads" })
+      await expect(
+        uploads.getByRole("progressbar", {
+          name: "Uploading evening-shift-rota.png",
+        })
+      ).toHaveAttribute("aria-valuenow", "40")
+      await expect(uploads.getByRole("alert")).toContainText(
+        "Upload a JPEG, PNG, WebP, AVIF, SVG or PDF file"
+      )
+      await page.locator("main#main").evaluate((main) => main.scrollTo(0, 0))
+      await page.evaluate(() => window.scrollTo(0, 0))
+      await expect(page).toHaveScreenshot(shot("media-upload"), {
+        mask: await mediaMasks(page),
+      })
+    })
+
+    test(`admin media picker upload ${colorScheme}`, async ({ page }) => {
+      await freezeUploads(page)
+      await pinMedia(page)
+      await signIn(page)
+      await page.goto("/admin/pages/home")
+      await editorReady(page, "Home")
+      // The editor page shows through the picker's backdrop: open it from
+      // a settled scroll position so the backdrop is the same every run.
+      const change = page
+        .getByRole("region", { name: "Hero" })
+        .getByRole("button", { name: "Change image: Background image" })
+      await expect.poll(() => visibleImagesLoaded(page)).toBe(true)
+      await change.scrollIntoViewIfNeeded()
+      await expect.poll(() => settledMainScrollTop(page)).not.toBeNull()
+      await change.click()
+      const picker = page.getByRole("dialog", {
+        name: "Choose: Background image",
+      })
+      await expect(
+        picker.getByRole("list", { name: "Images" }).getByRole("listitem")
+      ).toHaveCount(
+        MEDIA_ITEMS.filter((m) => m.mime !== "application/pdf").length
+      )
+      await picker.locator("[data-upload-input]").setInputFiles({
+        name: "evening-shift-rota.png",
+        mimeType: "image/png",
+        buffer: PNG_1PX,
+      })
+      await expect(
+        picker.getByRole("progressbar", {
+          name: "Uploading evening-shift-rota.png",
+        })
+      ).toHaveAttribute("aria-valuenow", "40")
+      await expect.poll(() => visibleImagesLoaded(page)).toBe(true)
+      await expect.poll(() => settledMainScrollTop(page)).not.toBeNull()
+      await expect(page).toHaveScreenshot(shot("media-picker-upload"), {
+        mask: await overlayOnly(page),
+      })
+    })
+
+    test(`admin leads board ${colorScheme}`, async ({ page }) => {
+      await pinLeads(page)
+      await signIn(page)
+      await page.goto("/admin/leads")
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Enquiries" })
+      ).toBeVisible()
+      // The board is the inbox's default view: one card per lead.
+      await expect(
+        page.getByRole("main").locator(`[data-lead-card="${LEAD_ID}"]`)
+      ).toContainText("Siobhán Byrne")
+      await expect(page).toHaveScreenshot(shot("leads"), {
+        mask: await masks(page),
+      })
+    })
+
+    test(`admin leads table ${colorScheme}`, async ({ page }) => {
+      await pinLeads(page)
+      await signIn(page)
+      await page.goto("/admin/leads?view=table")
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Enquiries" })
+      ).toBeVisible()
+      // A table from 640 px, cards below: find the links in either.
+      await expect(
+        page
+          .getByRole("main")
+          .getByRole("link", { name: "Siobhán Byrne", exact: true })
+          .filter({ visible: true })
+      ).toBeVisible()
+      await expect(page).toHaveScreenshot(shot("leads-table"), {
+        mask: await masks(page),
+      })
+    })
+
+    // One lead is a drawer over the inbox: details at the top, then the
+    // notes and the activity as sections further down.
+    for (const section of [null, "Notes", "Activity"] as const) {
+      test(`admin lead drawer ${section ?? "details"} ${colorScheme}`, async ({
+        page,
+      }) => {
+        await pinLeads(page)
+        await signIn(page)
+        await page.goto(`/admin/leads?lead=${LEAD_ID}`)
+        const drawer = page.getByRole("dialog", { name: "Siobhán Byrne" })
+        await expect(
+          drawer.getByRole("heading", { name: "Siobhán Byrne" })
+        ).toBeVisible()
+        // A shadcn Select shows only its value, so the assignee list
+        // loading never changes the shot.
+        await expect(drawer.getByLabel("Assigned to")).toContainText(
+          "Unassigned"
+        )
+        if (section) {
+          const region = drawer.getByRole("region", { name: section })
+          await region.scrollIntoViewIfNeeded()
+          await expect(region).toBeVisible()
+          await expect
+            .poll(() =>
+              region.evaluate((el) => {
+                const r = el.getBoundingClientRect()
+                return r.top >= 0 && r.top < window.innerHeight
+              })
+            )
+            .toBe(true)
+        }
+        await page.evaluate(() => document.fonts.ready)
+        // The drawer's times (boxed to a fixed width) are hidden: a mask
+        // over the page behind would show through the drawer.
+        const mask = await overlayOnly(page)
+        await page.addStyleTag({ content: "time { visibility: hidden }" })
+        await expect(page).toHaveScreenshot(
+          shot(section ? `lead-${section.toLowerCase()}` : "lead-drawer"),
+          { mask }
+        )
+      })
+    }
+
+    test(`admin lead delete dialog ${colorScheme}`, async ({ page }) => {
+      await pinLeads(page)
+      await signIn(page)
+      await page.goto(`/admin/leads?lead=${LEAD_ID}`)
+      await page
+        .getByRole("dialog", { name: "Siobhán Byrne" })
+        .getByRole("button", { name: "Delete", exact: true })
+        .click()
+      await expect(
+        page.getByRole("alertdialog", { name: "Delete this lead?" })
+      ).toBeVisible()
+      const mask = await overlayOnly(page)
+      await page.addStyleTag({ content: "time { visibility: hidden }" })
+      await expect(page).toHaveScreenshot(shot("lead-delete-dialog"), {
+        mask,
       })
     })
 
