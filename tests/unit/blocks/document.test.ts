@@ -243,7 +243,7 @@ describe("DraftDocument", () => {
   })
 })
 
-describe("document rules: hardening (D5.1 review)", () => {
+describe("document rules: hardening", () => {
   it("does not echo an invalid duplicate anchor into the messages", () => {
     const junk = "X".repeat(5000)
     const r = validateDocument({

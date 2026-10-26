@@ -8,7 +8,7 @@ const C = "2b8a3c4e-1f2d-4a5b-8c6d-7e8f9a0b1c2d"
 const D = "3b8a3c4e-1f2d-4a5b-8c6d-7e8f9a0b1c2d"
 
 describe("collectMediaIds", () => {
-  it("collectMediaIds finds nested refs in hero, iconCards and richtext images", () => {
+  it("collectMediaIds finds nested refs in page hero, icon items and richtext images", () => {
     const ids = collectMediaIds({
       blocks: [
         {

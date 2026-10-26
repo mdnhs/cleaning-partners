@@ -73,7 +73,7 @@ export const DraftDocument = z.object({
           data: draftData,
         })
         // Reserved section ids hold for drafts too: save, restore and a
-        // copied page's seed are refused like publish (D5.5 ruling).
+        // copied page's seed are refused like publish.
         .superRefine((block, ctx) => {
           const problem = reservedAnchorProblem(block.anchor, block.type)
           if (problem)

@@ -14,12 +14,5 @@ export const text = (max: number) =>
 /** A count of items a collection-backed block shows. */
 export const count = (max: number) => z.number().int().min(1).max(max)
 
-/** Blocks that render a shared section exactly as Settings › Sections has it. */
+/** Blocks that render a shared section exactly as Site settings has it. */
 export const sharedOnly = z.object({ useShared: z.literal(true) })
-
-/** Eyebrow, heading and intro above a section's cards. */
-export const sectionCopy = {
-  eyebrow: text(40),
-  heading: text(80),
-  intro: text(240),
-}

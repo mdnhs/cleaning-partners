@@ -1,7 +1,7 @@
 import type { z } from "zod"
 
 /**
- * One entry of the page builder's block library (spec §7.5). Each block
+ * One entry of the page builder's block library. Each block
  * wraps an existing public section component; the schema is the data an
  * editor fills in, `defaults` what a freshly added block starts with
  * (autosave accepts it as a draft; publish runs the full schema).

@@ -1,5 +1,5 @@
 // Builder page addresses (/p/<slug>) without zod, so proxy.ts can check a
-// slug without loading the block schemas (D5.3 review minor 3).
+// slug without loading the block schemas.
 // lib/schemas/api/builder-pages `builderSlug` is built from these.
 
 export const BUILDER_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/

@@ -60,13 +60,13 @@ describe("preview scope for builder pages", () => {
   })
 
   it("an author (article preview, no page:read) sees no builder draft", async () => {
-    expect(
-      await previewPath(
+    await expect(
+      previewPath(
         actor(["author"]),
         "article",
         "00000000-0000-4000-8000-000000000000"
-      ).catch(() => "no-article")
-    ).toBe("no-article")
+      )
+    ).rejects.toMatchObject({ code: "NOT_FOUND" })
     who.roles = ["author"]
     expect(await getBuilderPageForRequest("coming-soon")).toBeNull()
   })
