@@ -53,8 +53,13 @@ describe("og logo loader (share card)", () => {
       image: null,
       transient: true,
     })
+  })
+
+  it("a missing object or driver (null or empty read) is not transient", async () => {
     read.mockResolvedValue(null)
-    expect((await loadLogo(logo())).transient).toBe(true)
+    expect(await loadLogo(logo())).toEqual({ image: null, transient: false })
+    read.mockResolvedValue(new Uint8Array(0))
+    expect(await loadLogo(logo())).toEqual({ image: null, transient: false })
   })
 
   it("a logo over 2 MB is never read and falls back to the text card", async () => {

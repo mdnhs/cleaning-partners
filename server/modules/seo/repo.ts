@@ -142,23 +142,25 @@ const RICH_TEXT_PAGES = (Object.keys(PAGES) as PageKey[]).filter(
 
 /**
  * Rich text of each record that has any (live, else draft): legal pages'
- * body and an article's body (null when it has none). A service's overview
- * is paragraphs of plain text (it cannot hold a link), so services are not
- * listed and the internal-link check passes for them, as for any record
- * without rich text.
+ * body, a service's overview, an article's body (null when it has none).
+ * Records without rich text are not listed (internal-link check passes).
  */
 export async function listSeoRichText(
   db: DbOrTx
 ): Promise<{ kind: SeoKind; id: string; doc: unknown }[]> {
-  const [pageRows, articleRows] = await Promise.all([
+  const [pageRows, serviceRows, articleRows] = await Promise.all([
     db
       .select({ id: pages.key, doc: doc(pages, "body") })
       .from(pages)
       .where(inArray(pages.key, RICH_TEXT_PAGES)),
+    db
+      .select({ id: services.id, doc: doc(services, "overview") })
+      .from(services),
     db.select({ id: articles.id, doc: doc(articles, "body") }).from(articles),
   ])
   return [
     ...pageRows.map((row) => ({ kind: "page" as const, ...row })),
+    ...serviceRows.map((row) => ({ kind: "service" as const, ...row })),
     ...articleRows.map((row) => ({ kind: "article" as const, ...row })),
   ]
 }

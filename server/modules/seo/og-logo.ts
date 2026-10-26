@@ -24,7 +24,7 @@ export type LogoImage = { src: string; width: number; height: number }
 /**
  * The logo as a data URI for the share card. `image` is null when the card
  * prints the site name instead. `transient` is true only when a logo is
- * configured, drawable and small enough but could not be read (a storage
+ * configured, drawable and small enough but the read threw (a storage
  * error): the caller then caches the card briefly, so an outage does not
  * pin a card without its logo.
  */
@@ -38,7 +38,9 @@ export async function loadLogo(
     if (logo.driver === "static")
       bytes = await readFile(staticFilePath(logo.key))
     else bytes = (await (await storageFor(logo.driver))?.read(logo.key)) ?? null
-    if (!bytes || bytes.length === 0) return { image: null, transient: true }
+    // Nothing there: the object is gone or the driver is missing. Only a
+    // thrown read error is an outage worth a short cache.
+    if (!bytes || bytes.length === 0) return { image: null, transient: false }
     // The stored size can be stale: the bytes read are what get inlined.
     if (bytes.length > LOGO_MAX_BYTES) return { image: null, transient: false }
     const ratio = logo.width && logo.height ? logo.width / logo.height : 3

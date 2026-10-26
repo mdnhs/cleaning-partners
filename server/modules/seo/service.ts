@@ -50,7 +50,8 @@ import {
   updateSeoColumn,
 } from "./repo"
 
-// 10.3: both come from lib/schemas/api/builder-pages.ts once builder pages ship.
+// 10.3: both come from lib/schemas/api/builder-pages.ts once builder pages ship;
+// FIX_BASE.builder ("/admin/pages/custom") below is not a route yet either.
 const BUILDER_ENTITY = "builder-page"
 const builderPath = (slug: string) => `/p/${slug}`
 

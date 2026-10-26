@@ -9,7 +9,7 @@ vi.mock("next/cache", () => ({
 
 import type { SeoHealthDto } from "@/lib/schemas/api/seo"
 import { getDb } from "@/server/db/client"
-import { articles, media } from "@/server/db/schema"
+import { articles, media, services } from "@/server/db/schema"
 import { seedContent } from "@/server/db/seed"
 
 import { resetDb } from "../db"
@@ -199,6 +199,43 @@ describe("GET /seo/health (D1.2)", () => {
     expect(fix("article", article.id)?.fixHref).toBe(
       `/admin/blog/${article.id}?tab=seo`
     )
+  })
+
+  it("internal-link reads a service's published overview (links survive paragraphsText)", async () => {
+    const { service } = await liveRecords()
+    const setOverview = (href?: string) =>
+      getDb()
+        .update(services)
+        .set({
+          published: sql`jsonb_set(${services.published}, '{overview}', ${JSON.stringify(
+            {
+              type: "doc",
+              content: [
+                {
+                  type: "paragraph",
+                  content: [
+                    {
+                      type: "text",
+                      text: "Read more",
+                      ...(href
+                        ? { marks: [{ type: "link", attrs: { href } }] }
+                        : {}),
+                    },
+                  ],
+                },
+              ],
+            }
+          )}::jsonb)`,
+        })
+        .where(eq(services.id, service.id))
+    await setOverview()
+    expect(
+      result(await health(), "service", service.id, "internal-link").ok
+    ).toBe(false)
+    await setOverview("/contact")
+    expect(
+      result(await health(), "service", service.id, "internal-link").ok
+    ).toBe(true)
   })
 
   it("internal-link reads the live article body from the database", async () => {
