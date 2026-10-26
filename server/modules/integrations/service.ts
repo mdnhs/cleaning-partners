@@ -257,7 +257,7 @@ const aiTarget = (values: Values) => {
     : provider
 }
 const R2_FOLDER_REQUIRED =
-  "A folder was saved: it cannot be cleared (the bucket may be shared with another site)"
+  "A sub-folder was saved: it can be changed while no uploads are stored in R2, but not cleared"
 const AI_KEY_AGAIN = "Enter the API key again for the new provider"
 const ACKNOWLEDGE_FIRST = "Confirm the acknowledgement first"
 
