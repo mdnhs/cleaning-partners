@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import type { LeadDto } from "@/lib/schemas/api/leads"
 import { app } from "@/server/api/app"
 import { getDb } from "@/server/db/client"
 import { auditLog, leadEvents, leads } from "@/server/db/schema"
@@ -8,6 +9,7 @@ import { seedContent } from "@/server/db/seed"
 import { mailer } from "@/server/lib/mailer"
 
 import { resetDb } from "../db"
+import { adminRequest, signedInUser } from "../helpers/auth"
 
 let ipCounter = 0
 const freshIp = () => `198.51.100.${++ipCounter}`
@@ -51,9 +53,12 @@ async function onlyLead() {
   return rows[0]
 }
 
+let admin: string
+
 beforeEach(async () => {
   await resetDb()
   await seedContent(getDb())
+  admin = (await signedInUser(["admin"])).cookie
   vi.spyOn(mailer, "send").mockResolvedValue({ delivered: true })
 })
 
@@ -62,16 +67,25 @@ afterEach(() => {
 })
 
 describe("lead attribution (D3.1)", () => {
-  it("a lead with attribution stores it on the lead row", async () => {
+  it("a lead with attribution round-trips to GET /leads/:id", async () => {
     expect((await post({ ...BODY, attribution: ATTRIBUTION })).status).toBe(200)
     const row = await onlyLead()
     expect(row.attribution).toEqual(ATTRIBUTION)
+
+    const res = await adminRequest(`/leads/${row.id}`, { cookie: admin })
+    expect(res.status).toBe(200)
+    const dto = (await res.json()) as LeadDto
+    expect(dto.attribution).toEqual(ATTRIBUTION)
   })
 
-  it("a lead without attribution stores null", async () => {
+  it("a lead without attribution stores null (and the DTO says so)", async () => {
     expect((await post(BODY)).status).toBe(200)
     const row = await onlyLead()
     expect(row.attribution).toBeNull()
+    const dto = (await (
+      await adminRequest(`/leads/${row.id}`, { cookie: admin })
+    ).json()) as LeadDto
+    expect(dto.attribution).toBeNull()
   })
 
   it("invalid attribution never loses the enquiry: dropped, warned, lead saved (M5)", async () => {
@@ -163,6 +177,39 @@ describe("lead attribution (D3.1)", () => {
       utm: { utm_source: "<script>alert(1)</script>" },
       capturedAt: ATTRIBUTION.capturedAt,
     })
+  })
+
+  it("the CSV has the new columns, and a formula-like UTM gets the ' guard", async () => {
+    expect(
+      (
+        await post({
+          ...BODY,
+          attribution: {
+            ...ATTRIBUTION,
+            utm: {
+              ...ATTRIBUTION.utm,
+              utm_campaign: '=HYPERLINK("http://evil","x")',
+              utm_term: "+1",
+            },
+          },
+        })
+      ).status
+    ).toBe(200)
+    await post({ ...BODY, email: "plain@example.ie" })
+    const res = await adminRequest("/leads/export.csv", { cookie: admin })
+    expect(res.status).toBe(200)
+    const lines = (await res.text()).replace(/^\uFEFF/, "").split("\r\n")
+    expect(
+      lines[0].endsWith(
+        ",Lead ID,Referrer,Landing page,UTM source,UTM medium,UTM campaign,UTM term,UTM content"
+      )
+    ).toBe(true)
+    const withSource = lines.find((l) => l.includes("dinn@example.ie"))!
+    expect(withSource).toMatch(
+      /,https:\/\/www\.google\.com\/search,\/services\/office-cleaning,google,cpc,"'=HYPERLINK\(""http:\/\/evil"",""x""\)",'\+1,ad-1$/
+    )
+    const plain = lines.find((l) => l.includes("plain@example.ie"))!
+    expect(plain.endsWith(",,,,,,,")).toBe(true)
   })
 
   it("stores attribution only on the lead row, never in the audit log or events", async () => {

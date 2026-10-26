@@ -4,6 +4,7 @@ import { deleteRetiredMediaJob } from "./delete-retired-media"
 import { migrateMediaJob } from "./migrate-media"
 import { publishScheduledJob } from "./publish-scheduled"
 import { pruneRevisionsJob } from "./prune-revisions"
+import { purgeLeadsJob } from "./purge-leads"
 
 export type JobContext = { now: Date; payload: unknown }
 /**
@@ -28,12 +29,13 @@ export type JobDefinition = {
 }
 
 /**
- * Spec §12 recurring jobs. purge-leads arrives in 7.4 and backup in 11.1:
- * each is added here when its module exists.
+ * Spec §12 recurring jobs. backup arrives in 11.1: it is added here when
+ * its module exists.
  */
 export const RECURRING_JOBS: readonly JobDefinition[] = [
   publishScheduledJob,
   pruneRevisionsJob,
+  purgeLeadsJob,
 ]
 
 /** One-off jobs queued by a request (enqueueKeyedJob); tick() runs them, ensureRecurringJobs never creates them. */

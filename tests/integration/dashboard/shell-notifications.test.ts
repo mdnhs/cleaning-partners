@@ -5,6 +5,7 @@ import { jobs, settings } from "@/server/db/schema"
 import type { Actor } from "@/server/lib/actor"
 import { loadShellExtras } from "@/server/lib/admin-shell-extras"
 import { getShellNotifications } from "@/server/modules/dashboard/service"
+import { insertLead } from "@/server/modules/leads/repo"
 
 import { resetDb } from "../db"
 import { createUser } from "../helpers/auth"
@@ -80,9 +81,16 @@ describe("topbar bell (final review I6)", () => {
     ).toEqual([])
   })
 
-  it("loadShellExtras (panel layout) feeds the bell from the database: no leads yet, failed jobs for the owner", async () => {
+  it("loadShellExtras (panel layout) feeds the badge and bell from the database: a new unassigned lead and a failed job", async () => {
     const owner = await createUser({ roles: ["owner"] })
     const editor = await createUser({ roles: ["editor"] })
+    await insertLead(getDb(), {
+      name: "Aoife Byrne",
+      email: "aoife@example.ie",
+      phone: "085 000 0000",
+      message: "Weekly office cleaning, please.",
+      consent: true,
+    })
     await getDb().insert(jobs).values({
       name: "backup",
       key: "backup",
@@ -90,12 +98,14 @@ describe("topbar bell (final review I6)", () => {
       lastError: "pg_dump exited with code 1",
     })
     const forOwner = await loadShellExtras(actorOf(owner.id, ["owner"]))
-    expect(forOwner.badges).toEqual({})
+    expect(forOwner.badges).toEqual({ "new-leads": 1 })
     expect(forOwner.notifications.map((item) => item.id)).toEqual([
+      "new-leads",
       "failed-jobs",
     ])
-    expect(
-      (await loadShellExtras(actorOf(editor.id, ["editor"]))).notifications
-    ).toEqual([])
+    // An editor has no lead:read: no badge, and no lead item in the bell.
+    const forEditor = await loadShellExtras(actorOf(editor.id, ["editor"]))
+    expect(forEditor.badges).toEqual({})
+    expect(forEditor.notifications).toEqual([])
   })
 })

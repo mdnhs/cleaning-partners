@@ -27,7 +27,7 @@ import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
 import { internalRoutes } from "@/server/modules/internal/routes"
 import { integrationsRoutes } from "@/server/modules/integrations/routes"
-import { publicLeadsRoutes } from "@/server/modules/leads/routes"
+import { leadsRoutes, publicLeadsRoutes } from "@/server/modules/leads/routes"
 import { mediaFileRoutes, mediaRoutes } from "@/server/modules/media/routes"
 import { pagesRoutes } from "@/server/modules/pages/routes"
 import {
@@ -62,6 +62,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/settings", settingsRoutes)
   .route("/media", mediaRoutes)
   .route("/integrations", integrationsRoutes)
+  .route("/leads", leadsRoutes)
   .route("/revisions", revisionsRoutes)
   .route("/preview", adminPreviewRoutes)
 export type AdminApi = typeof adminRoutes
