@@ -360,3 +360,14 @@ html[data-admin]
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
+
+/*
+ * The default button's hover (`hover:bg-primary/90` in components/ui/button,
+ * shared with the public site) fades the teal towards the white canvas: white
+ * label text then falls to 4.36:1 in light (WCAG 1.4.3, found by
+ * tests/e2e/admin-a11y.spec.ts). In the admin the hover deepens the fill
+ * instead. Unlayered, so it wins over the utility layer.
+ */
+html[data-admin] [data-slot="button"].bg-primary:hover:not(:disabled) {
+  background-color: color-mix(in oklab, var(--primary), var(--foreground) 12%);
+}
