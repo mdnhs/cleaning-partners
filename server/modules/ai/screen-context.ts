@@ -16,9 +16,10 @@ import { knownServices, serviceBucket } from "./tool-data"
 /**
  * Screens whose record is website copy (the versioned editors), passed to
  * the model as the browser sends it. Settings editors share their record
- * too (site name, contact details shown on the site).
+ * too (site name, contact details shown on the site), and so does the
+ * page builder (a custom page's blocks).
  */
-const SITE_COPY = new Set(["page", "service", "article", "settings"])
+const SITE_COPY = new Set(["page", "service", "article", "settings", "builder"])
 
 /**
  * Settings keys whose record is not website copy: Settings › Leads holds

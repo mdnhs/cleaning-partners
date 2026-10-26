@@ -201,6 +201,55 @@ describe("GET /seo/health (D1.2)", () => {
     )
   })
 
+  it("a builder page's fix link opens its builder SEO tab (R10-13 / Phase 8 deferral)", async () => {
+    const created = await adminRequest("/builder-pages", {
+      cookie: editor,
+      method: "POST",
+      json: { slug: "seo-fix", title: "SEO fix" },
+    })
+    expect(created.status, await created.clone().text()).toBe(201)
+    const page = (await created.json()) as { id: string }
+    // Only published rows raise issues: give it one block, then publish.
+    const send = async (path: string, method: string, json: unknown) => {
+      const res = await adminRequest(`/builder-pages/${page.id}${path}`, {
+        cookie: editor,
+        method,
+        json,
+      })
+      expect(res.status, await res.clone().text()).toBe(200)
+    }
+    await send("/draft", "PUT", {
+      version: 1,
+      draft: {
+        blocks: [
+          {
+            id: "block-1",
+            type: "richtext",
+            anchor: "text",
+            hidden: false,
+            data: {
+              doc: {
+                type: "doc",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Hi" }],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    })
+    await send("/publish", "POST", { version: 2 })
+    await putSeo("builder", page.id, { noindex: true })
+    const issue = (await health()).issues.find(
+      (i) => i.kind === "builder" && i.id === page.id && i.check === "indexable"
+    )
+    expect(issue?.fixHref).toBe(`/admin/pages/custom/${page.id}?tab=seo`)
+  })
+
   it("internal-link reads a service's published overview (links survive paragraphsText)", async () => {
     const { service } = await liveRecords()
     const setOverview = (href?: string) =>

@@ -70,6 +70,7 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "users/[id]/page.tsx": { user: ["read"] },
   "pages/page.tsx": { page: ["read"] },
   "pages/[key]/page.tsx": { page: ["read"] },
+  "pages/custom/[id]/page.tsx": { page: ["read"] },
   "blog/page.tsx": { article: ["read"] },
   "blog/[id]/page.tsx": { article: ["read"] },
   "blog/categories/page.tsx": { collection: ["read"] },

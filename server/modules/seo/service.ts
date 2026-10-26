@@ -51,8 +51,6 @@ import {
   updateSeoColumn,
 } from "./repo"
 
-// 10.3: FIX_BASE.builder ("/admin/pages/custom") below is not a route yet.
-
 type Context = {
   defaults: SeoDefaultsSettings
   values: Placeholders
