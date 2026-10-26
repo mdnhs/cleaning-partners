@@ -421,11 +421,11 @@ describe("MediaPickerDialog", () => {
         within(dialog).queryByRole("button", { name: /Team photo/ })
       ).toBeNull()
     )
-    const officer = within(dialog).getByRole("button", {
+    const option = within(dialog).getByRole("button", {
       name: /Cleaner at night/,
     })
-    await user.click(officer)
-    expect(officer).toHaveAttribute("aria-pressed", "true")
+    await user.click(option)
+    expect(option).toHaveAttribute("aria-pressed", "true")
     await user.click(
       within(dialog).getByRole("button", { name: "Use this image" })
     )

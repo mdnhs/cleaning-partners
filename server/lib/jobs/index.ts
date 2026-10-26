@@ -1,0 +1,45 @@
+import "server-only"
+
+import { deleteRetiredMediaJob } from "./delete-retired-media"
+import { publishScheduledJob } from "./publish-scheduled"
+import { pruneRevisionsJob } from "./prune-revisions"
+
+export type JobContext = { now: Date; payload: unknown }
+/**
+ * `tags`: cache tags to expire; `warning`: recorded in jobs.last_error
+ * without failing the run; `done`: one-off job finished → its row is
+ * deleted; `park`: one-off job made no progress → not run again until it is
+ * queued again (enqueueKeyedJob); the value is kept as payload.parked.
+ */
+export type JobResult = {
+  tags?: string[]
+  warning?: string
+  done?: boolean
+  park?: Record<string, unknown>
+}
+export type JobDefinition = {
+  name: string
+  /** jobs.key: one row per recurring job. */
+  key: string
+  /** Next run = this long after a successful run. */
+  everyMs: number
+  run(ctx: JobContext): Promise<JobResult>
+}
+
+/**
+ * Spec §12 recurring jobs. purge-leads arrives in 7.4 and backup in 11.1:
+ * each is added here when its module exists.
+ */
+export const RECURRING_JOBS: readonly JobDefinition[] = [
+  publishScheduledJob,
+  pruneRevisionsJob,
+]
+
+/** One-off jobs queued by a request (enqueueKeyedJob); tick() runs them, ensureRecurringJobs never creates them. 6.x adds migrate-media. */
+export const TRIGGERED_JOBS: readonly JobDefinition[] = [deleteRetiredMediaJob]
+
+/** Every handler tick() can dispatch. */
+export const ALL_JOBS: readonly JobDefinition[] = [
+  ...RECURRING_JOBS,
+  ...TRIGGERED_JOBS,
+]

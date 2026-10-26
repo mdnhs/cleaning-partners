@@ -22,9 +22,10 @@ import { app } from "@/server/api/app"
 import { getDb } from "@/server/db/client"
 import { auditLog, jobs, media } from "@/server/db/schema"
 import { seedContent } from "@/server/db/seed"
+import { deleteRetiredMediaJob } from "@/server/lib/jobs/delete-retired-media"
+import { tick } from "@/server/lib/scheduler"
 import { diskStorage } from "@/server/lib/storage"
 import {
-  deleteRetiredMediaFile,
   RETIRED_FILE_GRACE_MS,
   RETIRED_MEDIA_JOB_NAME,
 } from "@/server/modules/media/service"
@@ -232,10 +233,11 @@ describe("POST /api/v1/admin/media/:id/replace", () => {
       before + RETIRED_FILE_GRACE_MS
     )
 
-    // The scheduler's tick arrives with the job runner (Phase 5): run the
-    // job's handler on its due row directly, as the scheduler would.
-    await getDb().delete(jobs).where(eq(jobs.id, row.id))
-    await deleteRetiredMediaFile(row.payload)
+    await tick({
+      now: new Date(row.runAt.getTime() + 1),
+      jobs: [deleteRetiredMediaJob],
+      revalidate: vi.fn(),
+    })
     expect(await diskStorage().read(keyOf(first))).toBeNull()
     expect((await app.request(first.url)).status).toBe(404)
     expect(

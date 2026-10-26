@@ -100,8 +100,7 @@ test("schedule then unschedule: a scheduled article stays off the site", async (
   expect(((await cancel.json()) as ArticleDto).status).toBe("draft")
 })
 
-// Task 5.4: flip to test
-test.fixme("a scheduled article goes live on the next scheduler tick", async ({
+test("a scheduled article goes live on the next scheduler tick", async ({
   page,
   browser,
 }) => {
@@ -139,9 +138,8 @@ test.fixme("a scheduled article goes live on the next scheduler tick", async ({
     ).toBeVisible({ timeout: 2_000 })
   }).toPass({ timeout: 180_000, intervals: [5_000] })
   await visitor.goto("/blog")
-  await expect(
-    visitor.getByRole("heading", { level: 3, name: title })
-  ).toBeVisible()
+  // The newest article is the list's featured card (h2); the rest are h3.
+  await expect(visitor.getByRole("heading", { name: title })).toBeVisible()
   await context.close()
 
   const after = (await (

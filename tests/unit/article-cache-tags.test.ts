@@ -9,7 +9,10 @@ import { describe, expect, it } from "vitest"
  * need to expire `tag.articles`: dropping that tag from a query here would
  * leave stale category names on /blog after a rename.
  */
-const source = readFileSync("server/modules/articles/queries.ts", "utf8")
+const source = readFileSync(
+  new URL("../../server/modules/articles/queries.ts", import.meta.url),
+  "utf8"
+)
 
 const cached = [
   ...source.matchAll(

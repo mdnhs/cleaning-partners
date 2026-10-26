@@ -25,6 +25,7 @@ import {
 } from "@/server/modules/collections/routes"
 import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
+import { internalRoutes } from "@/server/modules/internal/routes"
 import { mediaFileRoutes, mediaRoutes } from "@/server/modules/media/routes"
 import { pagesRoutes } from "@/server/modules/pages/routes"
 import {
@@ -101,6 +102,12 @@ export function createApp() {
 
   // 5. Health
   api.route("/v1/health", healthRoutes)
+
+  // Scheduler → cache expiry (HMAC, HKDF "cron"; ledger ruling). Not admin:
+  // no session; the signature is the authentication. No CORS: only the
+  // server itself calls it.
+  api.use("/v1/internal/*", limitBody("public"))
+  api.route("/v1/internal", internalRoutes)
 
   // 6. Media files (disk; R2 in Phase 6), public and cacheable (spec §11)
   api.route("/v1/media/file", mediaFileRoutes)
