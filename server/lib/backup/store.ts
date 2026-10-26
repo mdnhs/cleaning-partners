@@ -36,7 +36,7 @@ export type BackupObject = { name: string; bytes: number; createdAt: Date }
 
 export type BackupStore = {
   kind: "disk" | "r2"
-  /** For messages: "/data/backups" or "r2://<bucket>/backups/". */
+  /** For messages: "/data/backups" or "r2://<bucket>/cp/backups/". */
   location: string
   put(name: string, file: string): Promise<void>
   /** Every stored file, newest first (names embed the UTC stamp). */
@@ -112,7 +112,7 @@ export function r2BackupStore(
   config: R2Config,
   client: S3Client = createR2Client(config)
 ): BackupStore {
-  // Under the R2 folder (keyPrefix) when one is set: "<folder>/backups/".
+  // Under the R2 folder (keyPrefix) when one is set: "cp/<folder>/backups/".
   const prefix = r2ObjectKey(config, BACKUP_PREFIX)
   const key = (name: string) => `${prefix}${checkName(name)}`
   return {
