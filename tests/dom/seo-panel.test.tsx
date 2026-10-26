@@ -16,6 +16,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
 }))
 
+import { useAssistant } from "@/components/admin/ai/assistant-context"
 import { PageEditor } from "@/components/admin/pages/page-editor"
 import { makeQueryClient } from "@/components/admin/providers"
 import { draftFallbackTitle } from "@/components/admin/seo/editor-seo-tab"
@@ -285,6 +286,15 @@ const homeEntry: SeoEntry = {
   issues: [],
 }
 
+function FocusedFieldProbe() {
+  const { field } = useAssistant()
+  return (
+    <output data-testid="assistant-field">
+      {field ? `${field.path}|${field.label}` : ""}
+    </output>
+  )
+}
+
 describe("editor SEO tab (MK D1.4)", () => {
   function renderEditor(dto: PageDto = pageDto) {
     routes["GET /api/v1/admin/pages/home"] = () => json(200, dto)
@@ -300,9 +310,23 @@ describe("editor SEO tab (MK D1.4)", () => {
     return render(
       <AdminShell queryClient={makeQueryClient()} session={session}>
         <PageEditor pageKey="home" origin="https://example.ie" />
+        <FocusedFieldProbe />
       </AdminShell>
     )
   }
+
+  it("focusing an SEO field reports it to the assistant as seo.<path> / SEO <label> (prop chain)", async () => {
+    window.history.replaceState(null, "", "/admin/pages/home?tab=seo")
+    const user = userEvent.setup()
+    renderEditor()
+    const socialTitle = await screen.findByRole("textbox", {
+      name: /^Social title/,
+    })
+    await user.click(socialTitle)
+    expect(screen.getByTestId("assistant-field")).toHaveTextContent(
+      /^seo\.ogTitle\|SEO social title$/
+    )
+  })
 
   it("?tab=seo opens the SEO tab; unsaved SEO edits survive a switch to Content and back", async () => {
     window.history.replaceState(null, "", "/admin/pages/home?tab=seo")

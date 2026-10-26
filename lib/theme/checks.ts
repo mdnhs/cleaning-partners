@@ -116,8 +116,12 @@ export function rating(
   min: Min
 ): "AAA" | "AA" | "floor" | "fail" {
   if (ratio < min) return "fail"
-  // A pair held to a floor under 3 passes the floor, not WCAG AA.
-  if (min < 3 && ratio < 3) return "floor"
+  // A pair held to a floor under 3 is normal-size text (the brand button),
+  // so it only earns AA at 4.5; below that it passes the floor, not WCAG.
+  if (min < 3) {
+    if (ratio < 4.5) return "floor"
+    return ratio >= 7 ? "AAA" : "AA"
+  }
   return ratio >= (min < 4.5 ? 4.5 : 7) ? "AAA" : "AA"
 }
 

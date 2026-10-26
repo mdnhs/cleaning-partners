@@ -433,6 +433,39 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
         - the OG eyebrow repeats the site name on the home card (SP behaviour);
         - `tag.redirects` is expired but unread (the proxy lookup is uncached). Wire it if a cache is ever added.
 
+  - **Phase 9 outcome.**
+    - **Shipped:**
+      - Theme engine. The default public theme emits no `<style>` (B5). This is proven by a runtime test, an e2e over all 22 PUBLIC_URLS, and visual 44/44.
+      - Appearance and Design screens. Cleaning Partners is the first preset.
+      - AI assistant with core, module, settings, a panel opened with ⌘J, and screen hooks. The default model is `claude-sonnet-5-5`, and the key is encrypted in the integrations settings. The tools are read-only. The enquiry-sharing switch is owner-only and off by default.
+    - **Only intentional SP behaviour difference:** the SeoPanel Insert hook. Insert dirties the panel and the user clicks "Save SEO".
+    - **Rulings:**
+      - R9-11 was amended to SP's strict `allowedRoles` allow-list.
+      - R9-4 added white-on-brand to `SITE_PAIRS` with a 2.5 floor ("today's design").
+    - **Deferrals by owning task:**
+      - **10.3:** render `/p/[slug]` inside `SiteThemed`. `site-themed-pages.test.ts` then expects 10 pages.
+      - **10.4:** the builder editor inherits the assistant hooks through `VersionedEditor` or adds `useAssistantScreen` with `entityType: "builder"`. Add `"builder"` to `SITE_COPY` in `server/modules/ai/screen-context.ts`.
+      - **11.1:** `secrets:rotate` re-encrypts `integrations.ai.apiKey`.
+      - **11.3:**
+        - Admin visual baselines for Appearance (light and dark), Design, and the assistant in its empty, history and reply states, via `tests/e2e/ai-pins.ts`.
+        - Admin a11y URLs `/admin/appearance`, `/admin/design`, `/admin/settings/ai-assistant`.
+        - Port `roles.spec.ts` with its Appearance and AI rows.
+      - **11.5 (owner decisions and runbook):**
+        - **OWNER MUST CONFIRM (`docs/launch.md`):** with "share enquiry details" on, enquiry names, companies, messages and notes go to the chosen AI provider, which becomes a GDPR processor. Addresses and Eircodes typed into messages are not redacted.
+        - **Owner note on contrast:** white on the frozen brand `#11b1d1` is 2.55:1, below WCAG 3:1 (large) and 4.5:1. The 2.5 floor only stops it getting worse. A deeper brand can be chosen in Appearance.
+        - **Runbook "AI assistant" section:**
+          - the key is entered in Settings, with no env; Test connection and List models are there;
+          - the allow-list is strict (a saved list without owner or admin locks them out until someone who manages settings re-saves);
+          - the share switch;
+          - an impersonating admin can read the target's conversations (SP parity).
+      - **11.x (parked minors):**
+        - A previewer without `appearance:read` sees the draft site theme (SP parity).
+        - Appearance autosave has no unload guard (SP parity).
+        - `alt` and `href` are not visible to the model.
+        - Closing the panel does not abort the stream (SP parity).
+        - `customCode` and `tracking` records count as site copy for the AI (SP parity).
+        - The `ai-setup` e2e Insert test leaves a home draft row.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.

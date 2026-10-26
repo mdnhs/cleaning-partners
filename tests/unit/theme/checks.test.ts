@@ -72,7 +72,8 @@ describe("checkTheme", () => {
   it("rates a floor-held pair as Floor, never AA", () => {
     expect(rating(2.55, 2.5)).toBe("floor")
     expect(rating(2.4, 2.5)).toBe("fail")
-    expect(rating(3.2, 2.5)).not.toBe("floor")
+    expect(rating(3.75, 2.5)).toBe("floor")
+    expect(rating(4.6, 2.5)).toBe("AA")
     expect(rating(5, 4.5)).toBe("AA")
     expect(rating(8, 4.5)).toBe("AAA")
     const white = pairRatings(DEFAULT_THEME).find(
