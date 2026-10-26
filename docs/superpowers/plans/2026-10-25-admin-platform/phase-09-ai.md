@@ -140,7 +140,7 @@ The seeded theme is the default, so the public site stays at 0 px: no `<style>`,
     - `buildSystemPrompt` with `siteName: "Cleaning Partners Ltd."` names it.
 
 - **R9-11 Tools, RBAC and audit.**
-  - **Who can use it.** `ai:use` belongs to every role except viewer. It is narrowed at runtime by `integrations.ai.allowedRoles`, and owner and admin are always allowed.
+  - **Who can use it.** `ai:use` belongs to every role except viewer. It is narrowed at runtime by `integrations.ai.allowedRoles` as a strict allow-list, as in SP: a role left out of the list, owner and admin included, is "not-allowed". The owner keeps the settings screen and so can always add a role back. (Controller amendment during Task 8, for SP parity.)
   - **What it reads.** The tools are SP's, read-only, run as the actor, and are offered only when the actor holds the permission. Each re-checks the permission when run:
 
     | Tool | Permission |
