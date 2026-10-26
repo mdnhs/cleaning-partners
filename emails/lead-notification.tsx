@@ -14,6 +14,8 @@ export type LeadNotificationEmailProps = {
     name: string
     email: string
     phone: string | null
+    /** Optional (CP's form never sends it); the row is left out when blank. */
+    company?: string | null
     service: string | null
     /** Address / Eircode; the row is left out when null or blank. */
     address?: string | null
@@ -56,6 +58,11 @@ export function LeadNotificationEmail({
       {lead.phone ? (
         <Text style={row}>
           <strong>Phone:</strong> {lead.phone}
+        </Text>
+      ) : null}
+      {lead.company?.trim() ? (
+        <Text style={row}>
+          <strong>Company:</strong> {lead.company}
         </Text>
       ) : null}
       <Text style={row}>

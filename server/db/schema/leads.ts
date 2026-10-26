@@ -33,6 +33,8 @@ export const leads = pgTable(
     email: text("email").notNull(),
     phone: text("phone"),
     company: text("company"),
+    /** Address / Eircode from the quote form (R7-3); null = not given. */
+    address: text("address"),
     service: text("service"),
     message: text("message").notNull(),
     // Submitted for a reply (Art. 6(1)(b)/(f)), not marketing consent —

@@ -27,6 +27,7 @@ import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
 import { internalRoutes } from "@/server/modules/internal/routes"
 import { integrationsRoutes } from "@/server/modules/integrations/routes"
+import { publicLeadsRoutes } from "@/server/modules/leads/routes"
 import { mediaFileRoutes, mediaRoutes } from "@/server/modules/media/routes"
 import { pagesRoutes } from "@/server/modules/pages/routes"
 import {
@@ -88,6 +89,7 @@ export function createApp() {
 
   // 3. Public endpoints: 64 KB body
   api.use("/v1/public/*", limitBody("public"))
+  api.route("/v1/public/leads", publicLeadsRoutes)
 
   // 4. Admin endpoints: session → signed in → same origin → body limit (1 MB; uploads 20 MB)
   api.use(

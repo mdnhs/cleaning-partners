@@ -154,6 +154,16 @@ describe("lead email templates (CP branding)", () => {
     expect(text).not.toContain("Address")
   })
 
+  it("notification: a company row appears only when a company was sent", async () => {
+    const without = await render(notification(), { plainText: true })
+    expect(without).not.toContain("Company")
+    const withCompany = await render(notification({ company: "Murphy Ltd" }), {
+      plainText: true,
+    })
+    expect(withCompany).toContain("Murphy Ltd")
+    expect(withCompany).toContain("Company")
+  })
+
   it("acknowledgement: CP copy, absolute logo, urgent line from the phone, no forbidden wording", async () => {
     const email = (
       <LeadAcknowledgementEmail

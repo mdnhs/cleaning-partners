@@ -8,7 +8,7 @@ import type {
   ServiceListQuery,
 } from "@/lib/schemas/api/services"
 import { serviceContent } from "@/lib/schemas/content/service"
-import { getDb } from "@/server/db/client"
+import { type DbOrTx, getDb } from "@/server/db/client"
 import type { Actor } from "@/server/lib/actor"
 import { writeAudit } from "@/server/lib/audit"
 import { invalidate, tag } from "@/server/lib/cache-tags"
@@ -28,6 +28,7 @@ import {
   deleteServiceIfVersion,
   findServiceForEdit,
   insertService,
+  listServiceRows,
   listServicesForAdmin,
   nextServiceSortOrder,
   type ServiceEditRow,
@@ -225,4 +226,15 @@ export async function deleteService(
   })
   invalidate(tag.services, tag.service(removed.slug))
   return { ok: true as const }
+}
+
+/**
+ * Titles of the published services, for server code that runs outside the
+ * cached public queries (the quote form's service check in leads).
+ */
+export async function readPublishedServiceTitles(
+  db: DbOrTx = getDb()
+): Promise<string[]> {
+  const rows = await listServiceRows(db)
+  return rows.flatMap((row) => (row.published ? [row.published.title] : []))
 }

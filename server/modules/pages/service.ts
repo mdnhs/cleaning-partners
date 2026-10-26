@@ -3,7 +3,7 @@ import "server-only"
 import { PAGE_LABELS } from "@/lib/admin/page-labels"
 import { hasPermission, type PermissionRequest } from "@/lib/auth/permissions"
 import type { PageDto, PageListItem } from "@/lib/schemas/api/content"
-import { getDb } from "@/server/db/client"
+import { getDb, type DbOrTx } from "@/server/db/client"
 import type { Actor } from "@/server/lib/actor"
 import { tag } from "@/server/lib/cache-tags"
 import { forbidden, notFound } from "@/server/lib/errors"
@@ -18,11 +18,13 @@ import {
   isPageKey,
   PAGE_PATHS,
   PAGES,
+  type PageData,
   type PageKey,
   templateSchemaFor,
 } from "@/templates/registry"
 
 import {
+  findPageByKey,
   findPageForEdit,
   listPagesForEdit,
   type PageEditRow,
@@ -108,4 +110,19 @@ export async function restorePage(
 ): Promise<PageDto> {
   assertCan(actor, { page: ["update"] })
   return toDto(await restoreRevision(getDb(), pageStore, actor, key, input))
+}
+
+/**
+ * Published data of a page for server code that runs outside the cached
+ * public queries (leads). null when unpublished or when the stored value no
+ * longer matches its template.
+ */
+export async function readPublishedPage<K extends PageKey>(
+  key: K,
+  db: DbOrTx = getDb()
+): Promise<PageData<K> | null> {
+  const row = await findPageByKey(db, key)
+  if (!row?.published) return null
+  const parsed = templateSchemaFor(key).safeParse(row.published)
+  return parsed.success ? (parsed.data as PageData<K>) : null
 }
