@@ -28,8 +28,11 @@ import {
   RETRY_DELAY_MS,
   tick,
 } from "@/server/lib/scheduler"
+import type { R2Config } from "@/lib/schemas/integrations"
 import type { Actor } from "@/server/lib/actor"
+import { createR2Client } from "@/server/lib/r2-client"
 import { diskStorage, type StorageDriver } from "@/server/lib/storage"
+import { r2Storage } from "@/server/lib/storage/r2"
 import { enqueueKeyedJob } from "@/server/modules/jobs/repo"
 import {
   migrateDiskMediaToR2,
@@ -168,6 +171,94 @@ describe("migrateDiskMediaToR2 (master 6.4)", () => {
       remaining: 3,
       configured: false,
     })
+  })
+})
+
+/**
+ * A real client from createR2Client (so cpPrefixGuard runs) whose requests end
+ * in a recording middleware instead of the network.
+ */
+function recordingR2Client() {
+  const config: R2Config = {
+    accountId: "0123456789abcdef0123456789abcdef",
+    jurisdiction: "default",
+    bucket: "shared-media",
+    accessKeyId: "AKID",
+    secretAccessKey: "SECRET",
+  }
+  const calls: { name: string; key: string | undefined }[] = []
+  const client = createR2Client(config)
+  client.middlewareStack.add(
+    ((_next: unknown, context: { commandName?: string }) =>
+      async (args: { input: { Key?: string } }) => {
+        calls.push({ name: context.commandName ?? "", key: args.input.Key })
+        return { output: { $metadata: { httpStatusCode: 200 } } }
+      }) as never,
+    { step: "initialize", name: "recordCalls", priority: "low" }
+  )
+  return { config, client, calls }
+}
+
+describe("migrate with the real r2 driver (R6-5, cp/ prefix guard)", () => {
+  it("puts every key under cp/, flips driver, keeps keys, skips static, is idempotent, reports progress", async () => {
+    const { config, client, calls } = recordingR2Client()
+    const r2 = r2Storage(config, client)
+    const staticBefore = (await drivers())["/images/home/hero.png"]
+    expect(staticBefore).toBe("static")
+
+    const first = await migrateDiskMediaToR2({
+      deadline: Date.now() + 30_000,
+      r2,
+      disk,
+    })
+    expect(first).toEqual({
+      moved: 3,
+      failed: [],
+      remaining: 0,
+      configured: true,
+    })
+    const puts = calls.filter((c) => c.name === "PutObjectCommand")
+    expect(puts.map((c) => c.key).sort()).toEqual(
+      KEYS.map((k) => `cp/${k}`).sort()
+    )
+    for (const c of calls) expect(c.key?.startsWith("cp/")).toBe(true)
+
+    const after = await drivers()
+    for (const key of KEYS) expect(after[key]).toBe("r2")
+    expect(after["/images/home/hero.png"]).toBe("static")
+    expect(Object.values(after).filter((d) => d === "disk")).toHaveLength(0)
+
+    const before = calls.length
+    const second = await migrateDiskMediaToR2({
+      deadline: Date.now() + 30_000,
+      r2,
+      disk,
+    })
+    expect(second).toMatchObject({ moved: 0, remaining: 0 })
+    expect(calls).toHaveLength(before)
+
+    // Progress is visible through the status the panel polls.
+    const owner = (await signedInUser(["owner"])).cookie
+    const status = await adminRequest(
+      "/integrations/integrations.r2/migrate-media",
+      { cookie: owner }
+    )
+    expect(await status.json()).toMatchObject({ onDisk: 0, inR2: 3 })
+  })
+
+  it("the guard refuses a key outside cp/ before anything is recorded", async () => {
+    const { config, client, calls } = recordingR2Client()
+    const { PutObjectCommand } = await import("@aws-sdk/client-s3")
+    await expect(
+      client.send(
+        new PutObjectCommand({
+          Bucket: config.bucket,
+          Key: "other/x.png",
+          Body: new Uint8Array([1]),
+        })
+      )
+    ).rejects.toThrow(/outside the cp\/ prefix/)
+    expect(calls).toEqual([])
   })
 })
 

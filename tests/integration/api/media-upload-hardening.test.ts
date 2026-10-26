@@ -1,10 +1,6 @@
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  NoSuchKey,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3"
+import { Readable } from "node:stream"
+
+import { S3Client } from "@aws-sdk/client-s3"
 import { and, eq } from "drizzle-orm"
 import sharp from "sharp"
 import {
@@ -205,6 +201,56 @@ describe("uploads to R2 (Disconnect cannot race them)", () => {
   let failDelete = false
   let r2Version = 0
 
+  const keyOf = (path: string) =>
+    decodeURIComponent(path.replace(/^\//, "")).replace(
+      new RegExp(`^${R2_VALUES.bucket}/`),
+      ""
+    )
+  const fakeR2 = {
+    metadata: { handlerProtocol: "http/1.1" },
+    updateHttpClientConfig: () => undefined,
+    httpHandlerConfigs: () => ({}),
+    async handle(request: {
+      method: string
+      path: string
+      body?: Uint8Array | string
+    }) {
+      const key = keyOf(request.path)
+      const ok = (
+        statusCode: number,
+        headers: Record<string, string> = {},
+        body?: Readable
+      ) => ({ response: { statusCode, headers, body } })
+      if (request.method === "PUT") {
+        await onPut?.()
+        objects.set(key, Buffer.from(request.body as Uint8Array))
+        return ok(200)
+      }
+      if (request.method === "GET") {
+        const bytes = objects.get(key)
+        if (!bytes)
+          return ok(
+            404,
+            { "content-type": "application/xml" },
+            Readable.from([
+              Buffer.from("<Error><Code>NoSuchKey</Code></Error>"),
+            ])
+          )
+        return ok(
+          200,
+          { "content-length": String(bytes.byteLength) },
+          Readable.from([Buffer.from(bytes)])
+        )
+      }
+      if (request.method === "DELETE") {
+        if (failDelete) throw new Error("provider detail AKIDEXAMPLE1234")
+        objects.delete(key)
+        return ok(204)
+      }
+      return ok(200)
+    },
+  }
+
   beforeEach(async () => {
     objects.clear()
     onPut = null
@@ -217,33 +263,17 @@ describe("uploads to R2 (Disconnect cannot race them)", () => {
         values: R2_VALUES,
       })
     ).version
-    vi.spyOn(S3Client.prototype, "send").mockImplementation((async (
-      command: unknown
-    ) => {
-      if (command instanceof PutObjectCommand) {
-        await onPut?.()
-        objects.set(command.input.Key!, command.input.Body as Uint8Array)
-        return {}
-      }
-      if (command instanceof GetObjectCommand) {
-        const bytes = objects.get(command.input.Key!)
-        if (!bytes) throw new NoSuchKey({ message: "missing", $metadata: {} })
-        return {
-          ContentLength: bytes.byteLength,
-          Body: {
-            transformToByteArray: async () => bytes,
-            transformToWebStream: () =>
-              new Response(new Uint8Array(bytes)).body!,
-          },
-        }
-      }
-      if (command instanceof DeleteObjectCommand) {
-        if (failDelete) throw new Error("provider detail AKIDEXAMPLE1234")
-        objects.delete(command.input.Key!)
-        return {}
-      }
-      return {}
-    }) as never)
+    // Real client from createR2Client (cpPrefixGuard runs in its middleware
+    // stack); only the HTTP layer is replaced, so `objects` is keyed by the
+    // key R2 would actually see.
+    const original = S3Client.prototype.send
+    vi.spyOn(S3Client.prototype, "send").mockImplementation(function (
+      this: S3Client,
+      ...args: unknown[]
+    ) {
+      ;(this.config as { requestHandler: unknown }).requestHandler = fakeR2
+      return (original as (...a: unknown[]) => unknown).apply(this, args)
+    } as never)
   })
 
   afterEach(() => {
@@ -261,6 +291,10 @@ describe("uploads to R2 (Disconnect cannot race them)", () => {
     expect(status).toBe(201)
     expect(body.driver).toBe("r2")
     expect(objects.size).toBe(1)
+    // The key R2 sees (through createR2Client's guard) is cp/ + the bare key.
+    const [objectKey] = [...objects.keys()]
+    expect(objectKey.startsWith("cp/")).toBe(true)
+    expect(objectKey).toBe(`cp/${body.url.replace("/api/v1/media/file/", "")}`)
     const file = await app.request(body.url)
     expect(file.status).toBe(200)
     expect(file.headers.get("content-type")).toBe("image/png")
