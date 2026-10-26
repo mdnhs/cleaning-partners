@@ -31,6 +31,10 @@
     "secrets:rotate": "pnpm tsx:server scripts/secrets-rotate.ts",
     "demo:remove": "pnpm tsx:server scripts/demo-remove.ts",
     "custom-code:off": "pnpm tsx:server scripts/custom-code-off.ts",
+    "db:sync": "pnpm tsx:server scripts/db-sync.ts",
+    "r2:bootstrap": "pnpm tsx:server scripts/r2-bootstrap.ts",
+    "data:import": "pnpm tsx:server scripts/data-import.ts",
+    "data:export-to-r2": "pnpm tsx:server scripts/data-export-to-r2.ts",
     "scripts:build": "tsx scripts/build-scripts.ts",
     "audit:deps": "pnpm audit --prod --audit-level high"
   },

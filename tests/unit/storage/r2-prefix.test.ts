@@ -199,6 +199,40 @@ describe("cpPrefixGuard on the real client (fix round 1)", () => {
     ).rejects.toThrow(/outside the cp\/ prefix/)
   })
 
+  it("CopySource must name the client's own bucket and a clean cp/ key (R11-2)", async () => {
+    const { CopyObjectCommand } = await import("@aws-sdk/client-s3")
+    const { client, requests } = await guarded()
+    const copy = (CopySource: string) =>
+      client.send(
+        new CopyObjectCommand({ Bucket: base.bucket, Key: "cp/y", CopySource })
+      )
+    await expect(copy("other-bucket/cp/x")).rejects.toThrow(
+      /outside the cp\/ prefix/
+    )
+    await expect(copy(`${base.bucket}/sp/x`)).rejects.toThrow(
+      /outside the cp\/ prefix/
+    )
+    await expect(copy(`${base.bucket}/cp/%2e%2e/sp/x`)).rejects.toThrow(
+      /outside the cp\/ prefix/
+    )
+    await expect(copy(`${base.bucket}/cp/%2E%2E%2Fsp%2Fx`)).rejects.toThrow(
+      /outside the cp\/ prefix/
+    )
+    expect(requests).toEqual([])
+    await copy(`${base.bucket}/cp/x`)
+    await copy(`/${base.bucket}/cp/media/a%20b.png`)
+    expect(requests).toHaveLength(2)
+  })
+
+  it("assertCpInput without a bucket still refuses a foreign key", () => {
+    expect(() =>
+      assertCpInput({ CopySource: "b/sp/x" }, "CopyObjectCommand", "b")
+    ).toThrow(/outside the cp\/ prefix/)
+    expect(() =>
+      assertCpInput({ CopySource: "b/cp/x" }, "CopyObjectCommand", "b")
+    ).not.toThrow()
+  })
+
   it("HeadBucket passes; a cp/ Put passes", async () => {
     const { HeadBucketCommand, PutObjectCommand } =
       await import("@aws-sdk/client-s3")

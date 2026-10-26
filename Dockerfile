@@ -55,7 +55,9 @@ RUN addgroup -S -g 1001 nodejs && adduser -S -u 1001 -G nodejs nextjs \
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-# Every scripts:build entry (SCRIPT_ENTRIES); today the entrypoint's migrate.
+# Every scripts:build entry (SCRIPT_ENTRIES). The entrypoint runs migrate,
+# data-import, seed and r2-bootstrap; the rest are operator scripts
+# (docker exec ... node scripts/dist/<name>.mjs).
 COPY --from=builder /app/scripts/dist ./scripts/dist
 COPY --from=builder /app/server/db/migrations ./server/db/migrations
 COPY --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh

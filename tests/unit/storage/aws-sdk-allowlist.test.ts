@@ -22,6 +22,8 @@ const SKIP = new Set([
  */
 const ALLOWED = new Set([
   "server/lib/backup/store.ts",
+  "server/lib/data-export.ts",
+  "server/lib/data-import.ts",
   "server/lib/r2-client.ts",
   "server/lib/storage/r2.ts",
   "server/modules/integrations/testers.ts",

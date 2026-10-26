@@ -73,7 +73,7 @@ export function createR2Client(c: R2Config): S3Client {
   })
   // Last line of defence (R6-1): whatever code holds this client, no request
   // can name an object outside cp/.
-  client.middlewareStack.add(cpPrefixGuard as never, {
+  client.middlewareStack.add(cpPrefixGuard(c.bucket) as never, {
     step: "initialize",
     name: "cpPrefixGuard",
   })
@@ -107,9 +107,14 @@ const ALLOWED_COMMANDS: ReadonlySet<string> = new Set([
  * (when its name is given) and every object key it names starts with `cp/`.
  * HeadBucket carries no key and passes. ListObjectsV2 must name a Prefix (a
  * listing without one would cover the whole shared bucket); ListParts is
- * checked by its Key.
+ * checked by its Key. A CopySource must be `<bucket>/cp/...` in the given
+ * bucket (the client's own; R11-2).
  */
-export function assertCpInput(input: unknown, commandName?: string): void {
+export function assertCpInput(
+  input: unknown,
+  commandName?: string,
+  bucket?: string
+): void {
   if (commandName !== undefined && !ALLOWED_COMMANDS.has(commandName))
     throw new Error(GUARD_MESSAGE)
   if (
@@ -136,8 +141,13 @@ export function assertCpInput(input: unknown, commandName?: string): void {
       throw new Error(GUARD_MESSAGE)
     }
     // "<bucket>/<key>" (a leading "/" is tolerated by S3).
-    const rest = decoded.replace(/^\//, "").split("/").slice(1).join("/")
-    if (!inside(rest)) throw new Error(GUARD_MESSAGE)
+    const [srcBucket, ...keyParts] = decoded.replace(/^\//, "").split("/")
+    // The source must be this client's own bucket (R11-2) and a clean key:
+    // no empty, "." or ".." segment, so a decoded "cp/../sp/x" cannot pass.
+    if (bucket !== undefined && srcBucket !== bucket)
+      throw new Error(GUARD_MESSAGE)
+    if (keyParts.some(unsafeSegment) || !inside(keyParts.join("/")))
+      throw new Error(GUARD_MESSAGE)
   }
   const del = i.Delete
   if (del !== undefined) {
@@ -151,12 +161,13 @@ export function assertCpInput(input: unknown, commandName?: string): void {
 
 type GuardArgs = { input: unknown }
 const cpPrefixGuard =
+  (bucket: string) =>
   (
     next: (args: GuardArgs) => Promise<unknown>,
     context: { commandName?: string }
   ) =>
   async (args: GuardArgs) => {
-    assertCpInput(args.input, context.commandName ?? "")
+    assertCpInput(args.input, context.commandName ?? "", bucket)
     return next(args)
   }
 

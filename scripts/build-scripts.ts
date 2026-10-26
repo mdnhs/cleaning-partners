@@ -21,6 +21,10 @@ export const SCRIPT_ENTRIES = [
   "secrets-rotate",
   "demo-remove",
   "custom-code-off",
+  "db-sync",
+  "r2-bootstrap",
+  "data-export-to-r2",
+  "data-import",
 ] as const
 
 /** `server-only` throws outside Next's react-server bundles; scripts get an empty module. */
