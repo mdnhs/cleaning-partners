@@ -571,14 +571,14 @@ describe("articles API (master 5.1)", () => {
     )
     expect(queue.items.map((a) => a.slug)).toEqual(["second-draft"])
 
-    const patrols = await json<Paginated<ArticleListItem>>(
+    const byCategory = await json<Paginated<ArticleListItem>>(
       await call(viewer, `/articles?category=${categoryId}&pageSize=50`)
     )
-    expect(patrols.items.map((a) => a.slug)).toContain(
+    expect(byCategory.items.map((a) => a.slug)).toContain(
       "5-signs-your-office-needs-a-professional-clean"
     )
     expect(
-      patrols.items.every(
+      byCategory.items.every(
         (a) => !a.permissions.update && !a.permissions.publish
       )
     ).toBe(true)

@@ -8,9 +8,8 @@ import { BASE_URL } from "./env"
 import { clientIpFor, E2E_PASSWORD, greeting, readFixtures } from "./fixtures"
 
 // Master 5.3 (schedule / unschedule through the API) and 5.4 (the scheduler
-// tick). Task 5.4 owns instrumentation.ts: until it lands the tick leg is
-// test.fixme, and Task 4 flips it to test. afterAll deletes what these
-// tests create.
+// tick, which runs live against instrumentation.ts). afterAll deletes what
+// these tests create.
 
 test.beforeEach(async ({ context }, testInfo) => {
   await context.setExtraHTTPHeaders({
@@ -139,7 +138,9 @@ test("a scheduled article goes live on the next scheduler tick", async ({
   }).toPass({ timeout: 180_000, intervals: [5_000] })
   await visitor.goto("/blog")
   // The newest article is the list's featured card (h2); the rest are h3.
-  await expect(visitor.getByRole("heading", { name: title })).toBeVisible()
+  await expect(
+    visitor.getByRole("heading", { name: title, exact: true })
+  ).toBeVisible()
   await context.close()
 
   const after = (await (

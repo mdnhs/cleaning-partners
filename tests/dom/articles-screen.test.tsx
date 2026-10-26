@@ -29,7 +29,7 @@ const item = (
 ): ArticleListItem => ({
   slug: over.id,
   live: false,
-  category: { id: "c1", slug: "mobile-patrols", name: "Mobile Patrols" },
+  category: { id: "c1", slug: "commercial", name: "Commercial" },
   author: { id: "u2", name: "Arthur Author", title: null },
   scheduledAt: null,
   readTimeMinutes: null,
@@ -75,7 +75,7 @@ beforeEach(() => {
   search.current = new URLSearchParams()
   options = {
     categories: [
-      { id: "c1", slug: "mobile-patrols", name: "Mobile Patrols" },
+      { id: "c1", slug: "commercial", name: "Commercial" },
       { id: "c2", slug: "company-news", name: "Company News" },
     ],
     authors: [{ id: "u1", name: "Edith Editor", title: null }],

@@ -1,5 +1,7 @@
 import "server-only"
 
+import { isDeepStrictEqual } from "node:util"
+
 import type { ArticleContent } from "@/lib/schemas/content/article"
 import { readTimeMinutes } from "@/lib/rich-text/read-time"
 import type { DbOrTx } from "@/server/db/client"
@@ -30,15 +32,21 @@ export type Transition = {
 }
 
 /**
- * R5-2: computed from the body (200 wpm, min 1). Without a body the seeded
- * readTimeMinutes stays (it is not overwritten with null); only a body that
- * was emptied after being published clears the figure it produced.
+ * R5-2: computed from the body (200 wpm, min 1), but only when the body
+ * changed. A body equal to the published one keeps the stored figure (the
+ * seeded 6 or 5 is not overwritten by a no-change republish). Without a body
+ * the seeded readTimeMinutes stays too; only a body that was emptied after
+ * being published clears the figure it produced.
  */
 function publishedReadTime(
   row: repo.ArticleEditRow,
   body: ArticleContent["body"]
 ): number | null {
-  if (body) return readTimeMinutes(body)
+  if (body) {
+    if (row.published && isDeepStrictEqual(row.published.body, body))
+      return row.readTimeMinutes
+    return readTimeMinutes(body)
+  }
   return row.published?.body ? null : row.readTimeMinutes
 }
 

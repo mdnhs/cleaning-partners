@@ -62,3 +62,52 @@ describe("R5-3: paragraphsText is variant-free on the server", () => {
     expect(richText.parse(doc)).toEqual(doc)
   })
 })
+
+describe("M1: richText nested paragraphs are variant-free", () => {
+  const leadPara = {
+    type: "paragraph",
+    attrs: { variant: "lead" },
+    content: [{ type: "text", text: "Nested." }],
+  }
+  const plain = { type: "paragraph", content: [{ type: "text", text: "Nested." }] }
+
+  it("strips a lead variant inside a list item", () => {
+    const doc = {
+      type: "doc",
+      content: [
+        {
+          type: "bulletList",
+          content: [{ type: "listItem", content: [leadPara] }],
+        },
+      ],
+    }
+    const parsed = richText.parse(doc)
+    expect(JSON.stringify(parsed)).not.toContain("variant")
+    expect(parsed.content[0]).toMatchObject({
+      content: [{ content: [plain] }],
+    })
+  })
+
+  it("strips a lead variant inside a blockquote", () => {
+    const parsed = richText.parse({
+      type: "doc",
+      content: [{ type: "blockquote", content: [leadPara] }],
+    })
+    expect(JSON.stringify(parsed)).not.toContain("variant")
+  })
+
+  it("keeps a top-level lead and the checklist list variant", () => {
+    const doc = {
+      type: "doc",
+      content: [
+        leadPara,
+        {
+          type: "bulletList",
+          attrs: { variant: "checklist" },
+          content: [{ type: "listItem", content: [plain] }],
+        },
+      ],
+    }
+    expect(richText.parse(doc)).toEqual(doc)
+  })
+})

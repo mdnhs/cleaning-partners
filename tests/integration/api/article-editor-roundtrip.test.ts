@@ -89,5 +89,41 @@ describe("R5-3 round trip: open the seeded article, save unchanged, publish", ()
       })
     )
     expect(html).toBe(frozen.WHOLE)
+    // R5-2: an unchanged body keeps the seeded read time (5), not a recompute.
+    expect(stored.readTimeMinutes).toBe(5)
+  })
+
+  it("recomputes the read time when the published body changes", async () => {
+    const editor = await signedInUser(["editor"])
+    const call = (path: string, method = "GET", body?: unknown) =>
+      adminRequest(path, { cookie: editor.cookie, method, json: body })
+    const db = getDb()
+    const [seeded] = await db
+      .select()
+      .from(articles)
+      .where(eq(articles.slug, SLUG))
+    const opened = (await (
+      await call(`/articles/${seeded.id}`)
+    ).json()) as ArticleDto
+    const words = Array.from({ length: 2000 }, () => "word").join(" ")
+    const body = {
+      type: "doc",
+      content: [{ type: "paragraph", content: [{ type: "text", text: words }] }],
+    }
+    const saved = await call(`/articles/${seeded.id}/draft`, "PUT", {
+      draft: { ...opened.draft, body },
+      version: opened.version,
+    })
+    expect(saved.status).toBe(200)
+    const savedDto = (await saved.json()) as ArticleDto
+    const published = await call(`/articles/${seeded.id}/publish`, "POST", {
+      version: savedDto.version,
+    })
+    expect(published.status).toBe(200)
+    const [stored] = await db
+      .select()
+      .from(articles)
+      .where(eq(articles.slug, SLUG))
+    expect(stored.readTimeMinutes).toBe(10) // 2000 words at 200 wpm
   })
 })

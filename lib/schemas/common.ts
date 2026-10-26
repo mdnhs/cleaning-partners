@@ -89,9 +89,16 @@ const heading = z.object({
   attrs: z.object({ level: z.union([z.literal(2), z.literal(3)]) }),
   content: z.array(inline).optional(),
 })
+/**
+ * A paragraph without the article variants (R5-3): `attrs` is not declared,
+ * so a stored `variant` is stripped on parse.
+ */
+const plainParagraph = paragraph.omit({ attrs: true })
+
 const listItem = z.object({
   type: z.literal("listItem"),
-  content: z.array(paragraph).min(1),
+  // Lead applies to top-level paragraphs only (R5-3, matches render.tsx).
+  content: z.array(plainParagraph).min(1),
 })
 const bulletList = z.object({
   type: z.literal("bulletList"),
@@ -107,7 +114,7 @@ const orderedList = z.object({
 const blockquote = z.object({
   type: z.literal("blockquote"),
   attrs: z.object({ cite: z.string().nullable() }).optional(),
-  content: z.array(paragraph).min(1),
+  content: z.array(plainParagraph).min(1),
 })
 const image = z.object({
   type: z.literal("image"),
@@ -126,12 +133,6 @@ export const richText = z.object({
   type: z.literal("doc"),
   content: z.array(block).min(1),
 })
-
-/**
- * A paragraph without the article variants (R5-3): `attrs` is not declared,
- * so a stored `variant` is stripped on parse.
- */
-const plainParagraph = paragraph.omit({ attrs: true })
 
 /**
  * Rich text limited to plain paragraphs (marks allowed): about copy, service
