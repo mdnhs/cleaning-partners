@@ -7,6 +7,7 @@ import {
   metaFor,
   metaKey,
 } from "@/components/admin/schema-form/editor-meta"
+import { SEO_FIELDS_META } from "@/components/admin/seo/seo-meta"
 import { emptyValue } from "@/components/admin/schema-form/empty-value"
 import {
   arrayBounds,
@@ -165,11 +166,6 @@ describe("resolveWidget covers every shipped schema (master 4.3)", () => {
       'No widget for field "a.when"'
     )
   })
-
-  // SP's SEO_FIELDS_META lives in the Phase 8/9 SEO UI; the same shape here.
-  const SEO_FIELDS_META: EditorMeta = {
-    fields: { canonical: { label: "Canonical address", icon: "url" } },
-  }
 
   it("edits a pipe as its input schema (seo.canonical)", () => {
     const piped = z.string().max(20).pipe(z.url()).optional()

@@ -5,6 +5,7 @@ import { Suspense } from "react"
 import { ArticleEditor } from "@/components/admin/articles/article-editor"
 import { isUuid } from "@/lib/ids"
 import { requirePage } from "@/server/auth/session"
+import { getSiteOrigin } from "@/server/modules/seo/queries"
 
 export const metadata: Metadata = { title: "Edit article" }
 
@@ -25,5 +26,5 @@ async function Screen({
   // Permission first, as on every [param] page but settings/[key].
   await requirePage("/admin/blog")
   if (!isUuid(id)) notFound()
-  return <ArticleEditor id={id} />
+  return <ArticleEditor id={id} origin={await getSiteOrigin()} />
 }

@@ -37,12 +37,15 @@ import type { ServiceDto } from "@/lib/schemas/api/services"
 import { SLUG_PATTERN } from "@/lib/schemas/common"
 import { serviceContent } from "@/lib/schemas/content/service"
 
+import { EditorSeoTab, textAt } from "@/components/admin/seo/editor-seo-tab"
+import { SeoLink } from "@/components/admin/seo/seo-link"
 import { serviceEditorMeta } from "./service-meta"
 
-/** Draft editor for one service + its address (slug) and delete (master 4.6). The SEO tab arrives with master 8.1. */
-export function ServiceEditor({ id }: { id: string }) {
+/** Draft editor for one service + its address (slug) and delete (master 4.6).; SEO tab (master 8.1). */
+export function ServiceEditor({ id, origin }: { id: string; origin?: string }) {
   const canEdit = usePermission({ service: ["update"] })
   const canPublish = usePermission({ service: ["publish"] })
+  const canReadSeo = usePermission({ seo: ["read"] })
   const canDelete = usePermission({ service: ["delete"] })
   const queryKey = ["services", id] as const
   // Once deleted, nothing may load the record again (it would 404).
@@ -96,6 +99,7 @@ export function ServiceEditor({ id }: { id: string }) {
       canPublish={canPublish}
       actions={
         <>
+          <SeoLink />
           {canDelete && record.data ? (
             <DeleteService
               service={record.data}
@@ -103,6 +107,25 @@ export function ServiceEditor({ id }: { id: string }) {
             />
           ) : null}
         </>
+      }
+      seo={
+        canReadSeo
+          ? (ctx: EditorActionContext<ServiceDto>) => (
+              <EditorSeoTab
+                kind="service"
+                id={id}
+                origin={origin}
+                names={{
+                  live: textAt(
+                    ctx.record.published ?? ctx.record.draft,
+                    "title"
+                  ),
+                  draft: textAt(ctx.draft, "title"),
+                  description: textAt(ctx.draft, "detail", "intro"),
+                }}
+              />
+            )
+          : undefined
       }
       aside={(ctx: EditorActionContext<ServiceDto>) =>
         record.data ? (

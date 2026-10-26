@@ -4,7 +4,9 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { VersionedEditor } from "@/components/admin/editor/versioned-editor"
+import { EditorSeoTab, textAt } from "@/components/admin/seo/editor-seo-tab"
 import type { StatusPillSpec } from "@/components/admin/kit/content-status"
+import { usePermission } from "@/hooks/use-permission"
 import { api, unwrap } from "@/lib/api-client"
 import { formatDateTime } from "@/lib/format"
 import type { ArticleDto } from "@/lib/schemas/api/articles"
@@ -12,6 +14,7 @@ import type { ContentStatus } from "@/lib/schemas/api/content"
 import { previewHref } from "@/lib/schemas/api/preview"
 import { articleContent } from "@/lib/schemas/content/article"
 
+import { SeoLink } from "@/components/admin/seo/seo-link"
 import { articleEditorMeta } from "./article-meta"
 import { ArticleSettings } from "./article-settings"
 import { WorkflowActions } from "./workflow-actions"
@@ -52,10 +55,11 @@ export function articleStatusPills(article: {
 
 /**
  * Article editor (master 5.2): Phase 4's VersionedEditor with the article's
- * own rights (from the API), workflow actions and settings panel. The SEO
- * tab arrives with master 8.1.
+ * own rights (from the API), workflow actions and settings panel. SEO tab
+ * (master 8.1).
  */
-export function ArticleEditor({ id }: { id: string }) {
+export function ArticleEditor({ id, origin }: { id: string; origin?: string }) {
+  const canReadSeo = usePermission({ seo: ["read"] })
   const queryKey = ["articles", id] as const
   const param = { id }
   // Once deleted, nothing may load the record again (it would 404).
@@ -110,7 +114,31 @@ export function ArticleEditor({ id }: { id: string }) {
       canEdit={permissions?.update ?? false}
       canPublish={permissions?.publish ?? false}
       status={(dto, dirty) => articleStatusPills({ ...dto, dirty })}
-      actions={(ctx) => <WorkflowActions ctx={ctx} />}
+      actions={(ctx) => (
+        <>
+          <SeoLink />
+          <WorkflowActions ctx={ctx} />
+        </>
+      )}
+      seo={
+        canReadSeo
+          ? (ctx) => (
+              <EditorSeoTab
+                kind="article"
+                id={id}
+                origin={origin}
+                names={{
+                  live: textAt(
+                    ctx.record.published ?? ctx.record.draft,
+                    "title"
+                  ),
+                  draft: textAt(ctx.draft, "title"),
+                  description: textAt(ctx.draft, "excerpt"),
+                }}
+              />
+            )
+          : undefined
+      }
       aside={(ctx) => (
         <ArticleSettings ctx={ctx} onDeleted={() => setDeleted(true)} />
       )}

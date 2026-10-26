@@ -39,6 +39,9 @@ vi.mock("@/components/admin/articles/articles-screen", () => ({
 vi.mock("@/components/admin/articles/new-article-form", () => ({
   NewArticleForm: () => null,
 }))
+vi.mock("@/server/modules/seo/queries", () => ({
+  getSiteOrigin: async () => "https://example.ie",
+}))
 vi.mock("@/components/admin/articles/article-editor", () => ({
   ArticleEditor: () => null,
 }))

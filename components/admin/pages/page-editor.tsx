@@ -1,6 +1,8 @@
 "use client"
 
 import { VersionedEditor } from "@/components/admin/editor/versioned-editor"
+import { EditorSeoTab, textAt } from "@/components/admin/seo/editor-seo-tab"
+import { SeoLink } from "@/components/admin/seo/seo-link"
 import { usePermission } from "@/hooks/use-permission"
 import { PAGE_LABELS } from "@/lib/admin/page-labels"
 import { api, unwrap } from "@/lib/api-client"
@@ -14,12 +16,20 @@ import {
 } from "@/templates/registry"
 
 /**
- * Editor for one fixed page (master 4.4). The SEO tab and "Copy to new page"
- * arrive with Phases 8 (SeoPanel, master 8.1) and 10.
+ * Editor for one fixed page (master 4.4); SEO tab (master 8.1). "Copy to new
+ * page" arrives with Phase 10.
  */
-export function PageEditor({ pageKey }: { pageKey: PageKey }) {
+export function PageEditor({
+  pageKey,
+  origin,
+}: {
+  pageKey: PageKey
+  /** Public site origin for the SEO previews. */
+  origin?: string
+}) {
   const canEdit = usePermission({ page: ["update"] })
   const canPublish = usePermission({ page: ["publish"] })
+  const canReadSeo = usePermission({ seo: ["read"] })
   const template = PAGES[pageKey]
   const param = { key: pageKey }
   return (
@@ -53,6 +63,26 @@ export function PageEditor({ pageKey }: { pageKey: PageKey }) {
       publicHref={PAGE_PATHS[pageKey]}
       canEdit={canEdit}
       canPublish={canPublish}
+      actions={<SeoLink />}
+      seo={
+        canReadSeo
+          ? (ctx) => (
+              <EditorSeoTab
+                kind="page"
+                id={pageKey}
+                origin={origin}
+                names={{
+                  live: textAt(
+                    ctx.record.published ?? ctx.record.draft,
+                    "hero",
+                    "title"
+                  ),
+                  draft: textAt(ctx.draft, "hero", "title"),
+                }}
+              />
+            )
+          : undefined
+      }
     />
   )
 }
