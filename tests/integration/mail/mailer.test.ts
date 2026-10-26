@@ -2,6 +2,7 @@ import { createElement } from "react"
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { InviteEmail } from "@/emails/invite"
+import { LeadNotificationEmail } from "@/emails/lead-notification"
 import { mailer } from "@/server/lib/mailer"
 
 import { resetDb } from "../db"
@@ -93,5 +94,41 @@ describe("SMTP mailer against Mailpit (master 7.2)", () => {
       })
     ).toEqual({ delivered: false })
     error.mockRestore()
+  })
+
+  it("a lead notification arrives with Reply-To set to the visitor", async () => {
+    await configureSmtp()
+    const to = unique("staff")
+    await deleteMail(to)
+    const result = await mailer.send({
+      to,
+      replyTo: "visitor@example.test",
+      subject: "Quote request from Dinn Rí",
+      template: "lead-notification",
+      react: createElement(LeadNotificationEmail, {
+        logoUrl: "http://localhost:3000/images/home/logo.png",
+        adminUrl:
+          "http://localhost:3000/admin/leads/0190a6e0-0000-7000-8000-000000000001",
+        serviceFallback: "Not sure",
+        lead: {
+          name: "Dinn Rí",
+          email: "visitor@example.test",
+          phone: null,
+          service: null,
+          address: "Portlaoise, R32 AB12",
+          message: "Need a quote",
+          sourcePage: "/contact",
+          receivedAt: "16 Oct 2026, 14:05",
+        },
+      }),
+    })
+    expect(result).toEqual({ delivered: true })
+    const mail = await waitForMail(to, {
+      subject: "Quote request from Dinn Rí",
+    })
+    expect(mail.ReplyTo.map((a) => a.Address)).toEqual(["visitor@example.test"])
+    expect(mail.HTML).toContain("New quote request")
+    expect(mail.Text).toContain("Not sure")
+    expect(mail.Text).toContain("Portlaoise, R32 AB12")
   })
 })

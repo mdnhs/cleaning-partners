@@ -3,6 +3,8 @@ import { render } from "react-email"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { InviteEmail } from "@/emails/invite"
+import { LeadAcknowledgementEmail } from "@/emails/lead-acknowledgement"
+import { LeadNotificationEmail } from "@/emails/lead-notification"
 import { ResetPasswordEmail } from "@/emails/reset-password"
 import type { SmtpConfig } from "@/lib/schemas/integrations"
 import {
@@ -92,6 +94,99 @@ describe("email templates", () => {
     expect(await render(email, { plainText: true })).toContain(
       "expires in 60 minutes"
     )
+  })
+})
+
+describe("lead email templates (CP branding)", () => {
+  const ADMIN =
+    "http://localhost:3000/admin/leads/0190a6e0-0000-7000-8000-000000000001"
+  const FORBIDDEN = /guard|patrol|alarm|monitor|24\/7|security/i
+  const notification = (
+    lead: Partial<
+      React.ComponentProps<typeof LeadNotificationEmail>["lead"]
+    > = {}
+  ) => (
+    <LeadNotificationEmail
+      logoUrl={LOGO}
+      adminUrl={ADMIN}
+      serviceFallback="Not sure"
+      lead={{
+        name: "Dinn Rí",
+        email: "dinn@example.ie",
+        phone: "085 000 0000",
+        service: "Office cleaning",
+        address: "12 Main Street, Portlaoise, R32 AB12",
+        message: "Line one\nLine two & more",
+        sourcePage: "/contact",
+        receivedAt: "16 Oct 2026, 14:05",
+        ...lead,
+      }}
+    />
+  )
+
+  it("notification: CP branding, absolute logo, every field and the admin link", async () => {
+    const html = await render(notification())
+    const text = await render(notification(), { plainText: true })
+    expect(html).toContain('src="http://localhost:3000/images/home/logo.png"')
+    expect(html).toContain("#11b1d1")
+    expect(html).toContain('href="mailto:dinn@example.ie"')
+    expect(html).toContain(`href="${ADMIN}"`)
+    expect(html).toContain("white-space:pre-wrap")
+    expect(html).toContain("New quote request")
+    expect(text).toContain("Dinn Rí")
+    expect(text).toContain("085 000 0000")
+    expect(text).toContain("Office cleaning")
+    expect(text).toContain("12 Main Street, Portlaoise, R32 AB12")
+    expect(text).toContain("Line one\nLine two & more")
+    expect(text).toContain("/contact")
+    expect(text).toContain("16 Oct 2026, 14:05")
+    expect(text).toContain("Open in admin")
+    expect(html).not.toMatch(FORBIDDEN)
+  })
+
+  it("notification: no service shows the fallback; blank message and address rows are left out", async () => {
+    const text = await render(
+      notification({ service: null, message: "  \n ", address: null }),
+      { plainText: true }
+    )
+    expect(text).toContain("Not sure")
+    expect(text).not.toContain("Message")
+    expect(text).not.toContain("Address")
+  })
+
+  it("acknowledgement: CP copy, absolute logo, urgent line from the phone, no forbidden wording", async () => {
+    const email = (
+      <LeadAcknowledgementEmail
+        logoUrl={LOGO}
+        name="Sam"
+        siteName="Cleaning Partners"
+        message={"Need a quote\nfor two offices"}
+        phone24h="0818 000 000"
+      />
+    )
+    const html = await render(email)
+    const text = await render(email, { plainText: true })
+    expect(html).toContain('src="http://localhost:3000/images/home/logo.png"')
+    expect(html).toContain("Thanks for your quote request")
+    expect(text).toContain("Hi Sam,")
+    expect(text).toContain(
+      "We've received your request and will be in touch shortly."
+    )
+    expect(text).toContain("Need a quote\nfor two offices")
+    expect(text).toContain("0818 000 000")
+    expect(html).not.toMatch(FORBIDDEN)
+    const without = await render(
+      <LeadAcknowledgementEmail
+        logoUrl={LOGO}
+        name="Sam"
+        siteName="Cleaning Partners"
+        message=" "
+        phone24h={null}
+      />,
+      { plainText: true }
+    )
+    expect(without).not.toContain("urgent")
+    expect(without).not.toContain("Your message")
   })
 })
 
