@@ -302,7 +302,7 @@ describe("articles API (master 5.1)", () => {
         .status
     ).toBe(403)
 
-    // A seeded, published article under another byline.
+    // A seeded, published article has no byline (authorId null), so it is not theirs.
     const live = await row("5-signs-your-office-needs-a-professional-clean")
     expect(
       (
@@ -516,6 +516,12 @@ describe("articles API (master 5.1)", () => {
       ).status
     ).toBe(422)
   })
+
+  // Restore markers: server/modules/articles/service.ts, "Phase 8.2 records"
+  // in changeArticleMeta (~line 352) and deleteArticle (~line 388).
+  it.todo(
+    "records a redirect and expires the redirects tag on slug change/delete — restore in Phase 8.2 (recordMove)"
+  )
 
   it("deletes own drafts (author) or any article (editor), checking the version", async () => {
     const article = await create(author)
@@ -789,6 +795,14 @@ describe("articles API — CP rulings", () => {
       expect(res.status).toBe(200)
       expect((await json<ArticleDto>(res)).author).toBeNull()
     }
+
+    // An author cannot claim the byline of a null-author article via meta.
+    const claim = await call(author, `/articles/${seeded.id}/meta`, "PATCH", {
+      version: (await row(SEEDED)).version,
+      authorId: author.user.id,
+    })
+    expect(claim.status).toBe(403)
+    expect((await row(SEEDED)).authorId).toBeNull()
 
     // The author only lists their own: the null-author article is not among them.
     const mine = await json<Paginated<ArticleListItem>>(
