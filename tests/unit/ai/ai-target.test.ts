@@ -41,6 +41,22 @@ async function serve(
   return { port: (server.address() as AddressInfo).port, hits }
 }
 
+/** `pub` on 127.0.0.1 with an OS-assigned port, `priv` on ::1 with the same one. */
+async function servePair() {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const pub = await serve("127.0.0.1", ok)
+    try {
+      return { pub, priv: await serve("::1", ok, pub.port) }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EADDRINUSE") throw error
+      servers.pop() // the ::1 server that never listened
+      const taken = servers.pop() // the 127.0.0.1 one: free its port again
+      await new Promise<void>((resolve) => taken?.close(() => resolve()))
+    }
+  }
+  throw new Error("no free port pair for 127.0.0.1 and ::1")
+}
+
 const ok = (res: import("node:http").ServerResponse) => {
   res.setHeader("connection", "close")
   res.setHeader("content-type", "application/json")
@@ -146,8 +162,9 @@ describe("guardedFetch (SSRF guard for user-set AI base URLs)", () => {
 
   it("DNS rebinding: public on the first lookup, private on the next → never reaches the private address", async () => {
     // Same port on two addresses: 127.0.0.1 plays "public", ::1 "private".
-    const priv = await serve("::1", ok)
-    const pub = await serve("127.0.0.1", ok, priv.port)
+    // The OS picks the port (0) on 127.0.0.1; ::1 must then be free on it.
+    // Retry with a fresh port when it is not (no fixed port, no EADDRINUSE).
+    const { pub, priv } = await servePair()
     const lookup = vi
       .fn()
       .mockResolvedValueOnce(addresses("127.0.0.1"))

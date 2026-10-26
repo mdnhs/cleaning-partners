@@ -17,7 +17,13 @@ import type {
 import type { Paginated } from "@/lib/schemas/api/list"
 import type { ServiceDto, ServiceListItem } from "@/lib/schemas/api/services"
 import { getDb } from "@/server/db/client"
-import { clients, media, revisions, services } from "@/server/db/schema"
+import {
+  auditLog,
+  clients,
+  media,
+  revisions,
+  services,
+} from "@/server/db/schema"
 import { seedContent } from "@/server/db/seed"
 import { listMediaUsagesFor } from "@/server/modules/media/repo"
 
@@ -525,6 +531,19 @@ describe("testimonials (R4-3): CRUD, reorder, invalidate", () => {
       (await adminRequest(`/testimonials/${item.id}`, { cookie: editor }))
         .status
     ).toBe(404)
+    const audit = await getDb()
+      .select({
+        action: auditLog.action,
+        entityType: auditLog.entityType,
+      })
+      .from(auditLog)
+      .where(eq(auditLog.entityId, item.id))
+      .orderBy(auditLog.createdAt, auditLog.id)
+    expect(audit).toEqual([
+      { action: "testimonial.created", entityType: "testimonial" },
+      { action: "testimonial.updated", entityType: "testimonial" },
+      { action: "testimonial.deleted", entityType: "testimonial" },
+    ])
   })
 
   it.each([0, 6, 2.5])(

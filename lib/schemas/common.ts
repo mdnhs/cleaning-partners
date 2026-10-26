@@ -144,7 +144,7 @@ export const pageHero = z.object({
 /** A page hero without its own banner (about, contact): the site default image is used. */
 export const pageHeroText = pageHero.omit({ image: true })
 
-/** Icon + title + description cards (values, officer qualities, features). */
+/** Icon + title + description cards (values, cleaner qualities, features). */
 export const iconCard = z.object({
   title: text,
   description: text,

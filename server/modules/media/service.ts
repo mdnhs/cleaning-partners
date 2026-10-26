@@ -405,7 +405,7 @@ function describeUsage(
     case "service":
       return with_(`Service: ${name}`, `/admin/services/${id}`)
     case "article":
-      return with_(`Article: ${name}`, `/admin/insights/${id}`)
+      return with_(`Article: ${name}`, `/admin/blog/${id}`)
     case "team":
       return with_(`Team: ${name}`, `/admin/collections/team?edit=${id}`)
     case "client":

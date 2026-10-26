@@ -67,7 +67,7 @@ describe("POST /api/v1/admin/media/upload", () => {
     const { status, body } = await upload(
       editor,
       { bytes, name: "Hero Photo.png", type: "image/png" },
-      "Night patrol"
+      "Night clean"
     )
     expect(status).toBe(201)
     expect(body).toMatchObject({
@@ -75,7 +75,7 @@ describe("POST /api/v1/admin/media/upload", () => {
       width: 64,
       height: 48,
       size: expect.any(Number), // re-encoded copy; checked against the served file below
-      alt: "Night patrol",
+      alt: "Night clean",
       originalName: "Hero Photo.png",
       driver: "disk",
       focalX: null,

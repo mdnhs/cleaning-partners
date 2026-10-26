@@ -262,7 +262,7 @@ describe("invite dialog", () => {
     )
     await user.type(
       within(dialog).getByRole("textbox", { name: /Job title/ }),
-      "Guard"
+      "Supervisor"
     )
     await user.click(within(dialog).getByRole("checkbox", { name: "Editor" }))
     await user.click(
@@ -275,7 +275,7 @@ describe("invite dialog", () => {
     expect(bodyOf("POST", "/api/v1/admin/users/invite")).toEqual({
       email: "nia@example.test",
       name: "Nia New",
-      title: "Guard",
+      title: "Supervisor",
       roles: ["editor"],
     })
     expect(within(done).getByRole("status")).toHaveTextContent(

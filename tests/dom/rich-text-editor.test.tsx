@@ -13,7 +13,7 @@ const LIBRARY = [
   {
     id: "00000000-0000-7000-8000-000000000001",
     url: "/images/hero.jpg",
-    alt: "Officer at night",
+    alt: "Cleaner at night",
     mime: "image/jpeg",
     width: 1440,
     height: 748,
@@ -166,13 +166,13 @@ describe("RichTextEditor", () => {
           { type: "paragraph", content: [{ type: "text", text: "Intro" }] },
           {
             type: "image",
-            attrs: { media: { mediaId: LIBRARY[0].id }, alt: "Officer" },
+            attrs: { media: { mediaId: LIBRARY[0].id }, alt: "Cleaner" },
           },
         ],
       },
     })
     await screen.findByRole("textbox", { name: "Body" })
-    await screen.findByDisplayValue("Officer")
+    await screen.findByDisplayValue("Cleaner")
     expect(onChange).not.toHaveBeenCalled()
   })
 
@@ -235,7 +235,7 @@ describe("RichTextEditor state and keyboard", () => {
       content: [
         {
           type: "image",
-          attrs: { media: { mediaId: LIBRARY[0].id }, alt: "Officer" },
+          attrs: { media: { mediaId: LIBRARY[0].id }, alt: "Cleaner" },
         },
       ],
     }
@@ -245,7 +245,7 @@ describe("RichTextEditor state and keyboard", () => {
       </QueryClientProvider>
     )
     const toolbar = await screen.findByRole("toolbar", { name: "Formatting" })
-    const alt = await screen.findByDisplayValue("Officer")
+    const alt = await screen.findByDisplayValue("Cleaner")
     expect(within(toolbar).getByRole("button", { name: "Bold" })).toBeEnabled()
     expect(alt).toBeEnabled()
 
@@ -261,7 +261,7 @@ describe("RichTextEditor state and keyboard", () => {
     )
     for (const name of ["Italic", "Link", "Heading", "Insert image"])
       expect(within(toolbar).getByRole("button", { name })).toBeDisabled()
-    expect(screen.getByDisplayValue("Officer")).toBeDisabled()
+    expect(screen.getByDisplayValue("Cleaner")).toBeDisabled()
     expect(screen.getByRole("textbox", { name: "Body" })).toHaveAttribute(
       "contenteditable",
       "false"
@@ -277,7 +277,7 @@ describe("RichTextEditor state and keyboard", () => {
         within(toolbar).getByRole("button", { name: "Bold" })
       ).toBeEnabled()
     )
-    expect(screen.getByDisplayValue("Officer")).toBeEnabled()
+    expect(screen.getByDisplayValue("Cleaner")).toBeEnabled()
     expect(onChange).not.toHaveBeenCalled()
   })
 
@@ -414,7 +414,7 @@ describe("MediaPickerDialog", () => {
     ).toBeDisabled()
     await user.type(
       within(dialog).getByRole("searchbox", { name: "Search images" }),
-      "Officer"
+      "Cleaner"
     )
     await waitFor(() =>
       expect(
@@ -422,7 +422,7 @@ describe("MediaPickerDialog", () => {
       ).toBeNull()
     )
     const officer = within(dialog).getByRole("button", {
-      name: /Officer at night/,
+      name: /Cleaner at night/,
     })
     await user.click(officer)
     expect(officer).toHaveAttribute("aria-pressed", "true")
@@ -449,7 +449,7 @@ describe("MediaPickerDialog", () => {
     let dialog = await screen.findByRole("dialog", { name: "Choose an image" })
     await user.type(
       within(dialog).getByRole("searchbox", { name: "Search images" }),
-      "Officer"
+      "Cleaner"
     )
     await waitFor(() =>
       expect(
@@ -457,7 +457,7 @@ describe("MediaPickerDialog", () => {
       ).toBeNull()
     )
     await user.click(
-      within(dialog).getByRole("button", { name: /Officer at night/ })
+      within(dialog).getByRole("button", { name: /Cleaner at night/ })
     )
     rerender(picker(false))
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())

@@ -1,0 +1,468 @@
+import { existsSync } from "node:fs"
+import { readdir } from "node:fs/promises"
+import { resolve } from "node:path"
+
+import { and, eq, isNotNull, sql } from "drizzle-orm"
+import sharp from "sharp"
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest"
+
+const { revalidateTag } = vi.hoisted(() => ({ revalidateTag: vi.fn() }))
+vi.mock("next/cache", () => ({
+  revalidateTag,
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+}))
+
+import type { MediaItem, MediaUsage } from "@/lib/schemas/api/media"
+import { app } from "@/server/api/app"
+import { type DbOrTx, getDb } from "@/server/db/client"
+import {
+  auditLog,
+  clients,
+  groupCompanies,
+  jobs,
+  media,
+  mediaUsages,
+  services,
+  teamMembers,
+} from "@/server/db/schema"
+import { seedContent } from "@/server/db/seed"
+import { AppError } from "@/server/lib/errors"
+import { syncMediaUsages } from "@/server/lib/media-usages"
+import { defaultUploadsRoot, diskStorage } from "@/server/lib/storage"
+import {
+  deleteMediaRow,
+  lockMediaRow,
+  replaceMediaUsages,
+} from "@/server/modules/media/repo"
+import {
+  deleteRetiredMediaFile,
+  RETIRED_MEDIA_JOB_NAME,
+} from "@/server/modules/media/service"
+
+import { resetDb } from "../db"
+
+/**
+ * Runs the retired-file jobs of one media row now (normally a day after the
+ * replace) and returns the keys they covered.
+ */
+async function deleteRetiredFiles(mediaId: string): Promise<string[]> {
+  const rows = await getDb()
+    .delete(jobs)
+    .where(
+      and(
+        eq(jobs.name, RETIRED_MEDIA_JOB_NAME),
+        sql`${jobs.payload}->>'mediaId' = ${mediaId}`
+      )
+    )
+    .returning()
+  for (const row of rows) await deleteRetiredMediaFile(row.payload)
+  return rows.map((row) => (row.payload as { key: string }).key).sort()
+}
+import { adminRequest, ORIGIN, signedInUser } from "../helpers/auth"
+
+let editor: string
+let author: string
+const created: string[] = []
+
+beforeAll(async () => {
+  await resetDb()
+  await seedContent(getDb())
+  editor = (await signedInUser(["editor"])).cookie
+  author = (await signedInUser(["author"])).cookie
+})
+beforeEach(() => revalidateTag.mockClear())
+afterAll(async () => {
+  for (const key of created) await diskStorage().delete(key)
+})
+
+const keyOf = (item: { url: string }) =>
+  item.url.replace("/api/v1/media/file/", "")
+
+async function send(path: string, bytes: Uint8Array, name: string) {
+  const form = new FormData()
+  form.append("file", new File([new Uint8Array(bytes)], name))
+  const res = await app.request(`/api/v1/admin/media${path}`, {
+    method: "POST",
+    headers: { origin: ORIGIN, cookie: editor },
+    body: form,
+  })
+  const body = (await res.json()) as MediaItem & {
+    error?: { code: string; message: string }
+  }
+  if (res.ok && body.driver === "disk") created.push(keyOf(body))
+  return { status: res.status, body }
+}
+
+const png = (color = "#1e6fb8") =>
+  sharp({ create: { width: 8, height: 4, channels: 3, background: color } })
+    .png()
+    .toBuffer()
+
+const rowOf = async (id: string) =>
+  (await getDb().select().from(media).where(eq(media.id, id)))[0]
+
+const auditActions = async (id: string) =>
+  (
+    await getDb()
+      .select({ action: auditLog.action })
+      .from(auditLog)
+      .where(eq(auditLog.entityId, id))
+  ).map((a) => a.action)
+
+describe("PATCH alt text", () => {
+  it("strips control, zero-width and bidi characters and audits the change", async () => {
+    const { body } = await send("/upload", await png(), "a.png")
+    const res = await adminRequest(`/media/${body.id}`, {
+      cookie: editor,
+      method: "PATCH",
+      json: { alt: "  Cleaner\u0007 at\u200b the \u202eentrance\u2066 " },
+    })
+    expect(res.status).toBe(200)
+    expect(((await res.json()) as MediaItem).alt).toBe(
+      "Cleaner at the entrance"
+    )
+    expect(await auditActions(body.id)).toEqual([
+      "media.uploaded",
+      "media.updated",
+    ])
+  })
+
+  it("caps alt text at 500 characters and answers 404 for unknown ids", async () => {
+    const { body } = await send("/upload", await png(), "b.png")
+    const long = await adminRequest(`/media/${body.id}`, {
+      cookie: editor,
+      method: "PATCH",
+      json: { alt: "x".repeat(501) },
+    })
+    expect(long.status).toBe(422)
+    const missing = "01900000-0000-7000-8000-000000000000"
+    expect(
+      (
+        await adminRequest(`/media/${missing}`, {
+          cookie: editor,
+          method: "PATCH",
+          json: { alt: "x" },
+        })
+      ).status
+    ).toBe(404)
+    expect(
+      (await adminRequest(`/media/${missing}/usages`, { cookie: editor }))
+        .status
+    ).toBe(404)
+  })
+})
+
+describe("DELETE guards", () => {
+  it("answers 409 from the RESTRICT FK when a team photo has no usage row", async () => {
+    const [member] = await getDb()
+      .select()
+      .from(teamMembers)
+      .where(isNotNull(teamMembers.photoId))
+      .limit(1)
+    const photoId = member.photoId!
+    await getDb().delete(mediaUsages).where(eq(mediaUsages.mediaId, photoId))
+    const res = await adminRequest(`/media/${photoId}`, {
+      cookie: editor,
+      method: "DELETE",
+    })
+    expect(res.status).toBe(409)
+    const { error } = (await res.json()) as {
+      error: { code: string; current: { usages: MediaUsage[] } }
+    }
+    expect(error.code).toBe("CONFLICT")
+    expect(error.current.usages).toEqual([])
+    expect(await rowOf(photoId)).toBeDefined()
+  })
+
+  it("deletes an unused static row and leaves its public/ file alone", async () => {
+    // Every seeded file is used: take one referenced only from JSON (no FK
+    // column) and drop its usage rows, as if the editors had chosen others.
+    const fkUsed = new Set<string | null>(
+      [
+        ...(await getDb()
+          .select({ id: teamMembers.photoId })
+          .from(teamMembers)),
+        ...(await getDb().select({ id: clients.logoId }).from(clients)),
+        ...(await getDb()
+          .select({ id: groupCompanies.logoId })
+          .from(groupCompanies)),
+      ].map((r) => r.id)
+    )
+    const statics = await getDb()
+      .select()
+      .from(media)
+      .where(eq(media.driver, "static"))
+    const row = statics.find(
+      // hero.png is replaced below
+      (m) => !fkUsed.has(m.id) && m.key !== "/images/home/hero.png"
+    )
+    if (!row) throw new Error("seed has no JSON-only static file")
+    await getDb().delete(mediaUsages).where(eq(mediaUsages.mediaId, row.id))
+    const file = resolve(process.cwd(), "public", row.key.slice(1))
+    expect(existsSync(file)).toBe(true)
+    const res = await adminRequest(`/media/${row.id}`, {
+      cookie: editor,
+      method: "DELETE",
+    })
+    expect(res.status).toBe(200)
+    expect(await rowOf(row.id)).toBeUndefined()
+    expect(existsSync(file)).toBe(true)
+  })
+})
+
+describe("replace runs the upload pipeline", () => {
+  it("sanitises a replacement SVG and audits media.replaced", async () => {
+    const { body: first } = await send(
+      "/upload",
+      Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"/>'
+      ),
+      "icon.svg"
+    )
+    const { status, body } = await send(
+      `/${first.id}/replace`,
+      Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="6" height="6"><script>alert(1)</script><rect width="2" height="2" onload="x()"/></svg>'
+      ),
+      "icon-2.svg"
+    )
+    expect(status).toBe(200)
+    expect(body).toMatchObject({ id: first.id, mime: "image/svg+xml" })
+    const served = await (await app.request(body.url)).text()
+    expect(served).not.toMatch(/script|onload/)
+    expect(await auditActions(first.id)).toEqual([
+      "media.uploaded",
+      "media.replaced",
+    ])
+  })
+
+  it("answers 404 for an unknown id", async () => {
+    const res = await send(
+      "/01900000-0000-7000-8000-000000000000/replace",
+      await png(),
+      "x.png"
+    )
+    expect(res.status).toBe(404)
+  })
+
+  it("replaces a static row with an uploaded file; public/ stays", async () => {
+    const [hero] = await getDb()
+      .select()
+      .from(media)
+      .where(eq(media.key, "/images/home/hero.png"))
+    const jpeg = await sharp({
+      create: { width: 12, height: 6, channels: 3, background: "#123" },
+    })
+      .jpeg()
+      .toBuffer()
+    const { status, body } = await send(`/${hero.id}/replace`, jpeg, "hero.png")
+    expect(status).toBe(200)
+    expect(body).toMatchObject({ id: hero.id, driver: "disk", width: 12 })
+    expect(
+      existsSync(resolve(process.cwd(), "public/images/home/hero.png"))
+    ).toBe(true)
+    // Usages still point at the same id.
+    const usages = await getDb()
+      .select({ id: mediaUsages.id })
+      .from(mediaUsages)
+      .where(
+        and(eq(mediaUsages.mediaId, hero.id), eq(mediaUsages.entityId, "home"))
+      )
+    expect(usages.length).toBeGreaterThan(0)
+  })
+
+  it("two concurrent replaces leave exactly one stored file", async () => {
+    const { body: first } = await send("/upload", await png(), "c.png")
+    // Hold the row lock until both replaces have stored their file and wait
+    // for the row, so their transactions really overlap.
+    let release: (() => void) | undefined
+    const held = getDb().transaction(async (tx) => {
+      await lockMediaRow(tx, first.id)
+      await new Promise<void>((resolve) => (release = resolve))
+    })
+    await vi.waitFor(() => expect(release).toBeDefined())
+    const pending = Promise.all([
+      send(`/${first.id}/replace`, await png("#111"), "c1.png"),
+      send(`/${first.id}/replace`, await png("#222"), "c2.png"),
+    ])
+    await vi.waitFor(
+      async () => {
+        const { rows } = await getDb().execute<{ n: number }>(
+          sql`select count(*)::int as n from pg_stat_activity
+              where datname = current_database() and wait_event_type = 'Lock'`
+        )
+        expect(rows[0].n).toBe(2)
+      },
+      { timeout: 10_000, interval: 50 }
+    )
+    release!()
+    await held
+    const [a, b] = await pending
+    expect([a.status, b.status]).toEqual([200, 200])
+    const final = await rowOf(first.id)
+    const disk = diskStorage()
+    const superseded = [keyOf(first), keyOf(a.body), keyOf(b.body)].filter(
+      (key) => key !== final.key
+    )
+    // Each superseded file was retired exactly once, then deleted.
+    expect(await deleteRetiredFiles(first.id)).toEqual(superseded.sort())
+    expect(await disk.read(final.key)).not.toBeNull()
+    for (const key of superseded) expect(await disk.read(key), key).toBeNull()
+  })
+})
+
+/** Waits until `n` backends of the test DB are blocked on a row lock. */
+async function lockWaiters(n: number) {
+  await vi.waitFor(
+    async () => {
+      const { rows } = await getDb().execute<{ n: number }>(
+        sql`select count(*)::int as n from pg_stat_activity
+            where datname = current_database() and wait_event_type = 'Lock'`
+      )
+      expect(rows[0].n).toBe(n)
+    },
+    { timeout: 10_000, interval: 50 }
+  )
+}
+
+/** Runs `body` in a transaction that stays open until the returned release() is called. */
+async function heldTransaction(
+  body: (tx: DbOrTx) => Promise<void>,
+  after?: (tx: DbOrTx) => Promise<void>
+) {
+  let release: (() => void) | undefined
+  const done = getDb().transaction(async (tx) => {
+    await body(tx)
+    await new Promise<void>((resolve) => (release = resolve))
+    await after?.(tx)
+  })
+  await vi.waitFor(() => expect(release).toBeDefined())
+  return async () => {
+    release!()
+    await done
+  }
+}
+
+describe("usage labels follow the reader's permissions", () => {
+  it("authors see that a service uses the file, not its draft title or link", async () => {
+    const [usage] = await getDb()
+      .select({ mediaId: mediaUsages.mediaId, serviceId: mediaUsages.entityId })
+      .from(mediaUsages)
+      .where(eq(mediaUsages.entityType, "service"))
+      .limit(1)
+    const [service] = await getDb()
+      .select({ draft: services.draft })
+      .from(services)
+      .where(eq(services.id, usage.serviceId))
+    const title = (service.draft as { title: string }).title
+    const list = async (cookie: string) =>
+      (
+        (await (
+          await adminRequest(`/media/${usage.mediaId}/usages`, { cookie })
+        ).json()) as { items: MediaUsage[] }
+      ).items.filter((u) => u.entityType === "service")
+
+    expect(await list(editor)).toContainEqual(
+      expect.objectContaining({
+        entityId: usage.serviceId,
+        label: `Service: ${title}`,
+        href: `/admin/services/${usage.serviceId}`,
+      })
+    )
+    const forAuthor = await list(author)
+    expect(forAuthor).toContainEqual(
+      expect.objectContaining({
+        entityId: usage.serviceId,
+        label: "A service",
+        href: null,
+      })
+    )
+    expect(JSON.stringify(forAuthor)).not.toContain(title)
+  })
+})
+
+describe("races (409 or 422, never 500)", () => {
+  it("a delete racing a usage insert waits for it and answers 409", async () => {
+    const { body } = await send("/upload", await png(), "race.png")
+    // A save inserting a usage row, still open (holds FOR KEY SHARE on the media row).
+    const commit = await heldTransaction((tx) =>
+      replaceMediaUsages(tx, "page", "race-test", [
+        { mediaId: body.id, field: "hero.image" },
+      ])
+    )
+    const pending = adminRequest(`/media/${body.id}`, {
+      cookie: editor,
+      method: "DELETE",
+    })
+    await lockWaiters(1)
+    await commit()
+    const res = await pending
+    expect(res.status).toBe(409)
+    expect(await rowOf(body.id)).toBeDefined()
+    await getDb()
+      .delete(mediaUsages)
+      .where(eq(mediaUsages.entityId, "race-test"))
+  })
+
+  it("a usage insert racing a delete answers 422", async () => {
+    const { body } = await send("/upload", await png(), "race2.png")
+    // A delete in progress: row locked, then removed on release.
+    const commit = await heldTransaction(
+      async (tx) => {
+        await lockMediaRow(tx, body.id)
+      },
+      async (tx) => {
+        await deleteMediaRow(tx, body.id)
+      }
+    )
+    const saving = getDb().transaction((tx) =>
+      syncMediaUsages(tx, "page", "race-test-2", {
+        hero: { image: { mediaId: body.id } },
+      })
+    )
+    const outcome = saving.then(
+      () => null,
+      (err: unknown) => err
+    )
+    await lockWaiters(1)
+    await commit()
+    const err = await outcome
+    expect(err).toBeInstanceOf(AppError)
+    expect((err as AppError).status).toBe(422)
+  })
+
+  it("a replace racing a delete answers 404 and removes its new file", async () => {
+    const { body } = await send("/upload", await png(), "gone.png")
+    const dir = resolve(
+      defaultUploadsRoot(),
+      ...keyOf(body).split("/").slice(0, 2)
+    )
+    const commit = await heldTransaction(
+      async (tx) => {
+        await lockMediaRow(tx, body.id)
+      },
+      async (tx) => {
+        await deleteMediaRow(tx, body.id)
+      }
+    )
+    const before = (await readdir(dir)).sort()
+    const pending = send(`/${body.id}/replace`, await png("#555"), "new.png")
+    await lockWaiters(1)
+    // The replacement is stored before the row lock is taken.
+    expect((await readdir(dir)).length).toBe(before.length + 1)
+    await commit()
+    const res = await pending
+    expect(res.status).toBe(404)
+    expect((await readdir(dir)).sort()).toEqual(before)
+    expect(await rowOf(body.id)).toBeUndefined()
+  })
+})

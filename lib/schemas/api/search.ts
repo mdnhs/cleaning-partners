@@ -28,6 +28,7 @@ export const SEARCH_TYPES = [
   "testimonial",
   "groupCompany",
   "category",
+  "lead",
 ] as const
 export type SearchType = (typeof SEARCH_TYPES)[number]
 

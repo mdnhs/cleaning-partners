@@ -225,7 +225,7 @@ export const COLLECTION_CONFIGS: Record<CollectionName, CollectionConfig> = {
     title: "Testimonials",
     singular: "Testimonial",
     description:
-      "Customer quotes in the home page Testimonials section and on service pages, in this order.",
+      "Customer quotes shown in the Testimonials section on the Home, About, Services and service detail pages, in this order.",
     schema: collectionSchemas.testimonials,
     meta: {
       fields: {

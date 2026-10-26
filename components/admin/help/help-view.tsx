@@ -4,7 +4,7 @@ import { Kbd, KbdGroup } from "@/components/ui/kbd"
 export type OwnerContact = { name: string; email: string }
 
 /** ⌘ on a Mac, Ctrl elsewhere: both are listed (the page renders on the server). */
-const SHORTCUTS: { keys: string[][]; action: string }[] = [
+export const SHORTCUTS: { keys: string[][]; action: string }[] = [
   {
     keys: [
       ["⌘", "K"],
@@ -43,11 +43,11 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       "Pages lists every page of the site. Open one, change what you need, then publish.",
     steps: [
-      "Open Pages in the left menu and choose the page, for example Home or About us.",
+      "Open Pages in the left menu and choose the page, for example Home or About.",
       "Edit a section's text, button or image. Changes save to a draft by themselves, so the live site does not change yet.",
       "Use the preview to see the page as visitors will, on a phone or a computer.",
       "Press Publish and check the list of changes. The site updates within a few seconds.",
-      "Made a mistake? Open Revisions and restore an earlier version.",
+      "Made a mistake? Open History and restore an earlier version.",
     ],
   },
   {
@@ -60,7 +60,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Fill in the name, the card text, the banner text and picture, and what is included.",
       "List the places you clean (offices, homes, clinics and so on) so visitors see them on the page.",
       "A new service starts as a draft and stays hidden until you publish it.",
-      "Drag services in the list to change the order they show on the site.",
+      "Choose Change order, then drag services to change the order they show on the site.",
     ],
   },
   {
@@ -69,10 +69,10 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       "Testimonials live under Collections and appear in the reviews section of the site.",
     steps: [
-      "Open Collections, then Testimonials, and choose Add.",
+      "Open Collections, then Testimonials, and choose Add testimonial.",
       "Enter the customer's name, their initials and the quote, then pick a rating from 1 to 5 stars.",
       "Save. Testimonials go live straight away: there is no separate publish step.",
-      "Drag rows to change the order, or delete a testimonial you no longer want to show.",
+      "Choose Change order, then drag rows to change the order, or delete a testimonial you no longer want to show.",
     ],
   },
   {
@@ -82,7 +82,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "These short lists sit together under Collections and work the same way as testimonials.",
     steps: [
       "Open Collections and choose Team, Clients or Group companies.",
-      "Add a person or company, edit a row, or drag to reorder.",
+      "Add a person or company, edit a row, or choose Change order and drag to reorder.",
       "Changes show on the live site as soon as you save.",
     ],
   },
@@ -118,7 +118,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     steps: [
       "Press Choose image on any picture field, then upload a new file or pick one you already have.",
       "Add a short description (alt text) so the picture works for people using screen readers.",
-      "Use photos of at least 1600 pixels wide for banners. Large files are resized for you.",
+      "Use large, sharp photos for banners. Uploaded pictures are cleaned of hidden camera and location data.",
       "The Media screen lists everything uploaded and where each file is used.",
     ],
   },
@@ -138,9 +138,9 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     id: "people",
     title: "Invite a colleague and choose what they can do",
     summary:
-      "Owners and administrators manage the team under Users. Roles decide what each person can change.",
+      "Owners and administrators manage the team under Users & roles. Roles decide what each person can change.",
     steps: [
-      "Open Users and choose Invite user, then enter their name and email.",
+      "Open Users & roles and choose Invite user, then enter their name and email.",
       "Pick a role: for example an editor can publish, an author can only write drafts.",
       "If email is not set up yet, copy the invitation link and send it to them yourself.",
       "Turn on two-factor sign-in under your own Account for extra protection.",

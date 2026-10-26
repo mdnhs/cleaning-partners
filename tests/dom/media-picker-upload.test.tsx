@@ -277,12 +277,12 @@ describe("MediaPickerDialog upload (master 6.3)", () => {
     renderPicker(["author"])
     await user.type(
       await screen.findByLabelText(/^Alternative text for the upload/),
-      "Guard at the gate"
+      "Cleaner at the entrance"
     )
     choose("new-hero.png", "image/png")
     expect(uploadMediaFile).toHaveBeenCalledWith(
       expect.any(File),
-      expect.objectContaining({ alt: "Guard at the gate" })
+      expect.objectContaining({ alt: "Cleaner at the entrance" })
     )
     await waitFor(() =>
       expect(

@@ -3,11 +3,12 @@
 import { useQuery } from "@tanstack/react-query"
 import {
   Building2,
-  MessageSquareQuote,
   ExternalLink,
   FileText,
+  Inbox,
   LogOut,
   type LucideIcon,
+  MessageSquareQuote,
   Monitor,
   Moon,
   Newspaper,
@@ -52,6 +53,7 @@ const TYPE_ICONS: Record<SearchType, typeof FileText> = {
   team: Users,
   client: ShieldCheck,
   testimonial: MessageSquareQuote,
+  lead: Inbox,
   groupCompany: Building2,
   category: Tags,
 }
@@ -63,6 +65,7 @@ const TYPE_LABELS: Record<SearchType, string> = {
   team: "Team member",
   client: "Client",
   testimonial: "Testimonial",
+  lead: "Lead",
   groupCompany: "Group company",
   category: "Category",
 }

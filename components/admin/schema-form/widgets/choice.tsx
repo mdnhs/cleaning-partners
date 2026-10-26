@@ -8,7 +8,7 @@ import { OptionSelect } from "@/components/admin/option-select"
 import { cn } from "@/lib/utils"
 
 import { fieldId, useSchemaForm, type WidgetProps } from "../context"
-import { enumValues } from "../resolve-widget"
+import { enumValues, unwrapSchema } from "../resolve-widget"
 import {
   describedBy,
   ErrorText,
@@ -43,7 +43,8 @@ export function SelectWidget({ field, path }: WidgetProps) {
   // are strings in the control and numbers in the form. A string field with
   // options keeps strings.
   const numeric =
-    (field.schema as unknown as { def: { type: string } }).def.type === "number"
+    (unwrapSchema(field.schema).inner as unknown as { def: { type: string } })
+      .def.type === "number"
   const items = field.meta.options
     ? field.meta.options
     : choiceItems(field, enumValues(field.schema) ?? [])

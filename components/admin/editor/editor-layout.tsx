@@ -74,7 +74,7 @@ export function EditorLayout({
   description?: ReactNode
   /** The record's state (Draft / Published / Unpublished changes), or pills of its own. */
   status: ContentState | readonly StatusPillSpec[]
-  /** Public path of the record ("/services/cctv"), shown beside the pills. */
+  /** Public path of the record ("/services/office-cleaning"), shown beside the pills. */
   path?: string
   saveState: ReactNode
   actions: ReactNode

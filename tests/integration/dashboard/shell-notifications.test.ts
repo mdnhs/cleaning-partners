@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { getDb } from "@/server/db/client"
 import { jobs, settings } from "@/server/db/schema"
 import type { Actor } from "@/server/lib/actor"
+import { loadShellExtras } from "@/server/lib/admin-shell-extras"
 import { getShellNotifications } from "@/server/modules/dashboard/service"
 
 import { resetDb } from "../db"
@@ -76,6 +77,25 @@ describe("topbar bell (final review I6)", () => {
     ).toEqual(["1 new enquiry"])
     expect(
       await getShellNotifications(actorOf(editor.id, ["editor"]), null)
+    ).toEqual([])
+  })
+
+  it("loadShellExtras (panel layout) feeds the bell from the database: no leads yet, failed jobs for the owner", async () => {
+    const owner = await createUser({ roles: ["owner"] })
+    const editor = await createUser({ roles: ["editor"] })
+    await getDb().insert(jobs).values({
+      name: "backup",
+      key: "backup",
+      runAt: new Date(),
+      lastError: "pg_dump exited with code 1",
+    })
+    const forOwner = await loadShellExtras(actorOf(owner.id, ["owner"]))
+    expect(forOwner.badges).toEqual({})
+    expect(forOwner.notifications.map((item) => item.id)).toEqual([
+      "failed-jobs",
+    ])
+    expect(
+      (await loadShellExtras(actorOf(editor.id, ["editor"]))).notifications
     ).toEqual([])
   })
 })
