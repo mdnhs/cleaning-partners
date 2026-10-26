@@ -139,7 +139,7 @@ export const INTEGRATION_FORMS: Record<IntegrationKey, IntegrationFormMeta> = {
         kind: "text",
         label: "Sub-folder",
         placeholder: "media",
-        help: "Optional sub-folder under this site's fixed `cp/` folder in the shared bucket; files go to `cp/<sub-folder>/…`. Lowercase letters, digits, - and _, folders separated by /. Changing it does not move files already stored, so it cannot change while uploads are stored in R2, and once saved it cannot be cleared.",
+        help: "Optional sub-folder under this site's fixed cp/ folder in the shared bucket; files go to cp/<sub-folder>/…. Lowercase letters, digits, - and _, folders separated by /. Changing it does not move files already stored, so it cannot change while uploads are stored in R2, and once saved it cannot be cleared.",
         autoComplete: "off",
         optional: true,
       },
