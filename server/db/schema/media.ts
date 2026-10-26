@@ -15,7 +15,7 @@ import {
 import { id, timestamps } from "./_shared"
 import { users } from "./auth"
 
-/** static = shipped in public/ (key is the URL path); disk/r2 come in Phase 6. */
+/** static = shipped in public/ (key is the URL path); disk = server uploads dir; r2 = bucket under cp/. */
 export const MEDIA_DRIVERS = ["static", "disk", "r2"] as const
 export const mediaDriver = pgEnum("media_driver", MEDIA_DRIVERS)
 

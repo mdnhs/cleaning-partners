@@ -338,6 +338,20 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
 
   - **Phase 4 fix-wave outcome.** Phase 6 restores two R2-only cases dropped from `media-manage-hardening`'s "replace to R2" block: "moves a disk file to R2 and retires the disk file" and "refuses (409) when R2 is disconnected mid-put". Phase 8 swaps the local `SEO_FIELDS_META` stub in `tests/unit/admin/resolve-widget.test.ts` back to the import from `@/components/admin/seo/seo-meta`.
 
+  - **Phase 6 outcome.** The R2 client carries `cpPrefixGuard`, a runtime middleware that fails closed. It allows only a fixed list of commands, and every Key, Prefix, CopySource and Delete key must start with `cp/`. `tests/unit/storage/aws-sdk-allowlist.test.ts` restricts the AWS SDK imports to a list of allowed files. SP's integrations API routes are already mounted (`server/api/app.ts`). Deferrals by owning task:
+    - **7.1:**
+      - Mount `MigrateMediaPanel` (`components/admin/integrations/migrate-media-panel.tsx`) in the R2 integration screen. Saving or disconnecting in the R2 form must invalidate `MIGRATE_MEDIA_QUERY_KEY`.
+      - Port SP's `tests/integration/api/integrations.test.ts`, including editor 403 on PUT, DELETE and `/:key/test`.
+      - Rewrite the `keyPrefix` help text in `integration-meta.ts`. It should describe an optional sub-folder under `cp/`, and must not say "sp for a shared bucket".
+      - Revisit the `R2_FOLDER_REQUIRED` copy (`server/modules/integrations/service.ts`).
+    - **11.1:**
+      - `assertCpInput` must reject a CopySource whose bucket isn't `config.bucket`.
+      - Add the backup store to `ALLOWED` in `aws-sdk-allowlist.test.ts` only after reviewing how it confines keys.
+      - Backup pruning lists with `Prefix = r2ObjectKey(cfg, "backups/")`, with a test that no key outside `cp/backups/` is ever seen.
+      - `r2:bootstrap` treats `CP_R2_PREFIX` as a sub-folder under `cp/` that defaults to `""`, not `"cp"`; with `"cp"`, files land permanently under `cp/cp/`. Fix the stale `docker-compose.yml` comment ("folder, default cp").
+      - Port SP's `tests/integration/ops/r2-bootstrap.test.ts`.
+    - **11.3:** port `tests/e2e/media-pins.ts` with CP fixtures, together with the admin a11y and admin-screens specs. Add admin visual baselines for media (grid, list, details, upload, picker-upload, delete-409) and for the R2 integration with its move panel.
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.
