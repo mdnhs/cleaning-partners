@@ -10,6 +10,7 @@ vi.mock("next/cache", () => ({
 import { getDb } from "@/server/db/client"
 import {
   articles,
+  builderPages,
   pages,
   revisions,
   services,
@@ -17,6 +18,7 @@ import {
 } from "@/server/db/schema"
 import { seedContent } from "@/server/db/seed"
 import { fixtureSiteSources } from "@/server/db/seed/fixtures/sources"
+import { buildSitemap } from "@/lib/seo/sitemap"
 import { getSiteOrigin, listSitemapEntries } from "@/server/modules/seo/queries"
 import { PAGE_PATHS } from "@/templates/registry"
 
@@ -72,6 +74,38 @@ describe("sitemap entries (published only)", () => {
       noindex: true,
       canonical: "https://x.ie/a",
     })
+  })
+
+  it("a noindex article is absent from the sitemap that is served", async () => {
+    const article = fx.articles[0]
+    await getDb()
+      .update(articles)
+      .set({ seo: { noindex: true } })
+      .where(eq(articles.slug, article.slug))
+    const origin = await getSiteOrigin()
+    const urls = buildSitemap(await listSitemapEntries(), origin).map(
+      (e) => e.url
+    )
+    expect(urls).not.toContain(`${origin}/blog/${article.slug}`)
+    expect(urls).toContain(`${origin}/blog/${fx.articles[1].slug}`)
+  })
+
+  // 10.3: flips when builder pages ship
+  it("a published builder page is not in the sitemap until 10.3", async () => {
+    await getDb()
+      .insert(builderPages)
+      .values({
+        slug: "spring-offer",
+        title: "Spring offer",
+        draft: { blocks: [] },
+        published: { blocks: [] },
+        status: "published",
+        publishedAt: new Date(),
+        seo: {},
+      })
+    const entries = await listSitemapEntries()
+    expect(entries.map((e) => e.path)).not.toContain("/p/spring-offer")
+    expect(entries).toHaveLength(19)
   })
 
   it("unpublished pages are left out; a blank canonical counts as none", async () => {
