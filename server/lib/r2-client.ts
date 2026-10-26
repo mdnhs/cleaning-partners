@@ -5,6 +5,7 @@ import { createHash } from "node:crypto"
 import { S3Client, S3ServiceException } from "@aws-sdk/client-s3"
 
 import type { R2Config } from "@/lib/schemas/integrations"
+import { R2_KEY_PREFIX_PATTERN } from "@/lib/schemas/integrations/r2"
 import { isTimeoutError } from "@/server/lib/errors"
 
 /** S3 API endpoint of an R2 account (libraries notes §5.5). */
@@ -17,15 +18,39 @@ export function r2Endpoint(
 }
 
 /**
- * Object key in the bucket for a storage key: `<folder>/<key>` when a folder
- * (keyPrefix) is set, else the key itself. Media rows and URLs keep the bare
- * key; only calls to R2 use this (uploads, reads, deletes, heads, backups).
+ * The bucket is shared with the sister site: everything this site
+ * stores lives under this root and nothing outside it is ever touched (R6-1,
+ * O7). Defined once here; the driver re-exports it.
+ */
+export const R2_PREFIX = "cp/"
+
+/** A folder or key segment that could escape the root, or is not a plain name. */
+function unsafeSegment(segment: string): boolean {
+  return segment === "" || segment === "." || segment === ".."
+}
+
+/**
+ * Object key in the bucket for a storage key: always `cp/` + the optional
+ * folder (keyPrefix) + `/` + the key. Media rows and URLs keep the bare key;
+ * only calls to R2 use this. It is the ONLY place an R2 key or list Prefix is
+ * built (`r2ObjectKey(c, "")` is the folder's list prefix, ending in `/`).
+ * Throws on a folder or key that could climb out of `cp/`.
  */
 export function r2ObjectKey(
   c: Pick<R2Config, "keyPrefix">,
   key: string
 ): string {
-  return c.keyPrefix ? `${c.keyPrefix}/${key}` : key
+  const folder = c.keyPrefix ?? ""
+  if (folder !== "" && !R2_KEY_PREFIX_PATTERN.test(folder))
+    throw new Error("Invalid R2 folder.")
+  if (key.includes("\\") || key.startsWith("/"))
+    throw new Error("Invalid R2 key.")
+  // A trailing "/" (list prefix) leaves one empty last segment; allow only that.
+  const segments = key.split("/")
+  if (segments.at(-1) === "") segments.pop()
+  if (segments.some(unsafeSegment) && key !== "")
+    throw new Error("Invalid R2 key.")
+  return `${R2_PREFIX}${folder ? `${folder}/` : ""}${key}`
 }
 
 /**

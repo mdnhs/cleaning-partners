@@ -17,9 +17,10 @@ export const R2_KEY_PREFIX_PATTERN = /^[a-z0-9_-]+(?:\/[a-z0-9_-]+)*$/
 export const R2_KEY_PREFIX_MAX = 64
 
 /**
- * Optional folder inside the bucket ("" = the bucket root, the behaviour of
- * settings saved before it existed). The driver writes `<folder>/<key>`;
- * media rows keep the bare key, so changing it does not move stored files.
+ * Optional sub-folder UNDER the hard `cp/` root (R6-1): "" = `cp/` itself.
+ * The driver writes `cp/<folder>/<key>`; media rows keep the bare key, so
+ * changing it does not move stored files. The pattern rejects `..`, a leading
+ * or trailing `/`, `\\`, empty segments and dots, so no value can escape `cp/`.
  */
 export const r2KeyPrefix = z
   .string()
