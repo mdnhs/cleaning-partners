@@ -1,10 +1,12 @@
 import { S3Client } from "@aws-sdk/client-s3"
+import { eq } from "drizzle-orm"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { getDb } from "@/server/db/client"
 import type { Actor } from "@/server/lib/actor"
 import { resetR2Client } from "@/server/lib/r2-client"
 import { getStorage, storageFor } from "@/server/lib/storage"
+import { settings } from "@/server/db/schema"
 import { saveIntegration } from "@/server/modules/integrations/service"
 
 import { resetDb } from "../db"
@@ -58,5 +60,34 @@ describe("R2 guard: integrations.r2 decides the driver, writes stay under cp/ (R
   it("R2 unset → disk, and storageFor('r2', db) is null", async () => {
     expect((await getStorage(getDb())).name).toBe("disk")
     expect(await storageFor("r2", getDb())).toBeNull()
+  })
+})
+
+describe("a bad stored row cannot yield a driver (fix round 1)", () => {
+  it("integrations.r2 stored with keyPrefix ../sp (bypassing the service) makes getStorage reject", async () => {
+    await saveR2()
+    const [row] = await getDb()
+      .select()
+      .from(settings)
+      .where(eq(settings.key, "integrations.r2"))
+    await getDb()
+      .update(settings)
+      .set({
+        draft: {
+          ...(row.draft as Record<string, unknown>),
+          keyPrefix: "../sp",
+        },
+        ...(row.published
+          ? {
+              published: {
+                ...(row.published as Record<string, unknown>),
+                keyPrefix: "../sp",
+              },
+            }
+          : {}),
+      })
+      .where(eq(settings.key, "integrations.r2"))
+    await expect(getStorage()).rejects.toThrow(/settings are invalid/)
+    await expect(storageFor("r2")).rejects.toThrow(/settings are invalid/)
   })
 })

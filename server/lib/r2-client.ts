@@ -40,7 +40,8 @@ export function r2ObjectKey(
   c: Pick<R2Config, "keyPrefix">,
   key: string
 ): string {
-  const folder = c.keyPrefix ?? ""
+  const folder: unknown = c.keyPrefix ?? ""
+  if (typeof folder !== "string") throw new Error("Invalid R2 folder.")
   if (folder !== "" && !R2_KEY_PREFIX_PATTERN.test(folder))
     throw new Error("Invalid R2 folder.")
   if (key.includes("\\") || key.startsWith("/"))
@@ -58,7 +59,7 @@ export function r2ObjectKey(
  * does not implement several flexible-checksum headers (notes §5.5).
  */
 export function createR2Client(c: R2Config): S3Client {
-  return new S3Client({
+  const client = new S3Client({
     region: "auto",
     endpoint: r2Endpoint(c),
     credentials: {
@@ -70,7 +71,73 @@ export function createR2Client(c: R2Config): S3Client {
     maxAttempts: 2,
     requestHandler: { connectionTimeout: 10_000, requestTimeout: 60_000 },
   })
+  // Last line of defence (R6-1): whatever code holds this client, no request
+  // can name an object outside cp/.
+  client.middlewareStack.add(cpPrefixGuard as never, {
+    step: "initialize",
+    name: "cpPrefixGuard",
+  })
+  return client
 }
+
+const GUARD_MESSAGE = "R2 request outside the cp/ prefix was refused."
+
+/**
+ * Throws (fixed text, nothing echoed) unless every object key a command
+ * names starts with `cp/`. Commands without key fields (HeadBucket,
+ * ListBuckets) pass.
+ */
+export function assertCpInput(input: unknown, commandName?: string): void {
+  // A listing without a Prefix would cover the whole shared bucket.
+  if (
+    commandName?.startsWith("List") &&
+    commandName !== "ListBuckets" &&
+    commandName !== "ListDirectoryBuckets" &&
+    (typeof input !== "object" ||
+      input === null ||
+      (input as { Prefix?: unknown }).Prefix === undefined)
+  )
+    throw new Error(GUARD_MESSAGE)
+  if (typeof input !== "object" || input === null) return
+  const i = input as Record<string, unknown>
+  const inside = (v: unknown) =>
+    typeof v === "string" && v.startsWith(R2_PREFIX)
+  for (const field of ["Key", "Prefix", "StartAfter"] as const)
+    if (field in i && i[field] !== undefined && !inside(i[field]))
+      throw new Error(GUARD_MESSAGE)
+  if ("CopySource" in i && i.CopySource !== undefined) {
+    const src = i.CopySource
+    if (typeof src !== "string") throw new Error(GUARD_MESSAGE)
+    let decoded: string
+    try {
+      decoded = decodeURIComponent(src)
+    } catch {
+      throw new Error(GUARD_MESSAGE)
+    }
+    // "<bucket>/<key>" (a leading "/" is tolerated by S3).
+    const rest = decoded.replace(/^\//, "").split("/").slice(1).join("/")
+    if (!inside(rest)) throw new Error(GUARD_MESSAGE)
+  }
+  const del = i.Delete
+  if (del !== undefined) {
+    const objects = (del as { Objects?: unknown } | null)?.Objects
+    if (!Array.isArray(objects)) throw new Error(GUARD_MESSAGE)
+    for (const o of objects)
+      if (!inside((o as { Key?: unknown } | null)?.Key))
+        throw new Error(GUARD_MESSAGE)
+  }
+}
+
+type GuardArgs = { input: unknown }
+const cpPrefixGuard =
+  (
+    next: (args: GuardArgs) => Promise<unknown>,
+    context: { commandName?: string }
+  ) =>
+  async (args: GuardArgs) => {
+    assertCpInput(args.input, context.commandName)
+    return next(args)
+  }
 
 /**
  * Fixed text for an R2 failure (Phase 6 Task 1 convention): provider

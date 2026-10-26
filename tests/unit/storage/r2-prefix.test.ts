@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import type { R2Config } from "@/lib/schemas/integrations"
 import { r2Config as r2 } from "@/lib/schemas/integrations/r2"
-import { R2_PREFIX, r2ObjectKey } from "@/server/lib/r2-client"
+import { assertCpInput, R2_PREFIX, r2ObjectKey } from "@/server/lib/r2-client"
 import {
   R2_PREFIX as R2_PREFIX_REEXPORT,
   r2Storage,
@@ -118,7 +118,124 @@ describe("R6-1 hard cp/ root", () => {
   })
 
   it("a hostile key cannot climb out of cp/", () => {
-    for (const bad of ["../sp/x", "/abs", "a/../../b", "a\\b", "./x"])
+    for (const bad of ["../other/x", "/abs", "a/../../b", "a\\b", "./x"])
       expect(() => r2ObjectKey(base, bad), bad).toThrow()
+  })
+})
+
+describe("cpPrefixGuard on the real client (fix round 1)", () => {
+  async function guarded() {
+    const { createR2Client } = await import("@/server/lib/r2-client")
+    const client = createR2Client(base)
+    const requests: unknown[] = []
+    // Terminal stub: nothing reaches the network.
+    client.middlewareStack.add(
+      () => async (args) => {
+        requests.push(args.input)
+        return { output: { $metadata: {} } } as never
+      },
+      { step: "build", name: "stubTerminal" }
+    )
+    client.middlewareStack.add(
+      () => async () => {
+        throw new Error("unreachable")
+      },
+      { step: "finalizeRequest", name: "neverSend", priority: "low" }
+    )
+    return { client, requests }
+  }
+
+  it("refuses DeleteObjects with any key outside cp/ and sends nothing", async () => {
+    const { DeleteObjectsCommand } = await import("@aws-sdk/client-s3")
+    const { client, requests } = await guarded()
+    await expect(
+      client.send(
+        new DeleteObjectsCommand({
+          Bucket: "b",
+          Delete: { Objects: [{ Key: "cp/a" }, { Key: "other/x" }] },
+        })
+      )
+    ).rejects.toThrow(/outside the cp\/ prefix/)
+    expect(requests).toEqual([])
+  })
+
+  it("List Prefix: other/ refused, cp/ passes", async () => {
+    const { ListObjectsV2Command } = await import("@aws-sdk/client-s3")
+    const { client, requests } = await guarded()
+    await expect(
+      client.send(new ListObjectsV2Command({ Bucket: "b", Prefix: "other/" }))
+    ).rejects.toThrow(/outside the cp\/ prefix/)
+    await expect(
+      client.send(new ListObjectsV2Command({ Bucket: "b" }))
+    ).rejects.toThrow(/outside the cp\/ prefix/) // no Prefix = whole bucket
+    await client.send(new ListObjectsV2Command({ Bucket: "b", Prefix: "cp/" }))
+    expect(requests).toHaveLength(1)
+  })
+
+  it("refuses CopySource outside cp/, and cpx/ keys", async () => {
+    const { CopyObjectCommand, PutObjectCommand } =
+      await import("@aws-sdk/client-s3")
+    const { client } = await guarded()
+    await expect(
+      client.send(
+        new CopyObjectCommand({
+          Bucket: "b",
+          Key: "cp/y",
+          CopySource: "bucket/other/x",
+        })
+      )
+    ).rejects.toThrow(/outside the cp\/ prefix/)
+    await expect(
+      client.send(
+        new CopyObjectCommand({
+          Bucket: "b",
+          Key: "cp/y",
+          CopySource: "bucket%2Fother%2Fx",
+        })
+      )
+    ).rejects.toThrow(/outside the cp\/ prefix/)
+    await expect(
+      client.send(new PutObjectCommand({ Bucket: "b", Key: "cpx/a" }))
+    ).rejects.toThrow(/outside the cp\/ prefix/)
+  })
+
+  it("HeadBucket passes; a cp/ Put passes", async () => {
+    const { HeadBucketCommand, PutObjectCommand } =
+      await import("@aws-sdk/client-s3")
+    const { client, requests } = await guarded()
+    await client.send(new HeadBucketCommand({ Bucket: "b" }))
+    await client.send(new PutObjectCommand({ Bucket: "b", Key: "cp/a" }))
+    expect(requests).toHaveLength(2)
+  })
+
+  it("assertCpInput: StartAfter and non-object input", () => {
+    expect(() =>
+      assertCpInput({ Prefix: "cp/", StartAfter: "other/a" })
+    ).toThrow()
+    expect(() =>
+      assertCpInput({ Prefix: "cp/", StartAfter: "cp/a" })
+    ).not.toThrow()
+    expect(() => assertCpInput(undefined)).not.toThrow()
+    expect(() => assertCpInput({ Key: 5 })).toThrow()
+  })
+
+  it("the driver's default shared client carries the guard", async () => {
+    const { sharedR2Client, resetR2Client } =
+      await import("@/server/lib/r2-client")
+    resetR2Client()
+    const shared = sharedR2Client(base)
+    expect(shared.middlewareStack.identify().join("\n")).toContain(
+      "cpPrefixGuard"
+    )
+    resetR2Client()
+  })
+
+  it("r2ObjectKey rejects more hostile folders: case, space, full-width, non-string", () => {
+    for (const bad of ["A", " a", "ａ", 5, null as unknown, {}] as const)
+      if (bad !== null)
+        expect(
+          () => r2ObjectKey({ ...base, keyPrefix: bad as never }, KEY),
+          String(bad)
+        ).toThrow()
   })
 })
