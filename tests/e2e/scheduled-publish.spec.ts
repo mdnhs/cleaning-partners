@@ -100,6 +100,7 @@ test("schedule then unschedule: a scheduled article stays off the site", async (
   expect(((await cancel.json()) as ArticleDto).status).toBe("draft")
 })
 
+// Task 5.4: flip to test
 test.fixme("a scheduled article goes live on the next scheduler tick", async ({
   page,
   browser,

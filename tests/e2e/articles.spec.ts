@@ -59,7 +59,12 @@ test("author drafts and submits, cannot publish via the API; an editor publishes
   await page.getByRole("option", { name: "Commercial" }).click()
   await page.getByRole("button", { name: "Choose image: Cover image" }).click()
   const picker = page.getByRole("dialog", { name: "Choose: Cover image" })
-  await picker.getByRole("list").getByRole("button").first().click()
+  await picker.getByRole("searchbox", { name: "Search images" }).fill("vacuum")
+  await picker
+    .getByRole("list", { name: "Images" })
+    .getByRole("button")
+    .first()
+    .click()
   await picker.getByRole("button", { name: "Use this image" }).click()
   await expect(picker).toBeHidden()
   await page.getByRole("button", { name: "Create draft" }).click()
@@ -230,7 +235,9 @@ test.afterAll(async ({ browser }) => {
     ).json()) as {
       items: { id: string; slug: string; name: string; showInFilter: boolean }[]
     }
-    for (const c of cats.items.filter((c) => !c.showInFilter)) {
+    for (const c of cats.items.filter(
+      (c) => c.name === CATEGORY && !c.showInFilter
+    )) {
       const res = await page.request.put(`/api/v1/admin/categories/${c.id}`, {
         headers,
         data: { slug: c.slug, name: c.name, showInFilter: true },
