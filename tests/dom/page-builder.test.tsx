@@ -515,7 +515,7 @@ describe("PageBuilder: overwrite and unreadable drafts", () => {
       screen.queryByRole("navigation", { name: "Page outline" })
     ).toBeNull()
     expect(screen.getByRole("button", { name: "Publish" })).toBeDisabled()
-    // Nothing can be saved, so no save pill, no Discard (review D5.5 N2).
+    // Nothing can be saved, so no save pill, no Discard.
     expect(screen.queryByRole("status", { name: /^Save status/ })).toBeNull()
     expect(screen.queryByRole("button", { name: "Discard" })).toBeNull()
     await new Promise((r) => setTimeout(r, BUILDER_AUTOSAVE_MS + 300))

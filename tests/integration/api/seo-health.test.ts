@@ -201,7 +201,7 @@ describe("GET /seo/health (D1.2)", () => {
     )
   })
 
-  it("a builder page's fix link opens its builder SEO tab (R10-13 / Phase 8 deferral)", async () => {
+  it("a builder page's fix link opens its builder SEO tab (R10-12)", async () => {
     const created = await adminRequest("/builder-pages", {
       cookie: editor,
       method: "POST",

@@ -35,7 +35,7 @@ const transient = (error: unknown) =>
   error.status >= 500
 
 /**
- * The page builder's autosave (spec §7.5, Review Focus 5): 1500 ms after
+ * The page builder's autosave: 1500 ms after
  * the last edit; one request in flight, the newest document wins; a 409
  * parks it in "conflict" and nothing is sent until `accept(dto)`; a
  * transient failure retries after 5 s, a 4xx waits for the next edit.
@@ -73,7 +73,7 @@ export function useBuilderAutosave(input: {
     options?: {
       /**
        * Discard: pending edits are about to be replaced, do not send them.
-       * Implies `replaces` (D5 N3): without it a waiting ⌘S would re-send
+       * Implies `replaces`: without it a waiting ⌘S would re-send
        * the discarded edits.
        */
       discardPending?: boolean
@@ -229,6 +229,8 @@ export function useBuilderAutosave(input: {
         while (running.current) await running.current.catch(() => undefined)
         if (conflictRef.current) throw new UnsavedChangesError()
       } else if (!(await flush())) throw new UnsavedChangesError()
+      // A save resumed meanwhile (retry, debounce) must finish first.
+      while (running.current) await running.current.catch(() => undefined)
       let release = () => {}
       const hold = new Promise<void>((resolve) => {
         release = resolve
@@ -240,10 +242,10 @@ export function useBuilderAutosave(input: {
         // Before the hold is released: a flush waiting on it (⌘S, retry,
         // a debounce that fired, a hidden tab) then finds nothing to send.
         // The result is what the server holds: the saved copy and a
-        // version that never goes backwards (review D5.5 R1). Only a result
+        // version that never goes backwards. Only a result
         // that replaces the document is also what a waiting flush sees, so
         // it sends nothing stale; otherwise my edits made meanwhile still
-        // differ from the saved copy and are sent (re-review 2 M1).
+        // differ from the saved copy and are sent.
         if (dto.version >= version.current) {
           version.current = dto.version
           const read = readDraft(dto.draft)
@@ -280,7 +282,7 @@ export function useBuilderAutosave(input: {
       setError(null)
       clearRetry()
       // Always the server's copy: with keepMine the caller's document now
-      // differs from it, so the next flush really sends (review D5.5 I1).
+      // differs from it, so the next flush really sends.
       // A result older than what was saved since is ignored (R1).
       if (dto.version < version.current) return false
       version.current = dto.version

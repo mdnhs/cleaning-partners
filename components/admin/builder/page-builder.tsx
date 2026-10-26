@@ -120,7 +120,7 @@ export async function putBuilderDraft(
 const PUBLISH_META = { fields: {} }
 
 /**
- * The page builder for /p/<slug> (spec §7.5):
+ * The page builder for /p/<slug>:
  * outline, block settings and live preview; autosave, history, preview,
  * discard and publish; SEO tab with the page's title and address.
  */
@@ -185,7 +185,7 @@ function Builder({ initial }: { initial: BuilderPageDto }) {
   const [record, setRecord] = useState(initial)
   const [initialRead] = useState(() => readDraft(initial.draft))
   // A stored draft that no longer parses: its problems, shown instead of
-  // the editor; autosave stays off so it is never overwritten (D5.5 I2).
+  // the editor; autosave stays off so it is never overwritten.
   const [broken, setBroken] = useState<string[] | null>(
     initialRead.ok ? null : initialRead.problems
   )
@@ -261,7 +261,7 @@ function Builder({ initial }: { initial: BuilderPageDto }) {
 
   /**
    * Their document (restore, conflict reload, discard) replaces mine. False
-   * when the result was older than a save since and was skipped (D5 N4):
+   * when the result was older than a save since and was skipped:
    * the caller then shows no success message.
    */
   const replaceDoc = useCallback(
@@ -371,7 +371,7 @@ function Builder({ initial }: { initial: BuilderPageDto }) {
     mutationFn: () => {
       const published = record.published
       if (!published) throw new Error("Nothing published to go back to.")
-      // Pending edits are about to be thrown away: not sent first (M8).
+      // Pending edits are about to be thrown away: not sent first.
       return autosave.exclusive(
         (version) => putBuilderDraft(id, published, version),
         { discardPending: true, replaces: true }
@@ -853,7 +853,7 @@ function Builder({ initial }: { initial: BuilderPageDto }) {
             return
           }
           // Their version and draft become the saved copy; mine stays on
-          // screen, so the flush sends it on their version (D5.5 I1).
+          // screen, so the flush sends it on their version.
           autosave.accept(conflict, { keepMine: true })
           syncRecord(conflict)
           const theirs = readDraft(conflict.draft)

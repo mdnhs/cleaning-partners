@@ -204,7 +204,7 @@ describe("useBuilderAutosave", () => {
     expect(result.current.conflict).toEqual(theirs)
   })
 
-  it("Overwrite after a 409 from an exclusive request (publish) really sends mine on their version (review D5.5 I1)", async () => {
+  it("Overwrite after a 409 from an exclusive request (publish) really sends mine on their version", async () => {
     const save = vi.fn(async (_d: DraftDocumentValue, v: number) => dto(v + 1))
     const { result, rerender } = setup(save)
     // Mine is saved (nothing pending) when publish meets their newer save.
@@ -262,7 +262,7 @@ describe("useBuilderAutosave", () => {
     expect(request).toHaveBeenCalledWith(3)
   })
 
-  describe("Discard cannot be undone by a queued save (review D5.5 R1)", () => {
+  describe("Discard cannot be undone by a queued save", () => {
     const published = docWith("published")
     function slowRequest() {
       let resolve!: (d: BuilderPageDto) => void
@@ -324,7 +324,7 @@ describe("useBuilderAutosave", () => {
       expect(result.current.version()).toBe(4)
     })
 
-    it("discardPending alone implies replaces: ⌘S during it sends nothing (D5 N3)", async () => {
+    it("discardPending alone implies replaces: ⌘S during it sends nothing", async () => {
       const save = vi.fn(async (_d: DraftDocumentValue, v: number) =>
         dto(v + 1)
       )
@@ -370,7 +370,7 @@ describe("useBuilderAutosave", () => {
       expect(result.current.state).toBe("saved")
     })
 
-    it("edits made while a title/address PATCH runs are still sent by a hidden-tab flush (re-review 2 M1)", async () => {
+    it("edits made while a title/address PATCH runs are still sent by a hidden-tab flush", async () => {
       const save = vi.fn(async (_d: DraftDocumentValue, v: number) =>
         dto(v + 1)
       )
@@ -503,7 +503,7 @@ describe("useBuilderAutosave", () => {
     await act(async () => {
       document.dispatchEvent(new Event("visibilitychange"))
     })
-    // keepalive: the request may outlive a closing tab (review D5.5 M6).
+    // keepalive: the request may outlive a closing tab.
     expect(save).toHaveBeenCalledWith(docWith("b"), 3, { keepalive: true })
     Object.defineProperty(document, "visibilityState", {
       configurable: true,
