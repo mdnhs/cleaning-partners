@@ -228,7 +228,7 @@ describe("publish errors", () => {
     "blocks.0.data.title": ["Required"],
     "blocks.1.data.items.0.value": ["Required"],
     "blocks.1.anchor": ['Anchor "stats" is already used on this page'],
-    "blocks.1.type": ["At most 1 About per page"],
+    "blocks.1.type": ["At most 1 Location map per page"],
     "blocks.7.data.title": ["Required"],
     document: ["x"],
     _media: ["y"],
@@ -240,7 +240,7 @@ describe("publish errors", () => {
       aaaa: [
         "Items 1 › Figure: Required",
         'Anchor: Anchor "stats" is already used on this page',
-        "At most 1 About per page",
+        "At most 1 Location map per page",
       ],
     })
   })
@@ -249,7 +249,7 @@ describe("publish errors", () => {
     expect(blockErrors(fieldErrors, 1)).toEqual({
       data: {
         "items.0.value": ["Required"],
-        _root: ["At most 1 About per page"],
+        _root: ["At most 1 Location map per page"],
       },
       anchor: ['Anchor "stats" is already used on this page'],
     })
@@ -259,7 +259,7 @@ describe("publish errors", () => {
     })
   })
 
-  it("publishErrors keys by block id against the published snapshot, so a later reorder keeps them on their block (review D5.4 M1)", () => {
+  it("publishErrors keys by block id against the published snapshot, so a later reorder keeps them on their block", () => {
     const sent = { blocks: [...d.blocks, block("cccc", "map", "map")] }
     const errors = publishErrors(fieldErrors, sent)
     // The editor then moves Stats down: index 1 is now Map, but the stored
@@ -277,7 +277,7 @@ describe("publish errors", () => {
   })
 })
 
-describe("readDraft (review D5.5 I2)", () => {
+describe("readDraft", () => {
   it("parses a valid draft", () => {
     const d = doc(block("aaaa", "stats", "stats"))
     expect(readDraft(d)).toEqual({ ok: true, doc: d })

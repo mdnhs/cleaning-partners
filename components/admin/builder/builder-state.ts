@@ -8,7 +8,7 @@ import {
   reservedAnchorProblem,
 } from "@/blocks/registry"
 
-// The page builder's working copy (spec §7.5): a pure reducer over the
+// The page builder's working copy: a pure reducer over the
 // draft document plus the rules the UI enforces before the server does
 // (placement, reserved anchors) and the mapping of publish errors
 // ("blocks.<i>.<path>", blocks/document.ts) onto blocks.
@@ -202,7 +202,7 @@ export function selectAfterRemove(
 
 /**
  * Labels for the fields only blocks have (BlockForm): everything else is
- * labelled by the fixed template's editor meta (block-meta.ts), so a block
+ * labelled by the fixed template's editor meta (block-form.tsx), so a block
  * field reads exactly as it does in the page editor. Also the fallback for
  * error summaries, which name fields by key.
  */
@@ -305,7 +305,7 @@ export type BlockPublishErrors = {
  * A publish 422 keyed by block id, mapped once against `published` — the
  * document that was sent. Store the result: re-mapping the index-keyed
  * errors against a later (reordered) document would pin them to whatever
- * block now sits at that index (review D5.4 M1).
+ * block now sits at that index.
  */
 export function publishErrors(
   fieldErrors: Record<string, string[]>,
@@ -329,7 +329,7 @@ export type ReadDraft =
  * A stored draft as the builder edits it. The editor's document and
  * autosave's saved copy are both read through this one parse. A draft that
  * no longer parses (e.g. saved before a rule existed) is reported, never
- * replaced by an empty page (review D5.5 I2).
+ * replaced by an empty page.
  */
 export function readDraft(value: unknown): ReadDraft {
   const parsed = DraftDocument.safeParse(value)

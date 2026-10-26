@@ -271,6 +271,16 @@ describe("BlockOutline", () => {
     )
   })
 
+  it("on a full page Duplicate names the page limit, not a per-type one", () => {
+    const blocks = Array.from({ length: 40 }, (_, i) =>
+      block(`blk-${i}`, "richtext", `t-${i}`)
+    )
+    render(<Harness initial={{ blocks }} />)
+    const dup = screen.getAllByRole("button", { name: /^Duplicate Text/ })[0]
+    expect(dup).toHaveAttribute("aria-disabled", "true")
+    expect(dup).toHaveAccessibleDescription("A page holds at most 40 blocks")
+  })
+
   it("selection, error badge as text, read-only", async () => {
     const user = userEvent.setup()
     const { unmount } = render(

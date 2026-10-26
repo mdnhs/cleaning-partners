@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { useState } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { emptyBlock } from "@/blocks/document"
+import { DraftDocument, emptyBlock } from "@/blocks/document"
 import { BLOCK_TYPES } from "@/blocks/registry"
 import { BlockForm, isSharedOnly } from "@/components/admin/builder/block-form"
 import { BlockMeta } from "@/components/admin/builder/block-meta"
@@ -98,6 +98,21 @@ describe("BlockForm CP cases", () => {
     )
   })
 
+  it("ourStory: imageA and imageB come out null from the form", async () => {
+    const user = userEvent.setup()
+    const onChange = renderForm(fresh("ourStory"))
+    await user.type(screen.getByRole("textbox", { name: "Eyebrow" }), "x")
+    expect(onChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ eyebrow: "x", imageA: null, imageB: null })
+    )
+    // The draft path is a loose record: such data is accepted as-is.
+    expect(
+      DraftDocument.safeParse({
+        blocks: [{ ...fresh("ourStory"), data: onChange.mock.lastCall![0] }],
+      }).success
+    ).toBe(true)
+  })
+
   it("services layout: switching to intro shows the intro group and hides the grid one", async () => {
     const user = userEvent.setup()
     const Harness = () => {
@@ -140,7 +155,7 @@ describe("BlockForm CP cases", () => {
   })
 })
 
-describe("BlockForm resetKey (review D5.4 I2)", () => {
+describe("BlockForm resetKey", () => {
   function Harness({ initial }: { initial: DraftBlock }) {
     const [block, setBlock] = useState(initial)
     const [resetKey, setResetKey] = useState(0)

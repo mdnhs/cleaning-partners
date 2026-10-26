@@ -30,6 +30,7 @@ import {
   type DraftDocumentValue,
   firstMovable,
   selectAfterRemove,
+  unavailableReason,
 } from "./builder-state"
 
 type OutlineItem = SortableItem & { block: DraftBlock }
@@ -37,7 +38,7 @@ type OutlineItem = SortableItem & { block: DraftBlock }
 const problems = (n: number) => `${n} ${n === 1 ? "problem" : "problems"}`
 
 /**
- * The page's blocks in order (spec §7.5). Reorder by drag, by keyboard
+ * The page's blocks in order. Reorder by drag, by keyboard
  * (space, arrows, space; announced) or Move up / Move down; per row:
  * select, hide (aria-pressed), duplicate and delete (confirmed). The page
  * hero stays first. `errors` = errorsByBlock (block id → messages).
@@ -130,9 +131,6 @@ export function BlockOutline({
       <p aria-live="polite" className="sr-only">
         {message}
       </p>
-      <span id={reasonId} hidden>
-        Only one per page
-      </span>
       {doc.blocks.length === 0 ? (
         <p
           ref={emptyRef}
@@ -237,7 +235,9 @@ export function BlockOutline({
                   aria-label={`Duplicate ${item.label}`}
                   // Focusable when unavailable, the reason as its description.
                   aria-disabled={duplicable ? undefined : true}
-                  aria-describedby={duplicable ? undefined : reasonId}
+                  aria-describedby={
+                    duplicable ? undefined : `${reasonId}-${block.id}`
+                  }
                   onClick={() => {
                     if (!duplicable) return
                     copying.current = new Set(doc.blocks.map((b) => b.id))
@@ -246,6 +246,11 @@ export function BlockOutline({
                 >
                   <Copy aria-hidden />
                 </Button>
+                {duplicable ? null : (
+                  <span id={`${reasonId}-${block.id}`} hidden>
+                    {unavailableReason(block.type, doc)}
+                  </span>
+                )}
                 <Button
                   type="button"
                   variant="ghost"

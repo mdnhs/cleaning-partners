@@ -218,8 +218,8 @@ export function BlockForm({
         <p className="flex items-start gap-2 text-sm text-muted-foreground">
           <Info aria-hidden className="mt-0.5 size-4 shrink-0" />
           <span>
-            {def.description} It shows the site-wide copy from Settings ›
-            Sections, so it has nothing to fill in here.
+            {def.description} It shows the site-wide copy from Site settings, so
+            it has nothing to fill in here.
           </span>
         </p>
         {errors._root?.length ? (
