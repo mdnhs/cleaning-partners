@@ -208,6 +208,41 @@ describe("cpPrefixGuard on the real client (fix round 1)", () => {
     expect(requests).toHaveLength(2)
   })
 
+  it("fails closed on commands outside the allowlist", async () => {
+    const { PutBucketLifecycleConfigurationCommand, ListBucketsCommand } =
+      await import("@aws-sdk/client-s3")
+    const { client, requests } = await guarded()
+    await expect(
+      client.send(
+        new PutBucketLifecycleConfigurationCommand({
+          Bucket: "b",
+          LifecycleConfiguration: { Rules: [] },
+        })
+      )
+    ).rejects.toThrow(/outside the cp\/ prefix/)
+    await expect(client.send(new ListBucketsCommand({}))).rejects.toThrow(
+      /outside the cp\/ prefix/
+    )
+    expect(requests).toEqual([])
+  })
+
+  it("ListParts is checked by Key; HeadBucket passes", async () => {
+    const { ListPartsCommand, HeadBucketCommand } =
+      await import("@aws-sdk/client-s3")
+    const { client, requests } = await guarded()
+    await client.send(
+      new ListPartsCommand({ Bucket: "b", Key: "cp/x", UploadId: "u" })
+    )
+    await client.send(new HeadBucketCommand({ Bucket: "b" }))
+    expect(requests).toHaveLength(2)
+    await expect(
+      client.send(
+        new ListPartsCommand({ Bucket: "b", Key: "other/x", UploadId: "u" })
+      )
+    ).rejects.toThrow(/outside the cp\/ prefix/)
+    expect(requests).toHaveLength(2)
+  })
+
   it("assertCpInput: StartAfter and non-object input", () => {
     expect(() =>
       assertCpInput({ Prefix: "cp/", StartAfter: "other/a" })

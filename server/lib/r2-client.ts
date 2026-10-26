@@ -83,16 +83,37 @@ export function createR2Client(c: R2Config): S3Client {
 const GUARD_MESSAGE = "R2 request outside the cp/ prefix was refused."
 
 /**
- * Throws (fixed text, nothing echoed) unless every object key a command
- * names starts with `cp/`. Commands without key fields (HeadBucket,
- * ListBuckets) pass.
+ * The only S3 commands this site may send. Anything else (lifecycle rules,
+ * ListBuckets, ACLs, ...) is refused: the guard fails closed.
+ */
+const ALLOWED_COMMANDS: ReadonlySet<string> = new Set([
+  "PutObjectCommand",
+  "GetObjectCommand",
+  "HeadObjectCommand",
+  "DeleteObjectCommand",
+  "DeleteObjectsCommand",
+  "CopyObjectCommand",
+  "ListObjectsV2Command",
+  "CreateMultipartUploadCommand",
+  "UploadPartCommand",
+  "CompleteMultipartUploadCommand",
+  "AbortMultipartUploadCommand",
+  "ListPartsCommand",
+  "HeadBucketCommand",
+])
+
+/**
+ * Throws (fixed text, nothing echoed) unless the command is on the allowlist
+ * (when its name is given) and every object key it names starts with `cp/`.
+ * HeadBucket carries no key and passes. ListObjectsV2 must name a Prefix (a
+ * listing without one would cover the whole shared bucket); ListParts is
+ * checked by its Key.
  */
 export function assertCpInput(input: unknown, commandName?: string): void {
-  // A listing without a Prefix would cover the whole shared bucket.
+  if (commandName !== undefined && !ALLOWED_COMMANDS.has(commandName))
+    throw new Error(GUARD_MESSAGE)
   if (
-    commandName?.startsWith("List") &&
-    commandName !== "ListBuckets" &&
-    commandName !== "ListDirectoryBuckets" &&
+    commandName === "ListObjectsV2Command" &&
     (typeof input !== "object" ||
       input === null ||
       (input as { Prefix?: unknown }).Prefix === undefined)
@@ -135,7 +156,7 @@ const cpPrefixGuard =
     context: { commandName?: string }
   ) =>
   async (args: GuardArgs) => {
-    assertCpInput(args.input, context.commandName)
+    assertCpInput(args.input, context.commandName ?? "")
     return next(args)
   }
 
