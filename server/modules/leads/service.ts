@@ -19,7 +19,10 @@ import { mailer } from "@/server/lib/mailer"
 import { publicOrigin } from "@/server/lib/site-origin"
 import { verifyTurnstileToken } from "@/server/lib/turnstile"
 import { readIntegrationConfig } from "@/server/modules/integrations/service"
-import { readPublishedPage } from "@/server/modules/pages/service"
+import {
+  readPublishedPage,
+  readPublishedServiceExtras,
+} from "@/server/modules/pages/service"
 import { readPublishedServiceTitles } from "@/server/modules/services/service"
 import { readPublishedSettings } from "@/server/modules/settings/service"
 
@@ -78,11 +81,10 @@ async function assertHuman(
 async function assertKnownService(service: string | null): Promise<void> {
   if (service === null) return
   const db = getDb()
-  const [titles, contact] = await Promise.all([
+  const [titles, extras] = await Promise.all([
     readPublishedServiceTitles(db),
-    readPublishedPage("contact", db),
+    readPublishedServiceExtras(db),
   ])
-  const extras = contact?.quoteForm.fields.service.extraOptions ?? []
   if (titles.includes(service) || extras.includes(service)) return
   throw new AppError("VALIDATION_FAILED", "Invalid input", {
     fieldErrors: { service: ["Choose a service from the list"] },

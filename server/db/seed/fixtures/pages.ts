@@ -278,7 +278,11 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           submitLabel: "Send Request",
           mailSubject: "Quote request from {name}",
           sentMessage:
-            "Your email app should open with your request. If it doesn't, email us at {email}.",
+            "Thanks, we've received your request and will be in touch shortly. You can also email us at {email}.",
+          sendingLabel: "Sending…",
+          errorMessage: "Something went wrong. Please try again, or call us.",
+          rateLimitedMessage:
+            "Too many attempts. Please try again in a few minutes.",
         },
       },
     },

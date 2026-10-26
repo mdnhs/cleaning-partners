@@ -24,7 +24,7 @@ export const contactTemplate = z.object({
       service: field.extend({
         /** Options added after the services collection. */
         extraOptions: z.array(text),
-        /** Shown in the enquiry when no service is picked. */
+        /** Server-side: written in the notification email when no service is picked. */
         fallback: text,
       }),
       address: field,
@@ -33,10 +33,16 @@ export const contactTemplate = z.object({
     }),
     chevron: mediaRef,
     submitLabel: text,
-    /** {name} is the visitor's name. */
+    /** Server-side: subject of the staff notification. {name} is the visitor's name. */
     mailSubject: text,
-    /** {email} is the recipient address. */
+    /** Shown after a successful send. {email} is the contact email. */
     sentMessage: text,
+    /** Button label while the request is in flight. */
+    sendingLabel: text,
+    /** Shown when the request fails. */
+    errorMessage: text,
+    /** Shown when the visitor is rate limited (429). */
+    rateLimitedMessage: text,
   }),
 })
 export type ContactTemplate = z.infer<typeof contactTemplate>

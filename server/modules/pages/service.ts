@@ -126,3 +126,24 @@ export async function readPublishedPage<K extends PageKey>(
   const parsed = templateSchemaFor(key).safeParse(row.published)
   return parsed.success ? (parsed.data as PageData<K>) : null
 }
+
+/**
+ * The contact form's published extra service options, read from the raw JSON
+ * the way the public view does (no template parse), so a published page that
+ * fails the strict schema still lets the enquiry through. Non-strings are
+ * dropped; anything unusable gives [].
+ */
+export async function readPublishedServiceExtras(
+  db: DbOrTx = getDb()
+): Promise<string[]> {
+  const row = await findPageByKey(db, "contact")
+  const extras = (
+    row?.published as
+      | { quoteForm?: { fields?: { service?: { extraOptions?: unknown } } } }
+      | null
+      | undefined
+  )?.quoteForm?.fields?.service?.extraOptions
+  return Array.isArray(extras)
+    ? extras.filter((x): x is string => typeof x === "string")
+    : []
+}

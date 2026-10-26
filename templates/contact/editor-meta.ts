@@ -43,6 +43,7 @@ export const contactEditorMeta: EditorMeta = {
     },
     "quoteForm.fields.service.fallback": {
       label: "Wording when none is picked",
+      help: "Used in the staff notification email only, not on the page.",
     },
     "quoteForm.fields.address": { label: "Address" },
     "quoteForm.fields.message": { label: "Message" },
@@ -51,12 +52,25 @@ export const contactEditorMeta: EditorMeta = {
     "quoteForm.chevron": { label: "Select arrow icon", aspect: "square" },
     "quoteForm.submitLabel": { label: "Button" },
     "quoteForm.mailSubject": {
-      label: "Email subject",
-      help: "{name} is the visitor's name.",
+      label: "Staff email subject",
+      help: "Used in the staff notification email only, not on the page. {name} is the visitor's name.",
     },
     "quoteForm.sentMessage": {
       label: "Message after sending",
       help: "{email} is the contact email (Settings › Contact).",
+      rows: 2,
+      widget: "textarea",
+    },
+    "quoteForm.sendingLabel": {
+      label: "Button while sending",
+    },
+    "quoteForm.errorMessage": {
+      label: "Message when sending fails",
+      rows: 2,
+      widget: "textarea",
+    },
+    "quoteForm.rateLimitedMessage": {
+      label: "Message when too many attempts",
       rows: 2,
       widget: "textarea",
     },

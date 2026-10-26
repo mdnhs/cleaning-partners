@@ -1,5 +1,13 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { BlogList, type BlogListProps } from "@/components/blog/blog-list"
 import type { PostCardData } from "@/components/blog/post-card"
@@ -179,7 +187,6 @@ describe("QuoteForm", () => {
       service: {
         ...field("Which"),
         options: ["Medical", "Other"],
-        fallback: "Dunno",
       },
       address: field("Where"),
       message: field("Tell us"),
@@ -188,8 +195,10 @@ describe("QuoteForm", () => {
     chevron: "/chevron.svg",
     submitLabel: "Go",
     email: "hello@example.ie",
-    mailSubject: "Quote from {name}",
     sentMessage: "Check your mail, or write to {email}.",
+    sendingLabel: "Sending now",
+    errorMessage: "It failed",
+    rateLimitedMessage: "Slow down",
   }
 
   it("renders its copy, the service options and the data-driven urgent line", () => {
@@ -207,75 +216,288 @@ describe("QuoteForm", () => {
   })
 })
 
-describe("QuoteForm submit", () => {
-  it("hands the enquiry to the mail app with labels, subject and fallback from props", () => {
-    // Setting href records the mailto: address; reading it still resolves
-    // relative image paths (as the page URL would, before the navigation).
-    let mailto = ""
-    const location = {
-      get href() {
-        return "http://localhost/"
-      },
-      set href(value: string) {
-        mailto = value
-      },
+describe("QuoteForm submit (R7-4)", () => {
+  const field = (label: string) => ({ label, placeholder: label })
+  const props: QuoteFormProps = {
+    eyebrow: "E",
+    title: "T",
+    intro: "I",
+    stepsHeading: "S",
+    steps: [],
+    urgent: { title: "U", phone: "P", phoneHref: "tel:+1" },
+    formTitle: "F",
+    fields: {
+      name: field("Your name"),
+      phone: field("Your phone"),
+      email: field("Your email"),
+      service: { ...field("Which"), options: ["A", "B"] },
+      address: field("Where"),
+      message: field("Tell us"),
+      consent: { label: "OK" },
+    },
+    chevron: "/c.svg",
+    submitLabel: "Go",
+    email: "hello@example.ie",
+    sentMessage: "Sent, or write to {email}.",
+    sendingLabel: "Sending now",
+    errorMessage: "It failed",
+    rateLimitedMessage: "Slow down",
+  }
+  const CONFIG = "/api/v1/public/leads/config"
+  const ENDPOINT = "/api/v1/public/leads"
+
+  type Reply = () => Promise<Response>
+  let leadReply: Reply
+  let siteKey: string | null
+  const fetchMock = vi.fn<
+    (url: string, init?: RequestInit) => Promise<Response>
+  >(async (url) =>
+    url === CONFIG
+      ? new Response(JSON.stringify({ turnstileSiteKey: siteKey }))
+      : leadReply()
+  )
+  const json =
+    (body: unknown, status = 200): Reply =>
+    async () =>
+      new Response(JSON.stringify(body), { status })
+  const posts = () => fetchMock.mock.calls.filter(([url]) => url === ENDPOINT)
+
+  beforeEach(() => {
+    siteKey = null
+    leadReply = json({ ok: true })
+    fetchMock.mockClear()
+    vi.stubGlobal("fetch", fetchMock)
+  })
+  afterEach(() => {
+    delete window.turnstile
+    delete (window as { __cpConsent?: unknown }).__cpConsent
+    window.sessionStorage.clear()
+    vi.unstubAllGlobals()
+  })
+
+  async function fillAndSend(service = "B") {
+    const user = userEvent.setup()
+    for (const [label, value] of [
+      [/Your name/, "Ann"],
+      [/Your phone/, "01 234"],
+      [/Your email/, "a@b.ie"],
+      [/Where/, "1 Main St"],
+      [/Tell us/, "Hello"],
+    ] as const) {
+      await user.clear(screen.getByLabelText(label))
+      await user.type(screen.getByLabelText(label), value)
     }
-    vi.stubGlobal("location", location)
-    const field = (label: string) => ({ label, placeholder: label })
-    render(
-      <QuoteForm
-        eyebrow="E"
-        title="T"
-        intro="I"
-        stepsHeading="S"
-        steps={[]}
-        urgent={{ title: "U", phone: "P", phoneHref: "tel:+1" }}
-        formTitle="F"
-        fields={{
-          name: field("Your name"),
-          phone: field("Your phone"),
-          email: field("Your email"),
-          service: { ...field("Which"), options: ["A"], fallback: "Dunno" },
-          address: field("Where"),
-          message: field("Tell us"),
-          consent: { label: "OK" },
-        }}
-        chevron="/c.svg"
-        submitLabel="Go"
-        email="hello@example.ie"
-        mailSubject="Quote from {name}"
-        sentMessage="Mail sent to {email}."
-      />
-    )
-    fireEvent.change(screen.getByLabelText(/Your name/), {
-      target: { value: "Ann" },
+    await user.selectOptions(screen.getByLabelText("Which"), service)
+    const consent = screen.getByLabelText("OK")
+    if (!(consent as HTMLInputElement).checked) await user.click(consent)
+    await user.click(screen.getByRole("button", { name: /Go|Sending now/ }))
+    return user
+  }
+
+  it("posts all seven fields, consent true, sourcePage and website as JSON", async () => {
+    render(<QuoteForm {...props} />)
+    await fillAndSend()
+    expect(
+      await screen.findByText("Sent, or write to hello@example.ie.")
+    ).toBeInTheDocument()
+    const [, init] = posts()[0]
+    expect(init?.method).toBe("POST")
+    expect(init?.headers).toEqual({ "content-type": "application/json" })
+    expect(JSON.parse(String(init?.body))).toEqual({
+      name: "Ann",
+      phone: "01 234",
+      email: "a@b.ie",
+      service: "B",
+      address: "1 Main St",
+      message: "Hello",
+      consent: true,
+      sourcePage: "/",
+      website: "",
     })
-    fireEvent.change(screen.getByLabelText(/Your phone/), {
-      target: { value: "01" },
-    })
-    fireEvent.change(screen.getByLabelText(/Your email/), {
-      target: { value: "a@b.ie" },
-    })
-    fireEvent.click(screen.getByLabelText("OK"))
-    fireEvent.submit(screen.getByRole("button", { name: "Go" }))
-    const url = new URL(mailto)
-    expect(url.protocol).toBe("mailto:")
-    expect(url.pathname).toBe("hello@example.ie")
-    expect(url.searchParams.get("subject")).toBe("Quote from Ann")
-    expect(url.searchParams.get("body")).toBe(
-      [
-        "Your name: Ann",
-        "Your phone: 01",
-        "Your email: a@b.ie",
-        "Which: Dunno",
-        "Where: ",
-        "",
-        "",
-      ].join("\n")
-    )
+    // The form is reset and the button is usable again.
+    expect(screen.getByLabelText(/Your name/)).toHaveValue("")
+    expect(screen.getByLabelText("OK")).not.toBeChecked()
+    expect(screen.getByLabelText("Which")).toHaveValue("")
+    expect(screen.getByRole("button", { name: "Go" })).toBeEnabled()
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Mail sent to hello@example.ie."
+      "Sent, or write to hello@example.ie."
     )
+  })
+
+  it("never navigates to mailto:", async () => {
+    const location = {
+      href: "http://localhost/",
+      pathname: "/",
+      assign: vi.fn(),
+      replace: vi.fn(),
+    }
+    const setHref = vi.fn()
+    Object.defineProperty(location, "href", {
+      get: () => "http://localhost/",
+      set: setHref,
+    })
+    vi.stubGlobal("location", location)
+    render(<QuoteForm {...props} />)
+    await fillAndSend()
+    await screen.findByText(/Sent/)
+    expect(setHref).not.toHaveBeenCalled()
+    expect(location.assign).not.toHaveBeenCalled()
+  })
+
+  it("shows the sending label while in flight and sends a double submit once", async () => {
+    let release!: (r: Response) => void
+    leadReply = () => new Promise<Response>((resolve) => (release = resolve))
+    const { container } = render(<QuoteForm {...props} />)
+    const user = await fillAndSend()
+    const button = await screen.findByRole("button", { name: "Sending now" })
+    expect(button).toBeDisabled()
+    await user.click(button)
+    await act(async () => {
+      const form = container.querySelector("form")!
+      form.requestSubmit()
+      form.requestSubmit()
+    })
+    release(new Response(JSON.stringify({ ok: true })))
+    await screen.findByText(/Sent/)
+    expect(posts()).toHaveLength(1)
+  })
+
+  it.each([
+    ["429", json({ error: { code: "RATE_LIMITED" } }, 429), "Slow down"],
+    ["500", json({}, 500), "It failed"],
+    [
+      "network failure",
+      async () => {
+        throw new TypeError("Failed to fetch")
+      },
+      "It failed",
+    ],
+  ] as [string, Reply, string][])(
+    "%s shows the matching copy and keeps the fields",
+    async (_, reply, text) => {
+      leadReply = reply
+      render(<QuoteForm {...props} />)
+      await fillAndSend()
+      expect(await screen.findByRole("status")).toHaveTextContent(text)
+      expect(screen.getByLabelText(/Your name/)).toHaveValue("Ann")
+      expect(screen.getByRole("button", { name: "Go" })).toBeEnabled()
+    }
+  )
+
+  it("422 shows each fieldErrors message next to its field, nothing before", async () => {
+    render(<QuoteForm {...props} />)
+    expect(document.querySelectorAll('[id$="-error"]')).toHaveLength(0)
+    leadReply = json(
+      {
+        error: {
+          code: "VALIDATION_FAILED",
+          fieldErrors: {
+            service: ["Choose a service from the list"],
+            phone: ["Enter your phone number"],
+            sourcePage: ["ignored: no field"],
+          },
+        },
+      },
+      422
+    )
+    await fillAndSend()
+    expect(await screen.findByText("Choose a service from the list")).toBe(
+      document.getElementById("quote-service-error")
+    )
+    expect(screen.getByLabelText("Which")).toHaveAttribute(
+      "aria-invalid",
+      "true"
+    )
+    expect(screen.getByLabelText("Which")).toHaveAttribute(
+      "aria-describedby",
+      "quote-service-error"
+    )
+    expect(document.getElementById("quote-service-error")!.parentElement).toBe(
+      screen.getByLabelText("Which").closest("div")!.parentElement
+    )
+    expect(screen.getByText("Enter your phone number")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent("It failed")
+    // The next attempt clears them.
+    leadReply = json({ ok: true })
+    await fillAndSend()
+    await screen.findByText(/Sent/)
+    expect(document.querySelectorAll('[id$="-error"]')).toHaveLength(0)
+  })
+
+  it("sends the Turnstile token and resets the widget after the send", async () => {
+    siteKey = "0x4AAAAAAAtestsitekey"
+    let options: { callback(token: string): void } | undefined
+    const api = {
+      render: vi.fn((_el: HTMLElement, o: typeof options) => {
+        options = o
+        return "w1"
+      }),
+      execute: vi.fn(() => options?.callback("tok-1")),
+      reset: vi.fn(),
+      remove: vi.fn(),
+    }
+    window.turnstile = api as never
+    render(<QuoteForm {...props} />)
+    await fillAndSend()
+    await screen.findByText(/Sent/)
+    expect(JSON.parse(String(posts()[0][1]?.body)).turnstileToken).toBe("tok-1")
+    await waitFor(() => expect(api.reset).toHaveBeenCalledWith("w1"))
+  })
+
+  it("sends attribution only with analytics consent", async () => {
+    const attribution = {
+      referrer: "https://www.google.com/search",
+      landingPath: "/services",
+      utm: { utm_source: "google" },
+      capturedAt: "2026-10-20T09:30:00.000Z",
+    }
+    window.sessionStorage.setItem("cp_attribution", JSON.stringify(attribution))
+    const win = window as { __cpConsent?: unknown }
+    render(<QuoteForm {...props} />)
+    await fillAndSend()
+    await screen.findByText(/Sent/)
+    expect(JSON.parse(String(posts()[0][1]?.body))).not.toHaveProperty(
+      "attribution"
+    )
+    win.__cpConsent = { analytics: true, marketing: false }
+    await fillAndSend()
+    await waitFor(() => expect(posts()).toHaveLength(2))
+    expect(JSON.parse(String(posts()[1][1]?.body)).attribution).toEqual(
+      attribution
+    )
+  })
+
+  it("keeps the in-flow children of the form as they were; additions are absolutely positioned", () => {
+    const { container } = render(<QuoteForm {...props} />)
+    const form = container.querySelector("form")!
+    expect(form.className).not.toContain("relative")
+    const inFlow = [...form.children].filter(
+      (el) => !el.className.split(" ").includes("absolute")
+    )
+    expect(inFlow.map((el) => el.tagName)).toEqual([
+      "H3",
+      "DIV",
+      "DIV",
+      "DIV",
+      "LABEL",
+      "BUTTON",
+      "P",
+    ])
+    const abs = [...form.children].filter((el) =>
+      el.className.split(" ").includes("absolute")
+    )
+    expect(abs).toHaveLength(2)
+    const honeypot = form.querySelector<HTMLInputElement>(
+      'input[name="website"]'
+    )!
+    expect(honeypot.tabIndex).toBe(-1)
+    expect(honeypot.autocomplete).toBe("off")
+    expect(honeypot.closest("div")).toHaveAttribute("aria-hidden", "true")
+    expect(honeypot.closest("label")).toBeNull()
+    expect(honeypot.closest("div")!.querySelector("label")).toBeNull()
+    expect(screen.getByRole("status").className).toContain("sr-only")
+    expect(screen.getByRole("status")).toHaveTextContent("")
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
 

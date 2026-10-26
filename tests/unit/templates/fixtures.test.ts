@@ -66,6 +66,15 @@ function mediaIds(value: unknown, out = new Set<string>()): Set<string> {
   return out
 }
 
+/**
+ * Inventory entries (frozen at 3689369) whose seed was changed on purpose
+ * after the baseline. Keyed by the entry's target path.
+ */
+const CHANGED_SINCE_BASELINE = new Set([
+  // The mailto handoff was removed when the form began posting to the leads API (7.3).
+  "pages.contact.quoteForm.sentMessage",
+])
+
 describe("page fixtures (master 3.2)", () => {
   it.each(PAGE_KEYS)("pages.%s parses against its template", (key) => {
     const result = templates[PAGES[key]].schema.safeParse(fixture[key].data)
@@ -80,9 +89,21 @@ describe("page fixtures (master 3.2)", () => {
     expect(entries.length).toBe(144)
   })
 
+  it("every baseline-change exemption is a real inventory entry (no stale entries)", () => {
+    const targets = new Set(entries.map((e) => e.path))
+    for (const path of CHANGED_SINCE_BASELINE)
+      expect(targets, path).toContain(path)
+  })
+
   it.each(entries.map((e) => [e.id, e] as const))(
     "%s is verbatim",
     (_id, e) => {
+      if (CHANGED_SINCE_BASELINE.has(e.path)) {
+        expect(
+          valuesAt(fixture.contact.data, "quoteForm.sentMessage")[0]
+        ).not.toBe(e.seed)
+        return
+      }
       const [, key, ...rest] = e.path.split(".")
       const pageKey = key as keyof typeof fixture
       const isSeo = rest[0] === "seo"

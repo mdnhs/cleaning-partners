@@ -11,7 +11,13 @@ import {
 
 import { app } from "@/server/api/app"
 import { getDb } from "@/server/db/client"
-import { auditLog, leadEvents, leads, settings } from "@/server/db/schema"
+import {
+  auditLog,
+  leadEvents,
+  leads,
+  pages,
+  settings,
+} from "@/server/db/schema"
 import { seedContent } from "@/server/db/seed"
 import { encryptSecret } from "@/server/lib/crypto"
 import { hashIp } from "@/server/lib/ip"
@@ -242,6 +248,30 @@ describe("POST /api/v1/public/leads (master 7.3)", () => {
       const body = (await res.json()) as ErrorBody
       expect(Object.keys(body.error.fieldErrors)).toEqual(["service"])
       expect(await getDb().select().from(leads)).toHaveLength(0)
+    })
+
+    it("published contact data that fails the strict schema still accepts its extra options", async () => {
+      const [page] = await getDb()
+        .select()
+        .from(pages)
+        .where(eq(pages.key, "contact"))
+      const published = page.published as {
+        quoteForm: { submitLabel?: unknown }
+      }
+      // Break the strict template parse (submitLabel must be text) but keep
+      // the extra options readable.
+      const broken = {
+        ...published,
+        quoteForm: { ...published.quoteForm, submitLabel: 42 },
+      }
+      await getDb()
+        .update(pages)
+        .set({ published: broken })
+        .where(eq(pages.key, "contact"))
+      expect((await post({ ...BODY, service: "Other" })).status).toBe(200)
+      expect((await post({ ...BODY, service: "Window Fitting" })).status).toBe(
+        422
+      )
     })
 
     it("a blank address is stored as null, not an empty string", async () => {

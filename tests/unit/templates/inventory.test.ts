@@ -61,6 +61,17 @@ const STRUCTURAL_PAGE_LEAVES = new Set([
   "blog:article.readTime", // "{n} min read": the inventory's readTime is the articles column
 ])
 
+/**
+ * Template-page fields added after the baseline (3689369), so the frozen
+ * inventory has no entry. Keyed per page ("page:leaf").
+ */
+const POST_BASELINE_PAGE_LEAVES = new Set([
+  // Quote-form feedback copy added when the form began posting to the leads API (7.3).
+  "contact:quoteForm.sendingLabel",
+  "contact:quoteForm.errorMessage",
+  "contact:quoteForm.rateLimitedMessage",
+])
+
 function expectInventoryCovered(
   prefix: string,
   paths: ReturnType<typeof schemaPaths>
@@ -138,7 +149,8 @@ describe("template schemas match docs/brief-inventory.json (master Task 3.2)", (
           (p) =>
             !wanted.has(p) &&
             !(p.endsWith("[]") && wanted.has(p.slice(0, -2))) &&
-            !STRUCTURAL_PAGE_LEAVES.has(`${key}:${p}`)
+            !STRUCTURAL_PAGE_LEAVES.has(`${key}:${p}`) &&
+            !POST_BASELINE_PAGE_LEAVES.has(`${key}:${p}`)
         )
       ).toEqual([])
     }
@@ -151,6 +163,17 @@ describe("template schemas match docs/brief-inventory.json (master Task 3.2)", (
         schemaPaths(templates[PAGES[page]].schema).leaves,
         entry
       ).toContain(leaf)
+    }
+  })
+
+  it("every post-baseline exemption is a real leaf of its page (no stale entries)", () => {
+    for (const entry of POST_BASELINE_PAGE_LEAVES) {
+      const [page, leaf] = entry.split(":") as [keyof typeof PAGES, string]
+      expect(
+        schemaPaths(templates[PAGES[page]].schema).leaves,
+        entry
+      ).toContain(leaf)
+      expect(inventoryPaths(`pages.${page}.`), entry).not.toContain(leaf)
     }
   })
 

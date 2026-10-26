@@ -179,9 +179,17 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       "Domestic Cleaning",
       "Other",
     ])
-    expect(view.form.mailSubject).toBe("Quote request from {name}")
+    expect(view.form).not.toHaveProperty("mailSubject")
+    expect(view.form.fields.service).not.toHaveProperty("fallback")
     expect(view.form.sentMessage).toBe(
-      "Your email app should open with your request. If it doesn't, email us at {email}."
+      "Thanks, we've received your request and will be in touch shortly. You can also email us at {email}."
+    )
+    expect(view.form.sendingLabel).toBe("Sending…")
+    expect(view.form.errorMessage).toBe(
+      "Something went wrong. Please try again, or call us."
+    )
+    expect(view.form.rateLimitedMessage).toBe(
+      "Too many attempts. Please try again in a few minutes."
     )
     expect(view.map.href).toContain("google.com/maps")
   })
