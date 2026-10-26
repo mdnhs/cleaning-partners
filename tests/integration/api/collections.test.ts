@@ -21,6 +21,7 @@ import {
   auditLog,
   clients,
   media,
+  redirects,
   revisions,
   services,
 } from "@/server/db/schema"
@@ -262,11 +263,60 @@ describe("services (master 4.6): draft/publish, slug, delete", () => {
     expect(badSlug.status).toBe(422)
   })
 
-  // Restore markers: server/modules/services/service.ts, "Phase 8.2 records"
-  // in changeServiceSlug (~line 189) and deleteService (~line 223).
-  it.todo(
-    "records a redirect and expires the redirects tag on slug change/delete — restore in Phase 8.2 (recordMove)"
-  )
+  it("records a redirect and expires the redirects tag on slug change/delete", async () => {
+    const list = await json<Paginated<ServiceListItem>>(
+      await adminRequest("/services?q=retail", { cookie: editor })
+    )
+    const { id } = list.items[0]
+    // An editor has no redirect permission; the move still records.
+    revalidateTag.mockClear()
+    const moved = await adminRequest(`/services/${id}/slug`, {
+      cookie: editor,
+      method: "PATCH",
+      json: { slug: "retail-cleaning-plus", version: 1 },
+    })
+    expect(moved.status).toBe(200)
+    expect(revalidateTag.mock.calls.map((c) => c[0])).toEqual([
+      "services",
+      "service:retail-cleaning",
+      "service:retail-cleaning-plus",
+      "redirects",
+    ])
+    const [slugMove] = await getDb()
+      .select()
+      .from(redirects)
+      .where(eq(redirects.fromPath, "/services/retail-cleaning"))
+    expect(slugMove).toMatchObject({
+      toPath: "/services/retail-cleaning-plus",
+      code: 301,
+      source: "auto",
+      isActive: true,
+    })
+
+    revalidateTag.mockClear()
+    const removed = await adminRequest(`/services/${id}?version=2`, {
+      cookie: editor,
+      method: "DELETE",
+    })
+    expect(removed.status).toBe(200)
+    expect(revalidateTag.mock.calls.map((c) => c[0])).toEqual([
+      "services",
+      "service:retail-cleaning-plus",
+      "redirects",
+    ])
+    const [deleted] = await getDb()
+      .select()
+      .from(redirects)
+      .where(eq(redirects.fromPath, "/services/retail-cleaning-plus"))
+    expect(deleted).toMatchObject({ toPath: "/services", source: "auto" })
+    // The earlier hop now ends at the new address, so it stays a single hop
+    // from the old one to the new; nothing redirects away from a live page.
+    const all = await getDb().select().from(redirects)
+    expect(all.map((r) => r.fromPath).sort()).toEqual([
+      "/services/retail-cleaning",
+      "/services/retail-cleaning-plus",
+    ])
+  })
 
   it("publishes (tags services + service:<slug>), changes the slug, rejects stale versions, deletes", async () => {
     const list = await json<Paginated<ServiceListItem>>(
@@ -319,6 +369,7 @@ describe("services (master 4.6): draft/publish, slug, delete", () => {
       "services",
       "service:medical-cleaning",
       "service:medical-cleaning-plus",
+      "redirects",
     ])
 
     expect(

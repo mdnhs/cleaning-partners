@@ -35,6 +35,7 @@ import {
   adminPreviewRoutes,
   previewExitRoutes,
 } from "@/server/modules/preview/routes"
+import { redirectsRoutes } from "@/server/modules/redirects/routes"
 import { reorderRoutes } from "@/server/modules/reorder/routes"
 import { revisionsRoutes } from "@/server/modules/revisions/routes"
 import { searchRoutes } from "@/server/modules/search/routes"
@@ -66,6 +67,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/integrations", integrationsRoutes)
   .route("/leads", leadsRoutes)
   .route("/seo", seoRoutes)
+  .route("/redirects", redirectsRoutes)
   .route("/marketing", marketingRoutes)
   .route("/revisions", revisionsRoutes)
   .route("/preview", adminPreviewRoutes)

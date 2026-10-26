@@ -24,6 +24,7 @@ import {
   auditLog,
   media,
   pages,
+  redirects,
   revisions,
 } from "@/server/db/schema"
 import { seedContent } from "@/server/db/seed"
@@ -470,6 +471,7 @@ describe("articles API (master 5.1)", () => {
       "articles",
       "article:office-deep-clean",
       "article:office-clean-guide",
+      "redirects",
     ])
 
     const clash = await call(editor, `/articles/${article.id}/meta`, "PATCH", {
@@ -517,11 +519,68 @@ describe("articles API (master 5.1)", () => {
     ).toBe(422)
   })
 
-  // Restore markers: server/modules/articles/service.ts, "Phase 8.2 records"
-  // in changeArticleMeta (~line 352) and deleteArticle (~line 388).
-  it.todo(
-    "records a redirect and expires the redirects tag on slug change/delete — restore in Phase 8.2 (recordMove)"
-  )
+  it("records a redirect and expires the redirects tag on slug change/delete", async () => {
+    const live = await row("retail-cleaning-why-first-impressions-count")
+    revalidateTag.mockClear()
+    const moved = await call(editor, `/articles/${live.id}/meta`, "PATCH", {
+      version: live.version,
+      slug: "retail-first-impressions",
+    })
+    expect(moved.status).toBe(200)
+    expect(revalidateTag.mock.calls.map((c) => c[0])).toEqual([
+      "articles",
+      "article:retail-cleaning-why-first-impressions-count",
+      "article:retail-first-impressions",
+      "redirects",
+    ])
+    const [slugMove] = await getDb()
+      .select()
+      .from(redirects)
+      .where(
+        eq(
+          redirects.fromPath,
+          "/blog/retail-cleaning-why-first-impressions-count"
+        )
+      )
+    expect(slugMove).toMatchObject({
+      toPath: "/blog/retail-first-impressions",
+      code: 301,
+      source: "auto",
+    })
+
+    const renamed = await row("retail-first-impressions")
+    revalidateTag.mockClear()
+    expect(
+      (
+        await call(
+          editor,
+          `/articles/${renamed.id}?version=${renamed.version}`,
+          "DELETE"
+        )
+      ).status
+    ).toBe(200)
+    expect(revalidateTag.mock.calls.map((c) => c[0])).toEqual([
+      "articles",
+      "article:retail-first-impressions",
+      "redirects",
+    ])
+    const [deleted] = await getDb()
+      .select()
+      .from(redirects)
+      .where(eq(redirects.fromPath, "/blog/retail-first-impressions"))
+    expect(deleted).toMatchObject({ toPath: "/blog", source: "auto" })
+  })
+
+  it("a draft that is never published records no redirect", async () => {
+    const draft = await create(author, "never-live")
+    const renamed = await call(author, `/articles/${draft.id}/meta`, "PATCH", {
+      version: draft.version,
+      slug: "never-live-2",
+    })
+    expect(renamed.status).toBe(200)
+    expect(await getDb().select().from(redirects)).toEqual([])
+    expect(revalidateTag).not.toHaveBeenCalled()
+  })
 
   it("deletes own drafts (author) or any article (editor), checking the version", async () => {
     const article = await create(author)
@@ -548,6 +607,7 @@ describe("articles API (master 5.1)", () => {
     expect(revalidateTag.mock.calls.map((c) => c[0])).toEqual([
       "articles",
       "article:retail-cleaning-why-first-impressions-count",
+      "redirects",
     ])
   })
 
