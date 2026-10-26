@@ -60,7 +60,7 @@ The public site stays at 0 px. That includes `/contact` after the form is wired.
   - `phone` is required ("Enter your phone number"). The frozen form marks it required.
   - `address` is new: `optionalLine(300)`, so a blank value becomes `null`. Migration **0023** (`pnpm db:generate`) adds the nullable `leads.address` column. `company` stays: it is optional and SP-compatible, and CP's form never sends it.
   - `message` is optional, because the frozen textarea has no `required` and no asterisk. A blank message is stored as `""`. The column stays `NOT NULL`, so SP's DTO and UI types don't change.
-  - `consent` keeps SP's `z.boolean().default(false)`. The form sends `consent: true`; the native `required` checkbox already blocks submission without it.
+  - `consent` must be `true` (controller ruling, master 7.3 "consent `true`"): the public lead schema uses `z.literal(true, { error: "Please agree to be contacted" })`, so a missing or false consent gets a 422 with `fieldErrors.consent`. The admin-side DTO type stays SP's boolean. The form sends `consent: true`, and the native `required` checkbox blocks submission before that. Add a `leads-public` test for consent missing or false → 422.
   - **Service is checked by the service layer, not by Zod.** The value must be one of the published service titles (the services collection) or the published `pages.contact.quoteForm.fields.service.extraOptions` (seeded "Domestic Cleaning" and "Other"). Anything else is a 422 with `fieldErrors.service`. A blank value becomes `null`.
   - Lead DTO, detail, drawer and CSV gain `address`. In the CSV, the column "Address / Eircode" goes after "Company".
   - Integration tests in `tests/integration/api/leads-public.test.ts`:
