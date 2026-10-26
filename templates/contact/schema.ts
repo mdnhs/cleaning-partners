@@ -2,7 +2,12 @@ import { z } from "zod"
 
 import { mediaRef, pageHeroText, text } from "@/lib/schemas/common"
 
-const field = z.object({ label: text, placeholder: text })
+const field = z.object({
+  label: text,
+  placeholder: text,
+  /** Shown under the field when the server rejects it. */
+  error: text,
+})
 
 /** Page "contact" (/contact): hero, the info-cards title and the quote form. The info cards and map are settings. */
 export const contactTemplate = z.object({
@@ -29,7 +34,7 @@ export const contactTemplate = z.object({
       }),
       address: field,
       message: field,
-      consent: z.object({ label: text }),
+      consent: z.object({ label: text, error: text }),
     }),
     chevron: mediaRef,
     submitLabel: text,

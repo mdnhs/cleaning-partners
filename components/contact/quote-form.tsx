@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 
 import { buttonVariants } from "@/components/ui/button"
@@ -17,7 +17,8 @@ import { cn } from "@/lib/utils"
 
 import { useTurnstile } from "./use-turnstile"
 
-type FieldCopy = { label: string; placeholder: string }
+/** `error` is the template wording shown when the server rejects the field */
+type FieldCopy = { label: string; placeholder: string; error: string }
 
 // A client component: every string arrives as a prop from the server view.
 export type QuoteFormProps = {
@@ -38,7 +39,7 @@ export type QuoteFormProps = {
     }
     address: FieldCopy
     message: FieldCopy
-    consent: { label: string }
+    consent: { label: string; error: string }
   }
   chevron: string
   submitLabel: string
@@ -141,6 +142,15 @@ export function QuoteForm({
   const inFlight = useRef(false)
   const turnstileSlot = useRef<HTMLDivElement>(null)
   const turnstile = useTurnstile(turnstileSlot)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // After a rejected submit, move focus to the first invalid field.
+  useEffect(() => {
+    if (Object.keys(fieldErrors).length === 0) return
+    formRef.current
+      ?.querySelector<HTMLElement>('[aria-invalid="true"]')
+      ?.focus()
+  }, [fieldErrors])
 
   /** aria wiring that exists only while a field has a server error */
   const invalid = (name: string, id: string) =>
@@ -272,6 +282,7 @@ export function QuoteForm({
 
         <form
           data-reveal
+          ref={formRef}
           onSubmit={handleSubmit}
           onFocus={() => void turnstile.prepare()}
           className="flex flex-col gap-5 rounded-[28px] bg-white p-6 shadow-[0px_16px_48px_0px_rgba(41,99,143,0.08)] sm:p-10"
@@ -284,7 +295,7 @@ export function QuoteForm({
             <Field
               label={fields.name.label}
               htmlFor="quote-name"
-              error={fieldErrors.name?.[0]}
+              error={fieldErrors.name ? fields.name.error : undefined}
               required
             >
               <input
@@ -300,7 +311,7 @@ export function QuoteForm({
             <Field
               label={fields.phone.label}
               htmlFor="quote-phone"
-              error={fieldErrors.phone?.[0]}
+              error={fieldErrors.phone ? fields.phone.error : undefined}
               required
             >
               <input
@@ -317,7 +328,7 @@ export function QuoteForm({
             <Field
               label={fields.email.label}
               htmlFor="quote-email"
-              error={fieldErrors.email?.[0]}
+              error={fieldErrors.email ? fields.email.error : undefined}
               required
             >
               <input
@@ -334,7 +345,7 @@ export function QuoteForm({
             <Field
               label={fields.service.label}
               htmlFor="quote-service"
-              error={fieldErrors.service?.[0]}
+              error={fieldErrors.service ? fields.service.error : undefined}
             >
               <div className="relative">
                 <select
@@ -366,7 +377,7 @@ export function QuoteForm({
           <Field
             label={fields.address.label}
             htmlFor="quote-address"
-            error={fieldErrors.address?.[0]}
+            error={fieldErrors.address ? fields.address.error : undefined}
           >
             <input
               id="quote-address"
@@ -381,7 +392,7 @@ export function QuoteForm({
           <Field
             label={fields.message.label}
             htmlFor="quote-message"
-            error={fieldErrors.message?.[0]}
+            error={fieldErrors.message ? fields.message.error : undefined}
           >
             <textarea
               id="quote-message"
@@ -397,13 +408,17 @@ export function QuoteForm({
               type="checkbox"
               name="consent"
               required
+              {...invalid("consent", "quote-consent")}
               className="size-[22px] shrink-0 cursor-pointer rounded-md border border-[#b9cbd6] accent-brand"
             />
             {fields.consent.label}
           </label>
-          {fieldErrors.consent?.[0] && (
-            <p className="-mt-2 text-sm/[normal] font-medium text-red-700">
-              {fieldErrors.consent[0]}
+          {fieldErrors.consent && (
+            <p
+              id="quote-consent-error"
+              className="-mt-2 text-sm/[normal] font-medium text-red-700"
+            >
+              {fields.consent.error}
             </p>
           )}
 

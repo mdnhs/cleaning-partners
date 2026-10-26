@@ -48,7 +48,32 @@ export const contactEditorMeta: EditorMeta = {
     "quoteForm.fields.address": { label: "Address" },
     "quoteForm.fields.message": { label: "Message" },
     "quoteForm.fields.consent": { label: "Consent" },
+    "quoteForm.fields.name.error": {
+      label: "Name error",
+      help: "Shown under the field when it is rejected.",
+    },
+    "quoteForm.fields.phone.error": {
+      label: "Phone error",
+      help: "Shown under the field when it is rejected.",
+    },
+    "quoteForm.fields.email.error": {
+      label: "Email error",
+      help: "Shown under the field when it is rejected.",
+    },
+    "quoteForm.fields.service.error": {
+      label: "Service error",
+      help: "Shown under the field when it is rejected.",
+    },
+    "quoteForm.fields.address.error": {
+      label: "Address error",
+      help: "Shown under the field when it is rejected.",
+    },
+    "quoteForm.fields.message.error": {
+      label: "Message error",
+      help: "Shown under the field when it is rejected.",
+    },
     "quoteForm.fields.consent.label": { label: "Consent wording" },
+    "quoteForm.fields.consent.error": { label: "Consent error" },
     "quoteForm.chevron": { label: "Select arrow icon", aspect: "square" },
     "quoteForm.submitLabel": { label: "Button" },
     "quoteForm.mailSubject": {

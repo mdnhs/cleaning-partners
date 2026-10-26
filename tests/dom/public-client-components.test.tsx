@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { BlogList, type BlogListProps } from "@/components/blog/blog-list"
 import type { PostCardData } from "@/components/blog/post-card"
 import { ShareLinks } from "@/components/blog/share-links"
+import { buttonVariants } from "@/components/ui/button"
 import { QuoteForm, type QuoteFormProps } from "@/components/contact/quote-form"
 import { Team, type TeamProps } from "@/components/home/team"
 import { SiteLocale } from "@/components/site-locale"
@@ -171,7 +172,11 @@ describe("ShareLinks", () => {
 })
 
 describe("QuoteForm", () => {
-  const field = (label: string) => ({ label, placeholder: `${label}…` })
+  const field = (label: string) => ({
+    label,
+    placeholder: `${label}…`,
+    error: `${label} error copy`,
+  })
   const props: QuoteFormProps = {
     eyebrow: "EYE",
     title: "Ask",
@@ -190,7 +195,7 @@ describe("QuoteForm", () => {
       },
       address: field("Where"),
       message: field("Tell us"),
-      consent: { label: "OK to call" },
+      consent: { label: "OK to call", error: "Consent error copy" },
     },
     chevron: "/chevron.svg",
     submitLabel: "Go",
@@ -217,7 +222,11 @@ describe("QuoteForm", () => {
 })
 
 describe("QuoteForm submit (R7-4)", () => {
-  const field = (label: string) => ({ label, placeholder: label })
+  const field = (label: string) => ({
+    label,
+    placeholder: label,
+    error: `${label} error copy`,
+  })
   const props: QuoteFormProps = {
     eyebrow: "E",
     title: "T",
@@ -233,7 +242,7 @@ describe("QuoteForm submit (R7-4)", () => {
       service: { ...field("Which"), options: ["A", "B"] },
       address: field("Where"),
       message: field("Tell us"),
-      consent: { label: "OK" },
+      consent: { label: "OK", error: "Consent error copy" },
     },
     chevron: "/c.svg",
     submitLabel: "Go",
@@ -384,7 +393,7 @@ describe("QuoteForm submit (R7-4)", () => {
     }
   )
 
-  it("422 shows each fieldErrors message next to its field, nothing before", async () => {
+  it("422 shows the template copy next to each field, never the server text, and focuses the first invalid field", async () => {
     render(<QuoteForm {...props} />)
     expect(document.querySelectorAll('[id$="-error"]')).toHaveLength(0)
     leadReply = json(
@@ -392,36 +401,71 @@ describe("QuoteForm submit (R7-4)", () => {
         error: {
           code: "VALIDATION_FAILED",
           fieldErrors: {
-            service: ["Choose a service from the list"],
-            phone: ["Enter your phone number"],
-            sourcePage: ["ignored: no field"],
+            service: ["SERVER-SERVICE-TEXT"],
+            phone: ["SERVER-PHONE-TEXT"],
+            consent: ["SERVER-CONSENT-TEXT"],
+            sourcePage: ["SERVER-IGNORED-TEXT"],
           },
         },
       },
       422
     )
     await fillAndSend()
-    expect(await screen.findByText("Choose a service from the list")).toBe(
+    expect(await screen.findByText("Which error copy")).toBe(
       document.getElementById("quote-service-error")
     )
-    expect(screen.getByLabelText("Which")).toHaveAttribute(
-      "aria-invalid",
-      "true"
+    expect(screen.getByText("Your phone error copy")).toBe(
+      document.getElementById("quote-phone-error")
     )
-    expect(screen.getByLabelText("Which")).toHaveAttribute(
-      "aria-describedby",
-      "quote-service-error"
+    expect(screen.getByText("Consent error copy")).toBe(
+      document.getElementById("quote-consent-error")
+    )
+    expect(document.body.textContent).not.toMatch(/SERVER-/)
+    for (const [el, id] of [
+      [screen.getByLabelText("Which"), "quote-service-error"],
+      [screen.getByLabelText(/Your phone/), "quote-phone-error"],
+      [screen.getByLabelText("OK"), "quote-consent-error"],
+    ] as const) {
+      expect(el).toHaveAttribute("aria-invalid", "true")
+      expect(el).toHaveAttribute("aria-describedby", id)
+    }
+    expect(screen.getByLabelText(/Your name/)).not.toHaveAttribute(
+      "aria-invalid"
     )
     expect(document.getElementById("quote-service-error")!.parentElement).toBe(
       screen.getByLabelText("Which").closest("div")!.parentElement
     )
-    expect(screen.getByText("Enter your phone number")).toBeInTheDocument()
+    // Document order: phone precedes service.
+    expect(screen.getByLabelText(/Your phone/)).toHaveFocus()
     expect(screen.getByRole("status")).toHaveTextContent("It failed")
     // The next attempt clears them.
     leadReply = json({ ok: true })
     await fillAndSend()
     await screen.findByText(/Sent/)
     expect(document.querySelectorAll('[id$="-error"]')).toHaveLength(0)
+  })
+
+  it("tracks lead_submitted once on success, never on failure, without personal data", async () => {
+    const win = window as unknown as {
+      __cpConsent?: unknown
+      dataLayer?: Record<string, unknown>[]
+    }
+    win.__cpConsent = { analytics: true, marketing: false }
+    win.dataLayer = []
+    render(<QuoteForm {...props} />)
+    leadReply = json({}, 500)
+    await fillAndSend()
+    await screen.findByText("It failed")
+    expect(win.dataLayer).toEqual([])
+    leadReply = json({ ok: true })
+    await fillAndSend()
+    await screen.findByText(/Sent/)
+    const events = win.dataLayer!.filter((e) => e.event === "lead_submitted")
+    expect(events).toEqual([{ event: "lead_submitted", source_page: "/" }])
+    const dump = JSON.stringify(win.dataLayer)
+    for (const pii of ["Ann", "a@b.ie", "01 234", "Hello", "1 Main St"])
+      expect(dump).not.toContain(pii)
+    delete win.dataLayer
   })
 
   it("sends the Turnstile token and resets the widget after the send", async () => {
@@ -474,14 +518,24 @@ describe("QuoteForm submit (R7-4)", () => {
     const inFlow = [...form.children].filter(
       (el) => !el.className.split(" ").includes("absolute")
     )
-    expect(inFlow.map((el) => el.tagName)).toEqual([
-      "H3",
-      "DIV",
-      "DIV",
-      "DIV",
-      "LABEL",
-      "BUTTON",
-      "P",
+    expect(inFlow.map((el) => [el.tagName, el.className])).toEqual([
+      ["H3", "font-heading text-[28px]/[normal] font-bold text-ink"],
+      ["DIV", "grid gap-x-4 gap-y-5 sm:grid-cols-2"],
+      ["DIV", "flex flex-col gap-2"],
+      ["DIV", "flex flex-col gap-2"],
+      [
+        "LABEL",
+        "flex cursor-pointer items-center gap-3 text-[15px]/[normal] text-body",
+      ],
+      [
+        "BUTTON",
+        buttonVariants({
+          variant: "brand",
+          size: "pill",
+          className: "w-full",
+        }),
+      ],
+      ["P", "text-center text-[15px] text-body sr-only"],
     ])
     const abs = [...form.children].filter((el) =>
       el.className.split(" ").includes("absolute")

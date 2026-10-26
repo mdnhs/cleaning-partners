@@ -254,25 +254,43 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           urgentTitle: "Need us urgently?",
           formTitle: "Send us your details",
           fields: {
-            name: { label: "Full Name", placeholder: "John Murphy" },
-            phone: { label: "Phone Number", placeholder: "085 000 0000" },
-            email: { label: "Email Address", placeholder: "you@email.com" },
+            name: {
+              label: "Full Name",
+              placeholder: "John Murphy",
+              error: "Please enter your name.",
+            },
+            phone: {
+              label: "Phone Number",
+              placeholder: "085 000 0000",
+              error: "Please enter a phone number we can reach you on.",
+            },
+            email: {
+              label: "Email Address",
+              placeholder: "you@email.com",
+              error: "Please enter a valid email address.",
+            },
             service: {
               label: "Service Required",
               placeholder: "Select a service",
               extraOptions: ["Domestic Cleaning", "Other"],
               fallback: "Not sure",
+              error: "Please choose a service from the list.",
             },
             address: {
               label: "Address / Eircode",
               placeholder: "e.g. Mountmellick, R32 YX49",
+              error: "Please check your address or Eircode.",
             },
             message: {
               label: "Tell us about your space",
               placeholder:
                 "Type of building, size, how often you need cleaning…",
+              error: "Please shorten your message.",
             },
-            consent: { label: "I agree to be contacted about my enquiry." },
+            consent: {
+              label: "I agree to be contacted about my enquiry.",
+              error: "Please agree to be contacted so we can reply.",
+            },
           },
           chevron: media("/images/contact/chevron.svg"),
           submitLabel: "Send Request",

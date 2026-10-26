@@ -49,6 +49,7 @@ export function contactView(s: SiteSources): ContactView {
         service: {
           label: form.fields.service.label,
           placeholder: form.fields.service.placeholder,
+          error: form.fields.service.error,
           options: [
             ...s.services.map((service) => service.content.title),
             ...form.fields.service.extraOptions,

@@ -70,6 +70,10 @@ const POST_BASELINE_PAGE_LEAVES = new Set([
   "contact:quoteForm.sendingLabel",
   "contact:quoteForm.errorMessage",
   "contact:quoteForm.rateLimitedMessage",
+  // Per-field server-rejection copy (fix round 1, O6).
+  ...["name", "phone", "email", "service", "address", "message", "consent"].map(
+    (f) => `contact:quoteForm.fields.${f}.error`
+  ),
 ])
 
 function expectInventoryCovered(
