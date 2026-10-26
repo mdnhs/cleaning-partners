@@ -318,6 +318,7 @@ describe("dashboard (Phase 4)", () => {
     expect(state).toEqual({
       smtp: false,
       r2: false,
+      ai: false,
       "two-factor": false,
       review: true,
       "unassigned-leads": false,
@@ -341,8 +342,46 @@ describe("dashboard (Phase 4)", () => {
     expect(after.nextUp.find((i) => i.id === "smtp")?.done).toBe(true)
   })
 
-  // The assistant's Next-up item returns with the assistant (Phase 9.3).
-  it.todo("offers managers to turn on the AI assistant until it is on (9.3)")
+  it("offers managers to turn on the AI assistant until it is on (R9-14)", async () => {
+    const item = {
+      id: "ai",
+      title: "Turn on the AI assistant",
+      description: "Draft copy, check SEO and summarise enquiries.",
+      href: "/admin/settings/ai-assistant",
+      done: false,
+    }
+    const owner = await signedInUser(["owner"])
+    const admin = await signedInUser(["admin"])
+    const editor = await signedInUser(["editor"])
+    expect((await dashboard(owner.cookie)).nextUp).toContainEqual(item)
+    expect((await dashboard(admin.cookie)).nextUp).toContainEqual(item)
+    expect(
+      (await dashboard(editor.cookie)).nextUp.map((i) => i.id)
+    ).not.toContain("ai")
+
+    // Saved but off: still offered.
+    const values = {
+      enabled: false,
+      provider: "anthropic",
+      model: "claude-sonnet-5-5",
+      apiKey: "sk-ant-dashboard-key-1234",
+      allowedRoles: ["owner", "admin", "editor"],
+    }
+    const put = (version: number, json: Record<string, unknown>) =>
+      adminRequest("/integrations/integrations.ai", {
+        cookie: owner.cookie,
+        method: "PUT",
+        json: { version, values: json },
+      })
+    expect((await put(0, values)).status).toBe(200)
+    expect((await dashboard(owner.cookie)).nextUp).toContainEqual(item)
+
+    // On: gone.
+    expect((await put(1, { enabled: true })).status).toBe(200)
+    expect(
+      (await dashboard(owner.cookie)).nextUp.map((i) => i.id)
+    ).not.toContain("ai")
+  })
 
   it("hides what the role may not see", async () => {
     const viewer = await dashboard((await signedInUser(["viewer"])).cookie)

@@ -87,6 +87,7 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "services/new/page.tsx": { service: ["read"] },
   "settings/page.tsx": { settings: ["read"] },
   "settings/[key]/page.tsx": { settings: ["read"] },
+  "settings/ai-assistant/page.tsx": { integration: ["read"] },
   "settings/integrations/page.tsx": { integration: ["read"] },
   "settings/integrations/[slug]/page.tsx": { integration: ["read"] },
   "marketing/page.tsx": { marketing: ["read"] },

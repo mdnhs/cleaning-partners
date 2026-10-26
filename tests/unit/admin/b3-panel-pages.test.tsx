@@ -51,11 +51,22 @@ vi.mock("@/components/admin/collections/collection-screen", () => ({
 vi.mock("@/components/admin/settings/settings-editor", () => ({
   SettingsEditor: () => null,
 }))
+vi.mock("@/components/admin/ai/ai-settings-view", () => ({
+  AiSettingsView: () => null,
+}))
+vi.mock("@/components/admin/integrations/integration-form", () => ({
+  IntegrationForm: () => null,
+}))
+vi.mock("@/components/admin/integrations/migrate-media-panel", () => ({
+  MigrateMediaPanel: () => null,
+}))
 
 import BlogCategoriesPage from "@/app/(admin)/admin/(panel)/blog/categories/page"
 import ArticlePage from "@/app/(admin)/admin/(panel)/blog/[id]/page"
 import BlogPage from "@/app/(admin)/admin/(panel)/blog/page"
 import NewArticlePage from "@/app/(admin)/admin/(panel)/blog/new/page"
+import AiAssistantPage from "@/app/(admin)/admin/(panel)/settings/ai-assistant/page"
+import IntegrationPage from "@/app/(admin)/admin/(panel)/settings/integrations/[slug]/page"
 import ActivityPage from "@/app/(admin)/admin/(panel)/activity/page"
 import CollectionsPage from "@/app/(admin)/admin/(panel)/collections/page"
 import MediaPage from "@/app/(admin)/admin/(panel)/media/page"
@@ -63,6 +74,7 @@ import UserPage from "@/app/(admin)/admin/(panel)/users/[id]/page"
 import UsersPage from "@/app/(admin)/admin/(panel)/users/page"
 import SettingsKeyPage from "@/app/(admin)/admin/(panel)/settings/[key]/page"
 import SettingsPage from "@/app/(admin)/admin/(panel)/settings/page"
+import { AiSettingsView } from "@/components/admin/ai/ai-settings-view"
 import { SettingsEditor } from "@/components/admin/settings/settings-editor"
 import { permissionFor } from "@/lib/admin/nav"
 import {
@@ -239,5 +251,25 @@ describe("Blog pages (5.3)", () => {
       ArticlePage({ params: params({ id: ID }) } as never)
     )
     expect(out!.props).toMatchObject({ id: ID })
+  })
+
+  it("/admin/settings/ai-assistant is the AI settings view", async () => {
+    const out = await inner(AiAssistantPage())
+    expect(out!.type).toBe(AiSettingsView)
+    session.roles = ["editor"]
+    await expect(inner(AiAssistantPage())).rejects.toThrow("FORBIDDEN")
+  })
+
+  it("the old AI integration slug redirects to the AI assistant page", async () => {
+    const page = IntegrationPage({
+      params: params({ slug: "ai" }),
+    } as never)
+    await expect(inner(page)).rejects.toThrow(
+      "REDIRECT /admin/settings/ai-assistant"
+    )
+    const smtp = await inner(
+      IntegrationPage({ params: params({ slug: "smtp" }) } as never)
+    )
+    expect(smtp!.props).toMatchObject({ integrationKey: "integrations.smtp" })
   })
 })

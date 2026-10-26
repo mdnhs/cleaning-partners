@@ -229,3 +229,14 @@ test("integrations are for owners and admins only", async ({ page }) => {
   const api = await page.request.get("/api/v1/admin/integrations")
   expect(api.status()).toBe(403)
 })
+
+test("the old AI integration URL lands on the AI assistant page", async ({
+  page,
+}) => {
+  await signIn(page, E2E_OWNER)
+  await page.goto("/admin/settings/integrations/ai")
+  await expect(page).toHaveURL(/\/admin\/settings\/ai-assistant$/)
+  await expect(
+    page.getByRole("heading", { name: "AI assistant" })
+  ).toBeVisible()
+})

@@ -12,6 +12,7 @@ import type { SeoHealthDto } from "@/lib/schemas/api/seo"
 import { PUBLIC_SETTINGS_KEYS } from "@/lib/schemas/settings"
 import { getDb } from "@/server/db/client"
 import type { Actor } from "@/server/lib/actor"
+import { getAiStatus } from "@/server/modules/ai/service"
 import { integrationReadState } from "@/server/modules/integrations/service"
 import { cachedQa, cachedSeoHealth } from "./content-review"
 import { trendDays } from "./days"
@@ -131,6 +132,7 @@ export async function getDashboard(
     twoFactor,
     jobProblems,
     turnstile,
+    ai,
     seoHealth,
     qa,
   ] = await Promise.all([
@@ -159,6 +161,7 @@ export async function getDashboard(
     can({ integration: ["read"] })
       ? integrationReadState("integrations.turnstile", db)
       : null,
+    can({ integration: ["update"] }) ? getAiStatus(actor) : null,
     canSeo ? orNull("SEO health", cachedSeoHealth) : null,
     options.qa === false
       ? null
@@ -212,7 +215,16 @@ export async function getDashboard(
       done: configured.has("integrations.r2"),
     })
   }
-  // The AI-assistant item returns with the assistant (Phase 9.3).
+  // Managers only, while the assistant is not on. A role left out of its
+  // allow-list on purpose is not asked to turn it on.
+  if (ai && (ai.reason === "off" || ai.reason === "unconfigured"))
+    nextUp.push({
+      id: "ai",
+      title: "Turn on the AI assistant",
+      description: "Draft copy, check SEO and summarise enquiries.",
+      href: "/admin/settings/ai-assistant",
+      done: false,
+    })
   if (twoFactor !== null)
     nextUp.push({
       id: "two-factor",

@@ -573,6 +573,43 @@ function renderWithClient(key: IntegrationKey, children?: React.ReactNode) {
   )
 }
 
+describe("IntegrationForm refreshes the AI assistant status (R9-15)", () => {
+  it("invalidates ['ai', 'status'] after a save", async () => {
+    respond = (call) =>
+      call.method === "PUT" ? json({ ...saved, version: 4 }) : json(saved)
+    const user = userEvent.setup()
+    client = makeQueryClient()
+    const invalidate = vi.spyOn(client, "invalidateQueries")
+    renderWithClient("integrations.smtp")
+    await user.type(await screen.findByLabelText("SMTP server"), "x")
+    await user.click(screen.getByRole("button", { name: "Save" }))
+    await waitFor(() =>
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: ["ai", "status"] })
+    )
+  })
+
+  it("invalidates ['ai', 'status'] after a disconnect", async () => {
+    let deleted = false
+    respond = (call) => {
+      if (call.method === "DELETE") {
+        deleted = true
+        return json({ ok: true })
+      }
+      return json(deleted ? { ...notSetUp, ...smtpCleared } : saved)
+    }
+    const user = userEvent.setup()
+    client = makeQueryClient()
+    const invalidate = vi.spyOn(client, "invalidateQueries")
+    renderWithClient("integrations.smtp")
+    await user.click(await screen.findByRole("button", { name: "Disconnect" }))
+    const dialog = screen.getByRole("alertdialog")
+    await user.click(within(dialog).getByRole("button", { name: "Disconnect" }))
+    await waitFor(() =>
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: ["ai", "status"] })
+    )
+  })
+})
+
 describe("IntegrationForm cache invalidation (R7-10)", () => {
   it("a save invalidates the move-to-R2 panel's query key", async () => {
     respond = (call) =>

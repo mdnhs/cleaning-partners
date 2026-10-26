@@ -12,6 +12,7 @@ import {
 } from "react"
 import { toast } from "sonner"
 
+import { AI_STATUS_KEY } from "@/components/admin/ai/queries"
 import { UnsavedGuard } from "@/components/admin/editor/unsaved-guard"
 import { FormCard } from "@/components/admin/form/form-ui"
 import { EmptyState } from "@/components/admin/kit/empty-state"
@@ -203,7 +204,8 @@ export function IntegrationForm({
       void queryClient.invalidateQueries({ queryKey: ["integrations", "list"] })
       void queryClient.invalidateQueries({ queryKey: MIGRATE_MEDIA_QUERY_KEY })
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] })
-      // 9.3: re-add the AI_STATUS_KEY invalidation here with the assistant.
+      // The topbar AI button shows or hides with integrations.ai.
+      void queryClient.invalidateQueries({ queryKey: AI_STATUS_KEY })
       toast.success("Saved")
     },
     onError: (err) => {
@@ -232,7 +234,7 @@ export function IntegrationForm({
       // The dialog closes once the form shows "Not set up", then hands
       // focus to the status (finalFocus), as Disconnect itself is gone.
       await queryClient.invalidateQueries({ queryKey: ["integrations"] })
-      // 9.3: re-add the AI_STATUS_KEY invalidation here with the assistant.
+      void queryClient.invalidateQueries({ queryKey: AI_STATUS_KEY })
       disconnected.current = true
       setConfirmDisconnect(false)
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] })
