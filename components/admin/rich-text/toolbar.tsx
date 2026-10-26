@@ -1,5 +1,6 @@
 "use client"
 
+import type { EditorState } from "@tiptap/pm/state"
 import { type Editor, useEditorState } from "@tiptap/react"
 import {
   Bold,
@@ -36,6 +37,24 @@ type Roving = {
   tabIndex: number
   onFocus: () => void
   "data-toolbar-item": ""
+}
+
+/**
+ * "Lead" is a top-level paragraph variant only (R5-3): list items and quotes
+ * render their paragraphs inline (lib/rich-text/render.tsx), so a variant
+ * there would show in the editor but never on the site. Allowed when the
+ * selection touches a top-level paragraph and no nested one.
+ */
+function leadAllowed(state: EditorState): boolean {
+  const { from, to } = state.selection
+  let top = false
+  let nested = false
+  state.doc.nodesBetween(from, to, (node, _pos, parent) => {
+    if (node.type.name !== "paragraph") return
+    if (parent?.type.name === "doc") top = true
+    else nested = true
+  })
+  return top && !nested
 }
 
 function ToolButton({
@@ -263,6 +282,7 @@ export function RichTextToolbar({
       h3: e.isActive("heading", { level: 3 }),
       bullet: e.isActive("bulletList"),
       lead: e.isActive("paragraph", { variant: "lead" }),
+      leadAllowed: leadAllowed(e.state),
       checklist: e.isActive("bulletList", { variant: "checklist" }),
       ordered: e.isActive("orderedList"),
       quote: e.isActive("blockquote"),
@@ -285,7 +305,7 @@ export function RichTextToolbar({
       ? ([
           ["Heading", !locked],
           ["Subheading", !locked],
-          ["Lead paragraph", !locked],
+          ["Lead paragraph", !locked && state.leadAllowed],
           ["Bulleted list", !locked],
           ["Checklist", !locked],
           ["Numbered list", !locked],
@@ -368,7 +388,7 @@ export function RichTextToolbar({
           <ToolButton
             label="Lead paragraph"
             pressed={state.lead}
-            disabled={locked}
+            disabled={locked || !state.leadAllowed}
             roving={roving("Lead paragraph")}
             onClick={() =>
               editor

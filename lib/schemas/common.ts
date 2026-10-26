@@ -127,10 +127,20 @@ export const richText = z.object({
   content: z.array(block).min(1),
 })
 
-/** Rich text limited to paragraphs (marks allowed): about copy, service overview. */
+/**
+ * A paragraph without the article variants (R5-3): `attrs` is not declared,
+ * so a stored `variant` is stripped on parse.
+ */
+const plainParagraph = paragraph.omit({ attrs: true })
+
+/**
+ * Rich text limited to plain paragraphs (marks allowed): about copy, service
+ * overview. Variants ("lead") belong to article bodies only; the server drops
+ * them here even if an API client sends one.
+ */
 export const paragraphsText = z.object({
   type: z.literal("doc"),
-  content: z.array(paragraph).min(1),
+  content: z.array(plainParagraph).min(1),
 })
 
 /** The PageHero block of an inner page (image, breadcrumb label, title, intro). */
