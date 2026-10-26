@@ -1,5 +1,6 @@
 import { type Browser, expect, type Page, test } from "@playwright/test"
 
+import { PUBLIC_URLS } from "../visual/urls"
 import { BASE_URL } from "./env"
 import { clientIpFor, E2E_PASSWORD, readFixtures } from "./fixtures"
 
@@ -278,4 +279,32 @@ test.describe("sitemap and robots", () => {
     expect(text).toMatch(/Disallow: \/api/)
     expect(text).toMatch(/Sitemap: https?:\/\/[^/\s]+\/sitemap\.xml/)
   })
+})
+
+// R8-3 / R8-12: tracking is off as seeded, so no public page carries a
+// consent banner, a "Cookie settings" button or a tracker script.
+test.describe("tracking off (the seed)", () => {
+  for (const url of PUBLIC_URLS) {
+    test(`${url} has no banner, no cookie button and no tracker script`, async ({
+      page,
+    }) => {
+      await page.goto(url, { waitUntil: "load" })
+      await expect(page.locator("[data-consent-banner]")).toHaveCount(0)
+      await expect(
+        page.getByRole("button", { name: "Cookie settings" })
+      ).toHaveCount(0)
+      const sources = await page
+        .locator("script[src]")
+        .evaluateAll((nodes) => nodes.map((n) => (n as HTMLScriptElement).src))
+      expect(
+        sources.filter((src) =>
+          /googletagmanager|google-analytics|connect\.facebook\.net/.test(src)
+        )
+      ).toEqual([])
+      const html = await page.content()
+      expect(html).not.toMatch(
+        /googletagmanager|google-analytics|connect\.facebook\.net/
+      )
+    })
+  }
 })

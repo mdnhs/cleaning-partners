@@ -5,6 +5,7 @@ import { Suspense } from "react"
 
 import "../globals.css"
 import { barlow, fontMono, roboto } from "@/app/fonts"
+import { AttributionCapture } from "@/components/attribution-capture"
 import { PreviewBar } from "@/components/preview-bar"
 import { SiteExtras } from "@/components/site-extras"
 import { SmoothScroll } from "@/components/motion/smooth-scroll"
@@ -58,6 +59,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <SiteExtras />
         </Suspense>
+        <AttributionCapture />
         {/* Draft-mode only (admins); renders nothing for visitors. */}
         <Suspense fallback={null}>
           <PreviewBar />

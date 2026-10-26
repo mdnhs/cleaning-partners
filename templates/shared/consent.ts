@@ -12,7 +12,7 @@ import { linkView, placeholders } from "./views"
 
 type CategoryCopy = { label: string; description: string }
 
-/** What the consent banner renders (the banner component itself is Phase 8). */
+/** What the consent banner renders. */
 export type ConsentBannerCopy = {
   title: string
   body: string
