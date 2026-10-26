@@ -160,6 +160,8 @@ export type OgLogo = {
   mime: string
   width: number | null
   height: number | null
+  /** Stored size in bytes. */
+  size: number
   mediaId: string
 }
 
@@ -184,6 +186,7 @@ export async function getOgLogo(): Promise<OgLogo | null> {
     mime: row.mime,
     width: row.width,
     height: row.height,
+    size: row.size,
     mediaId,
   }
 }

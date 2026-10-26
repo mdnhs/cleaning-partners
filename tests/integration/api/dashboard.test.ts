@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 // a test make a cached content reader fail (review M2).
 const { cacheTag, failing } = vi.hoisted(() => ({
   cacheTag: vi.fn(),
-  failing: { qa: false },
+  failing: { seo: false, qa: false },
 }))
 vi.mock("next/cache", async (importOriginal) => ({
   ...(await importOriginal<typeof import("next/cache")>()),
@@ -20,6 +20,10 @@ vi.mock("@/server/modules/dashboard/content-review", async (importOriginal) => {
     >()
   return {
     ...actual,
+    cachedSeoHealth: () =>
+      failing.seo
+        ? Promise.reject(new TypeError("settings row no longer parses"))
+        : actual.cachedSeoHealth(),
     cachedQa: (scope: Parameters<typeof actual.cachedQa>[0]) =>
       failing.qa
         ? Promise.reject(new Error("bad jsonb"))
@@ -44,6 +48,7 @@ import { adminRequest, signedInUser } from "../helpers/auth"
 const DAY = 86_400_000
 
 beforeEach(async () => {
+  failing.seo = false
   failing.qa = false
   cacheTag.mockClear()
   await resetDb()
@@ -242,15 +247,13 @@ describe("dashboard (Phase 4)", () => {
     expect(editor.nextUp.map((i) => i.id)).not.toContain("reply")
   })
 
-  // SEO score and content health return with the SEO screen (Phase 8.1,
-  // which restores SP's seoScore/contentHealth assertions); until then the
-  // API sends null for both.
-  it.todo("SEO score and content health follow seo:read (Phase 8.1)")
-
-  it("QA follows the viewer's permissions; SEO parts are null until Phase 8.1", async () => {
+  it("SEO score, content health and QA follow the viewer's permissions", async () => {
     const admin = await dashboard((await signedInUser(["admin"])).cookie)
-    expect(admin.kpis.seoScore).toBeNull()
-    expect(admin.contentHealth).toBeNull()
+    expect(admin.kpis.seoScore).toEqual(expect.any(Number))
+    const health = admin.contentHealth!
+    expect(health.complete + health.needsWork + health.missing).toBeGreaterThan(
+      0
+    )
     // Seeded legal pages are still the starter text.
     expect(admin.qa).toEqual(
       expect.arrayContaining([
@@ -355,20 +358,24 @@ describe("dashboard (Phase 4)", () => {
     expect(intake.nextUp.map((i) => i.id)).toEqual(["unassigned-leads"])
   })
 
-  it("a failing QA scan hides only that part, and says why in the log (review M1/M2)", async () => {
+  it("a failing SEO health or QA scan hides only that part, and says why in the log (review M1/M2)", async () => {
     const errors = vi.spyOn(console, "error").mockImplementation(() => {})
+    failing.seo = true
     failing.qa = true
     const dto = await dashboard((await signedInUser(["admin"])).cookie)
+    expect(dto.kpis.seoScore).toBeNull()
+    expect(dto.contentHealth).toBeNull()
     expect(dto.qa).toBeNull()
     expect(dto.kpis.openLeads).toBe(0)
     expect(errors.mock.calls.map(([line]) => line)).toEqual(
       expect.arrayContaining([
+        "[dashboard] SEO health unavailable, part hidden (TypeError: settings row no longer parses)",
         "[dashboard] Content QA unavailable, part hidden (Error: bad jsonb)",
       ])
     )
   })
 
-  it("QA comes from a cached reader tagged for content writes (review M3)", async () => {
+  it("SEO health and QA come from cached readers tagged for content writes (review M3)", async () => {
     await dashboard((await signedInUser(["admin"])).cookie)
     const tags = cacheTag.mock.calls.flat()
     expect(tags).toEqual(

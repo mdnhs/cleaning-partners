@@ -10,13 +10,12 @@ import { ogCard } from "@/lib/seo/og-card"
 import { OG_IMAGE_SIZE, type OgKind } from "@/lib/seo/urls"
 import { tag } from "@/server/lib/cache-tags"
 import { publicOrigin } from "@/server/lib/site-origin"
-import { staticFilePath, storageFor } from "@/server/lib/storage"
 import {
   getOgLogo,
   getOgSubject,
-  type OgLogo,
   ogSubjectTags,
 } from "@/server/modules/seo/queries"
+import { loadLogo } from "@/server/modules/seo/og-logo"
 
 // Generated share card (spec §10): white, the published site logo top-left,
 // the eyebrow in brand, the title in navy-dark and a brand rule above the
@@ -41,39 +40,6 @@ function loadFonts() {
   return fonts
 }
 
-/** Raster and SVG formats Satori can draw; anything else prints the site name. */
-const DRAWABLE = new Set([
-  "image/png",
-  "image/jpeg",
-  "image/gif",
-  "image/svg+xml",
-])
-const LOGO_HEIGHT = 72
-const LOGO_MAX_WIDTH = 360
-
-type LogoImage = { src: string; width: number; height: number }
-
-/** The logo as a data URI, or null when it can't be read (the card prints the site name). */
-async function loadLogo(logo: OgLogo | null): Promise<LogoImage | null> {
-  if (!logo || !DRAWABLE.has(logo.mime)) return null
-  try {
-    let bytes: Uint8Array | null
-    if (logo.driver === "static")
-      bytes = await readFile(staticFilePath(logo.key))
-    else bytes = (await (await storageFor(logo.driver))?.read(logo.key)) ?? null
-    if (!bytes || bytes.length === 0) return null
-    const ratio = logo.width && logo.height ? logo.width / logo.height : 3
-    const width = Math.min(LOGO_MAX_WIDTH, Math.round(LOGO_HEIGHT * ratio))
-    return {
-      src: `data:${logo.mime};base64,${Buffer.from(bytes).toString("base64")}`,
-      width,
-      height: Math.round(width / ratio),
-    }
-  } catch {
-    return null
-  }
-}
-
 /**
  * The card as PNG bytes, or null when the record has no card. Cached per
  * (kind, id) with the subject's tags, so a publish, rename or settings
@@ -85,13 +51,19 @@ export async function renderOgCard(
   id: string
 ): Promise<Uint8Array<ArrayBuffer> | null> {
   "use cache"
-  cacheLife("max")
   cacheTag(...ogSubjectTags(kind, id))
   const subject = await getOgSubject(kind, id)
-  if (!subject) return null
+  if (!subject) {
+    cacheLife("max")
+    return null
+  }
   const ogLogo = await getOgLogo()
   if (ogLogo) cacheTag(tag.media(ogLogo.mediaId))
-  const logo = await loadLogo(ogLogo)
+  const { image: logo, transient } = await loadLogo(ogLogo)
+  // A logo that is set but could not be read (storage error): keep the
+  // card without it for minutes, not until the next tag expiry.
+  if (transient) cacheLife("minutes")
+  else cacheLife("max")
   const card = ogCard({
     kind,
     title: subject.title,

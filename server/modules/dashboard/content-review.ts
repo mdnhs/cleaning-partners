@@ -3,9 +3,11 @@ import "server-only"
 import { cacheLife, cacheTag } from "next/cache"
 
 import { type QaFinding, scanContent } from "@/lib/content/qa"
+import type { SeoHealthDto } from "@/lib/schemas/api/seo"
 import { PUBLIC_SETTINGS_KEYS } from "@/lib/schemas/settings"
 import { getDb } from "@/server/db/client"
 import { tag } from "@/server/lib/cache-tags"
+import { computeSeoHealth } from "@/server/modules/seo/service"
 import { PAGE_KEYS } from "@/templates/registry"
 
 import * as repo from "./repo"
@@ -36,6 +38,13 @@ function contentTags() {
     ...PAGE_KEYS.map((key) => tag.page(key)),
     ...PUBLIC_SETTINGS_KEYS.map((key) => tag.settings(key))
   )
+}
+
+/** SEO health for seo:read callers (the SEO screen's own figures). */
+export async function cachedSeoHealth(): Promise<SeoHealthDto> {
+  "use cache"
+  contentTags()
+  return computeSeoHealth()
 }
 
 export type QaScope = {

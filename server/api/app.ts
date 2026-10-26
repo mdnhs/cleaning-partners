@@ -37,6 +37,7 @@ import {
 import { reorderRoutes } from "@/server/modules/reorder/routes"
 import { revisionsRoutes } from "@/server/modules/revisions/routes"
 import { searchRoutes } from "@/server/modules/search/routes"
+import { seoRoutes } from "@/server/modules/seo/routes"
 import { servicesRoutes } from "@/server/modules/services/routes"
 import { settingsRoutes } from "@/server/modules/settings/routes"
 import { usersRoutes } from "@/server/modules/users/routes"
@@ -63,6 +64,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/media", mediaRoutes)
   .route("/integrations", integrationsRoutes)
   .route("/leads", leadsRoutes)
+  .route("/seo", seoRoutes)
   .route("/revisions", revisionsRoutes)
   .route("/preview", adminPreviewRoutes)
 export type AdminApi = typeof adminRoutes

@@ -8,11 +8,12 @@ import type {
   NextUpItem,
   ShellNotification,
 } from "@/lib/schemas/api/dashboard"
+import type { SeoHealthDto } from "@/lib/schemas/api/seo"
 import { PUBLIC_SETTINGS_KEYS } from "@/lib/schemas/settings"
 import { getDb } from "@/server/db/client"
 import type { Actor } from "@/server/lib/actor"
 import { integrationReadState } from "@/server/modules/integrations/service"
-import { cachedQa } from "./content-review"
+import { cachedQa, cachedSeoHealth } from "./content-review"
 import { trendDays } from "./days"
 import * as repo from "./repo"
 
@@ -22,7 +23,26 @@ export { trendDays }
 const NAME_MAX = 60
 
 /**
- * A dashboard part that scans content (QA), or null when it
+ * Published records by their SEO checks: a failing meta description or
+ * image alt text is `missing`, any other failure `needsWork`.
+ */
+export function contentHealthOf(
+  health: Pick<SeoHealthDto, "entities">
+): NonNullable<DashboardDto["contentHealth"]> {
+  const out = { complete: 0, needsWork: 0, missing: 0 }
+  for (const entity of health.entities) {
+    if (!entity.published) continue
+    const failed = entity.results.filter((r) => !r.ok)
+    if (failed.some((r) => r.id === "description" || r.id === "alt-text"))
+      out.missing++
+    else if (failed.length) out.needsWork++
+    else out.complete++
+  }
+  return out
+}
+
+/**
+ * A dashboard part that scans content (SEO health, QA), or null when it
  * can't be computed (e.g. a settings row that no longer parses): the rest
  * of the dashboard still loads. Logs the part, the error's name and a
  * clipped message (no request data reaches these errors).
@@ -85,6 +105,7 @@ export async function getDashboard(
     can({ service: ["read"] }) ||
     can({ article: ["read"] })
   const canArticles = can({ article: ["read"] })
+  const canSeo = can({ seo: ["read"] })
   const isOwnerOrAdmin =
     actor.roles.includes("owner") || actor.roles.includes("admin")
   // The 30-day KPI is calendar-aligned: the last 30 Irish days (today so
@@ -110,6 +131,7 @@ export async function getDashboard(
     twoFactor,
     jobProblems,
     turnstile,
+    seoHealth,
     qa,
   ] = await Promise.all([
     canLeads ? repo.countLeadsFromDay(db, firstKpiDay!) : null,
@@ -137,6 +159,7 @@ export async function getDashboard(
     can({ integration: ["read"] })
       ? integrationReadState("integrations.turnstile", db)
       : null,
+    canSeo ? orNull("SEO health", cachedSeoHealth) : null,
     options.qa === false
       ? null
       : orNull("Content QA", () => contentQa(actor, can)),
@@ -252,11 +275,10 @@ export async function getDashboard(
       openLeads,
       published,
       inReview,
-      // SEO health returns with the SEO screen (Phase 8.1).
-      seoScore: null,
+      seoScore: seoHealth ? seoHealth.score : null,
     },
     enquiriesWeek,
-    contentHealth: null,
+    contentHealth: seoHealth ? contentHealthOf(seoHealth) : null,
     qa,
     nextUp,
   }
