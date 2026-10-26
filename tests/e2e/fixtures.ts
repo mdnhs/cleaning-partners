@@ -18,7 +18,9 @@ export type E2EFixtures = {
   twoFactorOff: { email: string; name: string; totpUri: string }
   /** Articles workflow (Phase 5): drafts and submits, never publishes. */
   author: { email: string; name: string }
-  // Later phases add their users here (intake, reset …).
+  /** Leads (Phase 7): sees only Dashboard, Leads and Account. */
+  intake: { email: string; name: string }
+  // Later phases add their users here (reset …).
 }
 
 /**

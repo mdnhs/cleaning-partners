@@ -107,7 +107,14 @@ await auth.api.createUser({
   body: { ...author, role: ["author"], password: E2E_PASSWORD },
 })
 
-// Later phases add the intake, demo and reset users.
+// Leads (Phase 7): an intake user (settings.leads is already seeded with
+// info@cleaningpartners.ie, the notification recipient).
+const intake = { email: "intake@e2e.test", name: "Ian Intake" }
+await auth.api.createUser({
+  body: { ...intake, role: ["intake"], password: E2E_PASSWORD },
+})
+
+// Later phases add the demo and reset users.
 
 const fixtures: E2EFixtures = {
   owner,
@@ -117,6 +124,7 @@ const fixtures: E2EFixtures = {
   account,
   author,
   twoFactorOff: { ...twoFactorOff, totpUri: twoFactorOffUri },
+  intake,
 }
 mkdirSync(dirname(FIXTURES_FILE), { recursive: true })
 writeFileSync(FIXTURES_FILE, JSON.stringify(fixtures, null, 2))

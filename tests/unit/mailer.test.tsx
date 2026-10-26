@@ -66,7 +66,7 @@ describe("email templates", () => {
     const email = (
       <InviteEmail
         logoUrl={LOGO}
-        name="Dinn Rí"
+        name="Aoife Byrne"
         inviterName="Owner One"
         url={LINK}
         expiresInDays={7}
@@ -75,7 +75,7 @@ describe("email templates", () => {
     const html = await render(email)
     const text = await render(email, { plainText: true })
     expect(html).toContain(`href="${LINK}"`)
-    expect(text).toContain("Hi Dinn Rí,")
+    expect(text).toContain("Hi Aoife Byrne,")
     expect(text).toContain("Owner One invited you")
     expect(text).toContain("expires in 7 days")
     expect(text).toContain(LINK)
@@ -111,8 +111,8 @@ describe("lead email templates (CP branding)", () => {
       adminUrl={ADMIN}
       serviceFallback="Not sure"
       lead={{
-        name: "Dinn Rí",
-        email: "dinn@example.ie",
+        name: "Aoife Byrne",
+        email: "aoife@example.com",
         phone: "085 000 0000",
         service: "Office cleaning",
         address: "12 Main Street, Portlaoise, R32 AB12",
@@ -129,11 +129,11 @@ describe("lead email templates (CP branding)", () => {
     const text = await render(notification(), { plainText: true })
     expect(html).toContain('src="http://localhost:3000/images/home/logo.png"')
     expect(html).toContain("#11b1d1")
-    expect(html).toContain('href="mailto:dinn@example.ie"')
+    expect(html).toContain('href="mailto:aoife@example.com"')
     expect(html).toContain(`href="${ADMIN}"`)
     expect(html).toContain("white-space:pre-wrap")
     expect(html).toContain("New quote request")
-    expect(text).toContain("Dinn Rí")
+    expect(text).toContain("Aoife Byrne")
     expect(text).toContain("085 000 0000")
     expect(text).toContain("Office cleaning")
     expect(text).toContain("12 Main Street, Portlaoise, R32 AB12")
@@ -321,7 +321,7 @@ describe("mailer (master 7.2)", () => {
     const info = vi.spyOn(console, "info").mockImplementation(() => undefined)
     const { deps: d } = deps()
     await createMailer(d).send({
-      to: "dinn.ri@visitor-domain.example",
+      to: "aoife.byrne@visitor-domain.example",
       subject: "We received your message – Cleaning Partners",
       template: "lead-acknowledgement",
       react: invite,
@@ -341,8 +341,8 @@ describe("mailer (master 7.2)", () => {
     const { deps: d } = deps({ loadConfig: async () => SAVED, transport })
     await createMailer(d).send({
       to: ["ops@example.ie", "hr@example.ie", "boss@corp.example"],
-      replyTo: "dinn.ri@visitor.example",
-      subject: "Website enquiry from Dinn Rí",
+      replyTo: "aoife.byrne@visitor.example",
+      subject: "Website enquiry from Aoife Byrne",
       template: "lead-notification",
       react: invite,
     })

@@ -77,7 +77,7 @@ describe("explicit secret validation", () => {
 
 describe("encryptSecret / decryptSecret", () => {
   it("round-trips, including unicode", () => {
-    for (const plain of ["smtp-pass", "", "pässwörd ☂ – Dinn Rí"]) {
+    for (const plain of ["smtp-pass", "", "pässwörd ☂ – Aoife Byrne"]) {
       expect(
         decryptSecret(encryptSecret(plain, AAD, SECRET), AAD, SECRET)
       ).toBe(plain)

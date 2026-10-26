@@ -4,8 +4,8 @@ import { LEAD_STATUSES, leadSubmission } from "@/lib/schemas/api/leads"
 import { LEAD_STATUSES as DB_LEAD_STATUSES } from "@/server/db/schema"
 
 const valid = {
-  name: "  Dinn Rí ",
-  email: " dinn@example.ie ",
+  name: "  Aoife Byrne ",
+  email: " aoife@example.com ",
   phone: " 085 000 0000 ",
   consent: true as const,
 }
@@ -25,8 +25,8 @@ describe("leadSubmission (shared Zod schema, spec §9, R7-3)", () => {
         sourcePage: "/contact",
       })
     ).toEqual({
-      name: "Dinn Rí",
-      email: "dinn@example.ie",
+      name: "Aoife Byrne",
+      email: "aoife@example.com",
       phone: "085 000 0000",
       company: null,
       address: null,
@@ -106,7 +106,7 @@ describe("leadSubmission (shared Zod schema, spec §9, R7-3)", () => {
       "\u2068",
       "\u2069",
     ]) {
-      expect(issues({ name: `Dinn${ch}Rí` })).toEqual(["name"])
+      expect(issues({ name: `Aoife${ch}Rí` })).toEqual(["name"])
       expect(issues({ company: `Acme${ch}Ltd` })).toEqual(["company"])
       expect(issues({ phone: `085${ch}000` })).toEqual(["phone"])
       expect(issues({ address: `12${ch}Main` })).toEqual(["address"])

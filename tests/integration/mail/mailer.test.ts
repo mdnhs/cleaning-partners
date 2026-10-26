@@ -16,7 +16,7 @@ const unique = (prefix: string) =>
 const LINK = "http://localhost:3000/admin/set-password?token=zz9"
 const invite = createElement(InviteEmail, {
   logoUrl: "http://localhost:3000/images/home/logo.png",
-  name: "Dinn Rí",
+  name: "Aoife Byrne",
   inviterName: "Owner",
   url: LINK,
   expiresInDays: 7,
@@ -47,7 +47,7 @@ describe("SMTP mailer against Mailpit (master 7.2)", () => {
     })
     expect(mail.ReplyTo.map((a) => a.Address)).toEqual(["visitor@example.test"])
     expect(mail.HTML).toContain(`href="${LINK}"`)
-    expect(mail.Text).toContain("Hi Dinn Rí,")
+    expect(mail.Text).toContain("Hi Aoife Byrne,")
   })
 
   it("invite email arrives in Mailpit and the API reports emailDelivered:true", async () => {
@@ -103,7 +103,7 @@ describe("SMTP mailer against Mailpit (master 7.2)", () => {
     const result = await mailer.send({
       to,
       replyTo: "visitor@example.test",
-      subject: "Quote request from Dinn Rí",
+      subject: "Quote request from Aoife Byrne",
       template: "lead-notification",
       react: createElement(LeadNotificationEmail, {
         logoUrl: "http://localhost:3000/images/home/logo.png",
@@ -111,7 +111,7 @@ describe("SMTP mailer against Mailpit (master 7.2)", () => {
           "http://localhost:3000/admin/leads/0190a6e0-0000-7000-8000-000000000001",
         serviceFallback: "Not sure",
         lead: {
-          name: "Dinn Rí",
+          name: "Aoife Byrne",
           email: "visitor@example.test",
           phone: null,
           service: null,
@@ -124,7 +124,7 @@ describe("SMTP mailer against Mailpit (master 7.2)", () => {
     })
     expect(result).toEqual({ delivered: true })
     const mail = await waitForMail(to, {
-      subject: "Quote request from Dinn Rí",
+      subject: "Quote request from Aoife Byrne",
     })
     expect(mail.ReplyTo.map((a) => a.Address)).toEqual(["visitor@example.test"])
     expect(mail.HTML).toContain("New quote request")

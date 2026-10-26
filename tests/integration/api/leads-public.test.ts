@@ -32,8 +32,8 @@ let ipCounter = 0
 const freshIp = () => `198.51.100.${++ipCounter}`
 
 const BODY = {
-  name: "Dinn Rí",
-  email: "dinn@example.ie",
+  name: "Aoife Byrne",
+  email: "aoife@example.com",
   phone: "085 000 0000",
   service: "Commercial Cleaning",
   address: "12 Main Street, Portlaoise, R32 AB12",
@@ -106,8 +106,8 @@ describe("POST /api/v1/public/leads (master 7.3)", () => {
 
     const [row] = await getDb().select().from(leads)
     expect(row).toMatchObject({
-      name: "Dinn Rí",
-      email: "dinn@example.ie",
+      name: "Aoife Byrne",
+      email: "aoife@example.com",
       phone: "085 000 0000",
       company: null,
       address: "12 Main Street, Portlaoise, R32 AB12",
@@ -144,8 +144,8 @@ describe("POST /api/v1/public/leads (master 7.3)", () => {
     expect(send).toHaveBeenCalledTimes(1)
     expect(send.mock.calls[0][0]).toMatchObject({
       to: ["info@cleaningpartners.ie"],
-      replyTo: "dinn@example.ie",
-      subject: "Quote request from Dinn Rí",
+      replyTo: "aoife@example.com",
+      subject: "Quote request from Aoife Byrne",
     })
   })
 
@@ -184,7 +184,7 @@ describe("POST /api/v1/public/leads (master 7.3)", () => {
       to: ["ops@example.ie", "hr@example.ie"],
     })
     expect(send.mock.calls[1][0]).toMatchObject({
-      to: "dinn@example.ie",
+      to: "aoife@example.com",
       subject: "We received your request – Cleaning Partners Ltd.",
     })
   })
@@ -321,7 +321,7 @@ describe("POST /api/v1/public/leads (master 7.3)", () => {
     it("the notification subject follows the published mailSubject leaf", async () => {
       expect((await post(BODY)).status).toBe(200)
       expect(send.mock.calls[0][0]).toMatchObject({
-        subject: "Quote request from Dinn Rí",
+        subject: "Quote request from Aoife Byrne",
       })
     })
   })
@@ -441,8 +441,8 @@ describe("POST /api/v1/public/leads (master 7.3)", () => {
     expect(lines.join("\n")).toContain("[mailer]")
     for (const secret of [
       ip,
-      "dinn",
-      "Dinn",
+      "aoife",
+      "Aoife",
       "Please quote",
       "085 000",
       "Main Street",
@@ -540,10 +540,10 @@ describe("staff email through SMTP (Mailpit)", () => {
     try {
       expect((await post(BODY)).status).toBe(200)
       const mail = await waitForMail(inbox, {
-        subject: "Quote request from Dinn Rí",
+        subject: "Quote request from Aoife Byrne",
       })
       expect(mail.To.map((a) => a.Address)).toEqual([inbox])
-      expect(mail.ReplyTo.map((a) => a.Address)).toEqual(["dinn@example.ie"])
+      expect(mail.ReplyTo.map((a) => a.Address)).toEqual(["aoife@example.com"])
       expect(mail.Text).toContain("Please quote for weekly office cleaning.")
       expect(mail.Text).toContain("Commercial Cleaning")
       expect(mail.Text).toContain("R32 AB12")

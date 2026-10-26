@@ -366,7 +366,7 @@ describe("DELETE /leads/:id (GDPR erasure)", () => {
         {
           conversationId: erased.id,
           role: "assistant",
-          content: "Erase Me wants guarding",
+          content: "Erase Me wants a deep clean",
         },
         { conversationId: kept.id, role: "user", content: "Summarise" },
       ])

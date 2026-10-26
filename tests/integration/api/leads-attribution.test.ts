@@ -15,8 +15,8 @@ let ipCounter = 0
 const freshIp = () => `198.51.100.${++ipCounter}`
 
 const BODY = {
-  name: "Dinn Rí",
-  email: "dinn@example.ie",
+  name: "Aoife Byrne",
+  email: "aoife@example.com",
   phone: "085 000 0000",
   message: "Please quote for weekly office cleaning.",
   consent: true,
@@ -204,7 +204,7 @@ describe("lead attribution (D3.1)", () => {
         ",Lead ID,Referrer,Landing page,UTM source,UTM medium,UTM campaign,UTM term,UTM content"
       )
     ).toBe(true)
-    const withSource = lines.find((l) => l.includes("dinn@example.ie"))!
+    const withSource = lines.find((l) => l.includes("aoife@example.com"))!
     expect(withSource).toMatch(
       /,https:\/\/www\.google\.com\/search,\/services\/office-cleaning,google,cpc,"'=HYPERLINK\(""http:\/\/evil"",""x""\)",'\+1,ad-1$/
     )
