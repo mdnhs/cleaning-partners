@@ -1,10 +1,9 @@
 import { PageHero } from "@/components/home/page-hero"
-import { Container } from "@/components/home/section-heading"
 import { SiteFooter } from "@/components/home/site-footer"
 import { SiteHeader } from "@/components/home/site-header"
 import { HomeMotion } from "@/components/motion/home-motion"
 import { SiteLocale } from "@/components/site-locale"
-import { ArticleBlocks } from "@/lib/rich-text/render"
+import { RichTextSection } from "@/templates/shared/rich-text-section"
 
 import type { LegalView } from "./view"
 
@@ -20,13 +19,7 @@ export function LegalTemplate({ view }: { view: LegalView }) {
           <SiteHeader {...view.chrome.header} />
           <main>
             <PageHero {...view.hero} />
-            <section className="bg-white px-6 pt-14 pb-20 md:px-10 lg:pt-20 lg:pb-28">
-              <Container>
-                <article className="mx-auto flex max-w-[820px] min-w-0 flex-col gap-5">
-                  <ArticleBlocks doc={view.body} checkIcon={view.checkIcon} />
-                </article>
-              </Container>
-            </section>
+            <RichTextSection doc={view.body} checkIcon={view.checkIcon} />
           </main>
           <SiteFooter {...view.chrome.footer} />
         </div>
