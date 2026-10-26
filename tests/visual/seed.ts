@@ -18,6 +18,7 @@ import {
   VISUAL_EDITOR,
   VISUAL_OWNER,
 } from "./admin-user"
+import { seedVisualBuilderPages } from "./builder-fixture"
 
 const { DATABASE_URL } = getEnv()
 assertE2eDatabase(DATABASE_URL)
@@ -25,8 +26,9 @@ const name = new URL(DATABASE_URL).pathname
 
 await runMigrations(DATABASE_URL)
 await resetDb()
-// The public content (seedContent); Phase 10 adds the builder fixture page.
+// The public content (seedContent), then the builder fixture pages (visual only).
 await seedContent(getDb())
+await seedVisualBuilderPages(getDb())
 const auth = getAuth()
 await auth.api.createUser({
   body: {
@@ -62,5 +64,5 @@ await auth.api.createUser({
 })
 await closeDb()
 console.log(
-  `[visual] ${name.slice(1)} reset and seeded (1 admin, 1 editor, 1 author, 1 owner)`
+  `[visual] ${name.slice(1)} reset and seeded (1 admin, 1 editor, 1 author, 1 owner, 2 builder pages)`
 )
