@@ -340,6 +340,9 @@ describe("ContrastPanel", () => {
     expect(row).toBeDefined()
     expect(within(row).queryByText("Fails")).not.toBeInTheDocument()
     expect(within(row).getByText(/^\d+\.\d{2}:1$/)).toBeInTheDocument()
+    // Held to a 2.5 floor: it must not claim WCAG AA.
+    expect(within(row).getByText("Floor")).toBeInTheDocument()
+    expect(within(row).queryByText("AA")).not.toBeInTheDocument()
   })
 
   it("shows a failing pair with a per-row fix that clears it", async () => {

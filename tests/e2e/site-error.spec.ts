@@ -64,7 +64,7 @@ test("a database outage renders the site-styled error page, no stack trace", asy
   page,
 }) => {
   await page.goto(`http://127.0.0.1:${PORT}/about`, {
-    waitUntil: "networkidle",
+    waitUntil: "load",
   })
   await expect(
     page.getByRole("heading", { name: "Something went wrong" })

@@ -95,7 +95,9 @@ test("marketer sees Appearance read-only", async ({ page }) => {
     page.getByRole("button", { name: "Reset to preset…" })
   ).toHaveCount(0)
   await expect(page.getByRole("button", { name: /Evergreen/ })).toBeDisabled()
-  await expect(page.getByRole("textbox", { name: "Brand" })).toBeDisabled()
+  await expect(
+    page.getByRole("textbox", { name: "Brand", exact: true })
+  ).toBeDisabled()
   // The API refuses a write as well.
   const res = await page.request.put("/api/v1/admin/appearance/draft", {
     headers: { origin: BASE_URL },

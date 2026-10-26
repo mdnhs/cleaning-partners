@@ -14,7 +14,7 @@ test.describe("public site from the database", () => {
       page.on("console", (msg) => {
         if (msg.type() === "error") errors.push(msg.text())
       })
-      const response = await page.goto(url, { waitUntil: "networkidle" })
+      const response = await page.goto(url, { waitUntil: "load" })
       expect(response?.status()).toBe(200)
       await expect(page.locator("h1").first()).toBeVisible()
       expect(errors).toEqual([])

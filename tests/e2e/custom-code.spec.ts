@@ -94,14 +94,15 @@ test.describe.serial("custom code snippets (D2.3)", () => {
       await site.goto("/blog")
       const banner = site.locator("[data-consent-banner]")
       await expect(banner).toBeVisible()
-      await site.waitForLoadState("networkidle")
+      await site.waitForLoadState("load")
       expect(await probe(site)).toBeUndefined()
 
       await banner.getByRole("button", { name: "Accept all" }).click()
       await expect.poll(() => probe(site)).toBe(1)
 
       await site.goto("/")
-      await site.waitForLoadState("networkidle")
+      await expect(site.locator("footer")).toBeVisible()
+      await site.waitForLoadState("load")
       expect(await probe(site)).toBeUndefined()
       // The loader ships on every page since the D2.3 fix (it checks the
       // route at run time, so a client navigation to /blog/* still runs
@@ -145,7 +146,8 @@ test.describe.serial("custom code snippets (D2.3)", () => {
       const visitor = await browser.newContext()
       const site = await visitor.newPage()
       await site.goto("/")
-      await site.waitForLoadState("networkidle")
+      await expect(site.locator("footer")).toBeVisible()
+      await site.waitForLoadState("load")
       expect(await probe(site)).toBeUndefined()
       await visitor.close()
     } finally {

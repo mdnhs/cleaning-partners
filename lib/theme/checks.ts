@@ -22,7 +22,9 @@ export type ContrastIssue = {
   ratio: number
   min: Min
 }
-export type PairRating = ContrastIssue & { rating: "AAA" | "AA" | "fail" }
+export type PairRating = ContrastIssue & {
+  rating: "AAA" | "AA" | "floor" | "fail"
+}
 
 // White text on the brand (`bg-brand text-white`) is 2.55:1 today and the
 // public colours are frozen, so the floor sits just under today's design.
@@ -109,8 +111,13 @@ export function tokenLabel(scope: Scope, token: string): string {
     : (ADMIN_LABELS[token as AdminToken] ?? token)
 }
 
-export function rating(ratio: number, min: Min): "AAA" | "AA" | "fail" {
+export function rating(
+  ratio: number,
+  min: Min
+): "AAA" | "AA" | "floor" | "fail" {
   if (ratio < min) return "fail"
+  // A pair held to a floor under 3 passes the floor, not WCAG AA.
+  if (min < 3 && ratio < 3) return "floor"
   return ratio >= (min < 4.5 ? 4.5 : 7) ? "AAA" : "AA"
 }
 

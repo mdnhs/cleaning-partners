@@ -23,7 +23,7 @@ import {
 import type { ThemeConfigValue } from "@/lib/theme/schema"
 import { cn } from "@/lib/utils"
 
-const BADGE = { AAA: "AAA", AA: "AA", fail: "Fails" } as const
+const BADGE = { AAA: "AAA", AA: "AA", floor: "Floor", fail: "Fails" } as const
 const MODE: Record<PairRating["scope"], string> = {
   site: "",
   "admin-light": "Light · ",

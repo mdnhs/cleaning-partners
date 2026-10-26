@@ -67,7 +67,9 @@ async function sendEnquiry(
     .fill("Please quote for a deep clean.")
   await form.getByLabel("I agree to be contacted").check()
   if (opts.honeypot)
-    await form.locator('input[name="website"]').fill(opts.honeypot, { force: true })
+    await form
+      .locator('input[name="website"]')
+      .fill(opts.honeypot, { force: true })
   await form.getByRole("button", { name: "Send Request" }).click()
   if (opts.expect === "rate-limited")
     await expect(
@@ -201,9 +203,7 @@ test("an assignee can be set from the drawer", async ({ page, browser }) => {
     drawer.getByRole("combobox", { name: "Assigned to" })
   ).toContainText(intake.name)
   await expect(
-    drawer
-      .getByRole("region", { name: "Activity" })
-      .getByText(/Assigned to/)
+    drawer.getByRole("region", { name: "Activity" }).getByText(/Assigned to/)
   ).toBeVisible()
 })
 

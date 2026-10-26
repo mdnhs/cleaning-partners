@@ -105,7 +105,8 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
   }) => {
     const requested = await stubTrackers(page)
     await page.goto("/")
-    await page.waitForLoadState("networkidle")
+    await expect(page.locator("footer")).toBeVisible()
+    await page.waitForLoadState("load")
     await expect(page.locator("[data-consent-banner]")).toHaveCount(0)
     await expect(
       page.getByRole("button", { name: "Cookie settings" })
@@ -153,7 +154,7 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
         .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
         .analyze()
       expect(axe.violations.map((v) => v.id)).toEqual([])
-      await site.waitForLoadState("networkidle")
+      await site.waitForLoadState("load")
       expect(requested).toEqual([])
 
       await banner.getByRole("button", { name: "Accept all" }).click()
@@ -186,7 +187,7 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
         .locator("[data-consent-banner]")
         .getByRole("button", { name: "Reject non-essential" })
         .click()
-      await page2.waitForLoadState("networkidle")
+      await page2.waitForLoadState("load")
       expect(none).toEqual([])
       expect(
         (await other.cookies()).find((c) => c.name === "cp_consent")?.value
@@ -232,7 +233,7 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
       await site.goto("/?cp_tracking_test=abcdefgh-1")
       const banner = site.locator("[data-consent-banner]")
       await expect(banner).toBeVisible()
-      await site.waitForLoadState("networkidle")
+      await site.waitForLoadState("load")
       const testEvents = () =>
         site.evaluate(() =>
           (
@@ -306,7 +307,7 @@ test.describe.serial("consent and tracking (master 8.3)", () => {
       await site.reload()
       const banner = site.locator("[data-consent-banner]")
       await expect(banner).toBeVisible()
-      await site.waitForLoadState("networkidle")
+      await site.waitForLoadState("load")
       expect(requested).toEqual([])
 
       await banner.getByRole("button", { name: "Accept all" }).click()

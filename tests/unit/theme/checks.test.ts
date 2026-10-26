@@ -6,6 +6,7 @@ import {
   fixAll,
   fixIssue,
   pairRatings,
+  rating,
   SITE_PAIRS,
 } from "@/lib/theme/checks"
 import { contrast } from "@/lib/theme/color"
@@ -66,6 +67,18 @@ describe("checkTheme", () => {
       new Set(["site", "admin-light", "admin-dark"])
     )
     expect(rows.every((r) => r.rating !== "fail")).toBe(true)
+  })
+
+  it("rates a floor-held pair as Floor, never AA", () => {
+    expect(rating(2.55, 2.5)).toBe("floor")
+    expect(rating(2.4, 2.5)).toBe("fail")
+    expect(rating(3.2, 2.5)).not.toBe("floor")
+    expect(rating(5, 4.5)).toBe("AA")
+    expect(rating(8, 4.5)).toBe("AAA")
+    const white = pairRatings(DEFAULT_THEME).find(
+      (r) => r.scope === "site" && r.text === "white"
+    )!
+    expect(white.rating).toBe("floor")
   })
 
   it("finds a failing site pair and explains it in words", () => {

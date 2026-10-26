@@ -8,13 +8,14 @@ import { expect, test } from "@playwright/test"
 test.describe("unknown slugs render the site's 404 page", () => {
   for (const path of ["/blog/no-such-article", "/services/no-such-service"]) {
     test(`${path} looks like an unmatched URL`, async ({ page }) => {
-      await page.goto("/this-page-does-not-exist", { waitUntil: "networkidle" })
+      await page.goto("/this-page-does-not-exist", { waitUntil: "load" })
+      await expect(page.getByRole("heading", { name: "404" })).toBeVisible()
       const unmatched = await page.screenshot({
         fullPage: true,
         animations: "disabled",
       })
 
-      const response = await page.goto(path, { waitUntil: "networkidle" })
+      const response = await page.goto(path, { waitUntil: "load" })
       expect(response?.status()).toBe(404)
       await expect(
         page.getByText("This page could not be found.")
