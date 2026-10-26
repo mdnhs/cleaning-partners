@@ -71,6 +71,7 @@ export function PageEditor({
                 kind="page"
                 id={pageKey}
                 origin={origin}
+                onFieldFocus={ctx.onSeoFieldFocus}
                 names={{
                   live: textAt(
                     ctx.record.published ?? ctx.record.draft,

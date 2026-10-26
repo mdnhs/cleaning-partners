@@ -800,8 +800,10 @@ describe("elementId in a section with a `title` field (R9-13, CP card ids)", () 
     const resolved = document.getElementById("sf-hero-title")
     expect(resolved).toBe(input)
     expect(resolved?.tagName).toBe("INPUT")
-    // The section card has its own id (`sf-<path>-card`); it never collides.
-    expect(document.getElementById("sf-hero-card")).not.toBe(input)
+    // The section card has its own id (`sf-<path>-card-title`); it never collides.
+    const cardTitle = document.getElementById("sf-hero-card-title")
+    expect(cardTitle).toBeInTheDocument()
+    expect(cardTitle).not.toBe(input)
     const dialog = await openPanel(user)
     await sendMessage(user, dialog, "Rewrite it")
     await user.click(

@@ -1,5 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query"
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -18,6 +19,7 @@ vi.mock("next/navigation", () => ({
 import { PageEditor } from "@/components/admin/pages/page-editor"
 import { makeQueryClient } from "@/components/admin/providers"
 import { draftFallbackTitle } from "@/components/admin/seo/editor-seo-tab"
+import type { FocusedTextField } from "@/components/admin/schema-form/schema-form"
 import { SeoPanel, type SeoPanelProps } from "@/components/admin/seo/seo-panel"
 import { AdminSessionProvider } from "@/components/admin/session-provider"
 import { AdminShell } from "@/components/admin/shell/admin-shell"
@@ -92,6 +94,30 @@ function renderPanel(over: Partial<SeoPanelProps> = {}) {
 }
 
 describe("SeoPanel (MK D1.4)", () => {
+  it("Insert into the SEO title marks the panel dirty and does not save (R9-14)", async () => {
+    const user = userEvent.setup()
+    let focused: FocusedTextField | null = null
+    const { onSave } = renderPanel({ onFieldFocus: (f) => (focused = f) })
+    const save = screen.getByRole("button", { name: "Save SEO" })
+    expect(save).toBeDisabled()
+    const title = screen.getByRole("textbox", { name: /^Title/ })
+    await user.click(title)
+    await waitFor(() => expect(focused).not.toBeNull())
+    expect(focused!.label).toMatch(/^Title/)
+    act(() => {
+      focused!.setValue("Commercial cleaning across Ireland")
+    })
+    expect(title).toHaveValue("Commercial cleaning across Ireland")
+    await waitFor(() => expect(save).toBeEnabled())
+    expect(onSave).not.toHaveBeenCalled()
+    await user.click(save)
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Commercial cleaning across Ireland" })
+      )
+    )
+  })
+
   it("a 20-character title fails title-length in the live checklist, without saving", async () => {
     const user = userEvent.setup()
     const { onSave } = renderPanel()

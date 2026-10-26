@@ -115,6 +115,7 @@ export function ServiceEditor({ id, origin }: { id: string; origin?: string }) {
                 kind="service"
                 id={id}
                 origin={origin}
+                onFieldFocus={ctx.onSeoFieldFocus}
                 names={{
                   live: textAt(
                     ctx.record.published ?? ctx.record.draft,

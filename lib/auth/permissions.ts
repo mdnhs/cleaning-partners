@@ -67,7 +67,7 @@ const EVERYTHING = {
  * means "own drafts only" (enforced by the articles service, Phase 5).
  * `settings:update` for editors is limited to content keys by the settings
  * service (Phase 4). `ai:use` is narrowed at runtime by
- * `integrations.ai.allowedRoles` (Phase 9).
+ * `integrations.ai.allowedRoles`.
  */
 export const ROLE_GRANTS: Record<Role, Grants> = {
   owner: EVERYTHING,

@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 
+import type { FocusedTextField } from "@/components/admin/schema-form/schema-form"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePermission } from "@/hooks/use-permission"
@@ -67,11 +68,13 @@ export function EditorSeoTab({
   id,
   origin,
   names,
+  onFieldFocus,
 }: {
   kind: SeoKind
   id: string
   origin?: string
   names: DraftNames
+  onFieldFocus?: (field: FocusedTextField) => void
 }) {
   const canEdit = usePermission({ seo: ["update"] })
   const query = useQuery({
@@ -131,6 +134,7 @@ export function EditorSeoTab({
         siteNoindex={query.data?.defaults?.siteNoindex ?? false}
         value={entry.seo}
         canEdit={canEdit}
+        onFieldFocus={onFieldFocus}
         onSave={async (next) => {
           await save(next)
         }}

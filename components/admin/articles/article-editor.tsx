@@ -127,6 +127,7 @@ export function ArticleEditor({ id, origin }: { id: string; origin?: string }) {
                 kind="article"
                 id={id}
                 origin={origin}
+                onFieldFocus={ctx.onSeoFieldFocus}
                 names={{
                   live: textAt(
                     ctx.record.published ?? ctx.record.draft,

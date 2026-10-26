@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test"
 
-import { assistantOnHomeEditor } from "./ai-pins"
+import { assistantOnHomeEditor, SAVED_SMTP } from "./ai-pins"
 import { BASE_URL } from "./env"
 import { clientIpFor, E2E_PASSWORD, greeting, readFixtures } from "./fixtures"
 
@@ -22,27 +22,6 @@ async function signIn(page: Page, who: { email: string; name: string }) {
   await expect(
     page.getByRole("heading", { name: greeting(who.name) })
   ).toBeVisible()
-}
-
-/** Pinned SMTP integration: saving it refetches the (pinned) AI status. */
-const SAVED_SMTP = {
-  key: "integrations.smtp",
-  slug: "smtp",
-  label: "Email (SMTP)",
-  description: "Sends invitations, password resets and enquiry notifications.",
-  configured: true,
-  version: 2,
-  values: {
-    host: "smtp.example.ie",
-    port: 587,
-    secure: false,
-    user: "mailer@example.ie",
-    fromName: "Cleaning Partners",
-    fromAddress: "no-reply@example.ie",
-  },
-  secrets: { password: { set: true, hint: "••••1234" } },
-  updatedAt: "2026-10-16T09:00:00.000Z",
-  updatedBy: { id: "u1", name: "Ada Admin" },
 }
 
 /** Every topbar control lies inside the topbar, which does not scroll. */

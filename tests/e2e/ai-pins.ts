@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test"
 
 /**
- * The AI assistant, pinned (Phase 9) for the visual and axe matrices. The
+ * The AI assistant, pinned for the visual and axe matrices. The
  * seeded databases have no `integrations.ai` row, so the panel layout says
  * "off" and the topbar shows no button (every other baseline unchanged).
  * Saving an integration refetches the assistant status, which is pinned
@@ -17,7 +17,7 @@ export const AI_ON = {
 }
 
 export const AI_REPLY =
-  "“A spotless workplace, every day”\n\nShorter and clearer. Two more options:\n• Cleaning that never cuts corners\n• Spotless Irish workplaces, day after day"
+  "“A spotless workplace, every day”\n\nShorter and clearer. Two more options:\n- Cleaning that never cuts corners\n- Spotless Irish workplaces, day after day"
 
 const ndjson = (...events: unknown[]) =>
   events.map((event) => `${JSON.stringify(event)}\n`).join("")
@@ -146,4 +146,25 @@ export async function askAssistant(
   await expect(
     panel.getByRole("button", { name: "Send", exact: true })
   ).toBeVisible()
+}
+
+/** Pinned SMTP integration: saving it refetches the (pinned) AI status. */
+export const SAVED_SMTP = {
+  key: "integrations.smtp",
+  slug: "smtp",
+  label: "Email (SMTP)",
+  description: "Sends invitations, password resets and enquiry notifications.",
+  configured: true,
+  version: 2,
+  values: {
+    host: "smtp.example.ie",
+    port: 587,
+    secure: false,
+    user: "mailer@example.ie",
+    fromName: "Cleaning Partners",
+    fromAddress: "no-reply@example.ie",
+  },
+  secrets: { password: { set: true, hint: "••••1234" } },
+  updatedAt: "2026-10-16T09:00:00.000Z",
+  updatedBy: { id: "u1", name: "Ada Admin" },
 }

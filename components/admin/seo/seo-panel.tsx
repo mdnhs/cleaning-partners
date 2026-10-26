@@ -6,7 +6,10 @@ import { toast } from "sonner"
 import { UnsavedGuard } from "@/components/admin/editor/unsaved-guard"
 import { useMediaItem } from "@/components/admin/media/use-media-item"
 import { FORM_ACTION } from "@/components/admin/page-header"
-import { SchemaForm } from "@/components/admin/schema-form/schema-form"
+import {
+  type FocusedTextField,
+  SchemaForm,
+} from "@/components/admin/schema-form/schema-form"
 import { Button } from "@/components/ui/button"
 import { ApiError, errorMessage } from "@/lib/api-client"
 import { type Seo, seo as seoSchema } from "@/lib/schemas/common"
@@ -43,6 +46,11 @@ export type SeoPanelProps = {
   defaultImageId?: string | null
   /** The site robots mode is noindex (SEO › Defaults): fails "indexable". */
   siteNoindex?: boolean
+  /**
+   * A text field gained focus (AI assistant Insert). Inserting sets the
+   * panel's own draft like typing: dirty, saved with "Save SEO".
+   */
+  onFieldFocus?: (field: FocusedTextField) => void
 }
 
 /** The checks the panel can evaluate locally while typing. */
@@ -106,6 +114,7 @@ export function SeoPanel({
   defaultDescription,
   defaultImageId,
   siteNoindex = false,
+  onFieldFocus,
 }: SeoPanelProps) {
   const [draft, setDraft] = useState<Seo>(value)
   const [errors, setErrors] = useState<Record<string, string[]>>({})
@@ -197,6 +206,7 @@ export function SeoPanel({
             resetKey={resetKey}
             disabled={!canEdit || saving}
             idPrefix={`seo-${kind}-${id}`}
+            onFieldFocus={canEdit ? onFieldFocus : undefined}
           />
           {canEdit ? (
             <Button

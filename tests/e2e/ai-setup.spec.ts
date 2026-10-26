@@ -1,6 +1,12 @@
 import { expect, type Page, test } from "@playwright/test"
 
 import { E2E_OWNER } from "./admin-accounts"
+import {
+  askAssistant,
+  assistantOnHomeEditor,
+  openAssistant,
+  SAVED_SMTP,
+} from "./ai-pins"
 import { clientIpFor, E2E_PASSWORD, readFixtures } from "./fixtures"
 
 // MK parity C7: the assistant is discoverable before it is set up. The e2e
@@ -48,5 +54,39 @@ test("an editor sees no sparkle button", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
   await expect(page.getByRole("button", { name: "AI assistant" })).toHaveCount(
     0
+  )
+})
+
+test("Insert writes the pinned reply into the focused hero field and the draft autosaves", async ({
+  page,
+}) => {
+  await signIn(page, E2E_OWNER.email)
+  const { field } = await assistantOnHomeEditor(page, SAVED_SMTP)
+  const original = await field.inputValue()
+  const panel = await openAssistant(page)
+  await askAssistant(page, panel)
+  const saved = page.waitForRequest(
+    (r) =>
+      r.method() === "PUT" &&
+      r.url().endsWith("/api/v1/admin/pages/home/draft"),
+    { timeout: 10_000 }
+  )
+  await panel.getByRole("button", { name: /^Insert into / }).click()
+  await expect(field).toHaveValue(/spotless/i)
+  const body = (await saved).postData() ?? ""
+  expect(body).toMatch(/spotless/i)
+  // Put the shared e2e database's home draft back for the other specs.
+  const restored = page.waitForRequest(
+    (r) =>
+      r.method() === "PUT" &&
+      r.url().endsWith("/api/v1/admin/pages/home/draft") &&
+      (r.postData() ?? "").includes(original),
+    { timeout: 10_000 }
+  )
+  await page.keyboard.press("Escape")
+  await field.fill(original)
+  await restored
+  await expect(page.getByRole("status", { name: /^Save status/ })).toHaveText(
+    /Saved/
   )
 })

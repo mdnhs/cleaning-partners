@@ -124,6 +124,12 @@ export type EditorActionContext<Dto> = {
   showAllErrors: () => boolean
   /** True while the form may be edited. */
   canEdit: boolean
+  /**
+   * The SEO tab's panel passes this to its fields (AI assistant Insert).
+   * An insert lands in the panel's own draft; the user saves it there, so
+   * unlike the content form it never autosaves.
+   */
+  onSeoFieldFocus: (field: FocusedTextField) => void
 }
 
 /**
@@ -237,6 +243,16 @@ function LoadedEditor<Dto extends VersionedDto<unknown>>({
         markTouched()
         return field.setValue(text)
       },
+    })
+  const onSeoFieldFocus = (field: FocusedTextField) =>
+    assistant.setField({
+      path: `seo.${field.path}`,
+      label: `SEO ${field.label.toLowerCase()}`,
+      maxLength: field.maxLength,
+      multiline: field.multiline,
+      elementId: field.elementId,
+      read: field.read,
+      apply: field.setValue,
     })
   const onFormChange = (value: unknown) => {
     if (!touched.current) {
@@ -411,6 +427,7 @@ function LoadedEditor<Dto extends VersionedDto<unknown>>({
     },
     showAllErrors,
     canEdit: props.canEdit,
+    onSeoFieldFocus,
   }
   // Rendered by a child (Slot): the context's functions read refs, which
   // only event handlers may call, never this render.
