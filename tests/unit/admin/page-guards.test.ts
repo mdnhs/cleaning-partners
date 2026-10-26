@@ -61,6 +61,10 @@ const FINER_CHECKS: Record<string, string> = {
 const EXPECTED: Record<string, PermissionRequest | null> = {
   "page.tsx": null,
   "account/page.tsx": null,
+  "activity/page.tsx": { audit: ["read"] },
+  "help/page.tsx": null,
+  "users/page.tsx": { user: ["read"] },
+  "users/[id]/page.tsx": { user: ["read"] },
   "pages/page.tsx": { page: ["read"] },
   "pages/[key]/page.tsx": { page: ["read"] },
   "collections/page.tsx": { collection: ["read"] },

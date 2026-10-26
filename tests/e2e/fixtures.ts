@@ -31,8 +31,11 @@ export function readFixtures(): E2EFixtures {
   return JSON.parse(readFileSync(FIXTURES_FILE, "utf8")) as E2EFixtures
 }
 
-/** The placeholder panel's h1 (Phase 4's dashboard greeting replaces it). */
+/** The dashboard's h1: "Good morning, Edith" (time of day in Ireland, first name). */
 export function greeting(name: string): RegExp {
-  const escaped = name.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-  return new RegExp(`^Welcome, ${escaped}$`)
+  const first = name
+    .trim()
+    .split(/\s+/)[0]!
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  return new RegExp(`^Good (morning|afternoon|evening), ${first}$`)
 }

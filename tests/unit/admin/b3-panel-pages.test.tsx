@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
  * MK parity B3 (settings pins): the Settings section index and the
  * [key] page, rendered as server components with the session and
  * navigation mocked. Other panel pages are pinned by the task that ships
- * them (activity 4.7, marketing/AI/integrations 7-9).
+ * them (marketing/AI/integrations 7-9).
  */
 const nav = vi.hoisted(() => ({
   redirect: vi.fn((to: string) => {
@@ -34,7 +34,10 @@ vi.mock("@/components/admin/settings/settings-editor", () => ({
   SettingsEditor: () => null,
 }))
 
+import ActivityPage from "@/app/(admin)/admin/(panel)/activity/page"
 import CollectionsPage from "@/app/(admin)/admin/(panel)/collections/page"
+import UserPage from "@/app/(admin)/admin/(panel)/users/[id]/page"
+import UsersPage from "@/app/(admin)/admin/(panel)/users/page"
 import SettingsKeyPage from "@/app/(admin)/admin/(panel)/settings/[key]/page"
 import SettingsPage from "@/app/(admin)/admin/(panel)/settings/page"
 import { SettingsEditor } from "@/components/admin/settings/settings-editor"
@@ -132,4 +135,35 @@ describe("/admin/settings/[key]", () => {
       expect(out!.props).toMatchObject({ settingsKey: key })
     }
   )
+})
+
+describe("dashboard, help, activity and users pages (4.7)", () => {
+  it("/admin/activity needs audit:read", async () => {
+    await inner(ActivityPage())
+    expect(session.requirePermission).toHaveBeenCalledWith({
+      audit: ["read"],
+    })
+    session.roles = ["editor"]
+    await expect(inner(ActivityPage())).rejects.toThrow("FORBIDDEN")
+  })
+
+  it("/admin/users and /admin/users/[id] need user:read; a bad id 404s after the check", async () => {
+    await inner(UsersPage())
+    expect(session.requirePermission).toHaveBeenCalledWith({ user: ["read"] })
+    session.roles = ["editor"]
+    await expect(inner(UsersPage())).rejects.toThrow("FORBIDDEN")
+    await expect(
+      inner(UserPage({ params: params({ id: "not-a-uuid" }) } as never))
+    ).rejects.toThrow("FORBIDDEN")
+    session.roles = ["owner"]
+    await expect(
+      inner(UserPage({ params: params({ id: "not-a-uuid" }) } as never))
+    ).rejects.toThrow("NOT_FOUND")
+  })
+
+  it("the dashboard and Help open for every signed-in role", async () => {
+    session.roles = ["viewer"]
+    expect(permissionFor("/admin")).toBeNull()
+    expect(permissionFor("/admin/help")).toBeNull()
+  })
 })

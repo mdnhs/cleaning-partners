@@ -1,28 +1,42 @@
 import type { Metadata } from "next"
+import { connection } from "next/server"
 import { Suspense } from "react"
 
+import { Dashboard } from "@/components/admin/dashboard/dashboard"
+import { DashboardSkeleton } from "@/components/admin/dashboard/dashboard-skeleton"
+import { firstName } from "@/components/admin/dashboard/present"
 import { requirePage, requireSession } from "@/server/auth/session"
 
 export const metadata: Metadata = { title: "Dashboard" }
 
-/** Placeholder landing page until the Phase 4 dashboard (Task 4.7). */
+/** Dashboard in the JW layout: greeting, KPIs, trend, Next up. */
 export default function DashboardPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <>
+          <p role="status" className="sr-only">
+            Loading dashboard…
+          </p>
+          <DashboardSkeleton />
+        </>
+      }
+    >
       <Welcome />
     </Suspense>
   )
 }
 
+// The greeting depends on the time of day: request time, never the static
+// shell; the client renders the same words from `renderedAt`.
 async function Welcome() {
   await requirePage("/admin")
   const { user } = await requireSession()
+  await connection()
   return (
-    <section className="flex flex-col gap-2">
-      <h1 className="text-2xl font-bold">Welcome, {user.name}</h1>
-      <p className="text-muted-foreground">
-        You are signed in to the Cleaning Partners admin.
-      </p>
-    </section>
+    <Dashboard
+      firstName={firstName(user.name)}
+      renderedAt={new Date().toISOString()}
+    />
   )
 }

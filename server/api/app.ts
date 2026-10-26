@@ -22,6 +22,7 @@ import {
   teamRoutes,
   testimonialsRoutes,
 } from "@/server/modules/collections/routes"
+import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
 import { mediaFileRoutes, mediaRoutes } from "@/server/modules/media/routes"
 import { pagesRoutes } from "@/server/modules/pages/routes"
@@ -42,6 +43,7 @@ import { usersRoutes } from "@/server/modules/users/routes"
  */
 export const adminRoutes = new Hono<AppEnv>()
   .route("/audit", auditRoutes)
+  .route("/dashboard", dashboardRoutes)
   .route("/users", usersRoutes)
   .route("/search", searchRoutes)
   .route("/pages", pagesRoutes)
