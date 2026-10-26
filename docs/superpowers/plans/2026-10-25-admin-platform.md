@@ -329,7 +329,7 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
   - **Phase 4 outcome (final).** Deferrals by owning phase:
     - **6:** port the media library, R2 driver and migrate. Restore `getStorage(db)` / `storageFor(driver, db)` and `migrateDiskMediaToR2` plus the migration-status functions. Fix the stale R2 comments and `deleteStoredFile` throwing for R2 rows after commit. Port the R2 tests.
     - **7:** leads badge (bell and shell extras for leads); dashboard lead test through the public endpoint.
-    - **8:** the public `publicGate` in `proxy.ts` (set and strip `x-cp-path`, plus an e2e for preview exit `?to`); the SEO tab in page and service editors and the dashboard SEO score (8.1); service `recordMove` plus the redirects tag (8.2).
+    - **8:** the public `publicGate` in `proxy.ts` (set and strip `x-cp-path`, plus an e2e for preview exit `?to`); the SEO tab in page and service editors and the dashboard SEO score (8.1); service and article `recordMove` plus the redirects tag (8.2).
     - **9:** AI hooks in versioned-editor, ⌘J, AI Next-up.
     - **10:** builder keywords, the "New page" palette action, Copy to new page, `pages/custom/[id]`.
     - **11.5:** the Help "Guides" card, once `docs/runbook.md` exists.
