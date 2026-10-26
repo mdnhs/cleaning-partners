@@ -14,15 +14,17 @@ import {
   clientsView,
   contactSectionView,
   hrefView,
-  linkView,
+  howItWorksView,
   pageHeroView,
   placeholders,
   quoteCardView,
+  servicePath,
+  servicesGridView,
   testimonialsView,
   whyChooseUsView,
 } from "@/templates/shared/views"
 
-export const servicePath = (slug: string) => `/services/${slug}`
+export { servicePath }
 
 export type ServicesView = {
   chrome: ChromeView
@@ -37,39 +39,10 @@ export type ServicesView = {
 export function servicesView(s: SiteSources): ServicesView {
   const page = s.pages.services.data
   const { grid } = page
-  const values = placeholders(s)
   return {
     chrome: chromeView(s),
     hero: pageHeroView(s, page.hero),
-    grid: {
-      eyebrow: grid.eyebrow,
-      title: grid.title,
-      intro: grid.intro,
-      priceBadge: grid.priceBadge,
-      services: s.services.map((service) => ({
-        slug: service.slug,
-        title: service.content.title,
-        icon: service.content.icon.url,
-        summary: service.content.summary,
-        tags: service.content.tags,
-        href: servicePath(service.slug),
-        learnMoreAria: interpolate(grid.learnMoreAria, {
-          title: service.content.title,
-        }),
-      })),
-      learnMore: grid.learnMore,
-      quoteCta: linkView(s, grid.quoteCta),
-      helpCard: {
-        icon: grid.helpCard.icon.url,
-        title: grid.helpCard.title,
-        body: grid.helpCard.body,
-        cta: linkView(s, grid.helpCard.cta),
-        call: {
-          label: interpolate(grid.helpCard.callLabel, values),
-          href: String(values.officeHref),
-        },
-      },
-    },
+    grid: servicesGridView(s, grid),
     whyChooseUs: whyChooseUsView(s),
     clients: clientsView(s),
     testimonials: testimonialsView(s),
@@ -98,7 +71,6 @@ export function serviceDetailView(
   const { detail } = s.pages.services.data
   const { contact, microcopy } = s.settings
   const values = placeholders(s)
-  const howItWorks = s.settings["sections.howItWorks"]
   return {
     chrome: chromeView(s),
     hero: pageHeroView(
@@ -146,11 +118,7 @@ export function serviceDetailView(
         phoneHref: String(values.phone24hHref),
       },
     },
-    howItWorks: {
-      eyebrow: howItWorks.eyebrow,
-      title: howItWorks.title,
-      steps: howItWorks.steps,
-    },
+    howItWorks: howItWorksView(s),
     whyChooseUs: whyChooseUsView(s),
     testimonials: testimonialsView(s),
     contact: contactSectionView(s),

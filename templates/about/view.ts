@@ -12,10 +12,10 @@ import {
   chromeView,
   clientsView,
   contactSectionView,
-  linkView,
+  ourStoryView,
   pageHeroView,
+  statsView,
   teamView,
-  textView,
   testimonialsView,
   whyChooseUsView,
 } from "@/templates/shared/views"
@@ -38,22 +38,8 @@ export function aboutView(s: SiteSources): AboutView {
   return {
     chrome: chromeView(s),
     hero: pageHeroView(s, page.hero),
-    story: {
-      imageA: { src: story.imageA.url, alt: story.imageAAlt },
-      imageB: { src: story.imageB.url, alt: story.imageBAlt },
-      eyebrow: story.eyebrow,
-      title: story.title,
-      paragraphs: story.paragraphs,
-      sectorsHeading: story.sectorsHeading,
-      sectors: story.sectors,
-      cta: linkView(s, story.cta),
-    },
-    stats: {
-      stats: page.stats.map((stat) => ({
-        ...stat,
-        label: textView(s, stat.label),
-      })),
-    },
+    story: ourStoryView(s, story),
+    stats: statsView(s, page.stats),
     clients: clientsView(s),
     whyChooseUs: whyChooseUsView(s),
     team: teamView(s),

@@ -1,24 +1,185 @@
 import { z } from "zod"
 
-import { defineBlock } from "./define-block"
-import { mediaRef, richText, text } from "./fields"
+import { pageHeroText, text as copyText } from "@/lib/schemas/common"
+import { aboutTemplate } from "@/templates/about/schema"
+import { homeTemplate } from "@/templates/home/schema"
+import { servicesTemplate } from "@/templates/services/schema"
 
-// Two-block stub so the block machinery (document, media refs) can run.
-// Task 2 replaces this file with the full CP block library.
+import { defineBlock } from "./define-block"
+import { mediaRef, richText, sharedOnly } from "./fields"
+
+// One block per existing public section (R10-2). The renderer maps each to
+// its component through templates/shared/views.ts; API validation, the admin
+// library and the types all read this list. Field schemas are the fixed
+// pages' own (R10-4), so a copied page always fits.
+
+const hero = defineBlock({
+  type: "hero",
+  label: "Hero",
+  icon: "Image",
+  description: "The home page's opening banner with headline and buttons.",
+  schema: homeTemplate.shape.hero,
+  defaults: {
+    title: "",
+    subtitle: "",
+    primaryCta: { label: "", href: "" },
+    secondaryCta: { label: "", href: "" },
+    memberLabel: "",
+    memberLogoAlt: "",
+  },
+  first: true,
+  max: 1,
+})
 
 const heroPage = defineBlock({
   type: "hero.page",
   label: "Page hero",
   icon: "PanelTop",
   description: "Banner image with breadcrumb, title and intro.",
-  schema: z.object({
-    image: mediaRef,
-    crumb: text(40),
-    title: text(80),
-    description: text(240),
-  }),
-  defaults: { crumb: "", title: "", description: "" },
+  // No image = the site's default hero image, as the about and contact pages.
+  schema: pageHeroText.extend({ image: mediaRef.nullable() }),
+  defaults: { image: null, crumb: "", title: "", description: "" },
   first: true,
+  max: 1,
+})
+
+const ourStory = defineBlock({
+  type: "ourStory",
+  label: "Our story",
+  icon: "BookOpen",
+  description: "Two photos, the company story and the sectors it serves.",
+  schema: aboutTemplate.shape.story,
+  defaults: {
+    imageAAlt: "",
+    imageBAlt: "",
+    eyebrow: "",
+    title: "",
+    paragraphs: { type: "doc", content: [] },
+    sectorsHeading: "",
+    sectors: [],
+    cta: { label: "", href: "" },
+  },
+})
+
+const stats = defineBlock({
+  type: "stats",
+  label: "Stats",
+  icon: "ChartColumn",
+  description: "A band of figures, each with a label.",
+  schema: z.object({ items: aboutTemplate.shape.stats }),
+  defaults: { items: [{ value: "", label: "" }] },
+})
+
+const services = defineBlock({
+  type: "services",
+  label: "Services",
+  icon: "BriefcaseBusiness",
+  description: "The services intro or the card grid of published services.",
+  schema: z
+    .object({
+      layout: z.enum(["intro", "grid"]),
+      intro: homeTemplate.shape.services.nullable(),
+      grid: servicesTemplate.shape.grid.nullable(),
+    })
+    .superRefine((data, ctx) => {
+      if (data[data.layout] === null)
+        ctx.addIssue({
+          code: "custom",
+          message: "Required",
+          path: [data.layout],
+        })
+    }),
+  defaults: { layout: "grid", intro: null, grid: null },
+  max: 1,
+})
+
+const whyChooseUs = defineBlock({
+  type: "whyChooseUs",
+  label: "Why choose us",
+  icon: "BadgeCheck",
+  description: "The shared Why choose us section.",
+  schema: sharedOnly,
+  defaults: { useShared: true },
+  max: 1,
+})
+
+const clients = defineBlock({
+  type: "clients",
+  label: "Clients",
+  icon: "Handshake",
+  description: "The shared client logo strip.",
+  schema: sharedOnly,
+  defaults: { useShared: true },
+  max: 1,
+})
+
+const team = defineBlock({
+  type: "team",
+  label: "Team",
+  icon: "Users",
+  description: "The published team members.",
+  schema: sharedOnly,
+  defaults: { useShared: true },
+  max: 1,
+})
+
+const testimonials = defineBlock({
+  type: "testimonials",
+  label: "Testimonials",
+  icon: "MessageSquareQuote",
+  description: "The published customer testimonials.",
+  schema: sharedOnly,
+  defaults: { useShared: true },
+  max: 1,
+})
+
+const blog = defineBlock({
+  type: "blog",
+  label: "Blog",
+  icon: "Newspaper",
+  description: "The latest published articles.",
+  schema: homeTemplate.shape.blog,
+  defaults: { eyebrow: "", title: "", description: "", count: 3 },
+  max: 1,
+})
+
+const howItWorks = defineBlock({
+  type: "howItWorks",
+  label: "How it works",
+  icon: "ListOrdered",
+  description: "The shared step-by-step section.",
+  schema: sharedOnly,
+  defaults: { useShared: true },
+  max: 1,
+})
+
+const contact = defineBlock({
+  type: "contact",
+  label: "Contact",
+  icon: "Contact",
+  description: "Contact details, socials and the quote box.",
+  schema: z.object({ useShared: z.literal(true), title: copyText.nullable() }),
+  defaults: { useShared: true, title: null },
+  max: 1,
+})
+
+const quoteForm = defineBlock({
+  type: "quoteForm",
+  label: "Quote form",
+  icon: "ClipboardList",
+  description: "The request-a-quote form with the contact page's copy.",
+  schema: sharedOnly,
+  defaults: { useShared: true },
+  max: 1,
+})
+
+const map = defineBlock({
+  type: "map",
+  label: "Location map",
+  icon: "MapPin",
+  description: "The shared location map.",
+  schema: sharedOnly,
+  defaults: { useShared: true },
   max: 1,
 })
 
@@ -41,7 +202,23 @@ const richtext = defineBlock({
   defaults: {},
 })
 
-export const BLOCKS = [heroPage, richtext] as const
+export const BLOCKS = [
+  hero,
+  heroPage,
+  ourStory,
+  stats,
+  services,
+  whyChooseUs,
+  clients,
+  team,
+  testimonials,
+  blog,
+  howItWorks,
+  contact,
+  quoteForm,
+  map,
+  richtext,
+] as const
 
 type AnyBlock = (typeof BLOCKS)[number]
 export type BlockType = AnyBlock["type"]
@@ -68,9 +245,17 @@ export const Anchor = z
 
 /**
  * Section ids a shared section renders itself. Only the owning block may use
- * one as its anchor. The stub has no owning blocks yet (Task 2 fills this).
+ * one as its anchor, else the page has two elements with that id. `top` is
+ * the header's id and belongs to no block. validateDocument and
+ * DraftDocument enforce it; the builder UI too.
  */
-export const RESERVED_ANCHORS: Readonly<Record<string, BlockType>> = {}
+export const RESERVED_ANCHORS: Readonly<Record<string, BlockType>> = {
+  services: "services",
+  team: "team",
+  blog: "blog",
+  contact: "contact",
+  quote: "quoteForm",
+}
 
 /** Why `type` may not use `anchor`, or null. */
 export function reservedAnchorProblem(
@@ -97,7 +282,20 @@ const instance = <const T extends string, S extends z.ZodType>(block: {
   })
 
 export const BlockInstance = z.discriminatedUnion("type", [
+  instance(hero),
   instance(heroPage),
+  instance(ourStory),
+  instance(stats),
+  instance(services),
+  instance(whyChooseUs),
+  instance(clients),
+  instance(team),
+  instance(testimonials),
+  instance(blog),
+  instance(howItWorks),
+  instance(contact),
+  instance(quoteForm),
+  instance(map),
   instance(richtext),
 ])
 export type BlockInstance = z.infer<typeof BlockInstance>

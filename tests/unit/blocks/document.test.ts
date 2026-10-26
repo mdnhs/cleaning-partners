@@ -6,7 +6,12 @@ import {
   emptyBlock,
   validateDocument,
 } from "@/blocks/document"
-import { BLOCKS, BlockId, type BlockInstance } from "@/blocks/registry"
+import {
+  BLOCKS,
+  BlockId,
+  type BlockInstance,
+  RESERVED_ANCHORS,
+} from "@/blocks/registry"
 
 const none = { blocks: [] as { anchor: string }[] }
 const MEDIA = "0b8a3c4e-1f2d-4a5b-8c6d-7e8f9a0b1c2d"
@@ -22,6 +27,13 @@ const richtext = (id: string, anchor: string): BlockInstance => ({
       content: [{ type: "paragraph", content: [{ type: "text", text: "Hi" }] }],
     },
   },
+})
+const map = (id: string, anchor = "map"): BlockInstance => ({
+  id,
+  type: "map",
+  anchor,
+  hidden: false,
+  data: { useShared: true },
 })
 const hero = (id: string): BlockInstance => ({
   id,
@@ -58,6 +70,8 @@ describe("validateDocument", () => {
     const dup = validateDocument({
       blocks: [
         hero("hero-1"),
+        map("map-1"),
+        map("map-2", "map-two"),
         { ...hero("hero-2"), anchor: "hero-two" },
         richtext("text-1", "intro"),
         richtext("text-1", "intro"),
@@ -65,14 +79,17 @@ describe("validateDocument", () => {
     })
     expect(dup.ok).toBe(false)
     if (!dup.ok) {
-      expect(dup.fieldErrors["blocks.1.type"]).toEqual([
+      expect(dup.fieldErrors["blocks.2.type"]).toEqual([
+        "At most 1 Location map per page",
+      ])
+      expect(dup.fieldErrors["blocks.3.type"]).toEqual([
         "Page hero must be the first block",
         "At most 1 Page hero per page",
       ])
-      expect(dup.fieldErrors["blocks.3.id"]).toEqual([
+      expect(dup.fieldErrors["blocks.5.id"]).toEqual([
         "Two blocks share this id",
       ])
-      expect(dup.fieldErrors["blocks.3.anchor"]).toEqual([
+      expect(dup.fieldErrors["blocks.5.anchor"]).toEqual([
         'Anchor "intro" is already used on this page',
       ])
       expect(dup.fieldErrors["blocks.0.type"]).toBeUndefined()
@@ -122,6 +139,10 @@ describe("emptyBlock", () => {
 
   it("turns the type into a valid anchor", () => {
     expect(emptyBlock("hero.page", none).anchor).toBe("hero-page")
+    expect(emptyBlock("whyChooseUs", none).anchor).toBe("why-choose-us")
+    expect(emptyBlock("howItWorks", none).anchor).toBe("how-it-works")
+    expect(emptyBlock("ourStory", none).anchor).toBe("our-story")
+    expect(emptyBlock("quoteForm", none).anchor).toBe("quote-form")
   })
 
   it("every block starts with draft-valid data that publish still refuses until filled", () => {
@@ -130,13 +151,28 @@ describe("emptyBlock", () => {
       expect(block.type).toBe(type)
       expect(DraftDocument.safeParse({ blocks: [block] }).success).toBe(true)
     }
-    const fresh = emptyBlock("hero.page", none)
-    expect(BuilderDocument.safeParse({ blocks: [fresh] }).success).toBe(false)
+    for (const type of [
+      "whyChooseUs",
+      "clients",
+      "team",
+      "testimonials",
+      "howItWorks",
+      "quoteForm",
+      "map",
+      "contact",
+    ] as const) {
+      const block = emptyBlock(type, none)
+      expect(BuilderDocument.safeParse({ blocks: [block] }).success).toBe(true)
+    }
+    for (const type of ["hero", "hero.page", "ourStory", "blog"] as const) {
+      const fresh = emptyBlock(type, none)
+      expect(BuilderDocument.safeParse({ blocks: [fresh] }).success).toBe(false)
+    }
   })
 
   it("does not share default objects between blocks", () => {
-    const a = emptyBlock("richtext", none)
-    const b = emptyBlock("richtext", none)
+    const a = emptyBlock("stats", none)
+    const b = emptyBlock("stats", none)
     expect(a.data).toEqual(b.data)
     expect(a.data).not.toBe(b.data)
   })
@@ -239,11 +275,67 @@ describe("document rules: hardening (D5.1 review)", () => {
   })
 })
 
-describe("reserved anchors", () => {
-  it("accept any well-formed anchor while no block owns a reserved one", () => {
+describe("reserved anchors (server-side too)", () => {
+  const owned = (
+    type: "services" | "team" | "contact" | "quoteForm",
+    anchor: string
+  ): BlockInstance => ({ ...emptyBlock(type, none), id: `${type}-1`, anchor })
+
+  it.each(["services", "team", "blog", "contact", "quote"])(
+    "validateDocument refuses %s on a block that does not own it",
+    (anchor) => {
+      const r = validateDocument({
+        blocks: [hero("hero-1"), richtext("text-1", anchor)],
+      })
+      expect(r.ok).toBe(false)
+      if (r.ok) return
+      expect(r.fieldErrors["blocks.1.anchor"]).toEqual([
+        expect.stringMatching(
+          new RegExp(`^"${anchor}" is kept for the .+ section$`)
+        ),
+      ])
+    }
+  )
+
+  it("top belongs to the header and to no block", () => {
+    expect(RESERVED_ANCHORS).not.toHaveProperty("top")
+    expect(
+      validateDocument({ blocks: [hero("hero-1"), richtext("text-1", "top")] })
+        .ok
+    ).toBe(true)
+  })
+
+  it("the owning block may use its own id", () => {
     const r = validateDocument({
-      blocks: [hero("hero-1"), richtext("text-1", "about")],
+      blocks: [
+        hero("hero-1"),
+        owned("team", "team"),
+        owned("quoteForm", "quote"),
+        map("map-1"),
+      ],
     })
     expect(r.ok).toBe(true)
+  })
+
+  it("DraftDocument (save, restore, copy seed) refuses it on the anchor's path", () => {
+    const r = DraftDocument.safeParse({
+      blocks: [{ ...map("map-1"), anchor: "contact" }],
+    })
+    expect(r.success).toBe(false)
+    expect(r.error?.issues[0]).toMatchObject({
+      path: ["blocks", 0, "anchor"],
+      message: '"contact" is kept for the Contact section',
+    })
+    expect(
+      DraftDocument.safeParse({ blocks: [owned("contact", "contact")] }).success
+    ).toBe(true)
+  })
+
+  it("an unowned anchor stays free", () => {
+    expect(
+      validateDocument({
+        blocks: [hero("hero-1"), richtext("text-1", "about")],
+      }).ok
+    ).toBe(true)
   })
 })
