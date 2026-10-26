@@ -1,5 +1,6 @@
 import "server-only"
 
+import { backupJob } from "./backup"
 import { deleteRetiredMediaJob } from "./delete-retired-media"
 import { migrateMediaJob } from "./migrate-media"
 import { publishScheduledJob } from "./publish-scheduled"
@@ -28,14 +29,12 @@ export type JobDefinition = {
   run(ctx: JobContext): Promise<JobResult>
 }
 
-/**
- * Spec §12 recurring jobs. backup arrives in 11.1: it is added here when
- * its module exists.
- */
+/** Spec §12 recurring jobs. */
 export const RECURRING_JOBS: readonly JobDefinition[] = [
   publishScheduledJob,
   pruneRevisionsJob,
   purgeLeadsJob,
+  backupJob,
 ]
 
 /** One-off jobs queued by a request (enqueueKeyedJob); tick() runs them, ensureRecurringJobs never creates them. */

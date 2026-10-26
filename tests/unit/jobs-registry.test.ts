@@ -10,11 +10,13 @@ describe("job registry (Phases 5 and 7)", () => {
       ["publish-scheduled", 30_000],
       ["prune-revisions", 24 * 60 * 60_000],
       ["purge-leads", 24 * 60 * 60_000],
+      ["backup", 24 * 60 * 60_000],
     ])
     expect(ALL_JOBS.map((j) => j.name)).toEqual([
       "publish-scheduled",
       "prune-revisions",
       "purge-leads",
+      "backup",
       "migrate-media",
       "delete-retired-media",
     ])

@@ -16,11 +16,12 @@ const SKIP = new Set([
 ])
 
 /**
- * Files allowed to touch the AWS SDK S3 packages. Later files (the backup
- * store in 11.1, the migrate job in 6.4) must be added here explicitly, after
+ * Files allowed to touch the AWS SDK S3 packages. Later files (the migrate job
+ * in 6.4) must be added here explicitly, after
  * review of how they confine keys to cp/.
  */
 const ALLOWED = new Set([
+  "server/lib/backup/store.ts",
   "server/lib/r2-client.ts",
   "server/lib/storage/r2.ts",
   "server/modules/integrations/testers.ts",
