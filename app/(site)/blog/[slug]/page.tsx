@@ -35,16 +35,15 @@ async function Content({ params }: Pick<PageProps<"/blog/[slug]">, "params">) {
   // Unknown slugs: a soft 404 (the status can't change once the shell has
   // streamed), noindex'ed by Next.
   if (!view) notFound()
-  const nodes =
-    articleJsonLdFor(
-      sources,
-      slug,
-      publicOrigin(sources.settings.site.productionUrl)
-    ) ?? []
+  const nodes = articleJsonLdFor(
+    sources,
+    slug,
+    publicOrigin(sources.settings.site.productionUrl)
+  )
   return (
     <>
       <ArticleTemplate view={view} />
-      <JsonLd data={nodes} />
+      {nodes && <JsonLd data={nodes} />}
     </>
   )
 }

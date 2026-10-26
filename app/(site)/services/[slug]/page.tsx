@@ -37,16 +37,15 @@ async function Content({
   // Unknown slugs: a soft 404 (the status can't change once the shell has
   // streamed), noindex'ed by Next.
   if (!view) notFound()
-  const nodes =
-    serviceJsonLd(
-      sources,
-      slug,
-      publicOrigin(sources.settings.site.productionUrl)
-    ) ?? []
+  const nodes = serviceJsonLd(
+    sources,
+    slug,
+    publicOrigin(sources.settings.site.productionUrl)
+  )
   return (
     <>
       <ServiceDetailTemplate view={view} />
-      <JsonLd data={nodes} />
+      {nodes && <JsonLd data={nodes} />}
     </>
   )
 }

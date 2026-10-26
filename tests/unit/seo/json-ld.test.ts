@@ -108,4 +108,14 @@ describe("JSON-LD builders", () => {
     expect(text).not.toContain(">")
     expect(JSON.parse(text)).toEqual(data)
   })
+
+  it("jsonLdText escapes U+2028 and U+2029", () => {
+    const data = { name: "a\u2028b\u2029c" }
+    const text = jsonLdText(data)
+    expect(text).not.toContain("\u2028")
+    expect(text).not.toContain("\u2029")
+    expect(text).toContain("\\u2028")
+    expect(text).toContain("\\u2029")
+    expect(JSON.parse(text)).toEqual(data)
+  })
 })
