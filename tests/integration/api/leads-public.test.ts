@@ -398,6 +398,30 @@ describe("POST /api/v1/public/leads (master 7.3)", () => {
     ).toMatchObject({ allowed: true, count: 1 })
   })
 
+  it("R11-6: 422 retries count toward LEAD_RATE_LIMIT (SP parity, pinned)", async () => {
+    const ip = freshIp()
+    for (let i = 0; i < LEAD_RATE_LIMIT.max; i++) {
+      expect((await post({ ...BODY, email: "nope" }, ip)).status).toBe(422)
+    }
+    // A now-valid body from the same visitor waits like anyone else.
+    expect((await post(BODY, ip)).status).toBe(429)
+    expect(await getDb().select().from(leads)).toHaveLength(0)
+  })
+
+  it("R11-6: a Turnstile siteverify outage fails closed → 422, nothing stored", async () => {
+    await saveTurnstile(true)
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValueOnce(new TypeError("fetch failed"))
+      .mockResolvedValueOnce(new Response("Bad gateway", { status: 502 }))
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const res = await post({ ...BODY, turnstileToken: "good" })
+      expect(res.status).toBe(422)
+    }
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    expect(await getDb().select().from(leads)).toHaveLength(0)
+  })
+
   it("invalid fields → 422 with fieldErrors", async () => {
     const res = await post({ ...BODY, email: "not-an-email", phone: "" })
     expect(res.status).toBe(422)

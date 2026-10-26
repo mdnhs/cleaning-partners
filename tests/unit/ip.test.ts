@@ -16,4 +16,33 @@ describe("clientIp (spec §4)", () => {
     expect(clientIp(new Headers({ "x-forwarded-for": "" }))).toBeNull()
     expect(clientIp(new Headers())).toBeNull()
   })
+
+  it("R11-6: a multi-value X-Forwarded-For gives the leftmost value", () => {
+    expect(
+      clientIp(
+        new Headers({
+          "x-forwarded-for": "203.0.113.7, 198.51.100.2, 10.0.0.2",
+        })
+      )
+    ).toBe("203.0.113.7")
+  })
+
+  it("R11-6: whitespace is trimmed", () => {
+    expect(
+      clientIp(new Headers({ "x-forwarded-for": "   203.0.113.9   ,10.0.0.2" }))
+    ).toBe("203.0.113.9")
+  })
+
+  it("R11-6: a blank X-Forwarded-For falls back to X-Real-IP", () => {
+    expect(
+      clientIp(
+        new Headers({ "x-forwarded-for": "  ", "x-real-ip": "198.51.100.5" })
+      )
+    ).toBe("198.51.100.5")
+  })
+
+  it("R11-6: no proxy header at all gives null (one shared rate-limit bucket)", () => {
+    expect(clientIp(new Headers({ "x-forwarded-for": " , " }))).toBeNull()
+    expect(clientIp(new Headers())).toBeNull()
+  })
 })

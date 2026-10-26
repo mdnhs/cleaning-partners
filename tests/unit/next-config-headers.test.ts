@@ -52,4 +52,20 @@ describe("security headers (spec §13)", () => {
       ],
     })
   })
+
+  it("R11-6: the only Content-Security-Policy is the framing/base/object one; no script policy for custom code", async () => {
+    const rules = await nextConfig.headers!()
+    const csps = rules.flatMap((rule) =>
+      rule.headers.filter((h) => h.key === "Content-Security-Policy")
+    )
+    expect(csps.length).toBeGreaterThan(0)
+    for (const { value } of csps) {
+      const directives = value.split(";").map((d) => d.trim().split(" ")[0])
+      expect(directives.sort()).toEqual([
+        "base-uri",
+        "frame-ancestors",
+        "object-src",
+      ])
+    }
+  })
 })
