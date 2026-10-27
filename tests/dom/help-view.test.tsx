@@ -1,7 +1,11 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { HELP_TOPICS, HelpView } from "@/components/admin/help/help-view"
+import {
+  HELP_GUIDES,
+  HELP_TOPICS,
+  HelpView,
+} from "@/components/admin/help/help-view"
 
 describe("HelpView ", () => {
   it("lists the shortcuts and mails the owners", () => {
@@ -17,7 +21,11 @@ describe("HelpView ", () => {
       "Save draft",
       "Close panels",
     ])
-      expect(screen.getByText(action)).toBeInTheDocument()
+      expect(
+        within(
+          screen.getByRole("region", { name: "Keyboard shortcuts" })
+        ).getByText(action)
+      ).toBeInTheDocument()
     expect(screen.getByText("Esc")).toBeInTheDocument()
     expect(
       screen.getByRole("heading", { name: "Who to contact" })
@@ -36,6 +44,14 @@ describe("HelpView ", () => {
         screen.getByText(topic.steps[0]!, { exact: true })
       ).toBeInTheDocument()
     }
+  })
+
+  it("lists the runbook guides", () => {
+    render(<HelpView owners={[]} />)
+    expect(screen.getByRole("heading", { name: "Guides" })).toBeInTheDocument()
+    const card = within(screen.getByRole("region", { name: "Guides" }))
+    for (const guide of HELP_GUIDES)
+      expect(card.getByText(guide)).toBeInTheDocument()
   })
 
   it("gives the mailto a 44 px coarse target with a truncating email", () => {

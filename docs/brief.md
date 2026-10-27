@@ -260,3 +260,14 @@ Not recorded, by design: decorative `alt=""`, `aria-hidden` glyphs, class names,
 
 ## Changes
 
+
+- 2026-10-27 (Phases 1 to 11, written at hardening): deviations a reader of this brief would otherwise miss. The full record is in the master plan's Changes.
+  - **Shipped beyond the Phase 0 text.** The page builder at `/p/<slug>` (15 blocks), Appearance and Design, the AI assistant, marketing (tracking, consent banner, custom code), SEO and redirects, and the leads inbox are all in. `/privacy` and `/terms` exist as placeholder pages (B9).
+  - **Enquiries.** The quote form posts to `/api/v1/public/leads` instead of opening `mailto:`. The public schema requires `consent: true` (sent from the form's consent box), and a blank `address` is stored as null.
+  - **R2.** CP writes only under the `cp/` root folder, enforced by a runtime guard on the R2 client (`r2ObjectKey`). `CP_R2_PREFIX` is an optional sub-folder under `cp/`, default none, and `ensure-env` never adds it.
+  - **Operator scripts.** `backup`, `restore-drill`, `secrets:rotate`, `db:sync`, `custom-code:off`, `r2:bootstrap`, `data:import` and `data:export-to-r2` use input-only `CP_R2_*`, `CP_IMPORT_*` and `OLD_BETTER_AUTH_SECRET` variables. `server/env.ts` still has exactly three variables.
+  - **Branding.** Every `sp`-prefixed identifier became `cp` (headers `x-cp-*`, `cp:consent`, `cp_consent`). The dev Postgres port is 5434.
+  - **Deploy.** `deploy.yml` now waits for the full CI run on `main` (`ci`, `build-and-push`, `ensure-env`, `deploy`). It is dormant until the owner merges `feat/dynamic-platform`. The Dokploy compose app is `kbL1xMktOKmL7i2YfGt-W`; run exactly one app container.
+  - **Launch decisions (SP parity).** The client IP is the leftmost `X-Forwarded-For` value; a Turnstile outage returns 422 and drops the lead; 422 retries count toward the enquiry limit; the CSP is non-restrictive (`base-uri`, `object-src`, `frame-ancestors` only). Each is pinned by a test and listed in `docs/runbook.md`.
+  - **Visual contract.** The 48 public baselines are unchanged. White on the frozen brand `#11b1d1` is 2.55:1, so the theme checks hold a 2.5 floor and the owner may pick a deeper brand.
+  - **Docs.** `docs/runbook.md`, `docs/launch.md` and the README are the operating documents; the Help page links the runbook's guides.

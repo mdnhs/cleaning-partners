@@ -166,6 +166,21 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
 ]
 
 /**
+ * Sections of docs/runbook.md (not served by the site, so titles only);
+ * tests/unit/admin/help-guides.test.ts pins each to a `## ` heading there.
+ */
+export const HELP_GUIDES: readonly string[] = [
+  "Owner locked out",
+  "Sessions and sign-in",
+  "Page builder",
+  "AI assistant",
+  "Backups and the restore drill",
+  "Restore a backup",
+  "Custom code and Content-Security-Policy",
+  "Background jobs",
+]
+
+/**
  * The Help page (dock): how-to answers for the people who run the website,
  * keyboard shortcuts, and the owners to ask for access or a reset.
  */
@@ -249,6 +264,18 @@ export function HelpView({ owners }: { owners: OwnerContact[] }) {
             There is no active owner yet. Ask whoever set up the site.
           </p>
         )}
+      </FormCard>
+      <FormCard
+        id="help-guides"
+        title="Guides"
+        description="Written up in docs/runbook.md, kept with the site's code."
+        className="xl:col-span-2"
+      >
+        <ul className="grid list-disc gap-2 pl-5 text-sm text-foreground sm:grid-cols-2">
+          {HELP_GUIDES.map((guide) => (
+            <li key={guide}>{guide}</li>
+          ))}
+        </ul>
       </FormCard>
     </div>
   )
