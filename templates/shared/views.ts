@@ -126,6 +126,7 @@ export function chromeView(s: SiteSources): ChromeView {
           label: footer.termsLabel,
           href: hrefView(s, footer.termsHref),
         },
+        login: { label: "Login", href: "/admin/sign-in" },
       },
     },
   }

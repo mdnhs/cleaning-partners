@@ -1,6 +1,6 @@
+import { AuthBrandMark } from "@/components/admin/auth/auth-brand-mark"
 import { NOISE } from "@/components/admin/kit/noise"
 import { Swirl } from "@/components/admin/kit/swirl"
-import { BrandMark } from "@/components/admin/shell/brand-mark"
 import { AdminThemed } from "@/components/admin/theme/admin-themed"
 
 /**
@@ -28,7 +28,7 @@ export default function AuthLayout({
             style={{ backgroundImage: NOISE }}
           />
           <div className="absolute -top-32 -left-24 -z-10 size-96 rounded-full bg-chart-3/25 blur-3xl" />
-          <BrandMark tone="inverse" />
+          <AuthBrandMark tone="inverse" />
           <div className="flex max-w-lg flex-col gap-5">
             <p className="text-[2.5rem] leading-[1.1] font-bold tracking-tight text-balance">
               Your website, cleanly under control.
@@ -53,7 +53,7 @@ export default function AuthLayout({
           data-slot="auth-panel"
           className="rounded-card flex flex-col bg-sidebar px-6 py-8 sm:px-10 lg:px-12 [&_[data-slot=input]]:h-11 [&_[data-slot=input]]:rounded-xl [&_[data-slot=input]]:bg-card [&_[data-slot=input]]:px-3.5 [&_button[type=submit]]:h-11 [&_button[type=submit]]:w-full [&_button[type=submit]]:rounded-xl [&_button[type=submit]]:font-semibold"
         >
-          <BrandMark className="lg:hidden" />
+          <AuthBrandMark className="lg:hidden" />
           <div className="flex flex-1 items-center justify-center py-12">
             <div className="w-full max-w-[400px]">{children}</div>
           </div>

@@ -94,6 +94,7 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     expect(chrome.footer.legal).toEqual({
       privacy: { label: "Privacy Policy", href: "/privacy" },
       terms: { label: "Terms", href: "/terms" },
+      login: { label: "Login", href: "/admin/sign-in" },
     })
     expect(chrome.footer.copyright).toBe(
       "© 2026 Cleaning Partners Ltd. All rights reserved."

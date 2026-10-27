@@ -23,7 +23,7 @@ export type SiteFooterProps = {
     }[]
   }
   copyright: string
-  legal: { privacy: FooterLink; terms: FooterLink }
+  legal: { privacy: FooterLink; terms: FooterLink; login?: FooterLink }
 }
 
 function ColumnTitle({ children }: { children: React.ReactNode }) {
@@ -139,6 +139,14 @@ export function SiteFooter({
             <Link href={legal.terms.href} className="hover:text-white">
               {legal.terms.label}
             </Link>
+            {legal.login ? (
+              <>
+                <span aria-hidden>·</span>
+                <Link href={legal.login.href} className="hover:text-white">
+                  {legal.login.label}
+                </Link>
+              </>
+            ) : null}
           </p>
         </div>
       </Container>

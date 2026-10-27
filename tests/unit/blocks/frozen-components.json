@@ -20,7 +20,7 @@
     "components/home/quote-card.tsx": "765e77ba9ed57d22cafa6df5da33d9b83026a6b2b5e1575075c332510f9f7e96",
     "components/home/section-heading.tsx": "08cecb33b8a496475304aab95c16b291df35e9c5e85b112bdc70245a6b10c097",
     "components/home/services.tsx": "8eab31466fced43178c8970a925b43fd951a8bb8dbf84678e36a9a0530f1695d",
-    "components/home/site-footer.tsx": "6829baa99119dda011a93378a9239356d902d09fdcd633f556daf0fdfc7a3b0b",
+    "components/home/site-footer.tsx": "d2a42baea8a4de2fce5e731a6b20e319ea752120a144808e0b6a5bf7775d4f07",
     "components/home/site-header.tsx": "62b44d7989219e464a31a51a425cec524504d3463fea0eb6c75a63594ab925d4",
     "components/home/team.tsx": "ceb94fc0aa7ae487af35520864c2eacbb0edec88fba3b196a78c1afc03c4f995",
     "components/home/testimonials.tsx": "120c5f3e011e195fd39f7196051358d71e2ec5130ae50ced9c758fd5e20c9359",
