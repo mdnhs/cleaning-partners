@@ -124,7 +124,8 @@ describe("operations docs", () => {
 
   it("every Help guide is a runbook heading", () => {
     const runbook = read("docs/runbook.md")
-    for (const guide of HELP_GUIDES) expect(runbook).toContain(`## ${guide}\n`)
+    for (const guide of HELP_GUIDES)
+      expect(runbook).toContain(`## ${guide.title}\n`)
   })
 
   it("the docs carry no sister-site strings", () => {

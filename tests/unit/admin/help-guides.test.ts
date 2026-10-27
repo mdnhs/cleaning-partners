@@ -11,10 +11,13 @@ describe("Help page guides", () => {
       .filter((line) => line.startsWith("## "))
       .map((line) => line.slice(3).trim())
     expect(HELP_GUIDES.length).toBeGreaterThan(0)
-    for (const guide of HELP_GUIDES) expect(headings).toContain(guide)
+    for (const guide of HELP_GUIDES) expect(headings).toContain(guide.title)
   })
 
   it("lists each guide once", () => {
-    expect(new Set(HELP_GUIDES).size).toBe(HELP_GUIDES.length)
+    const titles = HELP_GUIDES.map((guide) => guide.title)
+    expect(new Set(titles).size).toBe(titles.length)
+    for (const guide of HELP_GUIDES)
+      expect(guide.steps.length).toBeGreaterThan(0)
   })
 })

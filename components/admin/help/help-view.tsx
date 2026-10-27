@@ -1,5 +1,4 @@
-import { FormCard } from "@/components/admin/form/form-ui"
-import { Kbd, KbdGroup } from "@/components/ui/kbd"
+import { HelpDocs } from "@/components/admin/help/help-docs"
 
 export type OwnerContact = { name: string; email: string }
 
@@ -29,8 +28,18 @@ export const SHORTCUTS: { keys: string[][]; action: string }[] = [
   { keys: [["Esc"]], action: "Close panels" },
 ]
 
+export type HelpGroupId = "content" | "inbox" | "team"
+
+/** The outline's sections, in order. */
+export const HELP_GROUPS: readonly { id: HelpGroupId; title: string }[] = [
+  { id: "content", title: "Website content" },
+  { id: "inbox", title: "Blog and enquiries" },
+  { id: "team", title: "Team and account" },
+]
+
 export type HelpTopic = {
   id: string
+  group: HelpGroupId
   title: string
   /** Short answer, then the steps. */
   summary: string
@@ -46,6 +55,7 @@ export type HelpTopic = {
 export const HELP_TOPICS: readonly HelpTopic[] = [
   {
     id: "edit-a-page",
+    group: "content",
     title: "Change the words or pictures on a page",
     summary:
       "Pages lists every page of the site. Open one, change what you need, then publish.",
@@ -58,7 +68,22 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     ],
   },
   {
+    id: "build-a-page",
+    group: "content",
+    title: "Build a new page from blocks",
+    summary:
+      "Pages you add yourself are put together from ready-made blocks and live under /p/ on the site.",
+    steps: [
+      "Open Pages and choose New page. You can also find it with the search (Ctrl or ⌘ K).",
+      "Add blocks one by one and fill in each. Changes save to a draft by themselves.",
+      "Press Publish. The page appears at /p/ followed by its address (slug).",
+      "If you change the address of a published page, the old link is sent to the new one.",
+      "To start from an existing page, open it and choose Copy to new page. The blog copy needs a Blog block added by hand, because its filterable list is not a normal section.",
+    ],
+  },
+  {
     id: "services",
+    group: "content",
     title: "Add or edit a cleaning service",
     summary:
       "Each service has its own page, plus a card on the Services page and the home page.",
@@ -72,6 +97,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
   },
   {
     id: "testimonials",
+    group: "content",
     title: "Add a customer testimonial",
     summary:
       "Testimonials live under Collections and appear in the reviews section of the site.",
@@ -84,6 +110,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
   },
   {
     id: "team-clients",
+    group: "content",
     title: "Update the team, clients and group companies",
     summary:
       "These short lists sit together under Collections and work the same way as testimonials.",
@@ -95,6 +122,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
   },
   {
     id: "blog",
+    group: "inbox",
     title: "Write and publish a blog article",
     summary:
       "Blog holds your news and cleaning tips. Authors write, editors publish.",
@@ -107,6 +135,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
   },
   {
     id: "enquiries",
+    group: "inbox",
     title: "Handle enquiries from the contact form",
     summary:
       "Every message sent through the site's contact form arrives under Enquiries.",
@@ -119,6 +148,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
   },
   {
     id: "media",
+    group: "content",
     title: "Upload and reuse pictures",
     summary:
       "Pictures are chosen from the media library wherever a page asks for an image.",
@@ -131,6 +161,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
   },
   {
     id: "settings",
+    group: "content",
     title: "Change phone, email, address and menus",
     summary:
       "Site settings holds the details that repeat across the whole site.",
@@ -142,7 +173,20 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     ],
   },
   {
+    id: "appearance",
+    group: "content",
+    title: "Change the site colours",
+    summary:
+      "Appearance sets the colours of the public site and of this admin. Owners and administrators can change it.",
+    steps: [
+      "Open Appearance in the left menu and pick the colours you want. Changes save to a draft first.",
+      "Press Publish. If a colour pair is too hard to read, you are asked to fix the contrast issues before publishing.",
+      "The default theme is the original look of the site, so you can always go back to it.",
+    ],
+  },
+  {
     id: "people",
+    group: "team",
     title: "Invite a colleague and choose what they can do",
     summary:
       "Owners and administrators manage the team under Users & roles. Roles decide what each person can change.",
@@ -154,7 +198,34 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     ],
   },
   {
+    id: "signin",
+    group: "team",
+    title: "Sign in, passwords and two-factor",
+    summary:
+      "Staying signed in, choosing a password and what to do when you are locked out.",
+    steps: [
+      "You stay signed in for about 7 days. The clock restarts whenever you use the admin.",
+      "Passwords are 12 to 128 characters long. Change yours, or turn on two-factor sign-in, under Account.",
+      "Too many wrong attempts in a minute pauses sign-in for a short while. Wait, then try again.",
+      "Locked out or lost your two-factor device? Ask an owner (see Who to contact below). They can reset your access.",
+    ],
+  },
+  {
+    id: "ai",
+    group: "team",
+    title: "Use the AI assistant",
+    summary:
+      "The assistant answers questions about the site's content. It can look but never change anything.",
+    steps: [
+      "Press Ctrl or ⌘ J to open it, and ask your question in plain words.",
+      "Only the roles the owner has allowed can use it. If it is missing for you, ask an owner.",
+      "There is a limit of 30 messages every 10 minutes for each person.",
+      "Your conversations are kept until you delete them.",
+    ],
+  },
+  {
     id: "activity",
+    group: "team",
     title: "See who changed something",
     summary:
       "Activity log records sign-ins, edits and publishes by everyone on the team.",
@@ -165,118 +236,129 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
   },
 ]
 
+export type HelpGuide = {
+  /** Exactly a `## ` heading of docs/runbook.md. */
+  title: string
+  summary: string
+  steps: string[]
+}
+
 /**
- * Sections of docs/runbook.md (not served by the site, so titles only);
- * tests/unit/admin/help-guides.test.ts pins each to a `## ` heading there.
+ * Sections of docs/runbook.md (not served by the site), written up here for
+ * the people who run it; tests/unit/admin/help-guides.test.ts pins each title
+ * to a `## ` heading there. Jobs only the person who hosts the site can do are
+ * marked as such.
  */
-export const HELP_GUIDES: readonly string[] = [
-  "Owner locked out",
-  "Sessions and sign-in",
-  "Page builder",
-  "AI assistant",
-  "Backups and the restore drill",
-  "Restore a backup",
-  "Custom code and Content-Security-Policy",
-  "Background jobs",
+export const HELP_GUIDES: readonly HelpGuide[] = [
+  {
+    title: "Owner locked out",
+    summary:
+      "If the only owner cannot sign in, whoever hosts the site can restore access.",
+    steps: [
+      "Ask another owner first. Owners are listed under Who to contact.",
+      "If there is no other owner, ask whoever hosts the site to run the owner recovery script for your email address.",
+      "It turns off two-factor for you, ends your old sessions and cancels older links. You get a one-time password link that works for 24 hours (also emailed when email is set up).",
+      "Set a new password, then turn two-factor back on under Account.",
+    ],
+  },
+  {
+    title: "Sessions and sign-in",
+    summary:
+      "How long you stay signed in, and the limits that protect sign-in.",
+    steps: [
+      "A session lasts 7 days and is extended while you use the admin, so in practice you are signed out after about 7 days of not using it.",
+      "Passwords are 12 to 128 characters long.",
+      "Limits on sign-in: 5 sign-in attempts and 5 two-factor attempts a minute, and 3 password resets every 5 minutes. Wait a moment and try again.",
+      "Ending someone's session takes effect straight away on every admin page.",
+      "While an administrator is using View as, account settings and the AI assistant are read-only.",
+    ],
+  },
+  {
+    title: "Page builder",
+    summary:
+      "Pages you add yourself are built from 15 blocks and live at /p/ followed by their address.",
+    steps: [
+      "Open Pages and choose New page. Changes save to a draft by themselves, and Publish checks the whole page.",
+      "If a save is refused because the page changed meanwhile, reload it and make your change again.",
+      "Two pages cannot share an address. Renaming the address of a published page keeps the old link working.",
+      "Deleting a page can send its address to the home page. Without that option the old address shows a not-found page.",
+      "Pages built this way appear in the sitemap and have an SEO tab and a preview like the other pages.",
+    ],
+  },
+  {
+    title: "AI assistant",
+    summary:
+      "Owners and administrators set up the assistant under Settings, then AI assistant.",
+    steps: [
+      "Choose the provider and model, paste the API key and pick which roles may use it. The key is stored encrypted and is not kept anywhere else.",
+      "Use Test connection to check the key works. If you leave out owner and administrator from the allowed roles, those roles lose access until the list is saved again.",
+      "Share enquiry details lets the assistant read enquiries. Only an owner can turn it on, and changing the provider turns it off again. With it on, names, companies and messages go to the provider.",
+      "Addresses and Eircodes typed into a message are not hidden before they are sent.",
+      "The assistant can only read. It opens with Ctrl or ⌘ J, and each person can send 30 messages every 10 minutes.",
+    ],
+  },
+  {
+    title: "Backups and the restore drill",
+    summary:
+      "The site backs up its database every day by itself. Setting up storage is the part to check.",
+    steps: [
+      "A backup runs each day and the newest 14 are kept. Pending invitations, password links and short-lived counters are not included.",
+      "Backups are stored in your R2 bucket once R2 is saved under Settings, then Integrations. Until then they stay on the server's disk and are lost with it, so set up R2 early.",
+      "A failing backup shows on the dashboard as Background jobs need attention and is retried every minute.",
+      "Once after the first backup, then monthly and after any database upgrade, whoever hosts the site should run the restore drill. It restores the newest backup to a scratch database and compares the row counts.",
+    ],
+  },
+  {
+    title: "Restore a backup",
+    summary:
+      "Only the person who hosts the site can do this. It replaces the live data with a backup.",
+    steps: [
+      "Stop the app so nothing writes while you restore.",
+      "Get the backup file and check its checksum against the manifest stored beside it.",
+      "Restore it into the database, then release the job locks the backup captured.",
+      "Start the app, check the health address and sign in.",
+      "Re-send any invitations and password links: pending ones do not come back. Sessions stay valid.",
+    ],
+  },
+  {
+    title: "Custom code and Content-Security-Policy",
+    summary:
+      "Only an owner can add scripts and tracking codes, under Marketing, then Custom code.",
+    steps: [
+      "Each snippet is a script address or a block of HTML, with a place on the page, the pages it runs on and a consent type. You can have up to 20.",
+      "Necessary snippets always run. Analytics and marketing snippets wait until the visitor accepts that kind in the cookie banner.",
+      "Only paste code from vendors you trust: it runs with full access to every visitor's page.",
+      "Switch all custom code off stops every snippet at once. Turn it off again and publish to bring them back.",
+      "Tracking IDs (Google Tag Manager, Google Analytics, Meta Pixel) can only be changed by an owner, and load nothing until a visitor consents.",
+    ],
+  },
+  {
+    title: "Background jobs",
+    summary:
+      "The site runs a few tasks by itself every minute, so nothing needs pressing.",
+    steps: [
+      "Scheduled articles are published within about a minute of their time.",
+      "Old versions are cleaned up daily, keeping the newest 50 of each page or article.",
+      "Enquiries older than the retention period are deleted daily (24 months unless changed).",
+      "A picture you replace stays at its old address for 24 hours, so open pages keep their images, and is then deleted.",
+      "A failed job shows on the dashboard as Background jobs need attention and is retried after a minute.",
+    ],
+  },
 ]
 
 /**
- * The Help page (dock): how-to answers for the people who run the website,
- * keyboard shortcuts, and the owners to ask for access or a reset.
+ * The Help page (dock): laid out like a docs site, with how-to answers for the
+ * people who run the website, runbook guides, keyboard shortcuts, and the
+ * owners to ask for access or a reset.
  */
 export function HelpView({ owners }: { owners: OwnerContact[] }) {
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
-      <FormCard
-        id="help-topics"
-        title="How do I…"
-        description="Short answers for everyday jobs on the website."
-        className="xl:col-span-2"
-      >
-        <div className="flex flex-col divide-y divide-border">
-          {HELP_TOPICS.map((topic) => (
-            <details key={topic.id} id={topic.id} className="group py-3">
-              <summary className="cursor-pointer text-sm font-semibold text-foreground marker:text-muted-foreground focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none pointer-coarse:min-h-11">
-                {topic.title}
-              </summary>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {topic.summary}
-              </p>
-              <ol className="mt-3 flex list-decimal flex-col gap-1.5 pl-5 text-sm text-foreground">
-                {topic.steps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
-            </details>
-          ))}
-        </div>
-      </FormCard>
-      <FormCard id="help-shortcuts" title="Keyboard shortcuts">
-        <dl className="grid grid-cols-[auto_1fr] items-center gap-x-6 gap-y-3 text-sm">
-          {SHORTCUTS.map(({ keys, action }) => (
-            <div key={action} className="contents">
-              <dt className="flex flex-wrap items-center gap-1.5">
-                {keys.map((combo, index) => (
-                  <span
-                    key={combo.join("+")}
-                    className="flex items-center gap-1.5"
-                  >
-                    {index > 0 ? (
-                      <span className="text-xs text-muted-foreground">or</span>
-                    ) : null}
-                    <KbdGroup>
-                      {combo.map((key) => (
-                        <Kbd key={key}>{key}</Kbd>
-                      ))}
-                    </KbdGroup>
-                  </span>
-                ))}
-              </dt>
-              <dd className="text-foreground">{action}</dd>
-            </div>
-          ))}
-        </dl>
-      </FormCard>
-      <FormCard
-        id="help-contact"
-        title="Who to contact"
-        description="Owners can invite people, change roles and reset access."
-      >
-        {owners.length > 0 ? (
-          <ul className="flex flex-col gap-3 text-sm">
-            {owners.map((owner) => (
-              <li key={owner.email} className="flex min-w-0 flex-col">
-                <span className="font-semibold text-foreground">
-                  {owner.name}
-                </span>
-                {/* 44 px tall on coarse pointers; the inner span truncates. */}
-                <a
-                  href={`mailto:${owner.email}`}
-                  className="inline-flex w-fit max-w-full items-center text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none pointer-coarse:min-h-11"
-                >
-                  <span className="truncate">{owner.email}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            There is no active owner yet. Ask whoever set up the site.
-          </p>
-        )}
-      </FormCard>
-      <FormCard
-        id="help-guides"
-        title="Guides"
-        description="Written up in docs/runbook.md, kept with the site's code."
-        className="xl:col-span-2"
-      >
-        <ul className="grid list-disc gap-2 pl-5 text-sm text-foreground sm:grid-cols-2">
-          {HELP_GUIDES.map((guide) => (
-            <li key={guide}>{guide}</li>
-          ))}
-        </ul>
-      </FormCard>
-    </div>
+    <HelpDocs
+      topics={HELP_TOPICS}
+      groups={HELP_GROUPS}
+      guides={HELP_GUIDES}
+      shortcuts={SHORTCUTS}
+      owners={owners}
+    />
   )
 }

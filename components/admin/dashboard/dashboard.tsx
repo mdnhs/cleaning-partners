@@ -274,9 +274,13 @@ function Body({
       <div
         className={cn(
           "grid gap-4 sm:grid-cols-2",
-          // MK: the first four KPIs share one row on wide screens (4 across
-          // from 4 cards up; extra cards wrap below). Fewer: 3 across.
-          kpis.length >= 4 ? "xl:grid-cols-4" : "xl:grid-cols-3"
+          // MK: all KPIs share one row on wide screens (5 across from 5
+          // cards up; extra cards wrap below). 4 cards: 4 across, fewer: 3.
+          kpis.length >= 5
+            ? "xl:grid-cols-5"
+            : kpis.length === 4
+              ? "xl:grid-cols-4"
+              : "xl:grid-cols-3"
         )}
       >
         {kpis.map((kpi, index) => (

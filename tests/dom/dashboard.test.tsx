@@ -562,8 +562,8 @@ describe("dashboard (JW layout)", () => {
       "/admin/seo",
       "/admin/blog?status=in_review",
     ])
-    // MK: the four brief KPIs share one row on wide screens; the fifth wraps.
-    expect(cards[0]!.parentElement).toHaveClass("xl:grid-cols-4")
+    // MK: all five KPIs share one row on wide screens.
+    expect(cards[0]!.parentElement).toHaveClass("xl:grid-cols-5")
   })
 
   it("omits parts the API returned as null and keeps Next up when empty", async () => {
