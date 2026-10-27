@@ -54,6 +54,11 @@ const FILE_LINE_ALLOW: { file: RegExp; line: RegExp }[] = [
     file: /^tests\/unit\/theme\/color\.test\.ts$/,
     line: /^expect\(formatOklch\(parseColor\("#67bd31"\)!\)\)\.toMatch\($/,
   },
+  // ensure-env builds the container-internal DATABASE_URL for the Dokploy app.
+  {
+    file: /^\.github\/workflows\/deploy\.yml$/,
+    line: /^add DATABASE_URL "postgres:\/\/cp:\$\{password\}@cleaning-partners-db:5432\/cp"$/,
+  },
   // Container-internal Postgres port in the compose example's DATABASE_URL.
   {
     file: /^docker-compose\.yml$/,
