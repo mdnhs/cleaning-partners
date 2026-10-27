@@ -1,5 +1,10 @@
 import { expect, type Page, test } from "@playwright/test"
 
+import {
+  askAssistant,
+  assistantOnHomeEditor,
+  openAssistant,
+} from "../e2e/ai-pins"
 import { clientIpFor } from "../e2e/fixtures"
 import {
   freezeUploads,
@@ -9,7 +14,12 @@ import {
   visibleImagesLoaded,
 } from "../e2e/media-pins"
 
-import { VISUAL_ADMIN, VISUAL_AUTHOR, VISUAL_EDITOR } from "./admin-user"
+import {
+  VISUAL_ADMIN,
+  VISUAL_AUTHOR,
+  VISUAL_EDITOR,
+  VISUAL_OWNER,
+} from "./admin-user"
 
 // Baselines are macOS renders: CI runs E2E only.
 test.skip(process.platform !== "darwin", "visual baselines are macOS-only")
@@ -21,6 +31,11 @@ test.skip(process.platform !== "darwin", "visual baselines are macOS-only")
 // reduced motion.
 
 test.use({ reducedMotion: "reduce" })
+
+// The sidebar logo (a large file scaled down) is rasterised two ways by
+// Chromium: about one run in a few, one shot differs by 6 pixels inside the
+// logo's box. A retry gets the usual one; a real change fails every attempt.
+test.describe.configure({ retries: 2 })
 
 test.beforeEach(async ({ context }, testInfo) => {
   await context.setExtraHTTPHeaders({
@@ -147,6 +162,178 @@ const REVIEW_QUEUE = {
   total: 2,
 }
 
+/**
+ * SEO › Overview, pinned: the live checks change with every edit made by
+ * other specs. Three published records (4 checks each: 11 of 12 pass, Home
+ * has the one issue) and a draft article; /seo/health feeds the gauge.
+ */
+const SEO_ENTRY = {
+  seo: {},
+  image: "generated",
+  issues: [] as { check: string; message: string }[],
+}
+const SEO_OVERVIEW = {
+  entries: [
+    {
+      ...SEO_ENTRY,
+      kind: "page",
+      id: "home",
+      name: "Home",
+      path: "/",
+      published: true,
+      title: "Cleaning Partners Ltd. | Professional Cleaning Across Ireland",
+      description: "Commercial and domestic cleaning across Ireland.",
+      fallback: {
+        title: "Cleaning Partners Ltd. | Professional Cleaning Across Ireland",
+        description: "Commercial and domestic cleaning across Ireland.",
+      },
+      issues: [
+        {
+          check: "description",
+          message: "Uses the site-wide default description",
+        },
+      ],
+    },
+    {
+      ...SEO_ENTRY,
+      kind: "page",
+      id: "about",
+      name: "About",
+      path: "/about",
+      published: true,
+      title: "About | Cleaning Partners Ltd.",
+      description:
+        "Years of keeping Irish workplaces, schools and clinics spotless.",
+      fallback: {
+        title: "About | Cleaning Partners Ltd.",
+        description:
+          "Years of keeping Irish workplaces, schools and clinics spotless.",
+      },
+    },
+    {
+      ...SEO_ENTRY,
+      kind: "service",
+      id: "0190f0e0-0000-7000-8000-0000000000b1",
+      name: "Medical Cleaning",
+      path: "/services/medical-cleaning",
+      published: true,
+      title: "Medical Cleaning | Cleaning Partners Ltd.",
+      description:
+        "Infection-controlled cleaning for clinics, surgeries and care homes.",
+      fallback: {
+        title: "Medical Cleaning | Cleaning Partners Ltd.",
+        description:
+          "Infection-controlled cleaning for clinics, surgeries and care homes.",
+      },
+    },
+    {
+      ...SEO_ENTRY,
+      kind: "article",
+      id: "0190f0e0-0000-7000-8000-0000000000b2",
+      name: "Preparing Your Office for a Deep Clean",
+      path: "/blog/preparing-your-office-for-a-deep-clean",
+      published: false,
+      title: "Preparing Your Office for a Deep Clean | Cleaning Partners Ltd.",
+      description: "Commercial and domestic cleaning across Ireland.",
+      fallback: {
+        title: "Preparing Your Office for a Deep Clean | Cleaning Partners Ltd.",
+        description: "Commercial and domestic cleaning across Ireland.",
+      },
+    },
+  ],
+  checks: { passed: 11, total: 12 },
+}
+const SEO_FIX_BASE: Record<string, string> = {
+  page: "/admin/pages",
+  service: "/admin/services",
+  article: "/admin/blog",
+}
+const SEO_HEALTH = {
+  score: 92,
+  ...SEO_OVERVIEW.checks,
+  entities: SEO_OVERVIEW.entries.map((e) => ({
+    kind: e.kind,
+    id: e.id,
+    title: e.name,
+    path: e.path,
+    published: e.published,
+    results: e.issues.map((i) => ({
+      id: i.check,
+      ok: false,
+      message: i.message,
+    })),
+  })),
+  issues: [
+    ...SEO_OVERVIEW.entries.flatMap((e) =>
+      e.issues.map((i) => ({
+        kind: e.kind,
+        id: e.id,
+        title: e.name,
+        path: e.path,
+        ...i,
+        fixHref: `${SEO_FIX_BASE[e.kind]}/${e.id}?tab=seo`,
+      }))
+    ),
+    {
+      kind: "media",
+      id: "0190f0e0-0000-7000-8000-0000000000d9",
+      title: "office-clean.jpg",
+      path: null,
+      check: "alt-text",
+      message: "1 image(s) missing alt text",
+      fixHref:
+        "/admin/media?missingAlt=true&open=0190f0e0-0000-7000-8000-0000000000d9",
+    },
+  ],
+  alt: { images: 24, described: 20, decorative: 3, missing: 1 },
+}
+
+async function pinSeo(page: Page) {
+  await page.route("**/api/v1/admin/seo/overview", (route) =>
+    route.fulfill({ json: SEO_OVERVIEW })
+  )
+  await page.route("**/api/v1/admin/seo/health", (route) =>
+    route.fulfill({ json: SEO_HEALTH })
+  )
+}
+
+/** SEO › Redirects, pinned: hits and last-hit times change with every run. */
+const REDIRECT_TIMES = {
+  createdAt: "2026-10-01T09:00:00.000Z",
+  updatedAt: "2026-10-16T09:00:00.000Z",
+}
+const REDIRECTS = {
+  items: [
+    {
+      id: "0190f0e0-0000-7000-8000-0000000000c1",
+      fromPath: "/old-medical",
+      toPath: "/services/medical-cleaning",
+      code: 301,
+      hits: 1234,
+      lastHitAt: "2026-10-01T08:00:00.000Z",
+      isActive: true,
+      note: "Old brochure link",
+      source: "auto",
+      ...REDIRECT_TIMES,
+    },
+    {
+      id: "0190f0e0-0000-7000-8000-0000000000c2",
+      fromPath: "/winter-offer",
+      toPath: "/contact",
+      code: 302,
+      hits: 18,
+      lastHitAt: "2026-10-12T08:00:00.000Z",
+      isActive: true,
+      note: "",
+      source: "manual",
+      ...REDIRECT_TIMES,
+    },
+  ],
+  page: 1,
+  pageSize: 20,
+  total: 2,
+}
+
 /** The dashboard's numbers and the activity log, pinned. */
 async function pinData(page: Page) {
   await page.route("**/api/v1/admin/dashboard", (route) =>
@@ -200,8 +387,31 @@ const STABLE_CSS = `
  */
 async function imagesSettled(page: Page) {
   await expect.poll(() => visibleImagesLoaded(page)).toBe(true)
+  // Only the images in view: decode() on a lazy image below the fold would
+  // make the browser fetch it.
   await page.evaluate(() =>
-    Promise.all([...document.images].map((img) => img.decode().catch(() => {})))
+    Promise.all(
+      [...document.images]
+        .filter((img) => {
+          const r = img.getBoundingClientRect()
+          return (
+            r.width > 0 &&
+            r.bottom > 0 &&
+            r.top < window.innerHeight &&
+            getComputedStyle(img).visibility !== "hidden"
+          )
+        })
+        .map((img) => img.decode().catch(() => {}))
+    )
+  )
+  // The scaled sidebar logo is repainted a frame or two after it decodes.
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+        )
+      )
   )
 }
 
@@ -216,6 +426,15 @@ async function masks(page: Page) {
       .getByRole("list", { name: "Signed-in devices" })
       .locator("li > div > span:last-child"),
   ]
+}
+
+/**
+ * The sidebar logo is a large file scaled down: its resampling differs by a
+ * few pixels from run to run (the Task 8/9 baselines were shot with it
+ * visible and settle on the same frame). The Task 10 shots mask it.
+ */
+async function withLogo(page: Page) {
+  return [...(await masks(page)), page.locator('[data-slot="brand-logo"]')]
 }
 
 /**
@@ -1075,8 +1294,10 @@ for (const colorScheme of ["light", "dark"] as const) {
       await expect(
         page.getByRole("heading", { level: 1, name: "Integrations" })
       ).toBeVisible()
+      // The settings sub-nav also links to it once it has hydrated: the
+      // overview's card is the last one in the page.
       await expect(
-        page.getByRole("link", { name: /AI assistant/ })
+        page.getByRole("link", { name: /AI assistant/ }).last()
       ).toBeVisible()
       await expect(page).toHaveScreenshot(shot("integrations"), {
         mask: await masks(page),
@@ -1399,6 +1620,178 @@ for (const colorScheme of ["light", "dark"] as const) {
       await page.addStyleTag({ content: "time { visibility: hidden }" })
       await expect(page).toHaveScreenshot(shot("lead-delete-dialog"), {
         mask,
+      })
+    })
+
+    test(`admin SEO overview ${colorScheme}`, async ({ page }) => {
+      await pinSeo(page)
+      await signIn(page)
+      await page.goto("/admin/seo")
+      await expect(page.getByRole("navigation", { name: "SEO" })).toBeVisible()
+      await expect(
+        page.getByText("1 of 3 published pages need attention.")
+      ).toBeVisible()
+      await expect(page).toHaveScreenshot(shot("seo-overview"), {
+        mask: await withLogo(page),
+      })
+    })
+
+    test(`admin SEO sheet ${colorScheme}`, async ({ page }) => {
+      await pinSeo(page)
+      await signIn(page)
+      await page.goto("/admin/seo")
+      await page.getByRole("button", { name: "Edit SEO for Home" }).click()
+      const sheet = page.getByRole("dialog", { name: "SEO: Home" })
+      await expect(sheet.getByText("Search result preview")).toBeVisible()
+      await expect(page).toHaveScreenshot(shot("seo-sheet"), {
+        mask: await overlayOnly(page),
+      })
+    })
+
+    test(`admin SEO defaults ${colorScheme}`, async ({ page }) => {
+      await signIn(page)
+      await page.goto("/admin/seo/defaults")
+      await editorReady(page, "SEO defaults")
+      await expect(page).toHaveScreenshot(shot("seo-defaults"), {
+        mask: await withLogo(page),
+      })
+    })
+
+    test(`admin redirects ${colorScheme}`, async ({ page }) => {
+      await page.route("**/api/v1/admin/redirects?*", (route) =>
+        route.fulfill({ json: REDIRECTS })
+      )
+      await signIn(page)
+      await page.goto("/admin/seo/redirects")
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Redirects" })
+      ).toBeVisible()
+      // Two pinned rows, as table rows or as cards.
+      await expect(
+        page.getByRole("button", { name: /^Edit redirect from/ })
+      ).toHaveCount(2)
+      await expect(page).toHaveScreenshot(shot("seo-redirects"), {
+        mask: await withLogo(page),
+      })
+      // The add dialog.
+      await page.getByRole("button", { name: "Add redirect" }).first().click()
+      await expect(
+        page.getByRole("dialog", { name: "Add redirect" })
+      ).toBeVisible()
+      await expect(page).toHaveScreenshot(shot("redirect-dialog"), {
+        mask: await overlayOnly(page),
+      })
+    })
+
+    // CP only: the CSV import's preview. The server checks the rows and
+    // writes nothing; the seed has no redirects, so the statuses are fixed.
+    test(`admin redirect CSV import ${colorScheme}`, async ({ page }) => {
+      await page.route("**/api/v1/admin/redirects?*", (route) =>
+        route.fulfill({ json: REDIRECTS })
+      )
+      await signIn(page)
+      await page.goto("/admin/seo/redirects")
+      await page.getByRole("button", { name: "Import CSV" }).click()
+      const dialog = page.getByRole("dialog", { name: "Import redirects" })
+      await dialog.locator('input[type="file"]').setInputFiles({
+        name: "redirects.csv",
+        mimeType: "text/csv",
+        buffer: Buffer.from(
+          "from,to,code\n/old-carpets,/services/commercial-cleaning,301\n/spring-offer,/contact,302\nnot-a-path,/contact,301\n"
+        ),
+      })
+      await expect(dialog).toContainText("1 to fix")
+      await expect(dialog).toContainText("/old-carpets")
+      await page.evaluate(() => document.fonts.ready)
+      await expect(page).toHaveScreenshot(shot("redirect-import"), {
+        mask: await overlayOnly(page),
+      })
+    })
+
+    test(`admin appearance ${colorScheme}`, async ({ page }) => {
+      await signIn(page, VISUAL_OWNER)
+      await page.goto("/admin/appearance")
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Appearance" })
+      ).toBeVisible()
+      await expect(
+        page.getByRole("heading", { name: "Brand images" })
+      ).toBeVisible()
+      // History depends on what earlier runs published: wait for it, mask it.
+      const history = page.getByRole("region", { name: "History" })
+      await expect(history).toBeVisible()
+      await expect(history.getByText("Loading…")).toHaveCount(0)
+      await page.evaluate(() => document.fonts.ready)
+      await expect(page).toHaveScreenshot(shot("appearance"), {
+        mask: [...(await withLogo(page)), history],
+      })
+    })
+
+    // Custom code is owner-only: all four tabs are shot as the owner.
+    for (const [path, title, name] of [
+      ["/admin/marketing", "Tracking", "marketing-tracking"],
+      ["/admin/marketing/consent", "Consent banner", "marketing-consent"],
+      ["/admin/marketing/code", "Custom code", "marketing-code"],
+      ["/admin/marketing/events", "Event catalogue", "marketing-events"],
+    ] as const) {
+      test(`admin ${name} ${colorScheme}`, async ({ page }) => {
+        await signIn(page, VISUAL_OWNER)
+        await page.goto(path)
+        await expect(
+          page.getByRole("navigation", { name: "Marketing" })
+        ).toBeVisible()
+        await expect(
+          page.getByRole("heading", { level: 1, name: title })
+        ).toBeVisible()
+        await page.evaluate(() => document.fonts.ready)
+        await expect(page).toHaveScreenshot(shot(name), {
+          mask: await withLogo(page),
+        })
+      })
+    }
+
+    // The AI assistant panel on the home page editor, empty, after a reply
+    // and its past conversations. Status, chat stream and history are pinned
+    // (tests/e2e/ai-pins.ts): no request reaches an AI provider, and the
+    // reply is not inserted (that would autosave the seeded page).
+    test(`admin AI assistant ${colorScheme}`, async ({ page }) => {
+      await signIn(page)
+      await assistantOnHomeEditor(page, SMTP_SAVED)
+      const panel = await openAssistant(page)
+      await expect(panel.getByText(/Using:/)).toBeVisible()
+      await expect(
+        panel.getByRole("list", { name: "Suggested questions" })
+      ).toBeVisible()
+      const mask = await overlayOnly(page)
+      await page.evaluate(() => document.fonts.ready)
+      await expect(page).toHaveScreenshot(shot("ai-assistant"), { mask })
+      await askAssistant(page, panel)
+      await expect(
+        panel.getByRole("button", { name: /^Insert into / })
+      ).toBeVisible()
+      await expect(page).toHaveScreenshot(shot("ai-assistant-reply"), { mask })
+      await panel.getByRole("button", { name: "Past conversations" }).click()
+      await expect(
+        page.getByRole("button", {
+          name: "Make the hero heading shorter",
+          exact: true,
+        })
+      ).toBeVisible()
+      await expect(page).toHaveScreenshot(shot("ai-assistant-history"), {
+        mask,
+      })
+    })
+
+    // The owner-only component gallery, on its own sample data.
+    test(`admin design system ${colorScheme}`, async ({ page }) => {
+      await signIn(page, VISUAL_OWNER)
+      await page.goto("/admin/design")
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Design system" })
+      ).toBeVisible()
+      await page.evaluate(() => document.fonts.ready)
+      await expect(page).toHaveScreenshot(shot("design"), {
+        mask: await withLogo(page),
       })
     })
 
