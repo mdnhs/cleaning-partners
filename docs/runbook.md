@@ -29,7 +29,8 @@ never does. Never set them in the Dokploy environment.
 
 The container start scripts read a second group of input-only variables.
 The deploy workflow sets them in the Dokploy environment when the repo
-secrets exist; the entrypoint unsets them before `server.js` starts, so the
+secrets exist (`CP_R2_PREFIX` is never set by the workflow; set it by hand
+only if you want a sub-folder under `cp/`); the entrypoint unsets them before `server.js` starts, so the
 app never sees them: `CP_R2_ACCOUNT_ID`, `CP_R2_ACCESS_KEY_ID`,
 `CP_R2_SECRET_ACCESS_KEY`, `CP_R2_BUCKET`, `CP_R2_PREFIX` (`r2-bootstrap`,
 "R2 folder and bootstrap") and `CP_IMPORT_KEY`, `CP_IMPORT_SOURCE_SECRET`
@@ -859,6 +860,11 @@ overrides (`pnpm-workspace.yaml`): `undici@>=7 <8` pinned to `7.30.1`.
 
 ## Known limitations
 
+- No restrictive Content-Security-Policy: CP emits only `base-uri`,
+  `object-src` and `frame-ancestors` (see "Custom code and
+  Content-Security-Policy").
+- `clientIp` takes the leftmost `X-Forwarded-For` value, which is correct only
+  when Traefik's public entrypoint is untrusted (see "Client IPs and Traefik").
 - Visual pixel tests run on macOS only (baselines are macOS renders); CI runs
   E2E but not `tests/visual`. The admin visual specs use `retries: 2` because
   the sidebar logo flakes by about 6 px on some runs.

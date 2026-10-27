@@ -7,12 +7,14 @@ const deploy = readFileSync(".github/workflows/deploy.yml", "utf8")
 const dependabot = readFileSync(".github/dependabot.yml", "utf8")
 
 /** The `if:` line of `job` in a workflow (first one after the job key). */
-const jobIf = (workflow: string, job: string) =>
-  workflow.split(`\n  ${job}:\n`)[1]?.match(/\n    if: (.*)\n/)?.[1] ?? ""
-
 /** The text of one job: from its key to the next job (or the end). */
 const jobBody = (workflow: string, job: string) =>
   workflow.split(`\n  ${job}:\n`)[1]?.split(/\n  [a-z][a-z-]*:\n/)[0] ?? ""
+
+/** The `if:` line of `job` (searched in that job's own text only). */
+const jobIf = (workflow: string, job: string) =>
+  jobBody(workflow, job).match(/(?:^|\n)    if: (.*)\n/)?.[1] ?? ""
+
 
 describe("CI + deploy gating (R11-9)", () => {
   it("CI runs every gate, with Postgres and Mailpit where needed", () => {
