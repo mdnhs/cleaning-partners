@@ -32,16 +32,28 @@ test("help page: the dock's Help shows shortcuts and an owner's mailto", async (
     page.getByRole("heading", { name: "Help", level: 1 })
   ).toBeVisible()
 
+  // Docs layout: an outline on the left, one article at a time.
   await expect(
-    page.getByRole("heading", { name: "Keyboard shortcuts" })
+    page.getByRole("heading", { name: "How can we help?" })
   ).toBeVisible()
-  await expect(page.getByRole("heading", { name: "How do I…" })).toBeVisible()
-  await page.getByText("Add a customer testimonial", { exact: true }).click()
+  const outline = page.getByRole("navigation", { name: "Help outline" })
+
+  await outline
+    .getByRole("link", { name: "Add a customer testimonial", exact: true })
+    .click()
+  await expect(page).toHaveURL(/\/admin\/help#testimonials$/)
   await expect(
-    page.getByText("Drag rows to change the order", { exact: false })
+    page.getByRole("heading", { name: "Add a customer testimonial", level: 2 })
   ).toBeVisible()
+  await expect(
+    page.getByText("drag rows to change the order", { exact: false })
+  ).toBeVisible()
+
+  await outline.getByRole("link", { name: "Keyboard shortcuts" }).click()
   await expect(page.getByText("Search and go")).toBeVisible()
   await expect(page.getByText("Close panels")).toBeVisible()
+
+  await outline.getByRole("link", { name: "Who to contact" }).click()
   await expect(
     page.getByRole("link", { name: new RegExp(E2E_OWNER.email) })
   ).toHaveAttribute("href", `mailto:${E2E_OWNER.email}`)
