@@ -480,6 +480,20 @@ Type consistency: the CP names in Shared contracts are reused by phase plans.
       - `D5.x` review ids remain in `server/modules/preview/guard.ts`, `server/modules/redirects/service.ts`, `tests/unit/permissions.test.ts` and `tests/unit/seo/redirects.test.ts`.
     - Cut-over still waits for Phase 11 and the owner (B11).
 
+  - **Phase 11 outcome.**
+    - **Shipped.** Hardening: database backups confined to `cp/backups/`, restore drill, `secrets:rotate`, `demo:remove`, `custom-code:off`, `db:sync`, `r2:bootstrap`, `data:import` / `data:export-to-r2`; the security pass (cross-origin, log-secret scan, ip/like/api-client tests); production dependency patches (Task 5b: next 16.4.1, dompurify 3.4.17, undici 6.29.1); remaining e2e specs and the admin accessibility gate; 266 admin and consent visual baselines (the 48 existing stayed at 0 px); CI `e2e` and `image` jobs and a `deploy.yml` gated on CI success for `main`; `docs/runbook.md`, `docs/launch.md`, README, brief Changes, and the Help Guides card.
+    - **Rename.** The master calls this plan `phase-11-launch.md`; the file is `phase-11-hardening.md`.
+    - **Named differences from SP.** R2 keys always go through `r2ObjectKey` under `cp/` (R11-2); `ensure-env` adds `CP_R2_*` only when the repo secrets exist and never adds `CP_R2_PREFIX` (R11-9); the CP-only baselines (R11-7); `SOURCE_DATABASE_URL` and `SOURCE_BETTER_AUTH_SECRET` are input-only variables for `db:sync`.
+    - **Deferred.**
+      - The Redirects "To" column wraps character by character at 1440 px (admin layout bug; its baseline locks it in).
+      - Admin visual specs use `retries: 2` for a ~6 px sidebar-logo flake (fix app-side by rendering the logo at display size).
+      - Custom light primary hover token; clients and group-companies sheets not opened in the a11y gate.
+      - `ensure-env` follows `CP_IMPORT_*` repo secrets (documented); a hand-set `POSTGRES_PASSWORD` is not URL-encoded in the built `DATABASE_URL`; `parseArgs` errors in `db-sync` and `secrets-rotate` may echo a mistyped secret; two production approval prompts when reviewers are set.
+      - The Mailpit-ran CI grep and the action SHAs cannot be verified before the first CI run; `actionlint` was not run.
+      - Remaining advisories after `audit:deps` passes: 6 moderate, 2 low.
+    - **Gate.** unit 3252, dom 1090, integration 1055, build, visual 288, e2e 331 (1 skipped), `audit:deps`, `scripts:build`. One earlier e2e run had a single unnamed failure that did not reproduce.
+    - Cut-over (merge to `main`) is the owner's call (B11).
+
 ## Execution
 
 - Method: superpowers:subagent-driven-development.
