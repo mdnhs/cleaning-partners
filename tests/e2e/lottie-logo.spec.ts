@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 
-import { expect, type Page, test } from "@playwright/test"
+import { type BrowserContext, expect, type Page, test } from "@playwright/test"
 
 import { E2E_OWNER } from "./admin-accounts"
 import { BASE_URL } from "./env"
@@ -70,10 +70,11 @@ test("animated logo plays in the public header and footer", async ({
   expect(upload.status()).toBe(201)
   const item = (await upload.json()) as { id: string; mime: string }
   expect(item.mime).toBe("video/lottie+json")
-  await publishSite(page, { mediaId: item.id })
-
+  let visitor: BrowserContext | undefined
+  let still: BrowserContext | undefined
   try {
-    const visitor = await browser.newContext({ reducedMotion: "no-preference" })
+    await publishSite(page, { mediaId: item.id })
+    visitor = await browser.newContext({ reducedMotion: "no-preference" })
     const site = await visitor.newPage()
     const errors: string[] = []
     site.on("pageerror", (e) => errors.push(e.message))
@@ -101,8 +102,9 @@ test("animated logo plays in the public header and footer", async ({
     }
     expect(errors).toEqual([])
     await visitor.close()
+    visitor = undefined
 
-    const still = await browser.newContext({ reducedMotion: "reduce" })
+    still = await browser.newContext({ reducedMotion: "reduce" })
     const calm = await still.newPage()
     let playerRequested = false
     calm.on("request", (r) => {
@@ -113,8 +115,14 @@ test("animated logo plays in the public header and footer", async ({
     await calm.waitForTimeout(1_000)
     await expect(calm.locator("canvas[data-logo-animation]")).toHaveCount(0)
     expect(playerRequested).toBe(false)
-    await still.close()
   } finally {
+    await visitor?.close()
+    await still?.close()
     await publishSite(page, null)
+    const removed = await page.request.delete(
+      `/api/v1/admin/media/${item.id}`,
+      { headers: API }
+    )
+    expect(removed.ok(), `media not deleted: ${removed.status()}`).toBe(true)
   }
 })

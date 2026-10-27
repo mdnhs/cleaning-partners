@@ -1,9 +1,8 @@
 import { expect, type Page, test } from "@playwright/test"
 
 import { clientIpFor } from "../e2e/fixtures"
-import { visibleImagesLoaded } from "../e2e/media-pins"
-
 import { VISUAL_ADMIN } from "./admin-user"
+import { imagesSettled } from "./images-settled"
 
 // Baselines are macOS renders: CI runs E2E only.
 test.skip(process.platform !== "darwin", "visual baselines are macOS-only")
@@ -34,12 +33,7 @@ async function signIn(page: Page) {
   // Turnstile): the visual seed has none of them.
   await expect(page.locator('[data-slot="notification-dot"]')).toHaveCount(0)
   await page.evaluate(() => document.fonts.ready)
-  // The sidebar logo is scaled down from a large file: a half-decoded frame
-  // differs by a few pixels, so wait until it has loaded and decoded.
-  await expect.poll(() => visibleImagesLoaded(page)).toBe(true)
-  await page.evaluate(() =>
-    Promise.all([...document.images].map((img) => img.decode().catch(() => {})))
-  )
+  await imagesSettled(page)
 }
 
 test("admin shell frame", async ({ page }) => {

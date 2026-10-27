@@ -48,7 +48,11 @@ Known limitations are listed in the runbook ("Known limitations").
          gated deploy would fail on purpose. `BETTER_AUTH_SECRET` must be new
          (`openssl rand -base64 48`), never the sister site's; keep it in the
          password manager. `ensure-env` would generate any missing ones on the
-         first gated deploy, and never changes an existing value.
+         first gated deploy, and never changes an existing value. The one exception:
+         `CP_IMPORT_KEY` and `CP_IMPORT_SOURCE_SECRET` follow the repo secrets
+         of the same names whenever those are set, so remove or rotate a stale
+         import key from the repo secrets after the import ran, else the next
+         deploy re-imports.
    - [ ] Run exactly one app container (`replicas: 1`; never scale the
          service). The page cache and the scheduler's cache expiry are per
          process, so a second container would serve stale pages after a
@@ -124,6 +128,7 @@ Known limitations are listed in the runbook ("Known limitations").
 
   The answers are expected to match the sister site's on the same Dokploy
   server.
+
 - **A shared R2 bucket with the sister site (O7).** R2 tokens cannot be limited
   to a prefix, so CP's token can technically reach the other site's folder. The
   code's `cp/` guard is the protection. A separate bucket is the stronger

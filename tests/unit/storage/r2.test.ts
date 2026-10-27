@@ -328,9 +328,14 @@ describe("sharedR2Client (one keep-alive client per R2 settings)", () => {
   it("reuses the client while account and keys stay the same", () => {
     const first = sharedR2Client(config)
     expect(sharedR2Client({ ...config })).toBe(first)
-    expect(sharedR2Client({ ...config, bucket: "other" })).toBe(first)
     expect(r2Storage(config)).toBeDefined()
     expect(sharedR2Client(config)).toBe(first)
+  })
+
+  it("returns a different client when only the bucket changes", () => {
+    const first = sharedR2Client(config)
+    const other = sharedR2Client({ ...config, bucket: "other" })
+    expect(other).not.toBe(first)
   })
 
   it("destroys the old client when the settings change or R2 is reset", () => {

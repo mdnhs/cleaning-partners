@@ -188,7 +188,7 @@ export function r2Failure(err: unknown): Error {
   )
 }
 
-/** Fields that shape the client (the bucket is per command). Hashed: no secret is kept in clear as a key. */
+/** Fields that shape the client (the bucket binds its CopySource guard). Hashed: no secret is kept in clear as a key. */
 function clientFingerprint(c: R2Config): string {
   return createHash("sha256")
     .update(
@@ -197,6 +197,7 @@ function clientFingerprint(c: R2Config): string {
         c.jurisdiction,
         c.accessKeyId,
         c.secretAccessKey,
+        c.bucket,
       ])
     )
     .digest("hex")

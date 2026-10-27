@@ -20,6 +20,7 @@ import {
   VISUAL_EDITOR,
   VISUAL_OWNER,
 } from "./admin-user"
+import { imagesSettled } from "./images-settled"
 
 // Baselines are macOS renders: CI runs E2E only.
 test.skip(process.platform !== "darwin", "visual baselines are macOS-only")
@@ -236,7 +237,8 @@ const SEO_OVERVIEW = {
       title: "Preparing Your Office for a Deep Clean | Cleaning Partners Ltd.",
       description: "Commercial and domestic cleaning across Ireland.",
       fallback: {
-        title: "Preparing Your Office for a Deep Clean | Cleaning Partners Ltd.",
+        title:
+          "Preparing Your Office for a Deep Clean | Cleaning Partners Ltd.",
         description: "Commercial and domestic cleaning across Ireland.",
       },
     },
@@ -380,40 +382,6 @@ const STABLE_CSS = `
   [data-slot="website-host"] { width: 12rem }
   [aria-label="Signed-in devices"] li > div > span:last-child { width: 18rem }
 `
-
-/**
- * Every image in view has loaded and decoded (the sidebar logo is scaled
- * down from a large file: a half-decoded frame differs by a few pixels).
- */
-async function imagesSettled(page: Page) {
-  await expect.poll(() => visibleImagesLoaded(page)).toBe(true)
-  // Only the images in view: decode() on a lazy image below the fold would
-  // make the browser fetch it.
-  await page.evaluate(() =>
-    Promise.all(
-      [...document.images]
-        .filter((img) => {
-          const r = img.getBoundingClientRect()
-          return (
-            r.width > 0 &&
-            r.bottom > 0 &&
-            r.top < window.innerHeight &&
-            getComputedStyle(img).visibility !== "hidden"
-          )
-        })
-        .map((img) => img.decode().catch(() => {}))
-    )
-  )
-  // The scaled sidebar logo is repainted a frame or two after it decodes.
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) =>
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-        )
-      )
-  )
-}
 
 async function masks(page: Page) {
   await imagesSettled(page)
