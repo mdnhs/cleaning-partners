@@ -28,7 +28,6 @@ import {
 } from "@/templates/builder/views"
 import { contactView } from "@/templates/contact/view"
 import { homeView } from "@/templates/home/view"
-import { legalView } from "@/templates/legal/view"
 import type { PageKey } from "@/templates/registry"
 import { servicesView } from "@/templates/services/view"
 import {
@@ -177,7 +176,15 @@ describe("blockView props equal the fixed pages' props (R10-3 layer 1)", () => {
   })
 
   it("richtext carries the doc and the check icon", () => {
-    const doc = s.pages.privacy.data.body
+    const doc = {
+      type: "doc" as const,
+      content: [
+        {
+          type: "paragraph" as const,
+          content: [{ type: "text" as const, text: "Policy" }],
+        },
+      ],
+    }
     const view = blockView(mk("richtext", { doc }), s)
     expect(view.props).toEqual({
       doc,
@@ -273,14 +280,6 @@ describe("blocksFromTemplate round trip (R10-11)", () => {
       renderToStaticMarkup(<Contact {...c.contact} />),
       renderToStaticMarkup(<QuoteForm {...c.form} />),
       renderToStaticMarkup(<LocationMap {...c.map} />),
-    ])
-  })
-
-  it.each(["privacy", "terms"] as const)("%s", (key) => {
-    const l = legalView(s, key)
-    expect(props(key)).toEqual([
-      l.hero,
-      { doc: l.body, checkIcon: l.checkIcon },
     ])
   })
 

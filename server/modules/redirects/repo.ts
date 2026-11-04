@@ -9,6 +9,7 @@ import {
   ilike,
   inArray,
   isNotNull,
+  isNull,
   or,
   sql,
 } from "drizzle-orm"
@@ -128,7 +129,13 @@ export async function listPublishedSlugs(
   const rows = await db
     .select({ slug: table.slug })
     .from(table)
-    .where(and(inArray(table.slug, [...slugs]), isNotNull(table.published)))
+    .where(
+      and(
+        inArray(table.slug, [...slugs]),
+        isNotNull(table.published),
+        kindScope(kind)
+      )
+    )
   return new Set(rows.map((r) => r.slug))
 }
 
@@ -219,7 +226,17 @@ const SLUG_TABLES = {
   service: services,
   article: articles,
   builder: builderPages,
+  /** Legal pages: builder pages with a legal_order, served at /<slug>. */
+  legal: builderPages,
 } as const
+
+/** Builder pages split in two by legal_order; the other kinds are not split. */
+const kindScope = (kind: keyof typeof SLUG_TABLES) =>
+  kind === "builder"
+    ? isNull(builderPages.legalOrder)
+    : kind === "legal"
+      ? isNotNull(builderPages.legalOrder)
+      : undefined
 
 /** True when a published service/article/builder page uses `slug` (its page is live). */
 export async function isPublishedSlug(
@@ -231,7 +248,9 @@ export async function isPublishedSlug(
   const rows = await db
     .select({ id: table.id })
     .from(table)
-    .where(and(eq(table.slug, slug), isNotNull(table.published)))
+    .where(
+      and(eq(table.slug, slug), isNotNull(table.published), kindScope(kind))
+    )
     .limit(1)
   return rows.length > 0
 }

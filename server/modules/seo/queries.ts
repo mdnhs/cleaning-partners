@@ -69,7 +69,7 @@ export async function listSitemapEntries(): Promise<SitemapSource[]> {
 function pathOf(row: SitemapRow): string | null {
   if (row.kind === "service") return `/services/${row.key}`
   if (row.kind === "article") return `/blog/${row.key}`
-  if (row.kind === "builder") return `/p/${row.key}`
+  if (row.kind === "builder") return row.legal ? `/${row.key}` : `/p/${row.key}`
   return isPageKey(row.key) ? PAGE_PATHS[row.key] : null
 }
 

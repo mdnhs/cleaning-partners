@@ -176,6 +176,20 @@
       "when": 1792990935636,
       "tag": "0024_quote_form_feedback",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793804622497,
+      "tag": "0025_legal_pages",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793806383573,
+      "tag": "0026_move_privacy_terms_to_legal_pages",
+      "breakpoints": true
     }
   ]
 }

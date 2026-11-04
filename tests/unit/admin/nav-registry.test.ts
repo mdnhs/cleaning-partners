@@ -69,6 +69,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     expect(NAV_ITEMS.map((i) => i.id)).toEqual([
       "dashboard",
       "pages",
+      "legal-pages",
       "blog",
       "services",
       "collections",

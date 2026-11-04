@@ -37,25 +37,16 @@ describe("scanContent (content QA)", () => {
     expect(scanContent(clean)).toEqual([])
   })
 
-  it("QA flags [phone] in contact and unpublished terms", () => {
+  it("QA flags [phone] in contact", () => {
     const findings = scanContent({
       ...clean,
       settings: { ...clean.settings, contact: { phone: "[phone]" } },
-      pages: [
-        legalOk[0]!,
-        { key: "terms", data: {}, published: false, updatedSinceSeed: true },
-      ],
     })
     expect(findings).toEqual([
       expect.objectContaining({
         rule: "placeholder-contact",
         label: "Contact details",
         href: "/admin/settings/contact",
-      }),
-      expect.objectContaining({
-        rule: "legal-unpublished",
-        label: "Terms of use",
-        href: "/admin/pages/terms",
       }),
     ])
     // [phone] is reported once, as a contact placeholder (not also as copy).
@@ -146,21 +137,6 @@ describe("scanContent (content QA)", () => {
     })
     expect(findings).toHaveLength(1)
     expect(findings[0]!.message).toMatch(/and 2 more/)
-  })
-
-  it("legal-unpublished: privacy or terms missing, unpublished or never edited since the seed", () => {
-    const findings = scanContent({
-      ...clean,
-      pages: [
-        { key: "privacy", data: {}, published: true, updatedSinceSeed: false },
-      ],
-    })
-    expect(findings.map((f) => [f.rule, f.href])).toEqual([
-      ["legal-unpublished", "/admin/pages/privacy"],
-      ["legal-unpublished", "/admin/pages/terms"],
-    ])
-    expect(findings[0]!.message).toMatch(/starter text/i)
-    expect(findings[1]!.message).toMatch(/missing/i)
   })
 
   it("scans builder pages (/p/<slug>) and links to their editor", () => {

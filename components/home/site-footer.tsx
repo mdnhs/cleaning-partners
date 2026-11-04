@@ -24,7 +24,11 @@ export type SiteFooterProps = {
     }[]
   }
   copyright: string
-  legal: { privacy: FooterLink; terms: FooterLink; login?: FooterLink }
+  legal: {
+    /** The published legal pages, in the admin's order. */
+    pages: FooterLink[]
+    login?: FooterLink
+  }
 }
 
 const FOOTER_LINK_CLASS =
@@ -192,31 +196,20 @@ export function SiteFooter({
 
         <div className="flex flex-col justify-between gap-2 text-sm/[normal] text-white/60 sm:flex-row">
           <p>{copyright}</p>
-          <p className="flex gap-3">
-            <Link
-              href={legal.privacy.href}
-              className="underline-offset-4 transition-colors duration-200 hover:text-white hover:underline"
-            >
-              {legal.privacy.label}
-            </Link>
-            <span aria-hidden>·</span>
-            <Link
-              href={legal.terms.href}
-              className="underline-offset-4 transition-colors duration-200 hover:text-white hover:underline"
-            >
-              {legal.terms.label}
-            </Link>
-            {legal.login ? (
-              <>
-                <span aria-hidden>·</span>
-                <Link
-                  href={legal.login.href}
-                  className="underline-offset-4 transition-colors duration-200 hover:text-white hover:underline"
-                >
-                  {legal.login.label}
-                </Link>
-              </>
-            ) : null}
+          <p className="flex flex-wrap gap-x-3 gap-y-1">
+            {[...legal.pages, ...(legal.login ? [legal.login] : [])].map(
+              (link, index) => (
+                <span key={link.href} className="contents">
+                  {index > 0 ? <span aria-hidden>·</span> : null}
+                  <Link
+                    href={link.href}
+                    className="underline-offset-4 transition-colors duration-200 hover:text-white hover:underline"
+                  >
+                    {link.label}
+                  </Link>
+                </span>
+              )
+            )}
           </p>
         </div>
       </Container>

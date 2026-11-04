@@ -45,6 +45,16 @@ export async function search(
         }))
     )
 
+  if (can({ page: ["read"] }))
+    for (const row of await repo.searchLegalPages(db, q, LIMIT))
+      items.push({
+        type: "page",
+        id: row.id,
+        title: row.title,
+        subtitle: `/${row.slug}`,
+        href: `/admin/pages/custom/${row.id}`,
+      })
+
   if (can({ service: ["read"] }))
     for (const row of await repo.searchServices(db, q, LIMIT))
       items.push({
@@ -149,6 +159,12 @@ export async function options(
       label: PAGE_LABELS[key],
       group: "Pages",
     }))
+  const legalItems = async (): Promise<OptionItem[]> =>
+    (await repo.legalPageOptionRows(db)).map((row) => ({
+      value: `/${row.slug}`,
+      label: row.title,
+      group: "Legal pages",
+    }))
   const serviceItems = async (byPath: boolean): Promise<OptionItem[]> =>
     (await repo.serviceOptionRows(db)).map((row) => ({
       value: byPath ? `/services/${row.slug}` : row.slug,
@@ -165,7 +181,7 @@ export async function options(
   switch (collection) {
     case "pages":
       if (!can({ page: ["read"] })) throw forbidden()
-      return { items: pages() }
+      return { items: [...pages(), ...(await legalItems())] }
     case "services":
       if (!can({ service: ["read"] })) throw forbidden()
       return { items: await serviceItems(false) }
@@ -183,7 +199,10 @@ export async function options(
       }
     case "links": {
       const items: OptionItem[] = []
-      if (can({ page: ["read"] })) items.push(...pages())
+      if (can({ page: ["read"] })) {
+        items.push(...pages())
+        items.push(...(await legalItems()))
+      }
       if (can({ service: ["read"] })) items.push(...(await serviceItems(true)))
       if (can({ article: ["read"] })) items.push(...(await articleItems(true)))
       return { items }

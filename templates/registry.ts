@@ -4,7 +4,6 @@ import { aboutTemplate } from "./about/schema"
 import { blogTemplate } from "./blog/schema"
 import { contactTemplate } from "./contact/schema"
 import { homeTemplate } from "./home/schema"
-import { legalTemplate } from "./legal/schema"
 import { servicesTemplate } from "./services/schema"
 
 /** Fixed templates (spec §5.2): schema validates a page's draft/published data. */
@@ -14,7 +13,6 @@ export const templates = {
   services: { schema: servicesTemplate, label: "Services" },
   blog: { schema: blogTemplate, label: "Blog" },
   contact: { schema: contactTemplate, label: "Contact" },
-  legal: { schema: legalTemplate, label: "Legal page" },
 } as const
 
 export type TemplateName = keyof typeof templates
@@ -22,15 +20,13 @@ export type TemplateData<T extends TemplateName> = z.infer<
   (typeof templates)[T]["schema"]
 >
 
-/** Every page row: key → template. Seeded; never created or deleted in the admin. There is no team page (B10). */
+/** Every page row: key → template. Seeded; never created or deleted in the admin. There is no team page (B10). Privacy, terms and the other policies are legal pages (builder pages at the site root). */
 export const PAGES = {
   home: "home",
   about: "about",
   services: "services",
   blog: "blog",
   contact: "contact",
-  privacy: "legal",
-  terms: "legal",
 } as const satisfies Record<string, TemplateName>
 
 export type PageKey = keyof typeof PAGES
@@ -44,8 +40,6 @@ export const PAGE_PATHS = {
   services: "/services",
   blog: "/blog",
   contact: "/contact",
-  privacy: "/privacy",
-  terms: "/terms",
 } as const satisfies Record<PageKey, string>
 
 export function isPageKey(value: string): value is PageKey {

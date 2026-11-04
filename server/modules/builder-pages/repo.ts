@@ -8,7 +8,12 @@ import {
   eq,
   getTableColumns,
   ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  max,
   or,
+  sql,
 } from "drizzle-orm"
 
 import type { DraftDocument } from "@/blocks/document"
@@ -40,15 +45,27 @@ export async function listBuilderPagesForAdmin(
   db: DbOrTx,
   opts: {
     q?: string
+    /** custom (/p/…) or legal (/…) pages; legal ones list in footer order. */
+    kind: "custom" | "legal"
     sort: Sort<"title" | "slug" | "updatedAt">
     page: number
     pageSize: number
   }
 ) {
   const pattern = opts.q ? containsPattern(opts.q) : null
+  const kindWhere =
+    opts.kind === "legal"
+      ? isNotNull(builderPages.legalOrder)
+      : isNull(builderPages.legalOrder)
   const where = pattern
-    ? or(ilike(builderPages.title, pattern), ilike(builderPages.slug, pattern))
-    : undefined
+    ? and(
+        kindWhere,
+        or(
+          ilike(builderPages.title, pattern),
+          ilike(builderPages.slug, pattern)
+        )
+      )
+    : kindWhere
   const [{ total }] = await db
     .select({ total: count() })
     .from(builderPages)
@@ -65,7 +82,9 @@ export async function listBuilderPagesForAdmin(
     .leftJoin(users, eq(users.id, builderPages.updatedBy))
     .where(where)
     .orderBy(
-      opts.sort.dir === "asc" ? asc(column) : desc(column),
+      ...(opts.kind === "legal"
+        ? [asc(builderPages.legalOrder)]
+        : [opts.sort.dir === "asc" ? asc(column) : desc(column)]),
       asc(builderPages.slug)
     )
     .limit(opts.pageSize)
@@ -81,6 +100,7 @@ export async function insertBuilderPage(
     draft: DraftDocument
     createdBy: string
     updatedBy: string
+    legalOrder?: number | null
   }
 ): Promise<string> {
   const [row] = await db
@@ -122,6 +142,49 @@ export async function deleteBuilderPageIfVersion(
   return rows.length > 0
 }
 
+/** The next footer position: after every existing legal page. */
+export async function nextLegalOrder(db: DbOrTx): Promise<number> {
+  const [row] = await db
+    .select({ last: max(builderPages.legalOrder) })
+    .from(builderPages)
+    .where(isNotNull(builderPages.legalOrder))
+  return (row?.last ?? -1) + 1
+}
+
+/** Every legal page id in footer order (the reorder list must match it). */
+export async function legalPageIds(db: DbOrTx): Promise<string[]> {
+  const rows = await db
+    .select({ id: builderPages.id })
+    .from(builderPages)
+    .where(isNotNull(builderPages.legalOrder))
+    .orderBy(asc(builderPages.legalOrder), asc(builderPages.slug))
+  return rows.map((r) => r.id)
+}
+
+/** legal_order = index, for `ids` in the given order (one statement). */
+export async function applyLegalOrder(db: DbOrTx, ids: readonly string[]) {
+  if (ids.length === 0) return
+  const cases = sql.join(
+    ids.map((id, index) => sql`when ${id}::uuid then ${index}::int`),
+    sql` `
+  )
+  await db
+    .update(builderPages)
+    .set({ legalOrder: sql`case ${builderPages.id} ${cases} end` })
+    .where(inArray(builderPages.id, [...ids]))
+}
+
+/** Published legal pages in footer order: just what the footer links need. */
+export async function listPublishedLegalLinks(db: DbOrTx) {
+  return db
+    .select({ slug: builderPages.slug, title: builderPages.title })
+    .from(builderPages)
+    .where(
+      and(isNotNull(builderPages.legalOrder), isNotNull(builderPages.published))
+    )
+    .orderBy(asc(builderPages.legalOrder), asc(builderPages.slug))
+}
+
 /** One page by slug (draft and published copies); null when unknown. */
 export async function findBuilderPageBySlug(db: DbOrTx, slug: string) {
   const [row] = await db
@@ -130,6 +193,7 @@ export async function findBuilderPageBySlug(db: DbOrTx, slug: string) {
       slug: builderPages.slug,
       title: builderPages.title,
       seo: builderPages.seo,
+      legalOrder: builderPages.legalOrder,
       draft: builderPages.draft,
       published: builderPages.published,
     })

@@ -8,7 +8,6 @@ import type { AboutTemplate } from "@/templates/about/schema"
 import type { BlogTemplate } from "@/templates/blog/schema"
 import type { ContactTemplate } from "@/templates/contact/schema"
 import type { HomeTemplate } from "@/templates/home/schema"
-import type { LegalTemplate } from "@/templates/legal/schema"
 import type { PageData, PageKey } from "@/templates/registry"
 import type { ServicesTemplate } from "@/templates/services/schema"
 
@@ -84,11 +83,6 @@ const contactPage = (d: ContactTemplate): Spec[] => [
   sharedBlock("map"),
 ]
 
-const legal = (d: LegalTemplate): Spec[] => [
-  ["hero.page", d.hero],
-  ["richtext", { doc: d.body }],
-]
-
 // The filterable, paginated article list is a page feature, not a section, so
 // a copy of Blog is not identical: the editor adds a Blog block themselves.
 const blog = (d: BlogTemplate): Spec[] => [["hero.page", d.hero], contact()]
@@ -110,9 +104,6 @@ export function blocksFromTemplate<K extends PageKey>(
       return toBlocks(services(data as ServicesTemplate))
     case "contact":
       return toBlocks(contactPage(data as ContactTemplate))
-    case "privacy":
-    case "terms":
-      return toBlocks(legal(data as LegalTemplate))
     case "blog":
       return toBlocks(blog(data as BlogTemplate))
   }

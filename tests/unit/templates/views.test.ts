@@ -97,11 +97,17 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       "/images/home/security-partners.png",
       "/images/home/mjs-eco.png",
     ])
+    // The legal links are the published legal pages (loaded by the layout).
     expect(chrome.footer.legal).toEqual({
-      privacy: { label: "Privacy Policy", href: "/privacy" },
-      terms: { label: "Terms", href: "/terms" },
+      pages: [],
       login: { label: "Login", href: "/admin/sign-in" },
     })
+    expect(
+      chromeView({
+        ...s,
+        legalLinks: [{ label: "Privacy Policy", href: "/privacy" }],
+      }).footer.legal.pages
+    ).toEqual([{ label: "Privacy Policy", href: "/privacy" }])
     expect(chrome.footer.copyright).toBe(
       "© 2026 Cleaning Partners Ltd. All rights reserved."
     )

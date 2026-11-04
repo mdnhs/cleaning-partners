@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest"
 
+import { RICH_TEXT_MAX_CHARS, RICH_TEXT_MAX_NODES } from "@/blocks/registry"
+
 import { contactPlaceholders, interpolate } from "@/lib/interpolate"
 import { PAGE_KEYS, PAGES, templates } from "@/templates/registry"
 import {
@@ -7,6 +9,7 @@ import {
   fixtureMediaLookup,
   MEDIA,
 } from "@/server/db/seed/fixtures/media"
+import { legalPagesFixture } from "@/server/db/seed/fixtures/legal-pages"
 import { pagesFixture } from "@/server/db/seed/fixtures/pages"
 import { settingsFixture } from "@/server/db/seed/fixtures/settings"
 
@@ -201,12 +204,11 @@ describe("page fixtures (master 3.2)", () => {
     })
   })
 
-  it("about and contact heroes have no own image; services, blog and legal do", () => {
+  it("about and contact heroes have no own image; services and blog do", () => {
     expect("image" in fixture.about.data.hero).toBe(false)
     expect("image" in fixture.contact.data.hero).toBe(false)
     expect(fixture.services.data.hero.image).toBeDefined()
     expect(fixture.blog.data.hero.image).toBeDefined()
-    expect(fixture.privacy.data.hero.image).toBeDefined()
   })
 
   it("home has no seo title; the inner pages take theirs from titleTemplate", () => {
@@ -232,12 +234,19 @@ describe("page fixtures (master 3.2)", () => {
     )
   })
 
-  it("legal pages are CP's own, with distinct titles and a body", () => {
-    expect(fixture.privacy.data.hero.title).toBe("Privacy Policy")
-    expect(fixture.terms.data.hero.title).toBe("Terms and Conditions")
-    for (const key of ["privacy", "terms"] as const) {
-      expect(fixture[key].data.body.content.length).toBeGreaterThan(3)
-      expect(JSON.stringify(fixture[key].data)).toContain("Cleaning Partners")
+  it("legal pages are CP's own, with distinct titles and a body that fits one text block", () => {
+    const legal = legalPagesFixture(fixtureMediaLookup)
+    expect(legal.map((p) => [p.slug, p.title])).toEqual([
+      ["privacy", "Privacy Policy"],
+      ["terms", "Terms and Conditions"],
+    ])
+    for (const page of legal) {
+      expect(page.body.content.length).toBeGreaterThan(3)
+      expect(JSON.stringify(page)).toContain("Cleaning Partners")
+      expect(page.body.content.length).toBeLessThanOrEqual(RICH_TEXT_MAX_NODES)
+      expect(JSON.stringify(page.body).length).toBeLessThanOrEqual(
+        RICH_TEXT_MAX_CHARS
+      )
     }
   })
 })

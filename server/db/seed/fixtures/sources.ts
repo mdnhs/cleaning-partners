@@ -78,8 +78,6 @@ export function fixtureSiteSources(): SiteSources {
       services: pageOf(fx.pages.services),
       blog: pageOf(fx.pages.blog),
       contact: pageOf(fx.pages.contact),
-      privacy: pageOf(fx.pages.privacy),
-      terms: pageOf(fx.pages.terms),
     },
     services: fx.services.map((s, sortOrder) => ({
       id: `service:${s.slug}`,

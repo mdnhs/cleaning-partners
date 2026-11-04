@@ -9,7 +9,7 @@ import type { SiteSources } from "@/templates/shared/sources"
 describe("page metadata", () => {
   const s = fixtureSiteSources()
   const withSeo = (
-    key: "about" | "privacy",
+    key: "about" | "contact",
     seo: SiteSources["pages"]["about"]["seo"]
   ): SiteSources => ({
     ...s,
@@ -35,8 +35,8 @@ describe("page metadata", () => {
 
   it("an own title and noindex win", () => {
     const m = pageMetadata(
-      withSeo("privacy", { title: "Own", noindex: true }),
-      "privacy"
+      withSeo("contact", { title: "Own", noindex: true }),
+      "contact"
     )
     expect(m.title).toBe("Own")
     expect(m.robots).toEqual({ index: false, follow: true })

@@ -12,40 +12,36 @@ import {
   PAGE_KEYS,
   PAGE_PATHS,
   PAGES,
-  templateSchemaFor,
   templates,
 } from "@/templates/registry"
 
 import { schemaPaths } from "../helpers/schema-paths"
 
 describe("template registry (R3-2)", () => {
-  it("has six templates and no team", () => {
+  it("has five templates and no team", () => {
     expect(Object.keys(templates)).toEqual([
       "home",
       "about",
       "services",
       "blog",
       "contact",
-      "legal",
     ])
     expect(Object.keys(PAGES)).not.toContain("team")
   })
 
-  it("maps privacy and terms to the legal template", () => {
-    expect(PAGES.privacy).toBe("legal")
-    expect(PAGES.terms).toBe("legal")
-    expect(templateSchemaFor("terms")).toBe(templates.legal.schema)
+  it("has no privacy or terms page: they are legal pages now", () => {
+    expect(Object.keys(PAGES)).not.toContain("privacy")
+    expect(Object.keys(PAGES)).not.toContain("terms")
+    expect(Object.keys(templates)).not.toContain("legal")
   })
 
-  it("serves the seven public paths", () => {
+  it("serves the five public paths", () => {
     expect(PAGE_PATHS).toEqual({
       home: "/",
       about: "/about",
       services: "/services",
       blog: "/blog",
       contact: "/contact",
-      privacy: "/privacy",
-      terms: "/terms",
     })
   })
 
@@ -55,7 +51,7 @@ describe("template registry (R3-2)", () => {
     expect(isPageKey("toString")).toBe(false)
   })
 
-  it("lib/schemas/api/content re-exports the registry's seven keys", () => {
+  it("lib/schemas/api/content re-exports the registry's five keys", () => {
     expect(API_PAGE_KEYS).toBe(PAGE_KEYS)
     expect([...API_PAGE_KEYS]).toEqual([
       "home",
@@ -63,10 +59,9 @@ describe("template registry (R3-2)", () => {
       "services",
       "blog",
       "contact",
-      "privacy",
-      "terms",
     ])
-    expect(pageKeyParam.safeParse({ key: "terms" }).success).toBe(true)
+    expect(pageKeyParam.safeParse({ key: "about" }).success).toBe(true)
+    expect(pageKeyParam.safeParse({ key: "terms" }).success).toBe(false)
     expect(pageKeyParam.safeParse({ key: "team" }).success).toBe(false)
     const source = readFileSync("lib/schemas/api/content.ts", "utf8")
     expect(source).not.toMatch(/const PAGE_KEYS/)

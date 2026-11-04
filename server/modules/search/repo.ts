@@ -1,12 +1,13 @@
 import "server-only"
 
-import { and, asc, desc, ilike, ne, or, sql } from "drizzle-orm"
+import { and, asc, desc, ilike, isNotNull, ne, or, sql } from "drizzle-orm"
 
 import type { DbOrTx } from "@/server/db/client"
 import { containsPattern } from "@/server/db/like"
 import {
   articleCategories,
   articles,
+  builderPages,
   clients,
   groupCompanies,
   leads,
@@ -29,6 +30,37 @@ export function searchServices(db: DbOrTx, q: string, limit: number) {
     )
     .orderBy(asc(services.sortOrder))
     .limit(limit)
+}
+
+/** Legal pages (builder pages with a legal order) by title or address. */
+export function searchLegalPages(db: DbOrTx, q: string, limit: number) {
+  return db
+    .select({
+      id: builderPages.id,
+      slug: builderPages.slug,
+      title: builderPages.title,
+    })
+    .from(builderPages)
+    .where(
+      and(
+        isNotNull(builderPages.legalOrder),
+        or(
+          ilike(builderPages.title, contains(q)),
+          ilike(builderPages.slug, contains(q))
+        )
+      )
+    )
+    .orderBy(asc(builderPages.legalOrder))
+    .limit(limit)
+}
+
+/** Every legal page in footer order (link pickers). */
+export function legalPageOptionRows(db: DbOrTx) {
+  return db
+    .select({ slug: builderPages.slug, title: builderPages.title })
+    .from(builderPages)
+    .where(isNotNull(builderPages.legalOrder))
+    .orderBy(asc(builderPages.legalOrder), asc(builderPages.slug))
 }
 
 /** Articles by draft title or slug, live ones newest first, then drafts. */

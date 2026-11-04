@@ -343,6 +343,7 @@ describe("AdminShell (master 4.1)", () => {
     ).toEqual([
       "Dashboard",
       "Pages",
+      "Legal pages",
       "Blog",
       "Services",
       "Collections",

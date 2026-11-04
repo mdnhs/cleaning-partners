@@ -23,7 +23,6 @@ const COPIES: [PageKey, string][] = [
   ["about", "/about"],
   ["services", "/services"],
   ["contact", "/contact"],
-  ["privacy", "/privacy"],
 ]
 
 type Dto = { id: string; version: number }

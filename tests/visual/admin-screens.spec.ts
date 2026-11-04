@@ -68,11 +68,10 @@ const DASHBOARD = {
   contentHealth: { complete: 14, needsWork: 5, missing: 3 },
   qa: [
     {
-      rule: "legal-unpublished",
-      label: "Terms of use",
-      href: "/admin/pages/terms",
-      message:
-        "Still the starter text: have it reviewed, then publish your own.",
+      rule: "placeholder-copy",
+      label: "Contact details",
+      href: "/admin/settings/contact",
+      message: 'Found "[phone]".',
     },
   ],
   nextUp: [

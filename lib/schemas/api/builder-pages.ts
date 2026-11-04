@@ -5,6 +5,7 @@ import {
   BUILDER_SLUG_MAX,
   BUILDER_SLUG_PATTERN,
   isReservedBuilderSlug,
+  legalPath,
 } from "@/lib/builder-slug"
 import type { Seo } from "@/lib/schemas/common"
 
@@ -14,8 +15,16 @@ import { listQuery, sortParam } from "./list"
 /** media_usages / revisions / audit entity type of a builder page. */
 export const BUILDER_ENTITY = "builder-page"
 
-/** Public path of a builder page. */
+/** Public path of a custom builder page. */
 export const builderPath = (slug: string) => `/p/${slug}`
+
+/** Public path of a builder page: legal pages live at the site root. */
+export const pagePath = (page: { slug: string; legalOrder: number | null }) =>
+  page.legalOrder === null ? builderPath(page.slug) : legalPath(page.slug)
+
+/** Which builder pages a list shows: custom pages (/p/…) or legal pages (/…). */
+export const BUILDER_KINDS = ["custom", "legal"] as const
+export type BuilderKind = (typeof BUILDER_KINDS)[number]
 
 /** A slug under /p/: lowercase words, at most 60 characters, not reserved. */
 export const builderSlug = z
@@ -31,6 +40,7 @@ const title = z.string().trim().min(1, "Required").max(200)
 const version = z.number().int().min(1)
 
 export const builderPageListQuery = listQuery.extend({
+  kind: z.enum(BUILDER_KINDS).default("custom"),
   sort: sortParam(["title", "slug", "updatedAt"], {
     field: "updatedAt",
     dir: "desc",
@@ -41,9 +51,22 @@ export type BuilderPageListQuery = z.output<typeof builderPageListQuery>
 /** A blank page: an address and a title. */
 export const newBuilderPageInput = z.object({ slug: builderSlug, title })
 
+/**
+ * A new legal page: an address (checked against the site's own routes by the
+ * service) and a title. It starts from the page-hero + text layout.
+ */
+export const newLegalPageInput = newBuilderPageInput
+
+/** PUT /builder-pages/legal-order: the footer order, first to last. */
+export const legalOrderInput = z.object({
+  ids: z.array(z.uuid()).min(1).max(200),
+})
+
 /** POST /builder-pages: `seed` (Copy to new page) is checked as a draft. */
 export const createBuilderPageInput = newBuilderPageInput.extend({
   seed: DraftDocument.optional(),
+  /** true = a legal page at /<slug> (appended to the footer order). */
+  legal: z.boolean().optional(),
 })
 
 /** PUT /builder-pages/:id/draft: the service validates against DraftDocument. */
@@ -75,6 +98,8 @@ export type BuilderPageDto = VersionedDto<DraftDocument> & {
   title: string
   path: string
   seo: Seo
+  /** null = a custom page; a number = a legal page (its footer position). */
+  legalOrder: number | null
 }
 
 export type BuilderPageListItem = Omit<BuilderPageDto, "draft" | "published">

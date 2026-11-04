@@ -2,6 +2,7 @@ import "server-only"
 
 import { and, count, eq, inArray } from "drizzle-orm"
 
+import { DraftDocument } from "@/blocks/document"
 import { seo } from "@/lib/schemas/common"
 import { articleContent } from "@/lib/schemas/content/article"
 import { categorySchema } from "@/lib/schemas/content/category"
@@ -15,6 +16,7 @@ import type { Db } from "@/server/db/client"
 import {
   articleCategories,
   articles,
+  builderPages,
   clients,
   groupCompanies,
   media,
@@ -36,6 +38,7 @@ export const SEED_TABLES = [
   "articleCategories",
   "settings",
   "pages",
+  "legalPages",
   "services",
   "articles",
   "teamMembers",
@@ -148,6 +151,45 @@ export async function seedContent(
       .onConflictDoNothing({ target: pages.key })
       .returning({ id: pages.id })
 
+    // Legal pages (privacy, terms): builder pages at the site root, in
+    // footer order, published like the fixed pages.
+    const insertedLegalPages = await tx
+      .insert(builderPages)
+      .values(
+        fx.legalPages.map((page, legalOrder) => {
+          const doc = DraftDocument.parse({
+            blocks: [
+              {
+                id: "legal-hero",
+                type: "hero.page",
+                anchor: "hero",
+                hidden: false,
+                data: page.hero,
+              },
+              {
+                id: "legal-text",
+                type: "richtext",
+                anchor: "policy",
+                hidden: false,
+                data: { doc: page.body },
+              },
+            ],
+          })
+          return {
+            slug: page.slug,
+            title: page.title,
+            seo: seo.parse(page.seo),
+            legalOrder,
+            draft: doc,
+            published: doc,
+            status: "published" as const,
+            publishedAt: now,
+          }
+        })
+      )
+      .onConflictDoNothing({ target: builderPages.slug })
+      .returning({ id: builderPages.id })
+
     const insertedServices = await tx
       .insert(services)
       .values(
@@ -256,6 +298,7 @@ export async function seedContent(
       articleCategories: insertedCategories.length,
       settings: insertedSettings.length,
       pages: insertedPages.length,
+      legalPages: insertedLegalPages.length,
       services: insertedServices.length,
       articles: insertedArticles.length,
       teamMembers: insertedTeam.length,

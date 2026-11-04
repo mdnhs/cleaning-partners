@@ -1,5 +1,6 @@
 import "server-only"
 
+import { isReservedLegalSlug } from "@/lib/builder-slug"
 import { SLUG_PATTERN } from "@/lib/schemas/common"
 import {
   FILE_EXTENSION,
@@ -41,6 +42,8 @@ const PASS = { kind: "pass" } as const
 const MISSING = { kind: "missing" } as const
 const STATIC_PATHS = new Set<string>(Object.values(PAGE_PATHS))
 const DETAIL = /^\/(services|blog|p)\/([^/]+)$/
+/** One segment at the root: a legal page's address (/<slug>). */
+const ROOT = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/
 
 /**
  * Only the SQLSTATE (or the error's class) is logged: a driver message can
@@ -124,7 +127,12 @@ export async function resolvePublicPath(
   )
     return PASS
   const detail = DETAIL.exec(pathname)
-  if (detail && options.draft) return PASS
+  // Root-level legal pages: the same rules as a detail page (live, else a
+  // redirect, else a real 404). Reserved single segments (the site's own
+  // routes) never get here as legal pages and fall through as before.
+  const legal = detail ? null : ROOT.exec(pathname)
+  const legalSlug = legal && !isReservedLegalSlug(legal[1]) ? legal[1] : null
+  if ((detail || legalSlug) && options.draft) return PASS
   try {
     const db = getDb()
     if (detail) {
@@ -137,6 +145,8 @@ export async function resolvePublicPath(
             : "article"
       if (SLUG_PATTERN.test(slug) && (await isPublishedSlug(db, kind, slug)))
         return PASS
+    } else if (legalSlug && (await isPublishedSlug(db, "legal", legalSlug))) {
+      return PASS
     }
     const redirect = await findRedirectByFrom(db, pathname)
     if (redirect)
@@ -146,7 +156,7 @@ export async function resolvePublicPath(
         code: redirectCode(redirect.code),
         recordHit: () => countHit(redirect.id),
       }
-    return detail ? MISSING : PASS
+    return detail || legalSlug ? MISSING : PASS
   } catch (error) {
     console.error(`[proxy] public path lookup failed (${errorCode(error)})`)
     return PASS

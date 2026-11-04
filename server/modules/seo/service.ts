@@ -90,7 +90,7 @@ function describeRow(row: SeoRow) {
   if (row.kind === "builder")
     return {
       name: title,
-      path: builderPath(row.slug ?? ""),
+      path: row.legal ? `/${row.slug}` : builderPath(row.slug ?? ""),
       titleName: title,
       fallbackDescription: row.description,
     }
