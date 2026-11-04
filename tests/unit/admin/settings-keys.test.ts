@@ -45,6 +45,7 @@ describe("settings key registry (R3-1)", () => {
       "sections.map",
       "sections.howItWorks",
       "leads",
+      "careers",
     ])
   })
 
@@ -64,10 +65,10 @@ describe("settings key registry (R3-1)", () => {
     }
   })
 
-  it("only leads needs more than settings:update", () => {
+  it("only leads and careers need more than settings:update", () => {
     for (const key of EDITABLE_SETTINGS_KEYS)
       expect(SETTINGS_ENTRIES[key].update).toEqual(
-        key === "leads"
+        key === "leads" || key === "careers"
           ? { settings: ["update"], lead: ["update"] }
           : { settings: ["update"] }
       )

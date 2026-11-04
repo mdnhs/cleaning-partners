@@ -55,6 +55,10 @@ export const MEDIA = [
   { key: "/images/services/check.svg", alt: "" },
   { key: "/images/blog/search.svg", alt: "" },
   { key: "/images/contact/chevron.svg", alt: "" },
+  { key: "/images/careers/training.svg", alt: "" },
+  { key: "/images/careers/pay.svg", alt: "" },
+  { key: "/images/careers/uniform.svg", alt: "" },
+  { key: "/images/careers/growth.svg", alt: "" },
 ] as const
 
 export type MediaKey = (typeof MEDIA)[number]["key"]

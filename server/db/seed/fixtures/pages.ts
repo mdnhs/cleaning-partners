@@ -3,6 +3,7 @@ import "server-only"
 import type { Seo } from "@/lib/schemas/common"
 import type { PageData, PageKey } from "@/templates/registry"
 
+import { careersPageFixture } from "./careers"
 import type { MediaLookup } from "./media"
 import { paragraphs } from "./rich-text"
 
@@ -305,5 +306,6 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
         },
       },
     },
+    careers: careersPageFixture(media),
   }
 }

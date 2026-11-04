@@ -160,8 +160,8 @@ describe("GET /api/v1/admin/search/options/:collection (SchemaForm pickers)", ()
   it("lists pages and links by URL path, services by slug, categories by id", async () => {
     const pages = await options(editor, "pages")
     expect(pages.status).toBe(200)
-    // Five fixed pages + the two seeded legal pages.
-    expect(pages.items).toHaveLength(7)
+    // Six fixed pages + the two seeded legal pages.
+    expect(pages.items).toHaveLength(8)
     expect(pages.items[0]).toEqual({
       value: "/",
       label: "Home",

@@ -511,6 +511,38 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       ],
     },
   },
+  careers: {
+    fields: {
+      recipients: {
+        label: "Notify these addresses",
+        itemName: "Recipient",
+        help: "Each new job application is emailed to every address. Leave empty to use the Enquiries addresses.",
+      },
+      retentionMonths: {
+        label: "Keep applications for (months)",
+        help: "Applications and their CVs older than this are deleted automatically (at most 36).",
+      },
+      acknowledgement: {
+        label: "Send an acknowledgement",
+        help: "Email the applicant to confirm their application arrived.",
+        width: "full",
+      },
+    },
+    groups: {
+      "": [
+        {
+          title: "Notifications",
+          description: "Who hears about a new application.",
+          fields: ["recipients", "acknowledgement"],
+        },
+        {
+          title: "Retention",
+          description: "How long applications are kept (GDPR).",
+          fields: ["retentionMonths"],
+        },
+      ],
+    },
+  },
   leads: {
     fields: {
       recipients: {

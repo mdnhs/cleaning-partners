@@ -78,6 +78,7 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       { label: "About", href: "/about" },
       { label: "Services", href: "/services" },
       { label: "Blog", href: "/blog" },
+      { label: "Careers", href: "/careers" },
       { label: "Contact", href: "/contact" },
     ])
     expect(chrome.footer.quickLinks.links).toEqual(

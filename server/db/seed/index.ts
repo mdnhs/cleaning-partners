@@ -5,6 +5,7 @@ import { and, count, eq, inArray } from "drizzle-orm"
 import { DraftDocument } from "@/blocks/document"
 import { seo } from "@/lib/schemas/common"
 import { articleContent } from "@/lib/schemas/content/article"
+import { jobContent } from "@/lib/schemas/content/job"
 import { categorySchema } from "@/lib/schemas/content/category"
 import { clientSchema } from "@/lib/schemas/content/client"
 import { groupCompanySchema } from "@/lib/schemas/content/group-company"
@@ -18,6 +19,7 @@ import {
   articles,
   builderPages,
   clients,
+  jobPostings,
   groupCompanies,
   media,
   pages,
@@ -39,6 +41,7 @@ export const SEED_TABLES = [
   "settings",
   "pages",
   "legalPages",
+  "jobPostings",
   "services",
   "articles",
   "teamMembers",
@@ -190,6 +193,29 @@ export async function seedContent(
       .onConflictDoNothing({ target: builderPages.slug })
       .returning({ id: builderPages.id })
 
+    // Starter job postings (careers): published, "posted" a few days apart;
+    // the closed ones keep the date they were closed.
+    const DAY = 24 * 60 * 60_000
+    const insertedJobs = await tx
+      .insert(jobPostings)
+      .values(
+        fx.jobs.map((job, sortOrder) => {
+          const content = jobContent.parse(job.content)
+          const postedDaysAgo = [3, 5, 7, 10, 14, 70, 90, 110][sortOrder] ?? 30
+          return {
+            slug: job.slug,
+            sortOrder,
+            closedAt: job.closedAt,
+            draft: content,
+            published: content,
+            status: "published" as const,
+            publishedAt: new Date(now.getTime() - postedDaysAgo * DAY),
+          }
+        })
+      )
+      .onConflictDoNothing({ target: jobPostings.slug })
+      .returning({ id: jobPostings.id })
+
     const insertedServices = await tx
       .insert(services)
       .values(
@@ -299,6 +325,7 @@ export async function seedContent(
       settings: insertedSettings.length,
       pages: insertedPages.length,
       legalPages: insertedLegalPages.length,
+      jobPostings: insertedJobs.length,
       services: insertedServices.length,
       articles: insertedArticles.length,
       teamMembers: insertedTeam.length,

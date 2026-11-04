@@ -295,7 +295,7 @@
       "id": "navigation.links",
       "source": "components/home/site-header.tsx:9",
       "kind": "list",
-      "value": "5",
+      "value": "6",
       "target": "settings.navigation.links",
       "pages": [
         "/",

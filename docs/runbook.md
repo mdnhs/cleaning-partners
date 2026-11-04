@@ -148,6 +148,23 @@ Owner decisions and the go-live checklist are in `docs/launch.md`.
   (new version and digest from Docker Hub) for Node security releases, and
   keep the `node-version` in `ci.yml` the same.
 
+## Careers rollout (once)
+
+The release that adds Careers (migrations `0028_job_postings`,
+`0029_careers_nav_link`) adds a fixed page `careers`, a settings key
+`careers` and starter job postings. Migrations create the table and add the
+"Careers" header link; the page row, the settings row and the starter jobs
+are seed data, so on a site that already has content run once after the
+deploy (it only inserts missing rows and never changes existing ones):
+
+```sh
+docker compose exec app node scripts/dist/seed.mjs --allow-production
+```
+
+Until it has run, every public page fails with "Missing published content:
+page careers". Then review the starter jobs under Admin › Careers and close
+or edit them, and set the recipients under Settings › Job applications.
+
 ## First production deploy
 
 Automatic (no Dokploy clicks) once the owner has done launch step 1: the

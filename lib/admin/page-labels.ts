@@ -7,4 +7,5 @@ export const PAGE_LABELS: Record<PageKey, string> = {
   services: "Services",
   blog: "Blog",
   contact: "Contact",
+  careers: "Careers",
 }
