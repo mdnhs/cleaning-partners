@@ -165,21 +165,21 @@ test("redirects: a loop is refused inline; CSV exports, and an import reports a 
 
 test("SEO overview: the sheet saves a page's description", async ({ page }) => {
   await signIn(page, E2E_OWNER.email)
-  // All: Terms may pass every check (Needs work would hide it).
+  // All: About may pass every check (Needs work would hide it).
   await page.goto("/admin/seo?show=all")
-  await page.getByRole("button", { name: "Edit SEO for Terms of use" }).click()
-  const sheet = page.getByRole("dialog", { name: "SEO: Terms of use" })
+  await page.getByRole("button", { name: "Edit SEO for About" }).click()
+  const sheet = page.getByRole("dialog", { name: "SEO: About" })
   const description = sheet.getByRole("textbox", { name: /^Description/ })
   const before = await description.inputValue()
   try {
     await description.fill(
-      "The terms that apply when you use the Cleaning Partners website."
+      "Who we are: the Cleaning Partners team in Mountmellick, Co. Laois."
     )
     await sheet.getByRole("button", { name: "Save SEO" }).click()
     await expect(sheet).toBeHidden()
-    const head = await (await page.request.get("/terms")).text()
+    const head = await (await page.request.get("/about")).text()
     expect(head).toContain(
-      'content="The terms that apply when you use the Cleaning Partners website."'
+      'content="Who we are: the Cleaning Partners team in Mountmellick, Co. Laois."'
     )
   } finally {
     // A failed save leaves the sheet open with unsaved edits: close it
@@ -196,10 +196,8 @@ test("SEO overview: the sheet saves a page's description", async ({ page }) => {
       await expect(sheet).toBeHidden()
     }
     // restore
-    await page
-      .getByRole("button", { name: "Edit SEO for Terms of use" })
-      .click()
-    const again = page.getByRole("dialog", { name: "SEO: Terms of use" })
+    await page.getByRole("button", { name: "Edit SEO for About" }).click()
+    const again = page.getByRole("dialog", { name: "SEO: About" })
     const field = again.getByRole("textbox", { name: /^Description/ })
     // Save is disabled while nothing changed (the first save failed before
     // writing): then there is nothing to restore, just close the sheet.

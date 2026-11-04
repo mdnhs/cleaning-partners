@@ -31,6 +31,7 @@ describe("settings schemas (R3-1: the CP key set)", () => {
       "customCode",
       "microcopy",
       "leads",
+      "careers",
       "theme",
     ])
     expect(Object.keys(fixture).sort()).toEqual([...SETTINGS_KEYS].sort())

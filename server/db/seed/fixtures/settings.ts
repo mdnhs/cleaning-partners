@@ -48,6 +48,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         { label: "About", href: "/about" },
         { label: "Services", href: "/services" },
         { label: "Blog", href: "/blog" },
+        { label: "Careers", href: "/careers" },
         { label: "Contact", href: "/contact" },
       ],
       cta: { label: "Get a Quote", href: "#contact" },
@@ -271,6 +272,11 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       recipients: ["info@cleaningpartners.ie"],
       retentionMonths: 24,
       acknowledgement: false,
+    },
+    careers: {
+      recipients: [],
+      retentionMonths: 12,
+      acknowledgement: true,
     },
     // Same value the *_theme migration inserts (no <style> by default).
     theme: DEFAULT_THEME,

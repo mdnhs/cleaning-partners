@@ -100,6 +100,10 @@ const PANEL: readonly Target[] = [
   "/admin/pages/legal",
   "/admin/services",
   "/admin/services/new",
+  "/admin/pages/careers",
+  "/admin/careers",
+  "/admin/careers/new",
+  ["/admin/careers/applications", FORBIDDEN], // enquiry staff only
   "/admin/blog",
   "/admin/blog?status=in_review", // the review queue (empty in the seed)
   "/admin/blog/new",

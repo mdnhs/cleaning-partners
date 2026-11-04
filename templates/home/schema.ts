@@ -6,6 +6,12 @@ import { link, mediaRef, text } from "@/lib/schemas/common"
 export const homeTemplate = z.object({
   hero: z.object({
     background: mediaRef,
+    /**
+     * Optional MP4/WebM played muted over the background image (the image
+     * stays as its poster and fallback). The field is named backgroundVideo:
+     * server/lib/media-usages.ts accepts only videos in fields of that name.
+     */
+    backgroundVideo: mediaRef.nullable().optional(),
     title: text,
     subtitle: text,
     primaryCta: link,

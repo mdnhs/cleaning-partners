@@ -17,7 +17,13 @@ import {
 import type { Sort } from "@/lib/schemas/api/list"
 import type { DbOrTx } from "@/server/db/client"
 import { containsPattern } from "@/server/db/like"
-import { articles, builderPages, redirects, services } from "@/server/db/schema"
+import {
+  articles,
+  builderPages,
+  jobPostings,
+  redirects,
+  services,
+} from "@/server/db/schema"
 
 export type RedirectRow = typeof redirects.$inferSelect
 type RedirectValues = {
@@ -225,6 +231,8 @@ export async function lockRedirects(db: DbOrTx): Promise<void> {
 const SLUG_TABLES = {
   service: services,
   article: articles,
+  /** Job postings (careers): /careers/<slug>. */
+  job: jobPostings,
   builder: builderPages,
   /** Legal pages: builder pages with a legal_order, served at /<slug>. */
   legal: builderPages,

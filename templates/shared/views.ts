@@ -400,6 +400,10 @@ export function heroView(
   const { site } = s.settings
   return {
     background: hero.background.url,
+    // Only when set: without a video the props are exactly what they were.
+    ...(hero.backgroundVideo
+      ? { backgroundVideo: hero.backgroundVideo.url }
+      : {}),
     logo: { src: site.logoLarge.url, alt: site.logoAlt },
     title: hero.title,
     subtitle: hero.subtitle,

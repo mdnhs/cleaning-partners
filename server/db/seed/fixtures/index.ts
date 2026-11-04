@@ -4,6 +4,7 @@ import { articlesFixture } from "./articles"
 import { CATEGORIES } from "./categories"
 import { clientsFixture } from "./clients"
 import { groupCompaniesFixture } from "./group-companies"
+import { jobsFixture } from "./jobs"
 import { legalPagesFixture } from "./legal-pages"
 import type { MediaLookup } from "./media"
 import { pagesFixture } from "./pages"
@@ -18,6 +19,7 @@ export function contentFixtures(media: MediaLookup) {
     settings: settingsFixture(media),
     pages: pagesFixture(media),
     legalPages: legalPagesFixture(media),
+    jobs: jobsFixture(),
     services: servicesFixture(media),
     categories: CATEGORIES,
     articles: articlesFixture(media),

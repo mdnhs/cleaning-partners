@@ -4,6 +4,7 @@ import { Hono } from "hono"
 
 import {
   isLottieMime,
+  isVideoMime,
   mediaListQuery,
   mediaUpdateInput,
 } from "@/lib/schemas/api/media"
@@ -11,6 +12,7 @@ import { idParam } from "@/lib/schemas/api/params"
 import type { AppEnv } from "@/server/api/context"
 import { actorOf, can } from "@/server/api/middleware/auth"
 import { zv } from "@/server/api/validate"
+import { PRIVATE_PREFIX } from "@/server/lib/cv"
 import { notFound } from "@/server/lib/errors"
 import { ifRangeHolds, noneMatch, parseRange } from "@/server/lib/http-range"
 import {
@@ -113,6 +115,9 @@ function fileHeaders(file: {
   }
   if (file.mime === "image/svg+xml")
     headers["Content-Security-Policy"] = SVG_CSP
+  else if (isVideoMime(file.mime))
+    // A background video is only fetched by <video>: plays inline.
+    headers["Content-Disposition"] = "inline"
   else if (!file.mime.startsWith("image/")) {
     // Lottie data is only fetched by the player: opened directly it runs
     // nothing (sandboxed, no sources) and downloads.
@@ -140,9 +145,11 @@ export const mediaFileRoutes = new Hono<AppEnv>().get("/*", async (c) => {
   // The raw request path (the catch-all route hands Hono the undecoded URL),
   // decoded exactly once per segment and re-validated by decodeKeyPath.
   const pathname = new URL(c.req.url).pathname
-  const key = pathname.startsWith(MEDIA_FILE_PATH)
+  const decoded = pathname.startsWith(MEDIA_FILE_PATH)
     ? decodeKeyPath(pathname.slice(MEDIA_FILE_PATH.length))
     : null
+  // Private files (job applicants' CVs) are never public, whatever rows say.
+  const key = decoded?.startsWith(PRIVATE_PREFIX) ? null : decoded
   const head = c.req.method === "HEAD"
   // Twice: a migration may move the file between the lookup and the read.
   for (let attempt = 0; key && attempt < 2; attempt++) {

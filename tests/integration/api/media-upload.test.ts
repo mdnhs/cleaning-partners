@@ -1,6 +1,13 @@
 import { eq } from "drizzle-orm"
 import sharp from "sharp"
-import { afterAll, beforeAll, describe, expect, it } from "vitest"
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
+
+// Hono runs outside Next here: replacing a file expires cache tags.
+vi.mock("next/cache", () => ({
+  revalidateTag: vi.fn(),
+  cacheLife: vi.fn(),
+  cacheTag: vi.fn(),
+}))
 
 import type { MediaItem } from "@/lib/schemas/api/media"
 import { getDb } from "@/server/db/client"
@@ -212,7 +219,7 @@ describe("POST /api/v1/admin/media/upload", () => {
       "Files can be up to 20 MB"
     )
     const tooBigBody = await upload(editor, {
-      bytes: new Uint8Array(21 * 1024 * 1024),
+      bytes: new Uint8Array(31 * 1024 * 1024),
       name: "huge.png",
       type: "image/png",
     })
@@ -243,5 +250,115 @@ describe("GET /api/v1/media/file/*", () => {
     expect(
       (await app.request("/api/v1/media/file/images/hero.jpg")).status
     ).toBe(404)
+  })
+})
+
+/** A minimal MP4 header: enough for the byte sniffing (the file is stored as is). */
+const mp4 = (size = 4096) => {
+  const bytes = new Uint8Array(size)
+  bytes.set([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d], 0)
+  return bytes
+}
+
+describe("video uploads (the hero's background video)", () => {
+  it("stores an MP4 as is and serves it inline, with ranges", async () => {
+    const { status, body } = await upload(editor, {
+      bytes: mp4(),
+      name: "Hero Loop.mp4",
+      type: "video/mp4",
+    })
+    expect(status).toBe(201)
+    expect(body).toMatchObject({
+      mime: "video/mp4",
+      width: null,
+      height: null,
+      size: 4096,
+      originalName: "Hero Loop.mp4",
+    })
+    expect(body.url).toMatch(/\.mp4$/)
+    const file = await app.request(body.url)
+    expect(file.status).toBe(200)
+    expect(file.headers.get("content-type")).toBe("video/mp4")
+    expect(file.headers.get("content-disposition")).toBe("inline")
+    expect(file.headers.get("accept-ranges")).toBe("bytes")
+    const part = await app.request(body.url, {
+      headers: { range: "bytes=0-99" },
+    })
+    expect(part.status).toBe(206)
+    expect(part.headers.get("content-range")).toBe("bytes 0-99/4096")
+    expect((await part.arrayBuffer()).byteLength).toBe(100)
+  })
+
+  it("takes a video over 20 MB but not over 30 MB, and images stay at 20 MB", async () => {
+    const ok = await upload(editor, {
+      bytes: mp4(21 * 1024 * 1024),
+      name: "long.mp4",
+      type: "video/mp4",
+    })
+    expect(ok.status).toBe(201)
+    const big = await upload(editor, {
+      bytes: mp4(30 * 1024 * 1024 + 1),
+      name: "huge.mp4",
+      type: "video/mp4",
+    })
+    expect(big.status).toBe(422)
+    expect(big.body.error?.fieldErrors?.file?.[0]).toBe(
+      "Files can be up to 30 MB"
+    )
+    const image = new Uint8Array(21 * 1024 * 1024)
+    image.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+    const tooLarge = await upload(editor, {
+      bytes: image,
+      name: "photo.png",
+      type: "image/png",
+    })
+    expect(tooLarge.status).toBe(422)
+    expect(tooLarge.body.error?.fieldErrors?.file?.[0]).toBe(
+      "Files can be up to 20 MB"
+    )
+  })
+
+  it("lists videos under kind=video, apart from images and documents", async () => {
+    const video = await upload(editor, {
+      bytes: mp4(),
+      name: "clip.mp4",
+      type: "video/mp4",
+    })
+    const kinds = async (kind: string) =>
+      (
+        (await (
+          await app.request(`/api/v1/admin/media?kind=${kind}&pageSize=100`, {
+            headers: { origin: ORIGIN, cookie: editor },
+          })
+        ).json()) as { items: MediaItem[] }
+      ).items.map((i) => i.id)
+    expect(await kinds("video")).toContain(video.body.id)
+    expect(await kinds("image")).not.toContain(video.body.id)
+    expect(await kinds("document")).not.toContain(video.body.id)
+  })
+
+  it("a video replaces only a video", async () => {
+    const video = await upload(editor, {
+      bytes: mp4(),
+      name: "clip.mp4",
+      type: "video/mp4",
+    })
+    const replaceWith = async (file: File) => {
+      const form = new FormData()
+      form.append("file", file)
+      return app.request(`/api/v1/admin/media/${video.body.id}/replace`, {
+        method: "POST",
+        headers: { origin: ORIGIN, cookie: editor },
+        body: form,
+      })
+    }
+    const asImage = await replaceWith(
+      new File([new Uint8Array(await png())], "x.png", { type: "image/png" })
+    )
+    expect(asImage.status).toBe(422)
+    const asVideo = await replaceWith(
+      new File([mp4(2048)], "next.mp4", { type: "video/mp4" })
+    )
+    expect(asVideo.status).toBe(200)
   })
 })

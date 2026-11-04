@@ -24,14 +24,14 @@ async function signIn(page: Page, email: string, name: string) {
 
 type PageDto = { version: number; draft: { hero: { title: string } } }
 
-/** Sets the terms page's draft hero title; returns the previous one. */
-async function setTermsDraftTitle(page: Page, title: string): Promise<string> {
+/** Sets the About page's draft hero title; returns the previous one. */
+async function setAboutDraftTitle(page: Page, title: string): Promise<string> {
   const current = (await (
-    await page.request.get("/api/v1/admin/pages/terms")
+    await page.request.get("/api/v1/admin/pages/about")
   ).json()) as PageDto
   const draft = structuredClone(current.draft)
   draft.hero.title = title
-  const res = await page.request.put("/api/v1/admin/pages/terms/draft", {
+  const res = await page.request.put("/api/v1/admin/pages/about/draft", {
     headers: { origin: BASE_URL },
     data: { version: current.version, draft },
   })
@@ -39,8 +39,8 @@ async function setTermsDraftTitle(page: Page, title: string): Promise<string> {
   return current.draft.hero.title
 }
 
-const PUBLISHED = "Terms and Conditions"
-const DRAFT = "Terms and Conditions (draft e2e)"
+const PUBLISHED = "About Us"
+const DRAFT = "About Us (draft e2e)"
 
 test("preview shows the draft past the cache; exit returns to published content", async ({
   page,
@@ -50,28 +50,28 @@ test("preview shows the draft past the cache; exit returns to published content"
   const bar = page.getByRole("region", { name: "Preview" })
 
   // Warm the published cache entry first.
-  await page.goto("/terms")
+  await page.goto("/about")
   await expect(hero).toHaveText(PUBLISHED)
 
   const { editor } = readFixtures()
   await signIn(page, editor.email, editor.name)
-  const original = await setTermsDraftTitle(page, DRAFT)
+  const original = await setAboutDraftTitle(page, DRAFT)
 
   try {
     // Saving a draft leaves the public (cached) page unchanged.
-    await page.goto("/terms")
+    await page.goto("/about")
     await expect(hero).toHaveText(PUBLISHED)
     await expect(bar).toHaveCount(0)
 
     // Enable preview → the draft renders, with the preview bar.
-    await page.goto("/api/v1/admin/preview?entity=page&id=terms")
-    await expect(page).toHaveURL(/\/terms$/)
+    await page.goto("/api/v1/admin/preview?entity=page&id=about")
+    await expect(page).toHaveURL(/\/about$/)
     await expect(hero).toHaveText(DRAFT)
     await expect(bar).toBeVisible()
 
     // Exit → published content again, no bar, cookies gone.
     await bar.getByRole("button", { name: "Exit preview" }).click()
-    await expect(page).toHaveURL(/\/terms$/)
+    await expect(page).toHaveURL(/\/about$/)
     await expect(hero).toHaveText(PUBLISHED)
     await expect(bar).toHaveCount(0)
     const names = (await context.cookies()).map((c) => c.name)
@@ -79,17 +79,17 @@ test("preview shows the draft past the cache; exit returns to published content"
     expect(names).not.toContain("__prerender_bypass")
 
     // Next's draft-mode cookie alone (no cp.preview) never shows drafts.
-    await page.goto("/api/v1/admin/preview?entity=page&id=terms")
+    await page.goto("/api/v1/admin/preview?entity=page&id=about")
     await expect(hero).toHaveText(DRAFT)
     await context.clearCookies({ name: "cp.preview" })
-    await page.goto("/terms")
+    await page.goto("/about")
     await expect(hero).toHaveText(PUBLISHED)
     await expect(bar).toHaveCount(0)
     expect((await context.cookies()).map((c) => c.name)).not.toContain(
       "__prerender_bypass"
     )
   } finally {
-    await setTermsDraftTitle(page, original)
+    await setAboutDraftTitle(page, original)
   }
 })
 
@@ -101,19 +101,19 @@ test("preview exit ?to returns to the page, never off-site", async ({
   const { editor } = readFixtures()
   await signIn(page, editor.email, editor.name)
 
-  await page.goto("/api/v1/admin/preview?entity=page&id=terms")
-  await expect(page).toHaveURL(/\/terms$/)
+  await page.goto("/api/v1/admin/preview?entity=page&id=about")
+  await expect(page).toHaveURL(/\/about$/)
 
   // The exit link carries the page's own path and query (x-cp-path).
-  await page.goto("/api/v1/preview/exit?to=%2Fterms%3Fx%3D1")
-  await expect(page).toHaveURL(/\/terms\?x=1$/)
+  await page.goto("/api/v1/preview/exit?to=%2Fabout%3Fx%3D1")
+  await expect(page).toHaveURL(/\/about\?x=1$/)
   await expect(hero).toHaveText(PUBLISHED)
   await expect(page.getByRole("region", { name: "Preview" })).toHaveCount(0)
   expect((await context.cookies()).map((c) => c.name)).not.toContain(
     "cp.preview"
   )
 
-  await page.goto("/api/v1/admin/preview?entity=page&id=terms")
+  await page.goto("/api/v1/admin/preview?entity=page&id=about")
   await page.goto(
     `/api/v1/preview/exit?to=${encodeURIComponent("https://example.com")}`
   )

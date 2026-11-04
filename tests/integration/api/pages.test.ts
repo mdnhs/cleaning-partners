@@ -56,7 +56,7 @@ const saveDraft = (cookie: string, draft: unknown, version: number) =>
   })
 
 describe("pages API + versioning (master 4.2)", () => {
-  it("lists the five pages in site order with status", async () => {
+  it("lists the six pages in site order with status", async () => {
     const res = await adminRequest("/pages", { cookie: viewer })
     expect(res.status).toBe(200)
     const { items } = (await res.json()) as { items: PageDto[] }
@@ -66,6 +66,7 @@ describe("pages API + versioning (master 4.2)", () => {
       "services",
       "blog",
       "contact",
+      "careers",
     ])
     expect(items[0]).toMatchObject({
       label: "Home",

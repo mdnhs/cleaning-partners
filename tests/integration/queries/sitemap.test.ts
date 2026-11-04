@@ -33,19 +33,20 @@ beforeEach(async () => {
 })
 
 describe("sitemap entries (published only)", () => {
-  it("the seeded site lists 19 URLs: 5 pages, 2 legal pages, 5 services, 7 articles, with lastmod", async () => {
+  it("the seeded site lists 28 URLs: 6 pages, 2 legal pages, 8 jobs, 5 services, 7 articles, with lastmod", async () => {
     const entries = await listSitemapEntries()
     const paths = entries.map((e) => e.path)
     expect(paths.slice(0, PAGES).sort()).toEqual(
-      ["/", "/about", "/blog", "/contact", "/services"].sort()
+      ["/", "/about", "/blog", "/careers", "/contact", "/services"].sort()
     )
     // The legal pages (builder pages at the root) are listed too.
     expect(paths).toEqual(expect.arrayContaining(["/privacy", "/terms"]))
     expect(paths).toContain("/services/medical-cleaning")
     expect(fx.services).toHaveLength(5)
     expect(fx.articles).toHaveLength(7)
-    expect(paths).toHaveLength(19)
-    expect(new Set(paths).size).toBe(19)
+    expect(paths).toContain("/careers/cleaning-operative-healthcare")
+    expect(paths).toHaveLength(28)
+    expect(new Set(paths).size).toBe(28)
     for (const entry of entries)
       expect(entry.lastModified, entry.path).toBeInstanceOf(Date)
   })
@@ -84,7 +85,7 @@ describe("sitemap entries (published only)", () => {
     expect(urls).toContain(`${origin}/blog/${fx.articles[1].slug}`)
   })
 
-  it("a published builder page is in the sitemap (20 entries)", async () => {
+  it("a published builder page is in the sitemap (29 entries)", async () => {
     await getDb()
       .insert(builderPages)
       .values({
@@ -101,7 +102,7 @@ describe("sitemap entries (published only)", () => {
     expect(entries.find((e) => e.path === "/p/spring-offer")?.noindex).toBe(
       false
     )
-    expect(entries).toHaveLength(20)
+    expect(entries).toHaveLength(29)
   })
 
   it("a noindex builder page is flagged noindex; an unpublished one is left out", async () => {
@@ -124,7 +125,7 @@ describe("sitemap entries (published only)", () => {
       true
     )
     expect(entries.map((e) => e.path)).not.toContain("/p/still-draft")
-    expect(entries).toHaveLength(20)
+    expect(entries).toHaveLength(29)
   })
 
   it("unpublished pages are left out; a blank canonical counts as none", async () => {
@@ -151,7 +152,7 @@ describe("sitemap entries (published only)", () => {
       publishedAt: new Date(),
     })
     const entries = await listSitemapEntries()
-    expect(entries).toHaveLength(19)
+    expect(entries).toHaveLength(28)
     for (const entry of entries) expect(entry.path, entry.path).toMatch(/^\//)
   })
 

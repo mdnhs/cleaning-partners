@@ -41,6 +41,7 @@ const PUBLIC_DIRS = [
   "components/services",
   "components/blog",
   "components/contact",
+  "components/careers",
   "templates",
   "components/consent",
   "components/site-extras.tsx",
@@ -66,6 +67,15 @@ const CHECKED_PROPS = new Set([
 const TECHNICAL_CONSTS: Record<string, string[]> = {
   "components/home/logo-animation.tsx": ["LOTTIE_WASM_URL", "REDUCE_MOTION"],
   "components/home/clients-carousel.tsx": ["REDUCED_MOTION"],
+  "components/home/hero-video.tsx": ["REDUCED_MOTION"],
+  // A localStorage key, never shown.
+  "components/careers/save-job-button.tsx": ["STORAGE_KEY"],
+  // Form field names (the request's keys), never shown.
+  "components/careers/application-form.tsx": [
+    "REQUIRED_TEXT",
+    "REQUIRED_YES_NO",
+    "SHOWN_FIELDS",
+  ],
   // Consent category keys (never shown), a state sentinel and a Tailwind class.
   "components/consent/consent-banner-view.tsx": ["OPTIONAL", "ON_LIGHT"],
   "components/consent/consent-provider.tsx": ["PENDING"],

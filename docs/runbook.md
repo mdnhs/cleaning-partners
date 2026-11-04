@@ -148,6 +148,34 @@ Owner decisions and the go-live checklist are in `docs/launch.md`.
   (new version and digest from Docker Hub) for Node security releases, and
   keep the `node-version` in `ci.yml` the same.
 
+## Careers rollout (once)
+
+The release that adds Careers (migrations `0028_job_postings`,
+`0029_careers_nav_link`) adds a fixed page `careers`, a settings key
+`careers` and starter job postings. Migrations create the table and add the
+"Careers" header link; the page row, the settings row and the starter jobs
+are seed data, so on a site that already has content run once after the
+deploy (it only inserts missing rows and never changes existing ones):
+
+```sh
+docker compose exec app node scripts/dist/seed.mjs --allow-production
+```
+
+Until it has run, every public page fails with "Missing published content:
+page careers". Then review the starter jobs under Admin › Careers and close
+or edit them, and set the recipients under Settings › Job applications.
+
+The application form uploads a CV of up to 5 MB, so the public endpoint
+`/api/v1/public/applications` takes bodies up to about 5.1 MB (the app
+refuses anything larger with "CVs can be up to 5 MB"). A reverse proxy in
+front of the app (Traefik, nginx `client_max_body_size`, a CDN rule) must
+allow at least 6 MB on that path, or applicants with a CV get the proxy's
+413 page instead of the form's message. CVs are stored under the storage
+key prefix `private/`: they have no media row, the public file route
+refuses them, and only staff with enquiry access download them from
+Admin › Careers › Applications. Applications and their CVs are deleted
+daily once older than Settings › Job applications › retention.
+
 ## First production deploy
 
 Automatic (no Dokploy clicks) once the owner has done launch step 1: the

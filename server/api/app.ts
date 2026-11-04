@@ -5,7 +5,11 @@ import { secureHeaders } from "hono/secure-headers"
 
 import { HSTS } from "@/lib/security-headers"
 import type { AppEnv } from "@/server/api/context"
-import { limitAdminBody, limitBody } from "@/server/api/middleware/body-limit"
+import {
+  limitAdminBody,
+  limitBody,
+  limitPublicBody,
+} from "@/server/api/middleware/body-limit"
 import {
   requireSignedIn,
   sessionMiddleware,
@@ -28,6 +32,10 @@ import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
 import { internalRoutes } from "@/server/modules/internal/routes"
 import { integrationsRoutes } from "@/server/modules/integrations/routes"
+import {
+  applicationsRoutes,
+  publicApplicationsRoutes,
+} from "@/server/modules/applications/routes"
 import { leadsRoutes, publicLeadsRoutes } from "@/server/modules/leads/routes"
 import { marketingRoutes } from "@/server/modules/marketing/routes"
 import { mediaFileRoutes, mediaRoutes } from "@/server/modules/media/routes"
@@ -42,6 +50,7 @@ import { revisionsRoutes } from "@/server/modules/revisions/routes"
 import { searchRoutes } from "@/server/modules/search/routes"
 import { seoRoutes } from "@/server/modules/seo/routes"
 import { builderPagesRoutes } from "@/server/modules/builder-pages/routes"
+import { jobPostingsRoutes } from "@/server/modules/job-postings/routes"
 import { servicesRoutes } from "@/server/modules/services/routes"
 import { settingsRoutes } from "@/server/modules/settings/routes"
 import { themeRoutes } from "@/server/modules/theme/routes"
@@ -60,6 +69,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/articles", articlesRoutes)
   .route("/services", servicesRoutes)
   .route("/builder-pages", builderPagesRoutes)
+  .route("/job-postings", jobPostingsRoutes)
   .route("/team", teamRoutes)
   .route("/clients", clientsRoutes)
   .route("/group-companies", groupCompaniesRoutes)
@@ -70,6 +80,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/media", mediaRoutes)
   .route("/integrations", integrationsRoutes)
   .route("/leads", leadsRoutes)
+  .route("/applications", applicationsRoutes)
   .route("/seo", seoRoutes)
   .route("/redirects", redirectsRoutes)
   .route("/marketing", marketingRoutes)
@@ -101,8 +112,9 @@ export function createApp() {
   )
 
   // 3. Public endpoints: 64 KB body
-  api.use("/v1/public/*", limitBody("public"))
+  api.use("/v1/public/*", limitPublicBody)
   api.route("/v1/public/leads", publicLeadsRoutes)
+  api.route("/v1/public/applications", publicApplicationsRoutes)
 
   // 4. Admin endpoints: session → signed in → same origin → body limit (1 MB; uploads 20 MB)
   api.use(

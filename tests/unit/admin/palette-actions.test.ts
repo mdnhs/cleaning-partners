@@ -46,6 +46,7 @@ describe("buildActions", () => {
       "new-article",
       "new-page",
       "new-service",
+      "new-job",
       "open-site",
       "theme-light",
       "theme-dark",

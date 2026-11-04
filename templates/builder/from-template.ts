@@ -6,6 +6,7 @@ import {
 } from "@/blocks/registry"
 import type { AboutTemplate } from "@/templates/about/schema"
 import type { BlogTemplate } from "@/templates/blog/schema"
+import type { CareersTemplate } from "@/templates/careers/schema"
 import type { ContactTemplate } from "@/templates/contact/schema"
 import type { HomeTemplate } from "@/templates/home/schema"
 import type { PageData, PageKey } from "@/templates/registry"
@@ -106,5 +107,12 @@ export function blocksFromTemplate<K extends PageKey>(
       return toBlocks(contactPage(data as ContactTemplate))
     case "blog":
       return toBlocks(blog(data as BlogTemplate))
+    case "careers":
+      // The job list and forms are page features, not sections: a copy
+      // keeps the banner, and the editor adds sections themselves.
+      return toBlocks([
+        ["hero.page", { ...(data as CareersTemplate).hero, image: null }],
+        contact(),
+      ])
   }
 }

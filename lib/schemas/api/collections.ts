@@ -55,7 +55,7 @@ export const collectionListQuery = listQuery.extend({
 export type CollectionListQuery = z.output<typeof collectionListQuery>
 
 /** PUT /reorder/:collection — every id of the collection, in the new order. */
-export const REORDERABLE = ["services", ...COLLECTIONS] as const
+export const REORDERABLE = ["services", "jobs", ...COLLECTIONS] as const
 export type Reorderable = (typeof REORDERABLE)[number]
 export const reorderParam = z.object({ collection: z.enum(REORDERABLE) })
 export const reorderInput = z.object({

@@ -66,6 +66,8 @@ const STRUCTURAL_PAGE_LEAVES = new Set([
  * inventory has no entry. Keyed per page ("page:leaf").
  */
 const POST_BASELINE_PAGE_LEAVES = new Set([
+  // Optional hero background video (an MP4/WebM from the media library).
+  "home:hero.backgroundVideo",
   // Quote-form feedback copy added when the form began posting to the leads API (7.3).
   "contact:quoteForm.sendingLabel",
   "contact:quoteForm.errorMessage",
@@ -99,11 +101,19 @@ function expectInventoryCovered(
 describe("template schemas match docs/brief-inventory.json (master Task 3.2)", () => {
   const fixture = pagesFixture(fixtureMediaLookup)
 
-  it("registry maps the five pages to five templates (no team page)", () => {
-    expect(PAGE_KEYS).toEqual(["home", "about", "services", "blog", "contact"])
+  it("registry maps the six pages to six templates (no team page)", () => {
+    expect(PAGE_KEYS).toEqual([
+      "home",
+      "about",
+      "services",
+      "blog",
+      "contact",
+      "careers",
+    ])
     expect(Object.keys(templates).sort()).toEqual([
       "about",
       "blog",
+      "careers",
       "contact",
       "home",
       "services",

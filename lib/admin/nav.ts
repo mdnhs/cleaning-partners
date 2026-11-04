@@ -1,4 +1,6 @@
 import {
+  BriefcaseBusiness,
+  FileUser,
   Building2,
   CircleHelp,
   Component,
@@ -171,6 +173,36 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: { service: ["read"] },
     match: "prefix",
     keywords: ["cleaning services", "offerings"],
+  },
+  {
+    id: "careers",
+    group: "menu",
+    label: "Careers",
+    href: "/admin/careers",
+    icon: BriefcaseBusiness,
+    // Shown when either sub-page is: jobs (job:read) or the applications
+    // inbox (lead:read, whoever handles enquiries). Each child guards its own pages.
+    permission: null,
+    match: "prefix",
+    keywords: ["jobs", "vacancies", "hiring", "recruitment", "positions"],
+    children: [
+      {
+        id: "careers-jobs",
+        label: "Jobs",
+        href: "/admin/careers",
+        permission: { job: ["read"] },
+        icon: BriefcaseBusiness,
+        keywords: ["vacancies", "positions"],
+      },
+      {
+        id: "careers-applications",
+        label: "Applications",
+        href: "/admin/careers/applications",
+        permission: { lead: ["read"] },
+        icon: FileUser,
+        keywords: ["applicants", "cv", "candidates"],
+      },
+    ],
   },
   {
     id: "collections",

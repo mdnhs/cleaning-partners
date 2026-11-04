@@ -55,6 +55,30 @@ describe("resolvePublicPath (proxy.ts)", () => {
     })
   })
 
+  it("careers forms: /careers/apply passes; a job's /apply follows the job", async () => {
+    expect(await resolvePublicPath("/careers/apply", live)).toEqual({
+      kind: "pass",
+    })
+    expect(repo.isPublishedSlug).not.toHaveBeenCalled()
+    expect(await resolvePublicPath("/careers/no-such-job/apply", live)).toEqual(
+      { kind: "missing" }
+    )
+    expect(repo.isPublishedSlug).toHaveBeenLastCalledWith(
+      expect.anything(),
+      "job",
+      "no-such-job"
+    )
+    repo.isPublishedSlug.mockResolvedValue(true)
+    expect(await resolvePublicPath("/careers/cleaner/apply", live)).toEqual({
+      kind: "pass",
+    })
+    // Only careers has a form under a detail page.
+    repo.isPublishedSlug.mockResolvedValue(false)
+    expect(await resolvePublicPath("/services/x/apply", live)).toEqual({
+      kind: "pass",
+    })
+  })
+
   it("a redirect wins over the 404 and counts its hit on demand", async () => {
     repo.findRedirectByFrom.mockResolvedValue({
       id: "r1",

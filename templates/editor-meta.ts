@@ -2,6 +2,7 @@ import type { EditorMeta } from "@/components/admin/schema-form/editor-meta"
 
 import { aboutEditorMeta } from "./about/editor-meta"
 import { blogEditorMeta } from "./blog/editor-meta"
+import { careersEditorMeta } from "./careers/editor-meta"
 import { contactEditorMeta } from "./contact/editor-meta"
 import { homeEditorMeta } from "./home/editor-meta"
 import type { TemplateName } from "./registry"
@@ -14,4 +15,5 @@ export const templateEditorMeta: Record<TemplateName, EditorMeta> = {
   services: servicesEditorMeta,
   blog: blogEditorMeta,
   contact: contactEditorMeta,
+  careers: careersEditorMeta,
 }

@@ -8,6 +8,11 @@ export const homeEditorMeta: EditorMeta = {
       help: "The full-screen banner at the top of the home page.",
     },
     "hero.background": { label: "Background image" },
+    "hero.backgroundVideo": {
+      label: "Background video",
+      help: "Optional. Plays muted and looped behind the text, over the image. Use a short, web-ready MP4 or WebM (up to 30 MB). Leave empty to show only the image. The background image stays as the poster, and is shown instead for visitors who prefer reduced motion or save data.",
+      mediaKind: "video",
+    },
     "hero.title": { label: "Heading" },
     "hero.subtitle": {
       label: "Introduction",
@@ -54,7 +59,7 @@ export const homeEditorMeta: EditorMeta = {
         description: "The words over the banner photo.",
         fields: ["title", "subtitle"],
       },
-      { title: "Background", fields: ["background"] },
+      { title: "Background", fields: ["background", "backgroundVideo"] },
       {
         title: "Buttons",
         description: "The two calls to action under the text.",

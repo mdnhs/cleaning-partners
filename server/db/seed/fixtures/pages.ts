@@ -3,6 +3,7 @@ import "server-only"
 import type { Seo } from "@/lib/schemas/common"
 import type { PageData, PageKey } from "@/templates/registry"
 
+import { careersPageFixture } from "./careers"
 import type { MediaLookup } from "./media"
 import { paragraphs } from "./rich-text"
 
@@ -21,6 +22,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
       data: {
         hero: {
           background: media("/images/home/hero.png"),
+          backgroundVideo: null,
           title: "Cleaning Partners Ltd.",
           subtitle:
             "The Clean Team. Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond.",
@@ -304,5 +306,6 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
         },
       },
     },
+    careers: careersPageFixture(media),
   }
 }

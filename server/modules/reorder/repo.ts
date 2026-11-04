@@ -7,6 +7,7 @@ import {
   articleCategories,
   clients,
   groupCompanies,
+  jobPostings,
   services,
   teamMembers,
   testimonials,
@@ -14,6 +15,7 @@ import {
 
 const TABLES = {
   services,
+  jobs: jobPostings,
   team: teamMembers,
   clients,
   "group-companies": groupCompanies,

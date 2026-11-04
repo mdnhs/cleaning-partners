@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 
 // R8-9: an unknown service or article slug is a real 404 (status 404: the
-// proxy rewrites it to /_cp-missing before anything streams, and
+// proxy rewrites it to /_cp-missing/404 before anything streams, and
 // app/global-not-found.tsx answers). It must render the same branded 404 page
 // as an unmatched URL, noindex'ed, pixel-identical (tests/visual:
 // /this-page-does-not-exist).

@@ -18,13 +18,14 @@ import {
 import { schemaPaths } from "../helpers/schema-paths"
 
 describe("template registry (R3-2)", () => {
-  it("has five templates and no team", () => {
+  it("has six templates and no team", () => {
     expect(Object.keys(templates)).toEqual([
       "home",
       "about",
       "services",
       "blog",
       "contact",
+      "careers",
     ])
     expect(Object.keys(PAGES)).not.toContain("team")
   })
@@ -35,13 +36,14 @@ describe("template registry (R3-2)", () => {
     expect(Object.keys(templates)).not.toContain("legal")
   })
 
-  it("serves the five public paths", () => {
+  it("serves the six public paths", () => {
     expect(PAGE_PATHS).toEqual({
       home: "/",
       about: "/about",
       services: "/services",
       blog: "/blog",
       contact: "/contact",
+      careers: "/careers",
     })
   })
 
@@ -51,7 +53,7 @@ describe("template registry (R3-2)", () => {
     expect(isPageKey("toString")).toBe(false)
   })
 
-  it("lib/schemas/api/content re-exports the registry's five keys", () => {
+  it("lib/schemas/api/content re-exports the registry's six keys", () => {
     expect(API_PAGE_KEYS).toBe(PAGE_KEYS)
     expect([...API_PAGE_KEYS]).toEqual([
       "home",
@@ -59,6 +61,7 @@ describe("template registry (R3-2)", () => {
       "services",
       "blog",
       "contact",
+      "careers",
     ])
     expect(pageKeyParam.safeParse({ key: "about" }).success).toBe(true)
     expect(pageKeyParam.safeParse({ key: "terms" }).success).toBe(false)

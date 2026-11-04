@@ -41,4 +41,86 @@ describe("sniffMime (ledger: MIME sniffed, not trusted)", () => {
     ).toBe("image/svg+xml")
     expect(sniffMime(text("<svgfoo/>"))).toBeNull()
   })
+
+  it("detects MP4 and WebM videos from their bytes", () => {
+    const mp4 = (brand: string) =>
+      new Uint8Array([
+        0,
+        0,
+        0,
+        24,
+        0x66,
+        0x74,
+        0x79,
+        0x70,
+        ...text(brand),
+        0,
+        0,
+        0,
+        0,
+        ...text("isom"),
+        ...text("mp42"),
+      ])
+    for (const brand of ["isom", "mp42", "avc1", "M4V "])
+      expect(sniffMime(mp4(brand)), brand).toBe("video/mp4")
+    // The EBML header of a WebM file names its DocType "webm".
+    const webm = new Uint8Array([
+      0x1a,
+      0x45,
+      0xdf,
+      0xa3,
+      0x9f,
+      0x42,
+      0x82,
+      0x84,
+      ...text("webm"),
+    ])
+    expect(sniffMime(webm)).toBe("video/webm")
+  })
+
+  it("does not take other containers for a video", () => {
+    // HEIC and QuickTime are ISO-BMFF too; Matroska is the EBML family.
+    const heic = new Uint8Array([
+      0,
+      0,
+      0,
+      24,
+      0x66,
+      0x74,
+      0x79,
+      0x70,
+      ...text("heic"),
+      0,
+      0,
+      0,
+      0,
+    ])
+    const mov = new Uint8Array([
+      0,
+      0,
+      0,
+      24,
+      0x66,
+      0x74,
+      0x79,
+      0x70,
+      ...text("qt  "),
+      0,
+      0,
+      0,
+      0,
+    ])
+    const mkv = new Uint8Array([
+      0x1a,
+      0x45,
+      0xdf,
+      0xa3,
+      0x9f,
+      0x42,
+      0x82,
+      0x88,
+      ...text("matroska"),
+    ])
+    for (const bytes of [heic, mov, mkv]) expect(sniffMime(bytes)).toBeNull()
+  })
 })

@@ -20,6 +20,7 @@ export const EDITABLE_SETTINGS_KEYS = [
   "sections.map",
   "sections.howItWorks",
   "leads",
+  "careers",
 ] as const satisfies readonly SettingsKey[]
 export type EditableSettingsKey = (typeof EDITABLE_SETTINGS_KEYS)[number]
 
@@ -139,6 +140,14 @@ export const SETTINGS_ENTRIES: Record<
     group: "Leads",
     read: { settings: ["read"] },
     // Operational, not content: editors cannot change it (spec §6.1).
+    update: { settings: ["update"], lead: ["update"] },
+  },
+  careers: {
+    label: "Job applications",
+    description:
+      "Who is notified about new job applications and how long they and their CVs are kept.",
+    group: "Leads",
+    read: { settings: ["read"] },
     update: { settings: ["update"], lead: ["update"] },
   },
 }

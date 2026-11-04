@@ -58,6 +58,7 @@ export function permissionMatrix(): MatrixRow[] {
 export const RESOURCE_LABELS: Record<Resource, string> = {
   page: "Pages",
   service: "Services",
+  job: "Jobs",
   article: "Articles",
   collection: "Collections",
   media: "Media",

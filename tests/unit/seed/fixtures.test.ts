@@ -361,7 +361,7 @@ describe("fixtureSiteSources", () => {
   })
 
   it("carries every collection and page", () => {
-    expect(Object.keys(sources.pages)).toHaveLength(5)
+    expect(Object.keys(sources.pages)).toHaveLength(6)
     expect(sources.testimonials).toHaveLength(3)
     expect(sources.categories).toHaveLength(6)
     expect(sources.articles.map((a) => a.category.name)).toEqual(

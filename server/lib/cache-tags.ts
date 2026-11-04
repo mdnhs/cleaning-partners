@@ -9,6 +9,9 @@ export const tag = {
   page: (key: string) => `page:${key}`,
   services: "services",
   service: (slug: string) => `service:${slug}`,
+  /** Job postings (careers): the list and one job. */
+  jobs: "jobs",
+  job: (slug: string) => `job:${slug}`,
   articles: "articles",
   article: (slug: string) => `article:${slug}`,
   categories: "categories",

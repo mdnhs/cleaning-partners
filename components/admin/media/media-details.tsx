@@ -40,7 +40,9 @@ import { formatDateTime } from "@/lib/format"
 import {
   ACCEPTED_IMAGE_TYPES,
   ACCEPTED_LOTTIE_TYPES,
+  ACCEPTED_VIDEO_TYPES,
   isLottieMime,
+  isVideoMime,
   MEDIA_ALT_MAX,
   MEDIA_CAPTION_MAX,
   type MediaItem,
@@ -170,6 +172,18 @@ export function MediaDetails({
 
 /** The image at its own proportions (next/image from the same-origin URL). */
 function Preview({ item }: { item: MediaItem }) {
+  if (isVideoMime(item.mime))
+    return (
+      <video
+        src={item.url}
+        controls
+        muted
+        playsInline
+        preload="metadata"
+        aria-label={item.originalName || "Video preview"}
+        className="max-h-56 w-full self-start rounded-xl border bg-black"
+      />
+    )
   if (isLottieMime(item.mime))
     return (
       <span className="flex h-32 items-center justify-center rounded-xl border bg-muted/40">
@@ -573,9 +587,11 @@ function DetailsBody({
                     accept={
                       image
                         ? ACCEPTED_IMAGE_TYPES
-                        : isLottieMime(item.mime)
-                          ? ACCEPTED_LOTTIE_TYPES
-                          : "application/pdf"
+                        : isVideoMime(item.mime)
+                          ? ACCEPTED_VIDEO_TYPES
+                          : isLottieMime(item.mime)
+                            ? ACCEPTED_LOTTIE_TYPES
+                            : "application/pdf"
                     }
                     onChange={(e) => {
                       const file = e.target.files?.[0]

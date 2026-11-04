@@ -4,8 +4,21 @@ import { stripHiddenChars } from "@/lib/hidden-chars"
 
 import { listQuery, sortParam } from "./list"
 
-/** Largest accepted file (spec §11). The request body may add a small multipart envelope. */
+/** Largest accepted image or document (spec §11). The request body may add a small multipart envelope. */
 export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+/**
+ * Videos as stored: MP4 (H.264/AAC) and WebM, played as a muted background
+ * (the home hero). Nothing is transcoded: upload a web-ready file.
+ */
+export const VIDEO_MIMES = ["video/mp4", "video/webm"] as const
+export const isVideoMime = (mime: string) =>
+  (VIDEO_MIMES as readonly string[]).includes(mime)
+/** Largest accepted video (a short background loop, not a film). */
+export const MAX_VIDEO_BYTES = 30 * 1024 * 1024
+/** Largest file any upload endpoint takes: the request body limit. */
+export const MAX_ANY_UPLOAD_BYTES = Math.max(MAX_UPLOAD_BYTES, MAX_VIDEO_BYTES)
+/** <input accept> for videos. */
+export const ACCEPTED_VIDEO_TYPES = "video/mp4,video/webm"
 /** <input accept>: the server sniffs the bytes anyway. */
 export const ACCEPTED_IMAGE_TYPES =
   "image/jpeg,image/png,image/webp,image/avif,image/svg+xml"
@@ -23,16 +36,16 @@ export const isLottieMime = (mime: string) =>
 export const MAX_LOTTIE_BYTES = 2 * 1024 * 1024
 /** <input accept> for Lottie: browsers know .lottie by its extension only. */
 export const ACCEPTED_LOTTIE_TYPES = ".json,.lottie,application/json"
-export const ACCEPTED_UPLOAD_TYPES = `${ACCEPTED_IMAGE_TYPES},application/pdf,${ACCEPTED_LOTTIE_TYPES}`
+export const ACCEPTED_UPLOAD_TYPES = `${ACCEPTED_IMAGE_TYPES},application/pdf,${ACCEPTED_VIDEO_TYPES},${ACCEPTED_LOTTIE_TYPES}`
 
-/** image = image/*, lottie = LOTTIE_MIMES, document = everything else (PDF). */
-export const MEDIA_KINDS = ["image", "document", "lottie"] as const
+/** image = image/*, video = VIDEO_MIMES, lottie = LOTTIE_MIMES, document = everything else (PDF). */
+export const MEDIA_KINDS = ["image", "document", "lottie", "video"] as const
 export type MediaKind = (typeof MEDIA_KINDS)[number]
 
 /** GET /api/v1/admin/media (library + picker). */
 export const mediaListQuery = listQuery.extend({
   sort: sortParam(["createdAt", "alt"], { field: "createdAt", dir: "desc" }),
-  /** "image" = image/*, "lottie" = Lottie animations, "document" = everything else (PDF); omitted = all. */
+  /** "image" = image/*, "video" = MP4/WebM, "lottie" = Lottie animations, "document" = everything else (PDF); omitted = all. */
   kind: z.enum(MEDIA_KINDS).optional(),
   /** "true" = images with no alt text that are not marked decorative. */
   missingAlt: z.literal("true").optional(),

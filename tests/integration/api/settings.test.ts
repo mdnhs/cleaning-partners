@@ -49,7 +49,7 @@ describe("settings API (master 4.5)", () => {
     const res = await adminRequest("/settings", { cookie: editor })
     const { items } = (await res.json()) as { items: SettingsListItem[] }
     expect(items.map((i) => i.key)).toEqual([...EDITABLE_SETTINGS_KEYS])
-    expect(items.map((i) => i.key)).toHaveLength(13)
+    expect(items.map((i) => i.key)).toHaveLength(14)
     expect(items.find((i) => i.key === "contact")).toMatchObject({
       group: "General",
       canEdit: true,
@@ -57,6 +57,7 @@ describe("settings API (master 4.5)", () => {
       dirty: false,
     })
     expect(items.find((i) => i.key === "leads")?.canEdit).toBe(false)
+    expect(items.find((i) => i.key === "careers")?.canEdit).toBe(false)
     expect(items[0]).not.toHaveProperty("draft")
   })
 
@@ -278,6 +279,7 @@ const EDITS: Record<EditableSettingsKey, [path: string[], value: unknown]> = {
   "sections.map": [["markerLabel"], "Round-trip pin"],
   "sections.howItWorks": [["title"], "Round-trip steps"],
   leads: [["retentionMonths"], 36],
+  careers: [["retentionMonths"], 18],
 }
 
 function setPath(target: unknown, path: string[], value: unknown) {

@@ -1,7 +1,13 @@
 "use client"
 
 import { ApiError, type ApiErrorBody } from "@/lib/api-client"
-import { MAX_UPLOAD_BYTES, type MediaItem } from "@/lib/schemas/api/media"
+import {
+  isVideoMime,
+  MAX_ANY_UPLOAD_BYTES,
+  MAX_UPLOAD_BYTES,
+  MAX_VIDEO_BYTES,
+  type MediaItem,
+} from "@/lib/schemas/api/media"
 
 export type UploadOptions = {
   alt?: string
@@ -19,15 +25,18 @@ export function sendMediaFile(
   file: File,
   opts: UploadOptions = {}
 ): Promise<MediaItem> {
+  // Videos may be larger than images; the server checks the real type.
+  const limit = isVideoMime(file.type) ? MAX_VIDEO_BYTES : MAX_UPLOAD_BYTES
   const tooLarge = () =>
     new ApiError(413, {
       error: {
         code: "VALIDATION_FAILED",
-        message: `“${file.name}” is larger than 20 MB.`,
+        message: `“${file.name}” is larger than ${limit / 1024 / 1024} MB.`,
       },
     })
-  // Checked here first, so a too-large file never starts a 20 MB request.
-  if (file.size > MAX_UPLOAD_BYTES) return Promise.reject(tooLarge())
+  // Checked here first, so a too-large file never starts a big request.
+  if (file.size > Math.min(limit, MAX_ANY_UPLOAD_BYTES))
+    return Promise.reject(tooLarge())
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open("POST", url)

@@ -20,9 +20,11 @@ import {
 /**
  * An unmatched path: app/global-not-found.tsx answers the rewrite with a
  * real 404 (the frozen /this-page-does-not-exist baseline; probed in
- * Phase 8 Task 8). CP has no catch-all route.
+ * Phase 8 Task 8). Two segments: a single one would match the root legal
+ * page app/(site)/[slug], whose notFound() streams as a 200
+ * (tests/unit/missing-path.test.ts). CP has no catch-all route.
  */
-export const MISSING_PATH = "/_cp-missing"
+export const MISSING_PATH = "/_cp-missing/404"
 
 export type PublicPathOutcome =
   | { kind: "pass" }
@@ -40,8 +42,14 @@ export type PublicPathOutcome =
 
 const PASS = { kind: "pass" } as const
 const MISSING = { kind: "missing" } as const
-const STATIC_PATHS = new Set<string>(Object.values(PAGE_PATHS))
-const DETAIL = /^\/(services|blog|p)\/([^/]+)$/
+const STATIC_PATHS = new Set<string>([
+  ...Object.values(PAGE_PATHS),
+  // The talent-pool form: a fixed route, not a job called "apply".
+  "/careers/apply",
+])
+/** A detail page; a job's application form follows its job. */
+const DETAIL =
+  /^\/(services|blog|careers|p)\/([^/]+)$|^\/(careers)\/([^/]+)\/apply$/
 /** One segment at the root: a legal page's address (/<slug>). */
 const ROOT = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/
 
@@ -136,13 +144,16 @@ export async function resolvePublicPath(
   try {
     const db = getDb()
     if (detail) {
-      const slug = detail[2]
+      const section = detail[1] ?? detail[3]
+      const slug = detail[2] ?? detail[4]!
       const kind =
-        detail[1] === "services"
+        section === "services"
           ? "service"
-          : detail[1] === "p"
-            ? "builder"
-            : "article"
+          : section === "careers"
+            ? "job"
+            : section === "p"
+              ? "builder"
+              : "article"
       if (SLUG_PATTERN.test(slug) && (await isPublishedSlug(db, kind, slug)))
         return PASS
     } else if (legalSlug && (await isPublishedSlug(db, "legal", legalSlug))) {

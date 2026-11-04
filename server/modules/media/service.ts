@@ -19,8 +19,11 @@ import type { Paginated } from "@/lib/schemas/api/list"
 import {
   cleanAltText,
   isLottieMime,
+  isVideoMime,
+  MAX_ANY_UPLOAD_BYTES,
   MAX_LOTTIE_BYTES,
   MAX_UPLOAD_BYTES,
+  MAX_VIDEO_BYTES,
   MEDIA_ALT_MAX,
   type MediaItem,
   type MediaListQuery,
@@ -47,7 +50,9 @@ import {
 } from "@/server/lib/lottie"
 import {
   isLottieUpload,
+  isVideoUpload,
   type LottieUploadMime,
+  type VideoUploadMime,
   sniffMime,
   UPLOAD_TYPES,
   type UploadMime,
@@ -154,14 +159,21 @@ export type PreparedUpload = {
 export async function prepareUpload(file: unknown): Promise<PreparedUpload> {
   if (!(file instanceof File)) throw fileError("Choose a file to upload")
   if (file.size === 0) throw fileError("This file is empty")
-  if (file.size > MAX_UPLOAD_BYTES) throw fileError("Files can be up to 20 MB")
+  // The request-wide cap; each kind checks its own below (images 20 MB).
+  if (file.size > MAX_ANY_UPLOAD_BYTES)
+    throw fileError(
+      `Files can be up to ${MAX_ANY_UPLOAD_BYTES / 1024 / 1024} MB`
+    )
   let bytes = new Uint8Array(await file.arrayBuffer())
   const mime = sniffMime(bytes)
   if (!mime)
     throw fileError(
-      "Upload a JPEG, PNG, WebP, AVIF, SVG or PDF file, or a Lottie animation (.json or .lottie)"
+      "Upload a JPEG, PNG, WebP, AVIF, SVG or PDF file, an MP4 or WebM video, or a Lottie animation (.json or .lottie)"
     )
   if (isLottieUpload(mime)) return prepareLottie(file, bytes, mime)
+  if (isVideoUpload(mime)) return prepareVideo(file, bytes, mime)
+  if (bytes.byteLength > MAX_UPLOAD_BYTES)
+    throw fileError(`Files can be up to ${MAX_UPLOAD_BYTES / 1024 / 1024} MB`)
   if (mime === "image/svg+xml") {
     try {
       bytes = new TextEncoder().encode(
@@ -193,6 +205,30 @@ export async function prepareUpload(file: unknown): Promise<PreparedUpload> {
     size: bytes.byteLength,
     originalName: cleanFileName(file.name, ext),
     ...info,
+  }
+}
+
+/**
+ * MP4 / WebM background video: at most 30 MB, stored exactly as uploaded
+ * (no transcoding, so no metadata is read: width/height stay empty, no blur).
+ */
+function prepareVideo(
+  file: File,
+  bytes: Uint8Array<ArrayBuffer>,
+  mime: VideoUploadMime
+): PreparedUpload {
+  if (bytes.byteLength > MAX_VIDEO_BYTES)
+    throw fileError(`Videos can be up to ${MAX_VIDEO_BYTES / 1024 / 1024} MB`)
+  const ext = UPLOAD_TYPES[mime]
+  return {
+    bytes,
+    mime,
+    ext,
+    size: bytes.byteLength,
+    originalName: cleanFileName(file.name, ext),
+    width: null,
+    height: null,
+    blurDataUrl: null,
   }
 }
 
@@ -368,13 +404,16 @@ export async function uploadMedia(
 const kindOf = (mime: string) =>
   mime.startsWith("image/")
     ? "image"
-    : isLottieMime(mime)
-      ? "lottie"
-      : "document"
+    : isVideoMime(mime)
+      ? "video"
+      : isLottieMime(mime)
+        ? "lottie"
+        : "document"
 
 const REPLACE_SAME_KIND = {
   image:
     "Replace an image with another image, so the pages using it keep working",
+  video: "Replace a video with another MP4 or WebM video",
   lottie:
     "Replace a Lottie animation with another Lottie file (.json or .lottie)",
   document: "Replace a document with another PDF",
