@@ -41,6 +41,7 @@ const PUBLIC_DIRS = [
   "components/services",
   "components/blog",
   "components/contact",
+  "components/careers",
   "templates",
   "components/consent",
   "components/site-extras.tsx",
