@@ -42,6 +42,10 @@ export const careersEditorMeta: EditorMeta = {
       label: "Application form",
       help: "Every word of the form. {title}, {location} and {reference} are the job's.",
     },
+    "apply.crumb": {
+      label: "Breadcrumb",
+      help: "Last crumb on a job's application form, after the job title.",
+    },
     "apply.options.rightToWork": {
       label: "Permission to work options",
       itemName: "Option",

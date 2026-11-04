@@ -1,6 +1,7 @@
 import type {
   CareersView,
   ClosedJobView,
+  ApplyView,
   JobDetailView,
   JobRowView,
 } from "@/components/careers/types"
@@ -307,6 +308,110 @@ export function jobDetailView(
       jobs: similarJobs(job, all, now).map((j) =>
         jobRow(s, j, now, page.open.postedLabel)
       ),
+    },
+  }
+}
+
+/** "/careers/<slug>/apply" (with a job) and "/careers/apply" (talent pool, job null). */
+export function applyView(
+  s: SiteSources,
+  job: PublicJob | null,
+  now: Date
+): ApplyView {
+  const page = s.pages.careers.data
+  const a = page.apply
+  const hero = pageHeroView(s, page.hero)
+  const c = job?.content
+  const number = (i: number) => String(i + 1).padStart(2, "0")
+  const sections = Object.fromEntries(
+    (
+      [
+        "personal",
+        "eligibility",
+        "availability",
+        "experience",
+        "cv",
+        "consent",
+      ] as const
+    ).map((key, i) => [key, { number: number(i), ...a.sections[key] }])
+  ) as ApplyView["form"]["sections"]
+  return {
+    hero: {
+      crumbs: {
+        home: hero.home,
+        careers: { label: hero.crumb, href: "/careers" },
+        ariaLabel: hero.ariaLabel,
+      },
+      image: hero.image,
+      jobCrumb: job && c ? { label: c.title, href: jobPath(job.slug) } : null,
+      crumb: c ? a.crumb : a.talentPoolTitle,
+      title: c ? a.title : a.talentPoolTitle,
+      subtitle: c
+        ? interpolate(a.subtitle, {
+            title: c.title,
+            location: c.location,
+            reference: c.reference,
+          })
+        : a.talentPoolSubtitle,
+    },
+    job:
+      job && c
+        ? {
+            id: job.id,
+            title: c.title,
+            href: jobPath(job.slug),
+            facts: {
+              location: c.location,
+              type: c.employmentType,
+              hours: c.hours,
+              pay: c.pay,
+            },
+          }
+        : null,
+    closed:
+      job && !openNow(job, now)
+        ? {
+            notice: textView(s, page.job.closedNotice),
+            back: { label: page.job.viewAll, href: "/careers#open-positions" },
+          }
+        : null,
+    form: {
+      back: job ? { label: a.back, href: jobPath(job.slug) } : null,
+      title: a.formTitle,
+      intro: a.formIntro,
+      sections,
+      fields: a.fields,
+      options: a.options,
+      yes: a.yes,
+      no: a.no,
+      required: a.required,
+      selectPlaceholder: a.selectPlaceholder,
+      cvDrop: a.cvDrop,
+      cvBrowse: a.cvBrowse,
+      cvHelp: a.cvHelp,
+      declaration: a.declaration,
+      privacy: a.privacy,
+      keepOnFile: a.keepOnFile,
+      equalOpportunities: a.equalOpportunities,
+      submit: a.submit,
+      sending: a.sending,
+      privacyNote: a.privacyNote,
+      success: a.success,
+      errors: a.errors,
+    },
+    sidebar: {
+      applyingFor: a.sidebar.applyingFor,
+      viewJob: a.sidebar.viewJob,
+      nextTitle: a.sidebar.nextTitle,
+      nextSteps: a.sidebar.nextSteps.map((step, i) => ({
+        number: String(i + 1),
+        ...step,
+      })),
+      dataTitle: a.sidebar.dataTitle,
+      dataBody: a.sidebar.dataBody,
+      helpTitle: a.sidebar.helpTitle,
+      phone: linkView(s, a.sidebar.phone),
+      email: linkView(s, a.sidebar.email),
     },
   }
 }

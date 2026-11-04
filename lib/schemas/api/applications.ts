@@ -78,17 +78,18 @@ const yesNo = z
   .transform((v) => v === "yes")
 const isoDay = z.iso.date("Enter a date")
 /** A ticked checkbox posts "on" (or "true"); anything else is unticked. */
-const ticked = z.unknown().transform((v) => v === "on" || v === "true")
+// z.preprocess (not .transform) so a key the browser left out still parses.
+const ticked = z.preprocess((v) => v === "on" || v === "true", z.boolean())
 const mustTick = (message: string) =>
   z
     .unknown()
     .refine((v) => v === "on" || v === "true", message)
     .transform(() => true)
 /** A repeated form field (checkbox group) as a list; one value or none too. */
-const many = z
-  .unknown()
-  .transform((v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]))
-  .pipe(z.array(oneLine(200)).max(20))
+const many = z.preprocess(
+  (v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]),
+  z.array(oneLine(200)).max(20)
+)
 
 /**
  * POST /api/v1/public/applications (multipart, the careers form). Shapes

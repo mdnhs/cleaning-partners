@@ -150,3 +150,109 @@ export type JobDetailView = {
     jobs: JobRowView[]
   }
 }
+
+export type ApplyField = { label: string; placeholder: string; help: string }
+
+export type ApplyView = {
+  hero: {
+    crumbs: { home: Link; careers: Link; ariaLabel: string }
+    image: string
+    /** The job, between Careers and "Apply" (null on the talent pool form). */
+    jobCrumb: Link | null
+    crumb: string
+    title: string
+    subtitle: string
+  }
+  /** null = the talent pool form. */
+  job: {
+    id: string
+    title: string
+    href: string
+    facts: { location: string; type: string; hours: string; pay: string }
+  } | null
+  /** The job closed: the notice and a way back replace the form. */
+  closed: { notice: string; back: Link } | null
+  form: {
+    back: Link | null
+    title: string
+    intro: string
+    sections: Record<
+      | "personal"
+      | "eligibility"
+      | "availability"
+      | "experience"
+      | "cv"
+      | "consent",
+      { number: string; title: string; description: string }
+    >
+    fields: Record<
+      | "firstName"
+      | "surname"
+      | "email"
+      | "phone"
+      | "address"
+      | "town"
+      | "eircode"
+      | "rightToWork"
+      | "permissionExpiry"
+      | "gardaVetting"
+      | "livedAbroad"
+      | "startDate"
+      | "hoursPerWeek"
+      | "shifts"
+      | "transport"
+      | "experience"
+      | "healthcareExperience"
+      | "recentRole"
+      | "certificates"
+      | "cv"
+      | "note"
+      | "heardAbout",
+      ApplyField
+    >
+    options: {
+      rightToWork: string[]
+      hours: string[]
+      years: string[]
+      healthcare: string[]
+      shifts: string[]
+      certificates: string[]
+      heardAbout: string[]
+    }
+    yes: string
+    no: string
+    required: string
+    selectPlaceholder: string
+    cvDrop: string
+    cvBrowse: string
+    cvHelp: string
+    declaration: string
+    privacy: string
+    keepOnFile: string
+    equalOpportunities: string
+    submit: string
+    sending: string
+    privacyNote: string
+    success: { title: string; body: string }
+    errors: {
+      required: string
+      invalidEmail: string
+      cvType: string
+      cvSize: string
+      closed: string
+      rateLimited: string
+      generic: string
+    }
+  }
+  sidebar: {
+    applyingFor: string
+    viewJob: string
+    nextTitle: string
+    nextSteps: { number: string; title: string; description: string }[]
+    dataTitle: string
+    dataBody: string
+    helpTitle: string
+    phone: Link
+    email: Link
+  }
+}

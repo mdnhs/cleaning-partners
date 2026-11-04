@@ -25,12 +25,17 @@ export const jobListQuery = listQuery.extend({
 })
 export type JobListQuery = z.output<typeof jobListQuery>
 
+/** "apply" is taken: /careers/apply is the talent-pool form. */
+const jobSlug = slug.refine((v) => v !== "apply", {
+  message: "“apply” is used by the CV form; choose another address.",
+})
+
 /** POST /job-postings — draft is validated against jobContent by the service. */
-export const createJobInput = z.object({ slug, draft: z.unknown() })
+export const createJobInput = z.object({ slug: jobSlug, draft: z.unknown() })
 
 /** PATCH /job-postings/:id/slug — changes the public URL immediately. */
 export const jobSlugInput = z.object({
-  slug,
+  slug: jobSlug,
   version: z.number().int().min(1),
 })
 

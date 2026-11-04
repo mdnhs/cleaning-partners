@@ -40,8 +40,14 @@ export type PublicPathOutcome =
 
 const PASS = { kind: "pass" } as const
 const MISSING = { kind: "missing" } as const
-const STATIC_PATHS = new Set<string>(Object.values(PAGE_PATHS))
-const DETAIL = /^\/(services|blog|careers|p)\/([^/]+)$/
+const STATIC_PATHS = new Set<string>([
+  ...Object.values(PAGE_PATHS),
+  // The talent-pool form: a fixed route, not a job called "apply".
+  "/careers/apply",
+])
+/** A detail page; a job's application form follows its job. */
+const DETAIL =
+  /^\/(services|blog|careers|p)\/([^/]+)$|^\/(careers)\/([^/]+)\/apply$/
 /** One segment at the root: a legal page's address (/<slug>). */
 const ROOT = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/
 
@@ -136,13 +142,14 @@ export async function resolvePublicPath(
   try {
     const db = getDb()
     if (detail) {
-      const slug = detail[2]
+      const section = detail[1] ?? detail[3]
+      const slug = detail[2] ?? detail[4]!
       const kind =
-        detail[1] === "services"
+        section === "services"
           ? "service"
-          : detail[1] === "careers"
+          : section === "careers"
             ? "job"
-            : detail[1] === "p"
+            : section === "p"
               ? "builder"
               : "article"
       if (SLUG_PATTERN.test(slug) && (await isPublishedSlug(db, kind, slug)))

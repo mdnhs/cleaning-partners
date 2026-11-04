@@ -259,3 +259,32 @@ export function jobMetadata(
     fallbackDescription: job.content.summary,
   })
 }
+
+/**
+ * "/careers/<slug>/apply" and "/careers/apply": titled from the Careers
+ * page's form copy, kept out of search (the job page is the one to index).
+ */
+export function applyMetadata(
+  s: SiteSources,
+  job: {
+    slug: string
+    content: { title: string; location: string; reference: string }
+  } | null
+): Metadata {
+  const a = s.pages.careers.data.apply
+  const name = job
+    ? interpolate(a.subtitle, {
+        title: job.content.title,
+        location: job.content.location,
+        reference: job.content.reference,
+      })
+    : a.talentPoolTitle
+  return metadataFor(s, {
+    kind: "page",
+    id: "careers",
+    path: job ? `/careers/${job.slug}/apply` : "/careers/apply",
+    seo: { noindex: true },
+    name: job ? `${a.title} · ${name}` : name,
+    fallbackDescription: job ? a.formIntro : a.talentPoolSubtitle,
+  })
+}

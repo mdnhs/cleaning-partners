@@ -34,8 +34,8 @@ describe("public content comes from the content model (master Task 3.4)", () => 
 
   it("the public pages load their data through loadSiteSources", () => {
     const pages = walk("app/(site)").filter((f) => f.endsWith("page.tsx"))
-    // 9 fixed routes, a job page and the root legal page (app/(site)/[slug]).
-    expect(pages).toHaveLength(11)
+    // 9 fixed routes, a job page, its form, the talent-pool form and the root legal page (app/(site)/[slug]).
+    expect(pages).toHaveLength(13)
     for (const page of pages)
       expect(readFileSync(page, "utf8"), page).toContain("loadSiteSources")
   })

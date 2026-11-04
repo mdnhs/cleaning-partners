@@ -104,6 +104,8 @@ export const careersTemplate = z.object({
     closedNotice: text,
   }),
   apply: z.object({
+    /** Last breadcrumb on a job's form ("Apply"). */
+    crumb: text,
     title: text,
     talentPoolTitle: text,
     /** "{title} · {location} · Ref {reference}" */

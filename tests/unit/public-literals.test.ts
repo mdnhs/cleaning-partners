@@ -70,6 +70,11 @@ const TECHNICAL_CONSTS: Record<string, string[]> = {
   "components/home/hero-video.tsx": ["REDUCED_MOTION"],
   // A localStorage key, never shown.
   "components/careers/save-job-button.tsx": ["STORAGE_KEY"],
+  // Form field names (the request's keys), never shown.
+  "components/careers/application-form.tsx": [
+    "REQUIRED_TEXT",
+    "REQUIRED_YES_NO",
+  ],
   // Consent category keys (never shown), a state sentinel and a Tailwind class.
   "components/consent/consent-banner-view.tsx": ["OPTIONAL", "ON_LIGHT"],
   "components/consent/consent-provider.tsx": ["PENDING"],
