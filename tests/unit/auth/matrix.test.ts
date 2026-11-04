@@ -66,3 +66,21 @@ describe("permission matrix (generated from lib/auth/permissions)", () => {
     }
   })
 })
+
+describe("job permission (careers)", () => {
+  it("every role holds exactly its service actions on jobs", () => {
+    expect(statements.job).toEqual([
+      "read",
+      "create",
+      "update",
+      "publish",
+      "delete",
+    ])
+    for (const role of ROLES)
+      for (const action of statements.service)
+        expect(
+          hasPermission([role], { job: [action] }),
+          `${role} ${action}`
+        ).toBe(hasPermission([role], { service: [action] }))
+  })
+})

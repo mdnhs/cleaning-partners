@@ -6,6 +6,7 @@ import { ROLES, type Role } from "./roles"
 export const statements = {
   page: ["read", "create", "update", "publish", "delete"], // fixed pages + builder pages (create/delete: /p/<slug> only)
   service: ["read", "create", "update", "publish", "delete"],
+  job: ["read", "create", "update", "publish", "delete"], // careers: job postings
   article: [
     "read",
     "create",
@@ -45,6 +46,7 @@ const all = <R extends Resource>(resource: R) => statements[resource]
 const EVERYTHING = {
   page: all("page"),
   service: all("service"),
+  job: all("job"),
   article: all("article"),
   collection: all("collection"),
   media: all("media"),
@@ -74,6 +76,7 @@ export const ROLE_GRANTS: Record<Role, Grants> = {
   admin: {
     page: all("page"),
     service: all("service"),
+    job: all("job"),
     article: all("article"),
     collection: all("collection"),
     media: all("media"),
@@ -91,6 +94,7 @@ export const ROLE_GRANTS: Record<Role, Grants> = {
   editor: {
     page: all("page"),
     service: all("service"),
+    job: all("job"),
     article: all("article"),
     collection: all("collection"),
     media: all("media"),
@@ -110,6 +114,7 @@ export const ROLE_GRANTS: Record<Role, Grants> = {
     marketing: all("marketing"),
     page: ["read"],
     service: ["read"],
+    job: ["read"],
     article: ["read"],
     media: ["read", "create"],
     ai: ["use"],
@@ -122,6 +127,7 @@ export const ROLE_GRANTS: Record<Role, Grants> = {
   viewer: {
     page: ["read"],
     service: ["read"],
+    job: ["read"],
     article: ["read"],
     collection: ["read"],
     media: ["read"],

@@ -23,6 +23,11 @@ const EXPECTED: Record<Role, string[]> = {
     "service:update",
     "service:publish",
     "service:delete",
+    "job:read",
+    "job:create",
+    "job:update",
+    "job:publish",
+    "job:delete",
     "article:read",
     "article:create",
     "article:update",
@@ -82,6 +87,11 @@ const EXPECTED: Record<Role, string[]> = {
     "service:update",
     "service:publish",
     "service:delete",
+    "job:read",
+    "job:create",
+    "job:update",
+    "job:publish",
+    "job:delete",
     "article:read",
     "article:create",
     "article:update",
@@ -138,6 +148,11 @@ const EXPECTED: Record<Role, string[]> = {
     "service:update",
     "service:publish",
     "service:delete",
+    "job:read",
+    "job:create",
+    "job:update",
+    "job:publish",
+    "job:delete",
     "article:read",
     "article:create",
     "article:update",
@@ -174,6 +189,7 @@ const EXPECTED: Record<Role, string[]> = {
   marketer: [
     "page:read",
     "service:read",
+    "job:read",
     "article:read",
     "media:read",
     "media:create",
@@ -192,6 +208,7 @@ const EXPECTED: Record<Role, string[]> = {
   viewer: [
     "page:read",
     "service:read",
+    "job:read",
     "article:read",
     "collection:read",
     "media:read",
@@ -211,9 +228,9 @@ const req = (resource: Resource, action: string) =>
   ({ [resource]: [action] }) as PermissionRequest
 
 describe("permission matrix (spec §6.1): every role × resource × action", () => {
-  it("covers 17 resources and 57 actions", () => {
-    expect(Object.keys(statements)).toHaveLength(17)
-    expect(ALL_PAIRS).toHaveLength(57)
+  it("covers 18 resources and 62 actions", () => {
+    expect(Object.keys(statements)).toHaveLength(18)
+    expect(ALL_PAIRS).toHaveLength(62)
   })
 
   it("page:create/delete (builder pages) go to owner, admin, editor only", () => {
