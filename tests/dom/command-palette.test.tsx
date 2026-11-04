@@ -245,6 +245,8 @@ describe("⌘K command palette (master 4.1)", () => {
       .map((o) => o.textContent)
     expect(options).toEqual([
       "Dashboard",
+      // Careers › Applications: the inbox is on the enquiry permissions.
+      "ApplicationsCareers",
       "Enquiries",
       "Help",
       "Account",

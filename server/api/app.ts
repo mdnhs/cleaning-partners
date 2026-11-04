@@ -32,7 +32,10 @@ import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
 import { internalRoutes } from "@/server/modules/internal/routes"
 import { integrationsRoutes } from "@/server/modules/integrations/routes"
-import { publicApplicationsRoutes } from "@/server/modules/applications/routes"
+import {
+  applicationsRoutes,
+  publicApplicationsRoutes,
+} from "@/server/modules/applications/routes"
 import { leadsRoutes, publicLeadsRoutes } from "@/server/modules/leads/routes"
 import { marketingRoutes } from "@/server/modules/marketing/routes"
 import { mediaFileRoutes, mediaRoutes } from "@/server/modules/media/routes"
@@ -77,6 +80,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/media", mediaRoutes)
   .route("/integrations", integrationsRoutes)
   .route("/leads", leadsRoutes)
+  .route("/applications", applicationsRoutes)
   .route("/seo", seoRoutes)
   .route("/redirects", redirectsRoutes)
   .route("/marketing", marketingRoutes)

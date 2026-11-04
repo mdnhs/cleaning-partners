@@ -6,17 +6,35 @@ import { ApplicationAcknowledgementEmail } from "@/emails/application-acknowledg
 import { ApplicationNotificationEmail } from "@/emails/application-notification"
 import { emailLogoUrl } from "@/emails/layout"
 import { isOpenJob } from "@/lib/careers/open"
-import { formatDateTime } from "@/lib/format"
-import type {
-  ApplicationForm,
-  ApplicationPublicConfig,
+import {
+  hasPermission,
+  parseRoles,
+  type PermissionRequest,
+} from "@/lib/auth/permissions"
+import { CSV_BOM, toCsv } from "@/lib/csv"
+import { formatDateTime, isoDate } from "@/lib/format"
+import {
+  APPLICATION_CSV_HEADER,
+  APPLICATION_EXPORT_LIMIT,
+  APPLICATION_STATUS_LABELS,
+  type ApplicationDto,
+  type ApplicationEventType,
+  type ApplicationExportQuery,
+  type ApplicationForm,
+  type ApplicationListItem,
+  type ApplicationListQuery,
+  type ApplicationPublicConfig,
+  type ApplicationStatus,
+  type UpdateApplicationInput,
 } from "@/lib/schemas/api/applications"
+import type { Paginated } from "@/lib/schemas/api/list"
 import type { TurnstileConfig } from "@/lib/schemas/integrations"
 import { getDb } from "@/server/db/client"
 import { getEnv } from "@/server/env"
 import { writeAudit } from "@/server/lib/audit"
-import { deleteCv, prepareCv, storeCv } from "@/server/lib/cv"
-import { AppError } from "@/server/lib/errors"
+import { deleteCv, openCv, prepareCv, storeCv } from "@/server/lib/cv"
+import type { Actor } from "@/server/lib/actor"
+import { AppError, forbidden, notFound } from "@/server/lib/errors"
 import { hashIp } from "@/server/lib/ip"
 import { mailer } from "@/server/lib/mailer"
 import { publicOrigin } from "@/server/lib/site-origin"
@@ -24,6 +42,8 @@ import { verifyTurnstileToken } from "@/server/lib/turnstile"
 import { readIntegrationConfig } from "@/server/modules/integrations/service"
 import { findJobById } from "@/server/modules/job-postings/repo"
 import { readPublishedPage } from "@/server/modules/pages/service"
+import { findStaffUser } from "@/server/modules/leads/repo"
+import { retentionCutoff } from "@/server/modules/leads/service"
 import { readPublishedSettings } from "@/server/modules/settings/service"
 
 import * as repo from "./repo"
@@ -297,4 +317,322 @@ async function notify(
       body,
       actorId: null,
     })
+}
+
+// ------------------------------------------------------------ admin inbox
+
+function assertCan(actor: Actor, req: PermissionRequest) {
+  if (!hasPermission(actor.roles, req)) throw forbidden()
+}
+const canWorkApplications = (role: string | null, banned: boolean | null) =>
+  !banned && hasPermission(parseRoles(role), { lead: ["update"] })
+
+function toListItem(row: repo.ApplicationWithAssignee): ApplicationListItem {
+  return {
+    id: row.id,
+    name: `${row.firstName} ${row.surname}`,
+    email: row.email,
+    phone: row.phone,
+    town: row.town,
+    jobId: row.jobId,
+    jobTitle: row.jobTitle,
+    jobReference: row.jobReference,
+    status: row.status,
+    assignee: row.assigneeId
+      ? { id: row.assigneeId, name: row.assigneeName ?? "Deleted user" }
+      : null,
+    hasCv: row.cvKey !== null,
+    createdAt: row.createdAt.toISOString(),
+  }
+}
+
+export async function listApplications(
+  actor: Actor,
+  query: ApplicationListQuery
+): Promise<Paginated<ApplicationListItem>> {
+  assertCan(actor, { lead: ["read"] })
+  const { rows, total } = await repo.listApplicationRows(getDb(), {
+    filters: { status: query.status, jobId: query.jobId, q: query.q },
+    sort: query.sort,
+    page: query.page,
+    pageSize: query.pageSize,
+  })
+  return {
+    items: rows.map(toListItem),
+    page: query.page,
+    pageSize: query.pageSize,
+    total,
+  }
+}
+
+export async function getApplication(
+  actor: Actor,
+  id: string
+): Promise<ApplicationDto> {
+  assertCan(actor, { lead: ["read"] })
+  const db = getDb()
+  const row = await repo.findApplicationRow(db, id)
+  if (!row) throw notFound("Application")
+  const events = await repo.listApplicationEventRows(db, id)
+  return {
+    ...toListItem(row),
+    firstName: row.firstName,
+    surname: row.surname,
+    address: row.address,
+    eircode: row.eircode,
+    answers: row.answers,
+    note: row.note,
+    heardAbout: row.heardAbout,
+    declaration: row.declaration,
+    privacyConsent: row.privacyConsent,
+    keepOnFile: row.keepOnFile,
+    sourcePage: row.sourcePage,
+    cv:
+      row.cvKey && row.cvName && row.cvMime
+        ? { name: row.cvName, mime: row.cvMime, size: row.cvSize ?? 0 }
+        : null,
+    updatedAt: row.updatedAt.toISOString(),
+    events: events.map((e) => ({
+      id: e.id,
+      type: e.type as ApplicationEventType,
+      body: e.body,
+      actor: e.actorId
+        ? { id: e.actorId, name: e.actorName ?? "Deleted user" }
+        : null,
+      createdAt: e.createdAt.toISOString(),
+    })),
+  }
+}
+
+export async function updateApplication(
+  actor: Actor,
+  id: string,
+  input: UpdateApplicationInput
+): Promise<ApplicationDto> {
+  assertCan(actor, { lead: ["update"] })
+  await getDb().transaction(async (tx) => {
+    const row = await repo.lockApplicationRow(tx, id)
+    if (!row) throw notFound("Application")
+    const patch: { status?: ApplicationStatus; assigneeId?: string | null } = {}
+    const diff: Record<string, { from: unknown; to: unknown }> = {}
+    const events: { type: ApplicationEventType; body: string }[] = []
+    if (input.status !== undefined && input.status !== row.status) {
+      patch.status = input.status
+      diff.status = { from: row.status, to: input.status }
+      events.push({
+        type: "status",
+        body: `${APPLICATION_STATUS_LABELS[row.status]} → ${APPLICATION_STATUS_LABELS[input.status]}`,
+      })
+    }
+    if (input.assigneeId !== undefined && input.assigneeId !== row.assigneeId) {
+      let name: string | null = null
+      if (input.assigneeId) {
+        const user = await findStaffUser(tx, input.assigneeId)
+        if (!user || !canWorkApplications(user.role, user.banned))
+          throw new AppError("VALIDATION_FAILED", "Invalid input", {
+            fieldErrors: {
+              assigneeId: ["Choose someone who can work on enquiries"],
+            },
+          })
+        name = user.name
+      }
+      patch.assigneeId = input.assigneeId
+      diff.assigneeId = { from: row.assigneeId, to: input.assigneeId }
+      events.push({
+        type: "assigned",
+        body: name ? `Assigned to ${name}` : "Unassigned",
+      })
+    }
+    if (events.length === 0) return
+    await repo.updateApplicationRow(tx, id, patch)
+    for (const event of events)
+      await repo.insertApplicationEvent(tx, {
+        applicationId: id,
+        ...event,
+        actorId: actor.userId,
+      })
+    await writeAudit(tx, actor, {
+      action: "application.updated",
+      entityType: "application",
+      entityId: id,
+      diff,
+    })
+  })
+  return getApplication(actor, id)
+}
+
+export async function addApplicationNote(
+  actor: Actor,
+  id: string,
+  input: { body: string }
+): Promise<ApplicationDto> {
+  assertCan(actor, { lead: ["update"] })
+  await getDb().transaction(async (tx) => {
+    if (!(await repo.lockApplicationRow(tx, id))) throw notFound("Application")
+    await repo.insertApplicationEvent(tx, {
+      applicationId: id,
+      type: "note",
+      body: input.body,
+      actorId: actor.userId,
+    })
+    await writeAudit(tx, actor, {
+      action: "application.note_added",
+      entityType: "application",
+      entityId: id,
+    })
+  })
+  return getApplication(actor, id)
+}
+
+/** The CV for download, or 404 when the application has none (or the file is gone). */
+export async function openApplicationCv(actor: Actor, id: string) {
+  assertCan(actor, { lead: ["read"] })
+  const row = await repo.findApplicationRow(getDb(), id)
+  if (!row) throw notFound("Application")
+  if (!row.cvKey || !row.cvDriver) throw notFound("CV")
+  const stream = await openCv(row.cvKey, row.cvDriver)
+  if (!stream) throw notFound("CV")
+  return {
+    stream,
+    name: row.cvName ?? "cv",
+    mime: row.cvMime ?? "application/octet-stream",
+  }
+}
+
+/** Removes the stored CV; a storage failure is logged, never blocks the delete. */
+async function removeCvFile(cv: {
+  cvKey: string | null
+  cvDriver: "disk" | "r2" | null
+}) {
+  if (!cv.cvKey || !cv.cvDriver) return
+  try {
+    await deleteCv(cv.cvKey, cv.cvDriver)
+  } catch (err) {
+    console.error(`[applications] CV delete failed (${errorName(err)})`)
+  }
+}
+
+export async function deleteApplication(
+  actor: Actor,
+  id: string
+): Promise<{ ok: true }> {
+  assertCan(actor, { lead: ["delete"] })
+  const cv = await getDb().transaction(async (tx) => {
+    const removed = await repo.deleteApplicationRow(tx, id)
+    if (!removed) throw notFound("Application")
+    await writeAudit(tx, actor, {
+      action: "application.deleted",
+      entityType: "application",
+      entityId: id,
+    })
+    return removed
+  })
+  await removeCvFile(cv)
+  return { ok: true }
+}
+
+const yesNoCell = (v: boolean) => (v ? "yes" : "no")
+
+export async function exportApplications(
+  actor: Actor,
+  query: ApplicationExportQuery,
+  now: Date = new Date(),
+  { limit = APPLICATION_EXPORT_LIMIT }: { limit?: number } = {}
+): Promise<{ csv: string; filename: string; count: number }> {
+  assertCan(actor, { lead: ["export"] })
+  const db = getDb()
+  const rows = await repo.exportApplicationRows(
+    db,
+    { status: query.status, jobId: query.jobId, q: query.q },
+    limit + 1
+  )
+  if (rows.length > limit)
+    throw new AppError(
+      "VALIDATION_FAILED",
+      `More than ${limit.toLocaleString("en-IE")} applications match. Narrow the filters to export.`
+    )
+  const csv =
+    CSV_BOM +
+    toCsv(
+      APPLICATION_CSV_HEADER,
+      rows.map((r) => [
+        r.createdAt.toISOString(),
+        APPLICATION_STATUS_LABELS[r.status],
+        r.jobTitle,
+        r.jobReference,
+        r.firstName,
+        r.surname,
+        r.email,
+        r.phone,
+        r.address,
+        r.town,
+        r.eircode,
+        r.answers.rightToWork,
+        r.answers.permissionExpiry,
+        yesNoCell(r.answers.gardaVetting),
+        yesNoCell(r.answers.livedAbroad),
+        r.answers.startDate,
+        r.answers.hoursPerWeek,
+        r.answers.shifts.join("; "),
+        yesNoCell(r.answers.transport),
+        r.answers.experience,
+        r.answers.healthcareExperience,
+        r.answers.recentRole,
+        r.answers.certificates.join("; "),
+        r.note,
+        r.heardAbout,
+        yesNoCell(r.keepOnFile),
+        r.cvName,
+        r.assigneeId ? (r.assigneeName ?? "Deleted user") : null,
+        r.sourcePage,
+        r.id,
+      ])
+    )
+  await writeAudit(db, actor, {
+    action: "application.exported",
+    entityType: "application",
+    diff: {
+      count: rows.length,
+      filters: Object.entries(query)
+        .filter(([, value]) => value !== undefined && value !== "")
+        .map(([key]) => key),
+    },
+  })
+  return {
+    csv,
+    filename: `applications-${isoDate(now)}.csv`,
+    count: rows.length,
+  }
+}
+
+export async function applicationBadge(
+  actor: Actor
+): Promise<{ newApplications: number }> {
+  assertCan(actor, { lead: ["read"] })
+  return { newApplications: await repo.countNewApplications(getDb()) }
+}
+
+/**
+ * Daily retention purge (spec: Settings › Careers retentionMonths):
+ * applications older than that, and their CV files. Audits the count only.
+ */
+export async function purgeExpiredApplications(
+  now: Date = new Date()
+): Promise<{ deleted: number }> {
+  const db = getDb()
+  const config = await readPublishedSettings("careers", db)
+  const months = config?.retentionMonths ?? 12
+  const cutoff = retentionCutoff(now, months)
+  const removed = await db.transaction(async (tx) => {
+    const rows = await repo.deleteApplicationsCreatedBefore(tx, cutoff)
+    if (rows.length > 0)
+      await writeAudit(tx, null, {
+        action: "application.purged",
+        entityType: "application",
+        diff: { count: rows.length, cutoff: cutoff.toISOString() },
+      })
+    return rows
+  })
+  for (const cv of removed) await removeCvFile(cv)
+  return { deleted: removed.length }
 }

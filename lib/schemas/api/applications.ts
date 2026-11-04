@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { oneLine, optionalLine } from "./leads"
+import { leadNoteInput, oneLine, optionalLine } from "./leads"
 import { listQuery, sortParam } from "./list"
 
 /** Same order as the DB enum application_status (server/db/schema/job-applications.ts). */
@@ -70,6 +70,102 @@ export const applicationListQuery = listQuery.extend({
   sort: sortParam(["createdAt", "name"], { field: "createdAt", dir: "desc" }),
 })
 export type ApplicationListQuery = z.output<typeof applicationListQuery>
+
+export const applicationExportQuery = z.object({
+  q: z.string().trim().max(200).optional(),
+  status: z.enum([...APPLICATION_STATUSES, "open", "all"]).default("all"),
+  jobId: z.uuid().optional(),
+})
+export type ApplicationExportQuery = z.output<typeof applicationExportQuery>
+
+export const updateApplicationInput = z
+  .object({
+    status: z.enum(APPLICATION_STATUSES).optional(),
+    assigneeId: z.uuid().nullable().optional(),
+  })
+  .refine((v) => v.status !== undefined || v.assigneeId !== undefined, {
+    message: "Change the status or the assignee",
+  })
+export type UpdateApplicationInput = z.output<typeof updateApplicationInput>
+
+/** Same rules as an enquiry note. */
+export const applicationNoteInput = leadNoteInput
+
+export type ApplicationPerson = { id: string; name: string }
+export type ApplicationListItem = {
+  id: string
+  /** First name and surname. */
+  name: string
+  email: string
+  phone: string
+  town: string
+  /** null = the talent pool (or the job was deleted: jobTitle still says which). */
+  jobId: string | null
+  jobTitle: string | null
+  jobReference: string | null
+  status: ApplicationStatus
+  assignee: ApplicationPerson | null
+  hasCv: boolean
+  createdAt: string
+}
+export type ApplicationEventItem = {
+  id: string
+  type: ApplicationEventType
+  body: string | null
+  actor: ApplicationPerson | null
+  createdAt: string
+}
+export type ApplicationDto = ApplicationListItem & {
+  firstName: string
+  surname: string
+  address: string | null
+  eircode: string | null
+  answers: ApplicationAnswers
+  note: string | null
+  heardAbout: string | null
+  declaration: boolean
+  privacyConsent: boolean
+  keepOnFile: boolean
+  sourcePage: string | null
+  /** The uploaded CV (download from the /cv route), or none. */
+  cv: { name: string; mime: string; size: number } | null
+  updatedAt: string
+  events: ApplicationEventItem[]
+}
+
+export const APPLICATION_EXPORT_LIMIT = 50_000
+export const APPLICATION_CSV_HEADER = [
+  "Received (UTC)",
+  "Status",
+  "Job",
+  "Job reference",
+  "First name",
+  "Surname",
+  "Email",
+  "Phone",
+  "Address",
+  "Town / County",
+  "Eircode",
+  "Right to work",
+  "Permission expiry",
+  "Garda vetting",
+  "Lived abroad 6+ months",
+  "Earliest start",
+  "Hours per week",
+  "Shifts",
+  "Driving / transport",
+  "Cleaning experience",
+  "Healthcare experience",
+  "Most recent role",
+  "Certificates",
+  "Note",
+  "Heard about",
+  "Keep on file",
+  "CV file",
+  "Assignee",
+  "Source page",
+  "ID",
+] as const
 
 const required = (max: number) =>
   oneLine(max).pipe(z.string().min(1, "Please fill in this field."))

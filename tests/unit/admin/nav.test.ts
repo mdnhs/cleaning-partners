@@ -102,7 +102,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
       ],
     ],
     ["author", [["Menu", ["Dashboard", "Blog", "Media"]]]],
-    ["intake", [["Menu", ["Dashboard", "Enquiries"]]]],
+    ["intake", [["Menu", ["Dashboard", "Careers", "Enquiries"]]]],
   ])("%s sees %j", (role, expected) => {
     expect(menu([role])).toEqual(expected)
   })

@@ -208,7 +208,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
     return (
       <div
         role="status"
-        className="flex flex-col items-center gap-4 rounded-3xl border border-line bg-white px-6 py-14 text-center"
+        className="flex flex-col items-center gap-4 self-start rounded-3xl border border-line bg-white px-6 py-14 text-center"
       >
         <CheckCircle2 aria-hidden className="size-12 text-brand" />
         <h2 className="font-heading text-2xl font-bold text-ink">
@@ -224,7 +224,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
     return (
       <div
         role="alert"
-        className="flex flex-col items-center gap-4 rounded-3xl border border-line bg-white px-6 py-14 text-center"
+        className="flex flex-col items-center gap-4 self-start rounded-3xl border border-line bg-white px-6 py-14 text-center"
       >
         <p className="max-w-[520px] text-base leading-[1.6] text-ink">
           {form.errors.closed}
@@ -455,7 +455,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
       noValidate
       onSubmit={submit}
       onFocus={() => void turnstile.prepare()}
-      className="relative flex flex-col gap-9 rounded-3xl border border-line bg-white p-6 shadow-[0px_6px_24px_0px_rgba(13,28,51,0.04)] md:p-12"
+      className="relative flex flex-col gap-9 self-start rounded-3xl border border-line bg-white p-6 shadow-[0px_6px_24px_0px_rgba(13,28,51,0.04)] md:p-12"
     >
       <div className="flex flex-col gap-2.5">
         {form.back ? (

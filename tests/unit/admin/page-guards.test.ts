@@ -74,6 +74,8 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "careers/page.tsx": { job: ["read"] },
   "careers/new/page.tsx": { job: ["read"] },
   "careers/[id]/page.tsx": { job: ["read"] },
+  "careers/applications/page.tsx": { lead: ["read"] },
+  "careers/applications/[id]/page.tsx": { lead: ["read"] },
   "pages/custom/[id]/page.tsx": { page: ["read"] },
   "blog/page.tsx": { article: ["read"] },
   "blog/[id]/page.tsx": { article: ["read"] },
