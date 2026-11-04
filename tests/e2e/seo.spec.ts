@@ -250,7 +250,7 @@ test.describe("moved and deleted pages redirect", () => {
 
 // R8-10, R8-11: sitemap and robots list absolute CP URLs.
 test.describe("sitemap and robots", () => {
-  test("/sitemap.xml lists the 19 + n public URLs on the site origin", async ({
+  test("/sitemap.xml lists the 28 + n public URLs on the site origin", async ({
     request,
     browser,
   }) => {
@@ -274,8 +274,12 @@ test.describe("sitemap and robots", () => {
     const response = await request.get("/sitemap.xml")
     expect(response.status()).toBe(200)
     const xml = await response.text()
-    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])
-    expect(locs).toHaveLength(19 + n)
+    // careers.spec.ts may have its own job live meanwhile: not counted.
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)]
+      .map((m) => m[1])
+      .filter((loc) => !loc.includes("/careers/e2e-"))
+    // 19 pages, services and articles; /careers and its 8 starter jobs.
+    expect(locs).toHaveLength(28 + n)
     for (const loc of locs) expect(loc).toMatch(/^https?:\/\/[^/]+\//)
     const origin = new URL(locs[0]).origin
     expect(locs).toContain(`${origin}/`)

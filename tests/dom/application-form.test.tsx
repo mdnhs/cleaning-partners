@@ -38,7 +38,11 @@ const json = (status: number, body: unknown) =>
     headers: { "content-type": "application/json" },
   })
 let response: () => Response
-const defaultFetch = async (input: RequestInfo | URL, _init?: RequestInit) => {
+const defaultFetch = async (
+  input: RequestInfo | URL,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- typed for mock.calls
+  _init?: RequestInit
+) => {
   if (String(input).endsWith("/config"))
     return json(200, { turnstileSiteKey: null })
   return response()

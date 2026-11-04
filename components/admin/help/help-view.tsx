@@ -82,6 +82,21 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     ],
   },
   {
+    id: "post-a-job",
+    group: "content",
+    title: "Post a job and handle applications",
+    summary:
+      "Careers holds the jobs shown on /careers and the applications people send, with their CVs.",
+    steps: [
+      "Open Careers, then Jobs, and choose New job. Fill in the title, location, hours, pay and the role's details.",
+      "Press Publish. The job appears under Open Positions on /careers with its own page and application form.",
+      "When the role is filled, press Close. It moves to Previous Openings and its form stops taking applications. A closing date closes it by itself.",
+      "Applications arrive under Careers, then Applications, and by email to the Careers recipients in Site settings. Open one to read the answers and download the CV.",
+      "Set each application's status and add notes as you go. Applications and their CVs are deleted automatically after the retention period in Site settings, Job applications.",
+      "The words on the careers pages and the form's questions and options are edited in Pages, Careers.",
+    ],
+  },
+  {
     id: "services",
     group: "content",
     title: "Add or edit a cleaning service",

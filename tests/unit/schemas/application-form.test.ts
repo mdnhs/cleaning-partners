@@ -35,7 +35,8 @@ describe("applicationForm", () => {
   })
 
   it("still refuses the form when the declaration is missing", () => {
-    const { declaration: _, ...rest } = minimal
+    const rest: Partial<typeof minimal> = { ...minimal }
+    delete rest.declaration
     expect(applicationForm.safeParse(rest).success).toBe(false)
   })
 })

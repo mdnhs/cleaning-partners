@@ -20,9 +20,11 @@ import {
 /**
  * An unmatched path: app/global-not-found.tsx answers the rewrite with a
  * real 404 (the frozen /this-page-does-not-exist baseline; probed in
- * Phase 8 Task 8). CP has no catch-all route.
+ * Phase 8 Task 8). Two segments: a single one would match the root legal
+ * page app/(site)/[slug], whose notFound() streams as a 200
+ * (tests/unit/missing-path.test.ts). CP has no catch-all route.
  */
-export const MISSING_PATH = "/_cp-missing"
+export const MISSING_PATH = "/_cp-missing/404"
 
 export type PublicPathOutcome =
   | { kind: "pass" }

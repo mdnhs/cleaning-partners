@@ -289,8 +289,13 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
     </div>
   )
 
-  const select = (key: FieldKey, choices: string[], required = false) => (
-    <div className="flex flex-col gap-2">
+  const select = (
+    key: FieldKey,
+    choices: string[],
+    required = false,
+    wide = false
+  ) => (
+    <div className={cn("flex flex-col gap-2", wide && "md:col-span-2")}>
       {label(key, required)}
       <div className="relative">
         <select
@@ -540,7 +545,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
             {help("note")}
             <ErrorText id={errorId("note")} message={errors.note} />
           </div>
-          {select("heardAbout", options.heardAbout)}
+          {select("heardAbout", options.heardAbout, false, true)}
         </Section>
 
         <Section step={form.sections.consent}>
