@@ -11,6 +11,8 @@ import { errorEnvelope } from "./error"
 /** Global constraint: public 64 KB, admin 1 MB, uploads 30 MB (the largest video; images stay at 20 MB, checked by the media service) (+ multipart envelope). */
 export const BODY_LIMITS = {
   public: 64 * 1024,
+  /** The careers form: a CV up to 5 MB (server/lib/cv.ts) + the other fields. */
+  application: 5 * 1024 * 1024 + 64 * 1024,
   admin: 1024 * 1024,
   upload: MAX_ANY_UPLOAD_BYTES + 64 * 1024,
 } as const
@@ -20,7 +22,9 @@ export type BodyLimitKind = keyof typeof BODY_LIMITS
 const limitMessage = (kind: BodyLimitKind) =>
   kind === "upload"
     ? `Files can be up to ${MAX_ANY_UPLOAD_BYTES / 1024 / 1024} MB`
-    : `Request body exceeds ${BODY_LIMITS[kind] / 1024} KB`
+    : kind === "application"
+      ? "CVs can be up to 5 MB"
+      : `Request body exceeds ${BODY_LIMITS[kind] / 1024} KB`
 
 /** 413 with the standard envelope (code VALIDATION_FAILED) when the body exceeds the limit. */
 export const limitBody = (kind: BodyLimitKind) =>
@@ -45,3 +49,16 @@ const uploadLimit = limitBody("upload")
  */
 export const limitAdminBody: MiddlewareHandler<AppEnv> = (c, next) =>
   isUploadPath(c.req.path) ? uploadLimit(c, next) : adminLimit(c, next)
+
+const APPLICATION_PATH = /^\/api\/v1\/public\/applications\/?$/
+const publicLimit = limitBody("public")
+const applicationLimit = limitBody("application")
+
+/**
+ * The public chain's body limit, by path: the careers form (with a CV) gets
+ * 5 MB, every other public request 64 KB.
+ */
+export const limitPublicBody: MiddlewareHandler<AppEnv> = (c, next) =>
+  c.req.method === "POST" && APPLICATION_PATH.test(c.req.path)
+    ? applicationLimit(c, next)
+    : publicLimit(c, next)

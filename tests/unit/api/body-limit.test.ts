@@ -6,6 +6,7 @@ import {
   BODY_LIMITS,
   isUploadPath,
   limitAdminBody,
+  limitPublicBody,
 } from "@/server/api/middleware/body-limit"
 import { requestIdMiddleware } from "@/server/api/middleware/request-id"
 
@@ -57,6 +58,42 @@ describe("admin body limit chosen by path (ledger Phase 1 ruling)", () => {
     ).toBe(413)
     expect(
       (await post(`/api/v1/admin/media/${ID}`, 2 * 1024 * 1024)).status
+    ).toBe(413)
+  })
+})
+
+describe("public body limit chosen by path (careers form)", () => {
+  const pub = new Hono<AppEnv>()
+    .use("*", requestIdMiddleware)
+    .use("*", limitPublicBody)
+    .post("*", async (c) =>
+      c.json({ size: (await c.req.arrayBuffer()).byteLength })
+    )
+  const send = (path: string, bytes: number) =>
+    pub.request(path, { method: "POST", body: new Uint8Array(bytes) })
+
+  it("the application form takes a CV up to 5 MB + envelope", async () => {
+    expect(
+      (await send("/api/v1/public/applications", 4 * 1024 * 1024)).status
+    ).toBe(200)
+    const tooBig = await send(
+      "/api/v1/public/applications",
+      BODY_LIMITS.application + 1
+    )
+    expect(tooBig.status).toBe(413)
+    expect((await tooBig.json()).error.message).toBe("CVs can be up to 5 MB")
+  })
+
+  it("every other public path keeps 64 KB", async () => {
+    expect(
+      (await send("/api/v1/public/leads", BODY_LIMITS.public)).status
+    ).toBe(200)
+    expect(
+      (await send("/api/v1/public/leads", BODY_LIMITS.public + 1)).status
+    ).toBe(413)
+    expect(
+      (await send("/api/v1/public/applications/config", BODY_LIMITS.public + 1))
+        .status
     ).toBe(413)
   })
 })

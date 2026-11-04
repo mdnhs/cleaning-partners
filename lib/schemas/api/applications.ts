@@ -1,5 +1,7 @@
-import { listQuery, sortParam } from "./list"
 import { z } from "zod"
+
+import { oneLine, optionalLine } from "./leads"
+import { listQuery, sortParam } from "./list"
 
 /** Same order as the DB enum application_status (server/db/schema/job-applications.ts). */
 export const APPLICATION_STATUSES = [
@@ -68,3 +70,77 @@ export const applicationListQuery = listQuery.extend({
   sort: sortParam(["createdAt", "name"], { field: "createdAt", dir: "desc" }),
 })
 export type ApplicationListQuery = z.output<typeof applicationListQuery>
+
+const required = (max: number) =>
+  oneLine(max).pipe(z.string().min(1, "Please fill in this field."))
+const yesNo = z
+  .enum(["yes", "no"], "Choose yes or no")
+  .transform((v) => v === "yes")
+const isoDay = z.iso.date("Enter a date")
+/** A ticked checkbox posts "on" (or "true"); anything else is unticked. */
+const ticked = z.unknown().transform((v) => v === "on" || v === "true")
+const mustTick = (message: string) =>
+  z
+    .unknown()
+    .refine((v) => v === "on" || v === "true", message)
+    .transform(() => true)
+/** A repeated form field (checkbox group) as a list; one value or none too. */
+const many = z
+  .unknown()
+  .transform((v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]))
+  .pipe(z.array(oneLine(200)).max(20))
+
+/**
+ * POST /api/v1/public/applications (multipart, the careers form). Shapes
+ * only: the choices are checked against the published Careers page by the
+ * service, the CV by server/lib/cv.ts.
+ */
+export const applicationForm = z.object({
+  jobId: z.preprocess(
+    (v) => (typeof v === "string" && v !== "" ? v : null),
+    z.uuid().nullable()
+  ),
+  firstName: required(100),
+  surname: required(100),
+  email: z
+    .string()
+    .trim()
+    .max(320, "Use at most 320 characters")
+    .pipe(z.email("Enter a valid email address.")),
+  phone: required(50),
+  address: optionalLine(300),
+  town: required(200),
+  eircode: optionalLine(20),
+  rightToWork: required(200),
+  permissionExpiry: z
+    .string()
+    .default("")
+    .transform((v) => (v ? v : null))
+    .pipe(isoDay.nullable()),
+  gardaVetting: yesNo,
+  livedAbroad: yesNo,
+  startDate: isoDay,
+  hoursPerWeek: required(200),
+  shifts: many.pipe(z.array(z.string()).min(1, "Choose at least one shift.")),
+  transport: yesNo,
+  experience: required(200),
+  healthcareExperience: optionalLine(200),
+  recentRole: optionalLine(300),
+  certificates: many,
+  note: z
+    .string()
+    .trim()
+    .max(4000, "Use at most 4000 characters")
+    .default("")
+    .transform((v) => (v ? v : null)),
+  heardAbout: optionalLine(200),
+  declaration: mustTick("Please confirm this."),
+  privacy: mustTick("Please agree to this."),
+  keepOnFile: ticked,
+  sourcePage: optionalLine(300),
+  turnstileToken: z.string().max(4096).optional(),
+  website: z.unknown().optional(),
+})
+export type ApplicationForm = z.output<typeof applicationForm>
+
+export type ApplicationPublicConfig = { turnstileSiteKey: string | null }

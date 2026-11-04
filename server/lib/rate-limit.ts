@@ -11,6 +11,13 @@ export type RateLimitResult = {
 }
 
 /** Spec §9: 5 enquiries per 10 minutes per IP. */
+/** Job applications (careers form): the same budget as enquiries. */
+export const APPLICATION_RATE_LIMIT = {
+  bucket: "applications",
+  max: 5,
+  windowMs: 10 * 60_000,
+} as const
+
 export const LEAD_RATE_LIMIT = {
   bucket: "leads",
   max: 5,

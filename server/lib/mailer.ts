@@ -16,6 +16,8 @@ export type MailTemplate =
   | "account-recovery"
   | "lead-notification"
   | "lead-acknowledgement"
+  | "application-notification"
+  | "application-acknowledgement"
 
 export type MailMessage = {
   to: string | readonly string[]
@@ -149,7 +151,8 @@ export function createMailer(deps: MailerDeps = defaultDeps) {
     }: MailMessage): Promise<SendResult> {
       // The visitor's own domain can identify them: hide it too.
       const recipients =
-        template === "lead-acknowledgement"
+        template === "lead-acknowledgement" ||
+        template === "application-acknowledgement"
           ? "*@<visitor>"
           : recipientDomains(to)
       let html: string

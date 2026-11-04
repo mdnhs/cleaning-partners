@@ -62,14 +62,14 @@ const UNSAFE_IN_LINE = /[\u2028\u2029\u202A-\u202E\u2066-\u2069]/
 const isSingleLine = (v: string) =>
   !hasControlChars(v) && !UNSAFE_IN_LINE.test(v)
 
-const oneLine = (max: number) =>
+export const oneLine = (max: number) =>
   z
     .string()
     .trim()
     .max(max, `Use at most ${max} characters`)
     .refine(isSingleLine, "Use a single line of text")
 
-const optionalLine = (max: number) =>
+export const optionalLine = (max: number) =>
   oneLine(max)
     .default("")
     .transform((v) => (v ? v : null))
