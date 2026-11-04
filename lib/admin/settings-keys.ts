@@ -65,8 +65,7 @@ export const SETTINGS_ENTRIES: Record<
   },
   footer: {
     label: "Footer",
-    description:
-      "Footer text, headings, the copyright line and the privacy and terms links.",
+    description: "Footer text, headings and the copyright line.",
     group: "General",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,

@@ -26,7 +26,6 @@ import {
   revisions,
   services,
 } from "@/server/db/schema"
-import { PAGES, type PageKey } from "@/templates/registry"
 
 /** What the SEO overview needs of one record (no whole content documents). */
 export type SeoRow = {
@@ -40,6 +39,8 @@ export type SeoRow = {
   title: string | null
   /** Service hero description / article excerpt (published, else draft); null for pages. */
   description: string | null
+  /** A builder page that is a legal page: served at /<slug>, not /p/<slug>. */
+  legal?: boolean
 }
 
 type Versioned = { draft: AnyPgColumn; published: AnyPgColumn }
@@ -80,6 +81,7 @@ const builderColumns = {
   slug: builderPages.slug,
   seo: builderPages.seo,
   published: sql<boolean>`${builderPages.published} is not null`,
+  legal: sql<boolean>`${builderPages.legalOrder} is not null`,
   title: builderPages.title,
   /**
    * The first hero's intro, as the public meta falls back to it
@@ -140,31 +142,21 @@ const doc = (table: Versioned, ...path: string[]): SQL<unknown> => {
     else ${table.published} #> ${at}::text[] end`
 }
 
-/** Pages whose template has a rich-text body (legal pages). */
-const RICH_TEXT_PAGES = (Object.keys(PAGES) as PageKey[]).filter(
-  (key) => PAGES[key] === "legal"
-)
-
 /**
- * Rich text of each record that has any (live, else draft): legal pages'
- * body, a service's overview, an article's body (null when it has none).
+ * Rich text of each record that has any (live, else draft): a service's
+ * overview, an article's body (null when it has none).
  * Records without rich text are not listed (internal-link check passes).
  */
 export async function listSeoRichText(
   db: DbOrTx
 ): Promise<{ kind: SeoKind; id: string; doc: unknown }[]> {
-  const [pageRows, serviceRows, articleRows] = await Promise.all([
-    db
-      .select({ id: pages.key, doc: doc(pages, "body") })
-      .from(pages)
-      .where(inArray(pages.key, RICH_TEXT_PAGES)),
+  const [serviceRows, articleRows] = await Promise.all([
     db
       .select({ id: services.id, doc: doc(services, "overview") })
       .from(services),
     db.select({ id: articles.id, doc: doc(articles, "body") }).from(articles),
   ])
   return [
-    ...pageRows.map((row) => ({ kind: "page" as const, ...row })),
     ...serviceRows.map((row) => ({ kind: "service" as const, ...row })),
     ...articleRows.map((row) => ({ kind: "article" as const, ...row })),
   ]
@@ -310,8 +302,10 @@ export async function updateSeoColumn(
 
 export type SitemapRow = {
   kind: "page" | "service" | "article" | "builder"
-  /** Page key or slug (a builder page's slug: /p/<slug>). */
+  /** Page key or slug (a builder page's slug: /p/<slug>, or /<slug> when legal). */
   key: string
+  /** A builder page that is a legal page (served at the root). */
+  legal?: boolean
   seo: Seo
   publishedAt: Date | null
   /** Time of the newest revision (one is written per publish). */
@@ -360,6 +354,7 @@ export async function listSitemapRows(db: DbOrTx): Promise<SitemapRow[]> {
     db
       .select({
         key: builderPages.slug,
+        legal: sql<boolean>`${builderPages.legalOrder} is not null`,
         seo: builderPages.seo,
         publishedAt: builderPages.publishedAt,
         lastPublish: lastPublish("builder-page", sql`${builderPages.id}::text`),

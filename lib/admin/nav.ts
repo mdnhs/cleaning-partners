@@ -126,6 +126,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
     keywords: ["home page", "about", "contact", "builder", "custom pages"],
   },
   {
+    id: "legal-pages",
+    group: "menu",
+    label: "Legal pages",
+    href: "/admin/pages/legal",
+    icon: ScrollText,
+    permission: { page: ["read"] },
+    match: "prefix",
+    keywords: ["privacy", "terms", "cookies", "policy", "legal", "footer"],
+  },
+  {
     id: "blog",
     group: "menu",
     label: "Blog",

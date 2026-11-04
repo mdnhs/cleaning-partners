@@ -26,7 +26,7 @@ describe("resolvePublicPath (proxy.ts)", () => {
       "/",
       "/about",
       "/blog",
-      "/privacy",
+      "/contact",
       "/robots-old.txt",
       "/_cp-missing",
     ])
@@ -72,8 +72,22 @@ describe("resolvePublicPath (proxy.ts)", () => {
     expect(repo.incrementRedirectHits).toHaveBeenCalledWith({}, "r1")
   })
 
-  it("other unknown paths: redirect if one exists, else pass (global-not-found 404)", async () => {
+  it("other single-segment paths: live legal page, else redirect, else a real 404", async () => {
+    // /old-page could be a legal page: nothing live and no redirect is a 404.
+    expect(await resolvePublicPath("/old-page", live)).toEqual({
+      kind: "missing",
+    })
+    repo.isPublishedSlug.mockImplementation(
+      async (_db: unknown, kind: string, slug: string) =>
+        kind === "legal" && slug === "old-page"
+    )
     expect(await resolvePublicPath("/old-page", live)).toEqual({ kind: "pass" })
+    repo.isPublishedSlug.mockResolvedValue(false)
+    // Multi-segment and reserved paths still fall through to the app.
+    expect(await resolvePublicPath("/a/b", live)).toEqual({ kind: "pass" })
+    expect(await resolvePublicPath("/admin-old", live)).toEqual({
+      kind: "missing",
+    })
     repo.findRedirectByFrom.mockResolvedValue({
       id: "r2",
       toPath: "https://x.ie/",

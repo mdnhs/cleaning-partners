@@ -8,6 +8,7 @@ import { isSettingsKey } from "@/lib/schemas/settings"
 import { getDb } from "@/server/db/client"
 import type { Actor } from "@/server/lib/actor"
 import { forbidden, notFound } from "@/server/lib/errors"
+import { pagePath } from "@/lib/schemas/api/builder-pages"
 import { findBuilderPageForEdit } from "@/server/modules/builder-pages/repo"
 import { findArticleForEdit } from "@/server/modules/articles/repo"
 import { findServiceById } from "@/server/modules/services/repo"
@@ -71,7 +72,7 @@ export async function previewPath(
         : null
       if (!page) throw notFound("Page")
       // Draft mode reads the working copy, published or not.
-      return `/p/${page.slug}`
+      return pagePath(page)
     }
     case "settings":
       if (!isSettingsKey(id)) throw notFound("Settings")

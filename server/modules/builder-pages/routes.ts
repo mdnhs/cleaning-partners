@@ -8,6 +8,7 @@ import {
   builderMetaInput,
   builderPageListQuery,
   createBuilderPageInput,
+  legalOrderInput,
 } from "@/lib/schemas/api/builder-pages"
 import { restoreInput, versionInput } from "@/lib/schemas/api/content"
 import { idParam } from "@/lib/schemas/api/params"
@@ -36,6 +37,16 @@ export const builderPagesRoutes = new Hono<AppEnv>()
       c.json(
         await service.createBuilderPage(actorOf(c), c.req.valid("json")),
         201
+      )
+  )
+  .put(
+    "/legal-order",
+    can({ page: ["update"] }),
+    zv("json", legalOrderInput),
+    async (c) =>
+      c.json(
+        await service.reorderLegalPages(actorOf(c), c.req.valid("json").ids),
+        200
       )
   )
   .get("/:id", can({ page: ["read"] }), zv("param", idParam), async (c) =>

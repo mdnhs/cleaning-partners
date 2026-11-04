@@ -99,22 +99,13 @@ function expectInventoryCovered(
 describe("template schemas match docs/brief-inventory.json (master Task 3.2)", () => {
   const fixture = pagesFixture(fixtureMediaLookup)
 
-  it("registry maps the seven pages to six templates (no team page)", () => {
-    expect(PAGE_KEYS).toEqual([
-      "home",
-      "about",
-      "services",
-      "blog",
-      "contact",
-      "privacy",
-      "terms",
-    ])
+  it("registry maps the five pages to five templates (no team page)", () => {
+    expect(PAGE_KEYS).toEqual(["home", "about", "services", "blog", "contact"])
     expect(Object.keys(templates).sort()).toEqual([
       "about",
       "blog",
       "contact",
       "home",
-      "legal",
       "services",
     ])
   })

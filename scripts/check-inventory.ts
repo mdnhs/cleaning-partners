@@ -45,7 +45,7 @@ const KINDS = new Set([
   "meta",
 ])
 const ROOTS = [
-  /^pages\.(home|about|services|blog|contact|privacy|terms)\./,
+  /^pages\.(home|about|services|blog|contact)\./,
   /^services\[[a-z0-9-]*\]\./,
   /^articles\[[a-z0-9-]*\]\./,
   /^(team|clients|groupCompanies|categories|testimonials)\[\]\./,

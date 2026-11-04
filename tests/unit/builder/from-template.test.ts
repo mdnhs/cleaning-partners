@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 
 import { validateDocument } from "@/blocks/document"
-import { RICH_TEXT_MAX_CHARS, RICH_TEXT_MAX_NODES } from "@/blocks/registry"
 import { pagesFixture } from "@/server/db/seed/fixtures/pages"
 import { blocksFromTemplate } from "@/templates/builder/from-template"
 import { PAGE_KEYS, type PageKey } from "@/templates/registry"
@@ -52,8 +51,6 @@ describe("blocksFromTemplate (R10-11)", () => {
       "quoteForm",
       "map",
     ])
-    expect(types("privacy")).toEqual(["hero.page", "richtext"])
-    expect(types("terms")).toEqual(["hero.page", "richtext"])
     expect(types("blog")).toEqual(["hero.page", "contact"])
   })
 
@@ -88,7 +85,6 @@ describe("blocksFromTemplate (R10-11)", () => {
       useShared: true,
       title: contact.contactTitle,
     })
-    expect(copy("privacy")[1].data).toEqual({ doc: stored.privacy.data.body })
     expect(copy("home")[7].data).toEqual({ useShared: true, title: null })
   })
 
@@ -127,17 +123,5 @@ describe("blocksFromTemplate (R10-11)", () => {
   it.each(PAGE_KEYS)("%s converts to a valid document", (key) => {
     const result = validateDocument({ blocks: copy(key) })
     expect(result.ok ? {} : result.fieldErrors).toEqual({})
-  })
-
-  it("fits legal bodies in the rich-text budget", () => {
-    for (const key of ["privacy", "terms"] as const) {
-      const { doc } = copy(key)[1].data as {
-        doc: { content: unknown[] }
-      }
-      expect(doc.content.length).toBeLessThanOrEqual(RICH_TEXT_MAX_NODES)
-      expect(JSON.stringify(doc).length).toBeLessThanOrEqual(
-        RICH_TEXT_MAX_CHARS
-      )
-    }
   })
 })

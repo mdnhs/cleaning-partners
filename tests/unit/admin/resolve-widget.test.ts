@@ -107,9 +107,6 @@ describe("resolveWidget covers every shipped schema (master 4.3)", () => {
     expect(
       walk(templates.blog.schema, templateEditorMeta.blog).featuredArticle
     ).toBe("collection")
-    expect(walk(templates.legal.schema, templateEditorMeta.legal).body).toBe(
-      "richText"
-    )
   })
 
   it("identifies shared schemas and unwraps optional/nullable", () => {

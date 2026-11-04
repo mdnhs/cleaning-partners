@@ -2,12 +2,14 @@ import "server-only"
 
 import { DraftDocument, validateDocument } from "@/blocks/document"
 import { hasPermission, type PermissionRequest } from "@/lib/auth/permissions"
+import { isReservedLegalSlug } from "@/lib/builder-slug"
+import { randomId } from "@/lib/ids"
 import {
   BUILDER_ENTITY,
   type BuilderPageDto,
   type BuilderPageListItem,
   type BuilderPageListQuery,
-  builderPath,
+  pagePath,
 } from "@/lib/schemas/api/builder-pages"
 import type { Paginated } from "@/lib/schemas/api/list"
 import { getDb } from "@/server/db/client"
@@ -26,13 +28,17 @@ import {
   versionedDto,
 } from "@/server/lib/versioning"
 import { recordMove } from "@/server/modules/redirects/service"
+import { PAGE_PATHS } from "@/templates/registry"
 
 import {
+  applyLegalOrder,
   type BuilderPageEditRow,
   deleteBuilderPageIfVersion,
   findBuilderPageForEdit,
   insertBuilderPage,
+  legalPageIds,
   listBuilderPagesForAdmin,
+  nextLegalOrder,
   updateBuilderPageIfVersion,
 } from "./repo"
 
@@ -45,8 +51,9 @@ function toDto(row: BuilderPageEditRow): BuilderPageDto {
     id: row.id,
     slug: row.slug,
     title: row.title,
-    path: builderPath(row.slug),
+    path: pagePath(row),
     seo: row.seo,
+    legalOrder: row.legalOrder,
     ...versionedDto<DraftDocument>(row),
   }
 }
@@ -55,6 +62,42 @@ const slugTaken = () =>
   new AppError("CONFLICT", "Another page already uses this address", {
     fieldErrors: { slug: ["Already used by another page"] },
   })
+
+/**
+ * A legal page lives at /<slug>, next to the site's own routes: none of those
+ * addresses may be taken (the fixed pages' paths included).
+ */
+function assertLegalSlug(slug: string) {
+  const taken =
+    isReservedLegalSlug(slug) ||
+    (Object.values(PAGE_PATHS) as string[]).includes(`/${slug}`)
+  if (taken)
+    throw new AppError("VALIDATION_FAILED", "This address is reserved", {
+      fieldErrors: { slug: ["This address belongs to the site itself"] },
+    })
+}
+
+/** A new legal page starts as a hero + a text block, both left to fill in. */
+function legalStarter(title: string): DraftDocument {
+  return {
+    blocks: [
+      {
+        id: randomId(),
+        type: "hero.page",
+        anchor: "hero",
+        hidden: false,
+        data: { image: null, crumb: title, title, description: "" },
+      },
+      {
+        id: randomId(),
+        type: "richtext",
+        anchor: "policy",
+        hidden: false,
+        data: { doc: { type: "doc", content: [] } },
+      },
+    ],
+  } as DraftDocument
+}
 
 /**
  * Versioning adapter. Drafts are loose (DraftDocument); publishing also runs
@@ -76,7 +119,11 @@ export const builderStore: VersionedStore<DraftDocument, BuilderPageEditRow> = {
         fieldErrors: result.fieldErrors,
       })
   },
-  tags: (row) => [tag.builderPages, tag.builderPage(row.slug)],
+  tags: (row) => [
+    tag.builderPages,
+    tag.builderPage(row.slug),
+    ...(row.legalOrder !== null ? [tag.legalPages] : []),
+  ],
   mediaValues: (row) => [row.draft, row.published, { seo: row.seo }],
   present: (row) => toDto(row),
 }
@@ -88,6 +135,7 @@ export async function listBuilderPagesAdmin(
   assertCan(actor, { page: ["read"] })
   const { rows, total } = await listBuilderPagesForAdmin(getDb(), {
     q: query.q || undefined,
+    kind: query.kind,
     sort: query.sort,
     page: query.page,
     pageSize: query.pageSize,
@@ -118,10 +166,14 @@ export async function getBuilderPageAdmin(
 /** New pages start as an unpublished draft (blank, or a copied `seed`). */
 export async function createBuilderPage(
   actor: Actor,
-  input: { slug: string; title: string; seed?: unknown }
+  input: { slug: string; title: string; seed?: unknown; legal?: boolean }
 ): Promise<BuilderPageDto> {
   assertCan(actor, { page: ["create"] })
-  const draft = validateContent(DraftDocument, input.seed ?? { blocks: [] })
+  if (input.legal) assertLegalSlug(input.slug)
+  const draft = validateContent(
+    DraftDocument,
+    input.seed ?? (input.legal ? legalStarter(input.title) : { blocks: [] })
+  )
   const db = getDb()
   try {
     const id = await db.transaction(async (tx) => {
@@ -131,16 +183,22 @@ export async function createBuilderPage(
         draft,
         createdBy: actor.userId,
         updatedBy: actor.userId,
+        ...(input.legal ? { legalOrder: await nextLegalOrder(tx) } : {}),
       })
       await syncMediaUsages(tx, BUILDER_ENTITY, newId, draft)
       await writeAudit(tx, actor, {
         action: "builder-page.created",
         entityType: BUILDER_ENTITY,
         entityId: newId,
-        diff: { slug: input.slug, title: input.title },
+        diff: {
+          slug: input.slug,
+          title: input.title,
+          ...(input.legal ? { legal: true } : {}),
+        },
       })
       return newId
     })
+    if (input.legal) invalidate(tag.legalPages)
     return toDto((await findBuilderPageForEdit(db, id))!)
   } catch (err) {
     if (pgErrorCode(err) === UNIQUE_VIOLATION) throw slugTaken()
@@ -192,6 +250,8 @@ export async function changeBuilderMeta(
         title: input.title ?? existing.title,
         slug: input.slug ?? existing.slug,
       }
+      if (existing.legalOrder !== null && next.slug !== existing.slug)
+        assertLegalSlug(next.slug)
       const updated = await updateBuilderPageIfVersion(tx, id, input.version, {
         ...next,
         updatedBy: actor.userId,
@@ -218,8 +278,8 @@ export async function changeBuilderMeta(
         existing.published !== null &&
         existing.slug !== next.slug &&
         (await recordMove(tx, actor, {
-          from: builderPath(existing.slug),
-          to: builderPath(next.slug),
+          from: pagePath(existing),
+          to: pagePath({ ...existing, slug: next.slug }),
           reason: "builder-page.slug_changed",
         }))
       return { before: existing, after: updated, moved }
@@ -228,6 +288,7 @@ export async function changeBuilderMeta(
       tag.builderPages,
       tag.builderPage(before.slug),
       tag.builderPage(after.slug),
+      ...(before.legalOrder !== null ? [tag.legalPages] : []),
       ...(moved ? [tag.redirects] : [])
     )
     return toDto(after)
@@ -267,7 +328,7 @@ export async function deleteBuilderPage(
       !!input.redirectHome &&
       existing.published !== null &&
       (await recordMove(tx, actor, {
-        from: builderPath(existing.slug),
+        from: pagePath(existing),
         to: "/",
         reason: "builder-page.deleted",
       }))
@@ -276,7 +337,33 @@ export async function deleteBuilderPage(
   invalidate(
     tag.builderPages,
     tag.builderPage(removed.slug),
+    ...(removed.legalOrder !== null ? [tag.legalPages] : []),
     ...(moved ? [tag.redirects] : [])
   )
   return { ok: true as const }
+}
+
+/**
+ * Persists the footer order of the legal pages (legal_order = index). `ids`
+ * must list exactly the current legal pages; otherwise someone added or
+ * removed one meanwhile and the current order comes back as a 409.
+ */
+export async function reorderLegalPages(actor: Actor, ids: string[]) {
+  assertCan(actor, { page: ["update"] })
+  await getDb().transaction(async (tx) => {
+    const current = await legalPageIds(tx)
+    const same =
+      current.length === ids.length &&
+      new Set(ids).size === ids.length &&
+      ids.every((id) => current.includes(id))
+    if (!same) throw conflict({ ids: current })
+    await applyLegalOrder(tx, ids)
+    await writeAudit(tx, actor, {
+      action: "legal-page.reordered",
+      entityType: BUILDER_ENTITY,
+      diff: { ids },
+    })
+  })
+  invalidate(tag.legalPages)
+  return { ids }
 }

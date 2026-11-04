@@ -33,20 +33,14 @@ beforeEach(async () => {
 })
 
 describe("sitemap entries (published only)", () => {
-  it("the seeded site lists 19 URLs: 7 pages, 5 services, 7 articles, with lastmod", async () => {
+  it("the seeded site lists 19 URLs: 5 pages, 2 legal pages, 5 services, 7 articles, with lastmod", async () => {
     const entries = await listSitemapEntries()
     const paths = entries.map((e) => e.path)
     expect(paths.slice(0, PAGES).sort()).toEqual(
-      [
-        "/",
-        "/about",
-        "/blog",
-        "/contact",
-        "/privacy",
-        "/services",
-        "/terms",
-      ].sort()
+      ["/", "/about", "/blog", "/contact", "/services"].sort()
     )
+    // The legal pages (builder pages at the root) are listed too.
+    expect(paths).toEqual(expect.arrayContaining(["/privacy", "/terms"]))
     expect(paths).toContain("/services/medical-cleaning")
     expect(fx.services).toHaveLength(5)
     expect(fx.articles).toHaveLength(7)
@@ -137,13 +131,13 @@ describe("sitemap entries (published only)", () => {
     await getDb()
       .update(pages)
       .set({ published: null, seo: {} })
-      .where(eq(pages.key, "terms"))
+      .where(eq(pages.key, "contact"))
     await getDb()
       .update(pages)
       .set({ seo: { canonical: "  " } })
       .where(eq(pages.key, "about"))
     const entries = await listSitemapEntries()
-    expect(entries.map((e) => e.path)).not.toContain("/terms")
+    expect(entries.map((e) => e.path)).not.toContain("/contact")
     expect(entries.find((e) => e.path === "/about")?.canonical).toBeNull()
   })
 

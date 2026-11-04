@@ -26,7 +26,6 @@ const CONTACT = /\[(email|phone)\]|example\.(com|ie)|\b0{3,}\b/i
 const COPY = /lorem ipsum|\bTODO\b|\bTBC\b|\[[^\]]{1,40}\]/i
 /** Media and row ids are not copy ("00000000-0000-7000-…" has zero runs). */
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const LEGAL = ["privacy", "terms"] as const
 const QUOTE_MAX = 40
 const MESSAGE_MAX = 160
 /** Depth guard for hostile or cyclic data. */
@@ -147,19 +146,5 @@ export function scanContent(input: {
       scan(service.data, false)
     )
 
-  for (const key of input.pages.length ? LEGAL : []) {
-    const page = input.pages.find((p) => p.key === key)
-    if (page?.published && page.updatedSinceSeed) continue
-    findings.push({
-      rule: "legal-unpublished",
-      label: pageLabel(key),
-      href: `/admin/pages/${key}`,
-      message: !page
-        ? "This page is missing."
-        : !page.published
-          ? "Not published yet: the site links to it from every footer."
-          : "Still the starter text: have it reviewed, then publish your own.",
-    })
-  }
   return findings
 }

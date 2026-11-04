@@ -1,0 +1,2 @@
+ALTER TABLE "builder_pages" ADD COLUMN "legal_order" integer;--> statement-breakpoint
+ALTER TABLE "builder_pages" ADD CONSTRAINT "builder_pages_legal_order" CHECK ("builder_pages"."legal_order" is null or "builder_pages"."legal_order" >= 0);

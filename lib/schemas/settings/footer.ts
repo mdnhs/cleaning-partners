@@ -1,9 +1,9 @@
 import { z } from "zod"
 
-import { href, text } from "../common"
+import { text } from "../common"
 
 /**
- * settings.footer — footer copy and legal links. The four contact lines are
+ * settings.footer — footer copy. (The legal links are the published legal pages, listed by the admin under Legal pages.) The four contact lines are
  * composed at render: contact.addressLine1, addressLine2 (the footer's own
  * wording), contactOfficeLine and contact.email.
  */
@@ -17,9 +17,5 @@ export const footerSettings = z.object({
   contactOfficeLine: text,
   groupTitle: text,
   copyright: text,
-  privacyLabel: text,
-  privacyHref: href,
-  termsLabel: text,
-  termsHref: href,
 })
 export type FooterSettings = z.infer<typeof footerSettings>

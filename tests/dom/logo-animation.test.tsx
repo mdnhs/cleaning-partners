@@ -67,10 +67,7 @@ const footer = (animation?: string): SiteFooterProps => ({
   contact: { title: "Contact", lines: ["a", "b"] },
   group: { title: "Group", companies: [] },
   copyright: "(c)",
-  legal: {
-    privacy: { label: "Privacy", href: "#" },
-    terms: { label: "Terms", href: "#" },
-  },
+  legal: { pages: [{ label: "Privacy", href: "/privacy" }] },
 })
 
 function Logo({ animation }: { animation?: string }) {

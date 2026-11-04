@@ -44,14 +44,16 @@ test.describe("public site from the database", () => {
     })
   }
 
-  test("footer legal links point at /privacy and /terms", async ({ page }) => {
+  test("footer legal links are the published legal pages, in order", async ({
+    page,
+  }) => {
     await page.goto("/")
     const footer = page.locator("footer")
     await expect(
       footer.getByRole("link", { name: "Privacy Policy" })
     ).toHaveAttribute("href", "/privacy")
     await expect(
-      footer.getByRole("link", { name: "Terms", exact: true })
+      footer.getByRole("link", { name: "Terms and Conditions" })
     ).toHaveAttribute("href", "/terms")
   })
 })

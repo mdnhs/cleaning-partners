@@ -29,6 +29,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
           [
             "Dashboard",
             "Pages",
+            "Legal pages",
             "Blog",
             "Services",
             "Collections",
@@ -45,7 +46,15 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
       [
         [
           "Menu",
-          ["Dashboard", "Pages", "Blog", "Services", "Collections", "Media"],
+          [
+            "Dashboard",
+            "Pages",
+            "Legal pages",
+            "Blog",
+            "Services",
+            "Collections",
+            "Media",
+          ],
         ],
         ["Growth", ["SEO"]],
         ["General", ["Appearance", "Site settings"]],
@@ -56,7 +65,15 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
       [
         [
           "Menu",
-          ["Dashboard", "Pages", "Blog", "Services", "Collections", "Media"],
+          [
+            "Dashboard",
+            "Pages",
+            "Legal pages",
+            "Blog",
+            "Services",
+            "Collections",
+            "Media",
+          ],
         ],
         ["Growth", ["SEO", "Marketing"]],
         ["General", ["Appearance", "Site settings"]],
@@ -65,7 +82,10 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
     [
       "marketer",
       [
-        ["Menu", ["Dashboard", "Pages", "Blog", "Services", "Media"]],
+        [
+          "Menu",
+          ["Dashboard", "Pages", "Legal pages", "Blog", "Services", "Media"],
+        ],
         ["Growth", ["SEO", "Marketing"]],
         ["General", ["Appearance"]],
       ],

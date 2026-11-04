@@ -1,8 +1,11 @@
 import "server-only"
 
+import { unstable_rethrow } from "next/navigation"
+
 import { PUBLIC_SETTINGS_KEYS } from "@/lib/schemas/settings"
 import { AppError } from "@/server/lib/errors"
 import { listArticles } from "@/server/modules/articles/queries"
+import { listLegalLinks } from "@/server/modules/builder-pages/queries"
 import {
   listCategories,
   listClients,
@@ -93,20 +96,31 @@ export async function loadSiteSources(): Promise<SiteSources> {
  */
 export async function loadChromeSources(): Promise<ChromeSources> {
   await assertPreviewAccess()
-  const [settingsValues, services, groupCompanies] = await Promise.all([
-    Promise.all(CHROME_SETTINGS_KEYS.map((key) => getSettings(key))),
-    listServices(),
-    listGroupCompanies(),
-  ])
+  const [settingsValues, services, groupCompanies, legalLinks] =
+    await Promise.all([
+      Promise.all(CHROME_SETTINGS_KEYS.map((key) => getSettings(key))),
+      listServices(),
+      listGroupCompanies(),
+      // The footer works without them: a failed read is logged and shows no
+      // legal pages (the cached reader never stores a failure as "none").
+      listLegalLinks().catch((error: unknown) => {
+        unstable_rethrow(error)
+        console.error("[site chrome] legal links unavailable")
+        return []
+      }),
+    ])
   const settings = Object.fromEntries(
     CHROME_SETTINGS_KEYS.map((key, i) => [
       key,
       required(settingsValues[i], `settings.${key}`),
     ])
   )
-  return (await resolveMedia({
-    settings,
-    services,
-    groupCompanies,
-  })) as ChromeSources
+  return {
+    ...((await resolveMedia({
+      settings,
+      services,
+      groupCompanies,
+    })) as Omit<ChromeSources, "legalLinks">),
+    legalLinks,
+  }
 }

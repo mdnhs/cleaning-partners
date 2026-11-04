@@ -190,10 +190,6 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       },
       groupTitle: { label: "Group heading" },
       copyright: { label: "Copyright line", width: "full" },
-      privacyLabel: { label: "Privacy link text" },
-      privacyHref: { label: "Privacy link" },
-      termsLabel: { label: "Terms link text" },
-      termsHref: { label: "Terms link" },
     },
     groups: {
       "": [
@@ -209,14 +205,9 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         },
         {
           title: "Legal",
-          description: "The copyright line and the privacy and terms links.",
-          fields: [
-            "copyright",
-            "privacyLabel",
-            "privacyHref",
-            "termsLabel",
-            "termsHref",
-          ],
+          description:
+            "The copyright line. Legal links come from Legal pages in the menu.",
+          fields: ["copyright"],
         },
       ],
     },

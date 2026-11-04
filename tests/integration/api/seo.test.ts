@@ -63,9 +63,16 @@ describe("SEO API (master 8.1)", () => {
     expect(res.status).toBe(200)
     const dto = (await res.json()) as SeoOverviewDto
     const fx = fixtureSiteSources()
+    // The fixed pages, the two seeded legal pages (builder pages), services, articles.
     expect(dto.entries).toHaveLength(
-      PAGE_KEYS.length + fx.services.length + fx.articles.length
+      PAGE_KEYS.length + 2 + fx.services.length + fx.articles.length
     )
+    expect(
+      dto.entries
+        .filter((e) => e.kind === "builder")
+        .map((e) => e.path)
+        .sort()
+    ).toEqual(["/privacy", "/terms"])
     expect(
       dto.entries.find((e) => e.kind === "page" && e.id === "home")
     ).toMatchObject({

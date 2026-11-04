@@ -29,3 +29,36 @@ export function isBuilderSlug(slug: string): boolean {
     !RESERVED.has(slug)
   )
 }
+
+// ---------------------------------------------------------------- legal pages
+// Legal pages (Privacy, Terms, Cookies …) are builder pages served at the
+// site root, /<slug>, so their slugs share the namespace of the site's own
+// routes: none of those may be taken.
+
+/** Single-segment addresses the site already answers to (routes, files). */
+export const RESERVED_LEGAL_SLUGS = [
+  ...RESERVED_BUILDER_SLUGS,
+  "about",
+  "services",
+  "blog",
+  "contact",
+  "sitemap",
+  "robots",
+  "favicon",
+] as const
+
+const RESERVED_LEGAL = new Set<string>(RESERVED_LEGAL_SLUGS)
+
+export const isReservedLegalSlug = (slug: string) => RESERVED_LEGAL.has(slug)
+
+/** Public address of a legal page. */
+export const legalPath = (slug: string) => `/${slug}`
+
+/** A well-formed, unreserved legal slug. */
+export function isLegalSlug(slug: string): boolean {
+  return (
+    slug.length <= BUILDER_SLUG_MAX &&
+    BUILDER_SLUG_PATTERN.test(slug) &&
+    !RESERVED_LEGAL.has(slug)
+  )
+}

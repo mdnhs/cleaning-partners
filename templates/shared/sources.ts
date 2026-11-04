@@ -54,4 +54,6 @@ export type ChromeSources = {
   settings: Pick<SiteSources["settings"], (typeof CHROME_SETTINGS_KEYS)[number]>
   services: SiteSources["services"]
   groupCompanies: SiteSources["groupCompanies"]
+  /** Published legal pages in footer order (/<slug>); empty when none. */
+  legalLinks?: { label: string; href: string }[]
 }

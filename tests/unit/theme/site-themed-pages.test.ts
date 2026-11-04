@@ -20,7 +20,7 @@ function source(file: string): string {
 
 describe("public pages use SiteThemed", () => {
   it("finds the public pages", () => {
-    expect(pages.length).toBeGreaterThanOrEqual(10)
+    expect(pages.length).toBeGreaterThanOrEqual(9)
   })
 
   it.each(pages)("%s renders inside SiteThemed", (file) => {

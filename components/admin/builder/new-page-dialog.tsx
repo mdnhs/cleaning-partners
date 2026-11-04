@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input"
 import type { DraftDocument } from "@/blocks/document"
 import { api, ApiError, errorMessage, unwrap } from "@/lib/api-client"
-import { BUILDER_SLUG_MAX } from "@/lib/builder-slug"
+import { BUILDER_SLUG_MAX, isReservedLegalSlug } from "@/lib/builder-slug"
 import { builderSlug } from "@/lib/schemas/api/builder-pages"
 import { cn } from "@/lib/utils"
 
@@ -37,10 +37,14 @@ export function builderSlugFrom(title: string): string {
 }
 
 /** Why `slug` cannot be an address, or null (lib/schemas/api/builder-pages). */
-export function slugProblem(slug: string): string | null {
+export function slugProblem(slug: string, legal = false): string | null {
   if (!slug) return "Enter an address"
   const result = builderSlug.safeParse(slug)
-  return result.success ? null : result.error.issues[0].message
+  if (!result.success) return result.error.issues[0].message
+  // A legal page shares the site root with the site's own routes.
+  return legal && isReservedLegalSlug(slug)
+    ? "This address belongs to the site itself"
+    : null
 }
 
 type Fields = { title: string; slug: string }
@@ -56,7 +60,10 @@ export function TitleSlugFields({
   errors,
   disabled,
   slugHelp,
+  prefix = "/p/",
 }: {
+  /** What the address starts with: /p/ for custom pages, / for legal pages. */
+  prefix?: string
   value: Fields
   onChange(next: Partial<Fields>): void
   errors: Errors
@@ -66,7 +73,7 @@ export function TitleSlugFields({
   const id = useId()
   const titleId = `${id}-title`
   const slugId = `${id}-slug`
-  const help = slugHelp ?? `The page's address: /p/${value.slug || "…"}`
+  const help = slugHelp ?? `The page's address: ${prefix}${value.slug || "…"}`
   return (
     <>
       <FieldShell id={titleId} label="Title" error={errors.title}>
@@ -86,7 +93,7 @@ export function TitleSlugFields({
       <FieldShell id={slugId} label="Address" help={help} error={errors.slug}>
         <div className="flex min-w-0 items-center gap-1.5">
           <span aria-hidden className="font-mono text-sm text-muted-foreground">
-            /p/
+            {prefix}
           </span>
           <Input
             id={slugId}
@@ -125,17 +132,24 @@ export function NewPageDialog({
   open,
   onOpenChange,
   copy,
+  legal,
 }: {
   open: boolean
   onOpenChange(open: boolean): void
   copy?: CopySeed
+  /** A legal page (Privacy, Terms …): at the site root, listed in the footer. */
+  legal?: boolean
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         {/* Remounts per opening, so every opening starts from the defaults. */}
         {open ? (
-          <NewPageForm copy={copy} onCancel={() => onOpenChange(false)} />
+          <NewPageForm
+            copy={copy}
+            legal={legal}
+            onCancel={() => onOpenChange(false)}
+          />
         ) : null}
       </DialogContent>
     </Dialog>
@@ -144,9 +158,11 @@ export function NewPageDialog({
 
 function NewPageForm({
   copy,
+  legal,
   onCancel,
 }: {
   copy?: CopySeed
+  legal?: boolean
   onCancel(): void
 }) {
   const router = useRouter()
@@ -163,7 +179,7 @@ function NewPageForm({
   const address = slugTouched ? slug : builderSlugFrom(title)
   const local = {
     title: title.trim() ? undefined : "Enter a title",
-    slug: slugProblem(address) ?? undefined,
+    slug: slugProblem(address, legal) ?? undefined,
   }
   const errors = {
     title: serverErrors.title ?? (submitted ? local.title : undefined),
@@ -177,14 +193,18 @@ function NewPageForm({
             title: title.trim(),
             slug: address,
             ...(copy ? { seed: copy.seed } : {}),
+            ...(legal ? { legal: true } : {}),
           },
         })
       ),
     onSuccess: async (dto) => {
       await queryClient.invalidateQueries({ queryKey: BUILDER_PAGES_KEY })
-      toast.success(copy ? "Copy created" : "Page created", {
-        description: "It is a draft until you publish it.",
-      })
+      toast.success(
+        copy ? "Copy created" : legal ? "Legal page created" : "Page created",
+        {
+          description: "It is a draft until you publish it.",
+        }
+      )
       router.push(`/admin/pages/custom/${dto.id}`)
     },
     onError: (error) => {
@@ -211,7 +231,9 @@ function NewPageForm({
       }}
     >
       <DialogHeader>
-        <DialogTitle>{copy ? "Copy to a new page" : "New page"}</DialogTitle>
+        <DialogTitle>
+          {copy ? "Copy to a new page" : legal ? "New legal page" : "New page"}
+        </DialogTitle>
         <DialogDescription>
           {copy
             ? "The new page starts with this page's sections and text. This page stays as it is."
@@ -219,6 +241,7 @@ function NewPageForm({
         </DialogDescription>
       </DialogHeader>
       <TitleSlugFields
+        prefix={legal ? "/" : "/p/"}
         value={{ title, slug: address }}
         errors={errors}
         disabled={create.isPending}

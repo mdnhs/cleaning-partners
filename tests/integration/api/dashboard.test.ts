@@ -132,7 +132,7 @@ describe("dashboard (Phase 4)", () => {
     const dto = await dashboard(cookie)
     expect(dto.kpis.openLeads).toBe(3)
     expect(dto.kpis.published).toEqual({
-      pages: 7,
+      pages: 5,
       services: 5,
       articles: expect.any(Number),
     })
@@ -254,19 +254,8 @@ describe("dashboard (Phase 4)", () => {
     expect(health.complete + health.needsWork + health.missing).toBeGreaterThan(
       0
     )
-    // Seeded legal pages are still the starter text.
-    expect(admin.qa).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          rule: "legal-unpublished",
-          href: "/admin/pages/privacy",
-        }),
-        expect.objectContaining({
-          rule: "legal-unpublished",
-          href: "/admin/pages/terms",
-        }),
-      ])
-    )
+    // Legal pages are builder pages now: the QA scan reads them like any other.
+    expect(admin.qa).not.toBeNull()
 
     const intake = await dashboard((await signedInUser(["intake"])).cookie)
     expect(intake.qa).toBeNull()
@@ -423,7 +412,7 @@ describe("dashboard (Phase 4)", () => {
         "services",
         "articles",
         "builder-pages",
-        "page:privacy",
+        "page:about",
         "settings:contact",
         "settings:seo.defaults",
       ])

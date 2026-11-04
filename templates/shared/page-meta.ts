@@ -188,7 +188,7 @@ export function builderPageMetadata(
   return metadataFor(s, {
     kind: "builder",
     id: page.id,
-    path: `/p/${page.slug}`,
+    path: page.legal ? `/${page.slug}` : `/p/${page.slug}`,
     seo: page.seo,
     name: page.title,
     fallbackDescription: firstHeroDescription(page.blocks),

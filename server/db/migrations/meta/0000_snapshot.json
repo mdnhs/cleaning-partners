@@ -8,12 +8,7 @@
     "public.content_status": {
       "name": "content_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "in_review",
-        "scheduled",
-        "published"
-      ]
+      "values": ["draft", "in_review", "scheduled", "published"]
     }
   },
   "schemas": {},

@@ -58,6 +58,7 @@ const page = (over: Partial<BuilderPageDto> = {}): BuilderPageDto => ({
   slug: "spring-campaign",
   title: "Spring campaign",
   path: "/p/spring-campaign",
+  legalOrder: null,
   seo: {},
   draft: { blocks: [hero, stats] },
   published: null,
