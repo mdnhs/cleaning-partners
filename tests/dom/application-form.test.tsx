@@ -198,4 +198,44 @@ describe("ApplicationForm", () => {
     )
     expect(screen.queryByRole("button", { name: view.form.submit })).toBeNull()
   })
+
+  it("a 422 on a field the page does not show (Turnstile, job) shows the generic error", async () => {
+    response = () =>
+      json(422, {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: "x",
+          fieldErrors: { turnstileToken: ["Please try again"] },
+        },
+      })
+    render(<ApplicationForm view={view} />)
+    await fillRequired()
+    await userEvent.click(
+      screen.getByRole("button", { name: view.form.submit })
+    )
+    expect(
+      await screen.findByText(view.form.errors.generic)
+    ).toBeInTheDocument()
+  })
+
+  it("tells assistive tech which fields are required", () => {
+    render(<ApplicationForm view={view} />)
+    expect(
+      screen.getByLabelText(new RegExp(`^${f.firstName.label}`))
+    ).toHaveAttribute("aria-required", "true")
+    expect(
+      screen.getByLabelText(new RegExp(`^${f.address.label}`))
+    ).not.toHaveAttribute("aria-required")
+    expect(
+      screen.getByLabelText(new RegExp(`^${f.hoursPerWeek.label}`))
+    ).toHaveAttribute("aria-required", "true")
+    expect(
+      screen.getByRole("radiogroup", {
+        name: new RegExp(f.gardaVetting.label.slice(0, 20)),
+      })
+    ).toHaveAttribute("aria-required", "true")
+    expect(
+      screen.getByRole("checkbox", { name: view.form.declaration })
+    ).toHaveAttribute("aria-required", "true")
+  })
 })

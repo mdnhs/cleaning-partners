@@ -70,10 +70,16 @@ export type PreparedCv = {
   originalName: string
 }
 
+/**
+ * The name staff download: the applicant's name without its own extension,
+ * plus the sniffed one. A polyglot (an MSI is an OLE file like a .doc; a
+ * .cmd may start "%PDF") then opens in Word or a PDF reader, never runs.
+ */
 function cleanName(name: string, ext: string): string {
   const base = name.split(/[\\/]/).pop() ?? ""
   const clean = [...stripHiddenChars(base).trim()].slice(0, 200).join("")
-  return clean || `cv.${ext}`
+  const stem = clean.replace(/\.[^.]*$/, "").trim()
+  return `${stem || "cv"}.${ext}`
 }
 
 /** The attached CV, checked (type by its bytes, at most 5 MB); null when none was attached. */

@@ -74,6 +74,7 @@ const TECHNICAL_CONSTS: Record<string, string[]> = {
   "components/careers/application-form.tsx": [
     "REQUIRED_TEXT",
     "REQUIRED_YES_NO",
+    "SHOWN_FIELDS",
   ],
   // Consent category keys (never shown), a state sentinel and a Tailwind class.
   "components/consent/consent-banner-view.tsx": ["OPTIONAL", "ON_LIGHT"],

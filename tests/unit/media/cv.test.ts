@@ -88,4 +88,27 @@ describe("prepareCv", () => {
     )
     expect(CV_MAX_BYTES).toBe(5 * 1024 * 1024)
   })
+
+  it("names the stored CV by its sniffed type, never the applicant's extension", async () => {
+    // An MSI installer is an OLE compound file, like a .doc: it must
+    // download as .doc (opened by Word), never as cv.msi (run by Windows).
+    const ole = new Uint8Array([
+      0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1, 0, 0, 0, 0,
+    ])
+    const msi = await prepareCv(new File([ole], "Setup Mary.msi"))
+    expect(msi).toMatchObject({
+      mime: "application/msword",
+      originalName: "Setup Mary.doc",
+    })
+    const pdf = new TextEncoder().encode("%PDF-1.7\nx")
+    expect((await prepareCv(new File([pdf], "run.cmd")))?.originalName).toBe(
+      "run.pdf"
+    )
+    expect(
+      (await prepareCv(new File([pdf], "Mary Kelly CV.PDF")))?.originalName
+    ).toBe("Mary Kelly CV.pdf")
+    expect((await prepareCv(new File([pdf], "noext")))?.originalName).toBe(
+      "noext.pdf"
+    )
+  })
 })

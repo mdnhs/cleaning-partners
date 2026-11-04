@@ -50,6 +50,24 @@ const REQUIRED_TEXT: FieldKey[] = [
   "experience",
 ]
 const REQUIRED_YES_NO: FieldKey[] = ["gardaVetting", "livedAbroad", "transport"]
+/** Keys whose errors show beside a field; any other 422 key gets the generic message. */
+const SHOWN_FIELDS = new Set<string>([
+  ...REQUIRED_TEXT,
+  ...REQUIRED_YES_NO,
+  "address",
+  "eircode",
+  "permissionExpiry",
+  "shifts",
+  "healthcareExperience",
+  "recentRole",
+  "certificates",
+  "cv",
+  "note",
+  "heardAbout",
+  "declaration",
+  "privacy",
+  "keepOnFile",
+])
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** The 422 body's per-field messages (server/lib/errors). */
@@ -191,8 +209,14 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
       if (res.status === 422) {
         const fieldErrors = await readFieldErrors(res)
         setErrors(fieldErrors)
-        if (Object.keys(fieldErrors).length === 0)
+        // Turnstile, the job id or another key with no field here: say so.
+        const keys = Object.keys(fieldErrors)
+        if (keys.length === 0 || keys.some((k) => !SHOWN_FIELDS.has(k)))
           setMessage(form.errors.generic)
+        else
+          formRef.current
+            ?.querySelector<HTMLElement>(`[name="${keys[0]}"]`)
+            ?.focus()
         return
       }
       setMessage(
@@ -282,6 +306,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
         autoComplete={autoComplete}
         placeholder={fields[key].placeholder || undefined}
         className={cn(CONTROL_CLASS, "h-[52px]")}
+        aria-required={required || undefined}
         {...invalid(key)}
       />
       {help(key)}
@@ -303,6 +328,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
           name={key}
           defaultValue=""
           className={cn(CONTROL_CLASS, "h-[52px] appearance-none pr-11")}
+          aria-required={required || undefined}
           {...invalid(key)}
         >
           <option value="">
@@ -344,6 +370,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
         </p>
         <div
           role="radiogroup"
+          aria-required="true"
           aria-labelledby={labelId}
           aria-describedby={errors[key] ? errorId(key) : undefined}
           className="grid gap-3 sm:grid-cols-2"
@@ -375,6 +402,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
     return (
       <fieldset
         aria-labelledby={labelId}
+        aria-required={required || undefined}
         aria-describedby={errors[key] ? errorId(key) : undefined}
         className="flex flex-col gap-2.5 md:col-span-2"
       >
@@ -432,6 +460,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
               CHECKBOX_CLASS,
               "focus-visible:ring-3 focus-visible:ring-brand/25"
             )}
+            aria-required={key !== "keepOnFile" || undefined}
             {...invalid(key)}
           />
           <Check
