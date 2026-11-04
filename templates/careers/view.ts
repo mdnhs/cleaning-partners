@@ -1,6 +1,7 @@
 import type {
   CareersView,
   ClosedJobView,
+  JobDetailView,
   JobRowView,
 } from "@/components/careers/types"
 import { irishToday, isOpenJob } from "@/lib/careers/open"
@@ -53,6 +54,27 @@ export const openNow = (job: PublicJob, now: Date) =>
   )
 
 const unique = (values: string[]) => [...new Set(values)]
+
+/**
+ * Up to `max` other open jobs for "Similar Roles": the same category first,
+ * then the most recently posted.
+ */
+export function similarJobs(
+  current: PublicJob,
+  all: PublicJob[],
+  now: Date,
+  max = 3
+): PublicJob[] {
+  const time = (job: PublicJob) => job.publishedAt?.getTime() ?? 0
+  return all
+    .filter((job) => job.id !== current.id && openNow(job, now))
+    .sort((a, b) => {
+      const sameA = a.content.category === current.content.category ? 0 : 1
+      const sameB = b.content.category === current.content.category ? 0 : 1
+      return sameA - sameB || time(b) - time(a)
+    })
+    .slice(0, max)
+}
 
 function jobRow(
   s: SiteSources,
@@ -162,6 +184,129 @@ export function careersView(
       body: page.talentPool.body,
       cta: linkView(s, page.talentPool.cta),
       call: linkView(s, page.talentPool.call),
+    },
+  }
+}
+
+/** The paragraphs of a paragraphs-only doc as plain strings. */
+const paragraphsOf = (doc: PublicJob["content"]["about"]) =>
+  doc.content
+    .map((p) =>
+      (p.content ?? []).map((n) => ("text" in n ? n.text : "\n")).join("")
+    )
+    .filter((text) => text.trim() !== "")
+
+/** "/careers/<slug>": the job's own words around the shared copy. */
+export function jobDetailView(
+  s: SiteSources,
+  job: PublicJob,
+  all: PublicJob[],
+  now: Date
+): JobDetailView {
+  const page = s.pages.careers.data
+  const labels = page.job
+  const c = job.content
+  const hero = pageHeroView(s, page.hero)
+  const applyHref = `${jobPath(job.slug)}/apply`
+  const closing = c.closingDate ? closedOnDate(c.closingDate) : ""
+  return {
+    slug: job.slug,
+    open: openNow(job, now),
+    hero: {
+      crumbs: {
+        home: hero.home,
+        careers: { label: hero.crumb, href: "/careers" },
+        ariaLabel: hero.ariaLabel,
+      },
+      image: hero.image,
+      nowHiring: labels.nowHiring,
+      category: c.category,
+      title: c.title,
+      summary: c.summary,
+      facts: {
+        location: c.location,
+        type: c.employmentType,
+        hours: c.hoursShort,
+        pay: c.pay,
+      },
+      applyNow: { label: labels.applyNow, href: applyHref },
+      saveJob: labels.saveJob,
+      savedJob: labels.savedJob,
+      closedNotice: textView(s, labels.closedNotice),
+    },
+    body: {
+      aboutTitle: labels.aboutTitle,
+      about: paragraphsOf(c.about),
+      responsibilitiesTitle: labels.responsibilitiesTitle,
+      responsibilities: c.responsibilities,
+      lookingForTitle: labels.lookingForTitle,
+      essentialTitle: labels.essentialTitle,
+      requiredPill: labels.requiredPill,
+      essential: c.essential,
+      desirableTitle: labels.desirableTitle,
+      nicePill: labels.nicePill,
+      desirable: c.desirable,
+      offerTitle: labels.offerTitle,
+      offerIntro: c.offerIntro,
+      offers: c.offers,
+      equalOpportunities: labels.equalOpportunities,
+      checkIcon: s.settings.microcopy.checkIcon.url,
+    },
+    sidebar: {
+      summaryTitle: labels.summaryTitle,
+      rows: [
+        {
+          icon: "reference",
+          label: labels.summaryLabels.reference,
+          value: c.reference,
+        },
+        {
+          icon: "location",
+          label: labels.summaryLabels.location,
+          value: c.location,
+        },
+        {
+          icon: "type",
+          label: labels.summaryLabels.type,
+          value: c.employmentType,
+        },
+        { icon: "hours", label: labels.summaryLabels.hours, value: c.hours },
+        { icon: "pay", label: labels.summaryLabels.pay, value: c.payDetail },
+        {
+          icon: "start",
+          label: labels.summaryLabels.start,
+          value: c.startDate,
+        },
+        ...(closing
+          ? [
+              {
+                icon: "closing",
+                label: labels.summaryLabels.closing,
+                value: closing,
+              },
+            ]
+          : []),
+      ],
+      apply: { label: labels.applyForJob, href: applyHref },
+      share: labels.share,
+      linkCopied: labels.linkCopied,
+      questionsTitle: labels.questionsTitle,
+      questionsBody: labels.questionsBody,
+      phone: linkView(s, labels.phone),
+      email: linkView(s, labels.email),
+      beforeTitle: labels.beforeTitle,
+      beforeIntro: labels.beforeIntro,
+      beforeItems: labels.beforeItems,
+    },
+    similar: {
+      eyebrow: labels.similarEyebrow,
+      title: labels.similarTitle,
+      viewAll: { label: labels.viewAll, href: "/careers#open-positions" },
+      openPill: page.open.openPill,
+      viewJob: page.open.viewJob,
+      jobs: similarJobs(job, all, now).map((j) =>
+        jobRow(s, j, now, page.open.postedLabel)
+      ),
     },
   }
 }

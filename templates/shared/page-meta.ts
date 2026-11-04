@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { interpolate } from "@/lib/interpolate"
 import type { MediaView, WithMedia } from "@/lib/media"
+import type { Seo } from "@/lib/schemas/common"
 import { OG_IMAGE_SIZE, type OgKind, ogImagePath } from "@/lib/seo/urls"
 import type { BuilderPageRecord } from "@/server/modules/builder-pages/queries"
 import { PAGE_PATHS, type PageKey } from "@/templates/registry"
@@ -239,4 +240,22 @@ function siteVerification({
     ...(google ? { google } : {}),
     ...(bing ? { other: { "msvalidate.01": bing } } : {}),
   }
+}
+
+/** "/careers/<slug>": a job's title and summary; the card is the careers page's. */
+export function jobMetadata(
+  s: SiteSources,
+  job: { slug: string; seo: Seo; content: { title: string; summary: string } }
+): Metadata {
+  // Job SEO has no editor yet: an image reference there is never resolved,
+  // so the share image is the site default / the careers card.
+  const seo: SiteSeo = { ...job.seo, ogImage: undefined }
+  return metadataFor(s, {
+    kind: "page",
+    id: "careers",
+    path: `/careers/${job.slug}`,
+    seo,
+    name: job.content.title,
+    fallbackDescription: job.content.summary,
+  })
 }

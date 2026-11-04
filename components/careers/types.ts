@@ -91,3 +91,62 @@ export type CareersView = {
   process: HiringProcessProps
   talentPool: TalentPoolProps
 }
+
+export type JobDetailView = {
+  slug: string
+  open: boolean
+  hero: {
+    crumbs: { home: Link; careers: Link; ariaLabel: string }
+    image: string
+    nowHiring: string
+    category: string
+    title: string
+    summary: string
+    facts: { location: string; type: string; hours: string; pay: string }
+    applyNow: Link
+    saveJob: string
+    savedJob: string
+    closedNotice: string
+  }
+  body: {
+    aboutTitle: string
+    /** Paragraphs of "About the Role". */
+    about: string[]
+    responsibilitiesTitle: string
+    responsibilities: string[]
+    lookingForTitle: string
+    essentialTitle: string
+    requiredPill: string
+    essential: string[]
+    desirableTitle: string
+    nicePill: string
+    desirable: string[]
+    offerTitle: string
+    offerIntro: string
+    offers: { icon: string; text: string }[]
+    equalOpportunities: string
+    checkIcon: string
+  }
+  sidebar: {
+    summaryTitle: string
+    rows: { label: string; value: string; icon: string }[]
+    apply: Link
+    share: string
+    linkCopied: string
+    questionsTitle: string
+    questionsBody: string
+    phone: Link
+    email: Link
+    beforeTitle: string
+    beforeIntro: string
+    beforeItems: string[]
+  }
+  similar: {
+    eyebrow: string
+    title: string
+    viewAll: Link
+    openPill: string
+    viewJob: string
+    jobs: JobRowView[]
+  }
+}
