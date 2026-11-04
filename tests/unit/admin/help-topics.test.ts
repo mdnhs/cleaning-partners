@@ -106,7 +106,10 @@ const UI_LABELS: Record<string, string[]> = {
     'singular: "Testimonial"',
   ],
   // `Choose ${noun}` with noun "image".
-  "Choose image": ["`Choose ${noun}`", 'lottie ? "animation" : "image"'],
+  "Choose image": [
+    "`Choose ${noun}`",
+    'lottie ? "animation" : video ? "video" : "image"',
+  ],
 }
 
 describe("Help names real UI labels", () => {

@@ -66,6 +66,8 @@ const STRUCTURAL_PAGE_LEAVES = new Set([
  * inventory has no entry. Keyed per page ("page:leaf").
  */
 const POST_BASELINE_PAGE_LEAVES = new Set([
+  // Optional hero background video (an MP4/WebM from the media library).
+  "home:hero.backgroundVideo",
   // Quote-form feedback copy added when the form began posting to the leads API (7.3).
   "contact:quoteForm.sendingLabel",
   "contact:quoteForm.errorMessage",

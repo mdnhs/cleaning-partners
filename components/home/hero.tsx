@@ -1,12 +1,15 @@
 import Image from "next/image"
 
 import { buttonVariants } from "@/components/ui/button"
+import { HeroVideo } from "@/components/home/hero-video"
 import { Container } from "@/components/home/section-heading"
 
 type CtaLink = { label: string; href: string }
 
 export type HeroProps = {
   background: string
+  /** MP4/WebM URL played muted over `background` (the image is its poster). */
+  backgroundVideo?: string
   logo: { src: string; alt: string }
   title: string
   subtitle: string
@@ -17,6 +20,7 @@ export type HeroProps = {
 
 export function Hero({
   background,
+  backgroundVideo,
   logo,
   title,
   subtitle,
@@ -35,6 +39,7 @@ export function Hero({
           className="object-cover"
           preload
         />
+        {backgroundVideo ? <HeroVideo src={backgroundVideo} /> : null}
         <div className="absolute inset-0 bg-linear-to-b from-[rgba(40,100,143,0.55)] to-[rgba(15,47,71,0.8)]" />
       </div>
 

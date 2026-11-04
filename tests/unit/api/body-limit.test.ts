@@ -30,7 +30,7 @@ describe("admin body limit chosen by path (ledger Phase 1 ruling)", () => {
     expect(isUploadPath("/api/v1/admin/pages/home/draft")).toBe(false)
   })
 
-  it("uploads may exceed 1 MB up to 20 MB + envelope", async () => {
+  it("uploads may exceed 1 MB up to 30 MB (the largest video) + envelope", async () => {
     expect(
       (await post("/api/v1/admin/media/upload", 2 * 1024 * 1024)).status
     ).toBe(200)
@@ -44,7 +44,7 @@ describe("admin body limit chosen by path (ledger Phase 1 ruling)", () => {
     expect(tooBig.status).toBe(413)
     expect((await tooBig.json()).error).toMatchObject({
       code: "VALIDATION_FAILED",
-      message: "Files can be up to 20 MB",
+      message: "Files can be up to 30 MB",
     })
   })
 

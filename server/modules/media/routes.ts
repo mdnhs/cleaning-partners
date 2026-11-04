@@ -4,6 +4,7 @@ import { Hono } from "hono"
 
 import {
   isLottieMime,
+  isVideoMime,
   mediaListQuery,
   mediaUpdateInput,
 } from "@/lib/schemas/api/media"
@@ -113,6 +114,9 @@ function fileHeaders(file: {
   }
   if (file.mime === "image/svg+xml")
     headers["Content-Security-Policy"] = SVG_CSP
+  else if (isVideoMime(file.mime))
+    // A background video is only fetched by <video>: plays inline.
+    headers["Content-Disposition"] = "inline"
   else if (!file.mime.startsWith("image/")) {
     // Lottie data is only fetched by the player: opened directly it runs
     // nothing (sandboxed, no sources) and downloads.

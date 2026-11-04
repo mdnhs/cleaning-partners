@@ -27,7 +27,9 @@ import { hasPermission } from "@/lib/auth/permissions"
 import {
   ACCEPTED_IMAGE_TYPES,
   ACCEPTED_LOTTIE_TYPES,
+  ACCEPTED_VIDEO_TYPES,
   isLottieMime,
+  isVideoMime,
   MEDIA_ALT_MAX,
   type MediaItem,
 } from "@/lib/schemas/api/media"
@@ -35,16 +37,18 @@ import { cn } from "@/lib/utils"
 
 import { mediaName } from "./format"
 import { LottieTile } from "./lottie-tile"
+import { VideoTile } from "./video-tile"
 import { uploadMediaFile } from "./upload-request"
 import { useAnnouncer } from "./uploader"
 
 const PAGE_SIZE = 24
 const IMAGE_TYPES = new Set(ACCEPTED_IMAGE_TYPES.split(","))
+const VIDEO_TYPES = new Set(ACCEPTED_VIDEO_TYPES.split(","))
 const NOT_AN_IMAGE =
   "This file is not an image this field can use. Upload a JPEG, PNG, WebP, AVIF or SVG image."
 
-/** What a picker offers: images (every image field) or Lottie animations. */
-export type PickerKind = "image" | "lottie"
+/** What a picker offers: images (every image field), Lottie animations or videos. */
+export type PickerKind = "image" | "lottie" | "video"
 
 const PICKER_COPY = {
   image: {
@@ -62,6 +66,20 @@ const PICKER_COPY = {
     // (the input's accept list is only a hint to the file chooser).
     fileOk: (file: File) => IMAGE_TYPES.has(file.type),
     itemOk: (item: MediaItem) => item.mime.startsWith("image/"),
+  },
+  video: {
+    description:
+      "Videos in the media library. Upload a new one if it is not there yet.",
+    search: "Search videos",
+    upload: "Upload new video",
+    accept: ACCEPTED_VIDEO_TYPES,
+    wrongFile: "This file is not a video. Upload an MP4 or WebM file.",
+    noMatch: (q: string) => `No videos match “${q}”.`,
+    empty: "The media library has no videos yet.",
+    list: "Videos",
+    use: "Use this video",
+    fileOk: (file: File) => VIDEO_TYPES.has(file.type),
+    itemOk: (item: MediaItem) => isVideoMime(item.mime),
   },
   lottie: {
     description:
@@ -249,7 +267,7 @@ export function MediaPickerDialog({
             <div
               className={cn(
                 "flex min-w-48 flex-1 flex-col gap-1",
-                kind === "lottie" && "hidden"
+                kind !== "image" && "hidden"
               )}
             >
               <label htmlFor={altId} className="text-xs font-medium">
@@ -375,7 +393,9 @@ export function MediaPickerDialog({
                       )}
                     >
                       <span className="relative flex aspect-square items-center justify-center overflow-hidden rounded-md bg-[repeating-conic-gradient(var(--muted)_0_25%,transparent_0_50%)] bg-size-[16px_16px]">
-                        {isLottieMime(item.mime) ? (
+                        {isVideoMime(item.mime) ? (
+                          <VideoTile url={item.url} />
+                        ) : isLottieMime(item.mime) ? (
                           <LottieTile />
                         ) : (
                           <Image

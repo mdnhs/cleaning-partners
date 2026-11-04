@@ -13,7 +13,7 @@
     "components/home/blog.tsx": "65083667edd944dc91b81dc4acd8d8836bc326dccd909f1bb10826b10c86e0a6",
     "components/home/clients.tsx": "59dccf773676cfa54c082141bd6adf02fc1e4f42bc112d7467ac0461153ec7a7",
     "components/home/contact.tsx": "8ff24d204f4cd9bfc9eb7ffa65e8a777fff3e9e48b1d8485203aa805c3a18c68",
-    "components/home/hero.tsx": "4d30903c6001c9038659b97d5287ed3846bfafa0c0aa5f5e9e528b1d93ad4d1b",
+    "components/home/hero.tsx": "e2cd4dc65cc438a6cacb293aca8228ad152d440757d1908223264ea40a19bd95",
     "components/home/location-map.tsx": "fa4481526b6469f238167cbf237ff9edb09aa1c0ac49a7fd0465a7c8a4466d52",
     "components/home/logo-animation.tsx": "d145f6c3e68ee296d8b5b3d9eb1e7c6cca88fb55379d95af0bc4318da10bf641",
     "components/home/page-hero.tsx": "01c8b814b94185c044955cad5ea1614caf0acc4a6bad4cf552d2563a7abdac86",

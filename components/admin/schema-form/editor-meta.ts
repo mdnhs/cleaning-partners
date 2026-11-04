@@ -74,8 +74,8 @@ export type FieldMeta = {
   icon?: LeadingIcon
   /** media: thumbnail shape (default "video"). */
   aspect?: "video" | "square"
-  /** media: what the picker offers (default "image"; "lottie" = Lottie animations only). */
-  mediaKind?: "image" | "lottie"
+  /** media: what the picker offers (default "image"; "lottie" = Lottie animations only, "video" = MP4/WebM videos only). */
+  mediaKind?: "image" | "lottie" | "video"
 }
 
 /** Leading icons a text input can show. */

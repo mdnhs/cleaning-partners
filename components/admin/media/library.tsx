@@ -36,12 +36,14 @@ import { api, errorMessage, unwrap } from "@/lib/api-client"
 import { isMediaId } from "@/lib/media"
 import {
   isLottieMime,
+  isVideoMime,
   type MediaItem,
   type MediaKind,
 } from "@/lib/schemas/api/media"
 import { cn } from "@/lib/utils"
 
 import { LottieTile } from "./lottie-tile"
+import { VideoTile } from "./video-tile"
 
 import { formatBytes, mediaName, typeLabel } from "./format"
 import { MediaDetails } from "./media-details"
@@ -56,6 +58,7 @@ const PAGE_SIZE = 24
 const KINDS: { value: MediaKind | "all"; label: string }[] = [
   { value: "all", label: "All" },
   { value: "image", label: "Images" },
+  { value: "video", label: "Videos" },
   { value: "document", label: "Documents" },
   { value: "lottie", label: "Animations" },
 ]
@@ -94,6 +97,8 @@ function Thumb({
           sizes={sizes}
           className="object-contain"
         />
+      ) : isVideoMime(item.mime) ? (
+        <VideoTile url={item.url} />
       ) : isLottieMime(item.mime) ? (
         <LottieTile />
       ) : (
@@ -334,9 +339,11 @@ export function MediaLibrary() {
                       : "Every image has alt text or is marked decorative."
                   : kind === "image"
                     ? "There are no images in the library."
-                    : kind === "lottie"
-                      ? "There are no Lottie animations in the library."
-                      : "There are no documents in the library."
+                    : kind === "video"
+                      ? "There are no videos in the library."
+                      : kind === "lottie"
+                        ? "There are no Lottie animations in the library."
+                        : "There are no documents in the library."
                 : canUpload
                   ? "Upload images and PDFs above; pages, services and articles can then use them."
                   : "Images and PDFs appear here once someone uploads them."

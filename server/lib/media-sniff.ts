@@ -8,6 +8,9 @@ export const UPLOAD_TYPES = {
   "image/avif": "avif",
   "image/svg+xml": "svg",
   "application/pdf": "pdf",
+  // Background videos (lib/schemas/api/media VIDEO_MIMES).
+  "video/mp4": "mp4",
+  "video/webm": "webm",
   // Lottie animations (lib/schemas/api/media LOTTIE_MIMES): candidates by
   // their first bytes, validated by server/lib/lottie before storage.
   "video/lottie+json": "json",
@@ -15,8 +18,15 @@ export const UPLOAD_TYPES = {
 } as const
 export type UploadMime = keyof typeof UPLOAD_TYPES
 export type LottieUploadMime = "video/lottie+json" | "application/zip+dotlottie"
+export type VideoUploadMime = "video/mp4" | "video/webm"
 /** Types sharp inspects (images) or that need no inspection (PDF). */
-export type InspectableMime = Exclude<UploadMime, LottieUploadMime>
+export type InspectableMime = Exclude<
+  UploadMime,
+  LottieUploadMime | VideoUploadMime
+>
+
+export const isVideoUpload = (mime: UploadMime): mime is VideoUploadMime =>
+  mime === "video/mp4" || mime === "video/webm"
 
 export const isLottieUpload = (mime: UploadMime): mime is LottieUploadMime =>
   mime === "video/lottie+json" || mime === "application/zip+dotlottie"
@@ -43,6 +53,36 @@ function isAvif(bytes: Uint8Array): boolean {
   return brands.includes("avif") || brands.includes("avis")
 }
 
+/** Major brands of web MP4 files (ISO base media). HEIC/AVIF/3GP/QuickTime are not. */
+const MP4_BRANDS = new Set([
+  "isom",
+  "iso2",
+  "iso4",
+  "iso5",
+  "iso6",
+  "mp41",
+  "mp42",
+  "avc1",
+  "dash",
+  "M4V ",
+])
+
+function isMp4(bytes: Uint8Array): boolean {
+  return (
+    bytes.length >= 12 &&
+    ascii(bytes, 4, 8) === "ftyp" &&
+    MP4_BRANDS.has(ascii(bytes, 8, 12))
+  )
+}
+
+/** EBML header (Matroska family) whose DocType is "webm". */
+function isWebm(bytes: Uint8Array): boolean {
+  return (
+    startsWith(bytes, [0x1a, 0x45, 0xdf, 0xa3]) &&
+    ascii(bytes, 0, Math.min(bytes.length, 64)).includes("webm")
+  )
+}
+
 const SVG_PROLOG =
   /^(?:\s+|<\?xml[^>]*\?>|<!--[\s\S]*?-->|<!DOCTYPE[^>[]*(?:\[[\s\S]*?\])?\s*>)*/i
 
@@ -65,6 +105,8 @@ export function sniffMime(bytes: Uint8Array): UploadMime | null {
   )
     return "image/webp"
   if (isAvif(bytes)) return "image/avif"
+  if (isMp4(bytes)) return "video/mp4"
+  if (isWebm(bytes)) return "video/webm"
   if (bytes.length >= 5 && ascii(bytes, 0, 5) === "%PDF-")
     return "application/pdf"
   if (isSvg(bytes)) return "image/svg+xml"

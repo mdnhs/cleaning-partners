@@ -10,6 +10,7 @@ import {
   lockMediaReferencingEntity,
   nonImageMediaIds,
   nonLottieMediaIds,
+  nonVideoMediaIds,
   replaceMediaUsages,
 } from "@/server/modules/media/repo"
 
@@ -42,11 +43,31 @@ function notAnImage(usages: MediaField[]): AppError {
 
 /**
  * The media fields that take a Lottie animation instead of an image, by
- * entity ("<entityType>:<entityId>") and field path. Every other media
+ * entity ("<entityType>:<entityId>") and field path. Video fields (backgroundVideo) take a video. Every other media
  * field is an image field.
  */
 const LOTTIE_FIELDS: Record<string, ReadonlySet<string>> = {
   "settings:site": new Set(["logoAnimation"]),
+}
+
+/**
+ * Video fields are the ones named `backgroundVideo` (the hero, wherever it
+ * sits: the home page's data or a builder hero block "blocks.N.data.…").
+ * They take an MP4 or WebM and nothing else; an image field refuses videos.
+ */
+const VIDEO_FIELD_NAME = "backgroundVideo"
+const isVideoField = (u: MediaField) =>
+  u.field === VIDEO_FIELD_NAME || u.field.endsWith(`.${VIDEO_FIELD_NAME}`)
+
+const NOT_VIDEO_MESSAGE =
+  "This file is not a video. Choose an MP4 or WebM video."
+
+function notAVideo(usages: MediaField[]): AppError {
+  const fieldErrors: Record<string, string[]> = {}
+  for (const usage of usages) fieldErrors[usage.field] = [NOT_VIDEO_MESSAGE]
+  return new AppError("VALIDATION_FAILED", "Some files are not videos", {
+    fieldErrors,
+  })
 }
 
 const NOT_LOTTIE_MESSAGE =
@@ -112,15 +133,18 @@ async function syncUsages(
     // SEO edit or the publish that replaces them.
     const lottieFields = LOTTIE_FIELDS[`${entityType}:${entityId}`]
     const isLottieField = (u: MediaField) => !!lottieFields?.has(u.field)
+    const isImageField = (u: MediaField) =>
+      !isLottieField(u) && !isVideoField(u)
     const stored = await listMediaUsagesFor(tx, entityType, entityId)
     // Image fields: files this entity already used in an image field.
     // Animation fields: only the same file in the same field.
-    const known = new Set(
-      stored.filter((u) => !isLottieField(u)).map((u) => u.mediaId)
-    )
+    const known = new Set(stored.filter(isImageField).map((u) => u.mediaId))
     const knownInField = new Set(stored.map((u) => `${u.mediaId} ${u.field}`))
     const imageRefs = usages.filter(
-      (u) => !isLottieField(u) && !known.has(u.mediaId)
+      (u) => isImageField(u) && !known.has(u.mediaId)
+    )
+    const videoRefs = usages.filter(
+      (u) => isVideoField(u) && !knownInField.has(`${u.mediaId} ${u.field}`)
     )
     const lottieRefs = usages.filter(
       (u) => isLottieField(u) && !knownInField.has(`${u.mediaId} ${u.field}`)
@@ -130,6 +154,11 @@ async function syncUsages(
     ])
     const wrongKind = imageRefs.filter((u) => notImages.has(u.mediaId))
     if (wrongKind.length > 0) throw notAnImage(wrongKind)
+    const notVideo = await nonVideoMediaIds(tx, [
+      ...new Set(videoRefs.map((u) => u.mediaId)),
+    ])
+    const wrongVideo = videoRefs.filter((u) => notVideo.has(u.mediaId))
+    if (wrongVideo.length > 0) throw notAVideo(wrongVideo)
     const notLottie = await nonLottieMediaIds(tx, [
       ...new Set(lottieRefs.map((u) => u.mediaId)),
     ])

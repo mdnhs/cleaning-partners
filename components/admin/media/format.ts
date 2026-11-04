@@ -35,6 +35,8 @@ const TYPE_NAMES: Record<string, string> = {
   "image/avif": "AVIF image",
   "image/svg+xml": "SVG image",
   "application/pdf": "PDF document",
+  "video/mp4": "MP4 video",
+  "video/webm": "WebM video",
   "video/lottie+json": "Lottie animation (JSON)",
   "application/zip+dotlottie": "Lottie animation (dotLottie)",
 }

@@ -21,6 +21,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
       data: {
         hero: {
           background: media("/images/home/hero.png"),
+          backgroundVideo: null,
           title: "Cleaning Partners Ltd.",
           subtitle:
             "The Clean Team. Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond.",
