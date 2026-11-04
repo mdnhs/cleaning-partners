@@ -42,6 +42,7 @@ import { revisionsRoutes } from "@/server/modules/revisions/routes"
 import { searchRoutes } from "@/server/modules/search/routes"
 import { seoRoutes } from "@/server/modules/seo/routes"
 import { builderPagesRoutes } from "@/server/modules/builder-pages/routes"
+import { jobPostingsRoutes } from "@/server/modules/job-postings/routes"
 import { servicesRoutes } from "@/server/modules/services/routes"
 import { settingsRoutes } from "@/server/modules/settings/routes"
 import { themeRoutes } from "@/server/modules/theme/routes"
@@ -60,6 +61,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/articles", articlesRoutes)
   .route("/services", servicesRoutes)
   .route("/builder-pages", builderPagesRoutes)
+  .route("/job-postings", jobPostingsRoutes)
   .route("/team", teamRoutes)
   .route("/clients", clientsRoutes)
   .route("/group-companies", groupCompaniesRoutes)

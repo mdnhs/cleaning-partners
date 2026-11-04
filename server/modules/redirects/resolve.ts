@@ -41,7 +41,7 @@ export type PublicPathOutcome =
 const PASS = { kind: "pass" } as const
 const MISSING = { kind: "missing" } as const
 const STATIC_PATHS = new Set<string>(Object.values(PAGE_PATHS))
-const DETAIL = /^\/(services|blog|p)\/([^/]+)$/
+const DETAIL = /^\/(services|blog|careers|p)\/([^/]+)$/
 /** One segment at the root: a legal page's address (/<slug>). */
 const ROOT = /^\/([a-z0-9]+(?:-[a-z0-9]+)*)$/
 
@@ -140,9 +140,11 @@ export async function resolvePublicPath(
       const kind =
         detail[1] === "services"
           ? "service"
-          : detail[1] === "p"
-            ? "builder"
-            : "article"
+          : detail[1] === "careers"
+            ? "job"
+            : detail[1] === "p"
+              ? "builder"
+              : "article"
       if (SLUG_PATTERN.test(slug) && (await isPublishedSlug(db, kind, slug)))
         return PASS
     } else if (legalSlug && (await isPublishedSlug(db, "legal", legalSlug))) {

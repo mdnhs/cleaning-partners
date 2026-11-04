@@ -12,6 +12,7 @@ import { applyOrder, orderedIds } from "./repo"
 
 const TAGS: Record<Reorderable, string> = {
   services: tag.services,
+  jobs: tag.jobs,
   team: tag.team,
   clients: tag.clients,
   "group-companies": tag.groupCompanies,
@@ -32,7 +33,9 @@ export async function reorder(
   const permitted =
     collection === "services"
       ? hasPermission(actor.roles, { service: ["update"] })
-      : hasPermission(actor.roles, { collection: ["update"] })
+      : collection === "jobs"
+        ? hasPermission(actor.roles, { job: ["update"] })
+        : hasPermission(actor.roles, { collection: ["update"] })
   if (!permitted) throw forbidden()
   await getDb().transaction(async (tx) => {
     const current = await orderedIds(tx, collection)

@@ -46,7 +46,11 @@ import {
 } from "./repo"
 
 const STATIC_PATHS = new Set<string>(Object.values(PAGE_PATHS))
-const DETAIL = /^\/(services|blog)\/([^/]+)$/
+const DETAIL = /^\/(services|blog|careers)\/([^/]+)$/
+/** The slug table of a detail path's first segment. */
+const detailKind = (segment: string) =>
+  segment === "services" ? "service" : segment === "careers" ? "job" : "article"
+
 /** Builder pages: /p/<slug>. */
 const BUILDER = /^\/p\/([^/]+)$/
 /** Legal pages: /<slug> (one segment). */
@@ -107,12 +111,7 @@ async function siteOrigin(db: DbOrTx): Promise<string | null> {
 async function isLivePage(db: DbOrTx, fromPath: string): Promise<boolean> {
   if (STATIC_PATHS.has(fromPath)) return true
   const detail = DETAIL.exec(fromPath)
-  if (detail)
-    return isPublishedSlug(
-      db,
-      detail[1] === "services" ? "service" : "article",
-      detail[2]
-    )
+  if (detail) return isPublishedSlug(db, detailKind(detail[1]), detail[2])
   // A published builder page (/p/<slug>, D5) is live too.
   const builder = BUILDER.exec(fromPath)
   if (builder) return isPublishedSlug(db, "builder", builder[1])
@@ -438,27 +437,29 @@ async function liveDetailPaths(
   const slugs = {
     service: [] as string[],
     article: [] as string[],
+    job: [] as string[],
     builder: [] as string[],
     legal: [] as string[],
   }
   for (const from of froms) {
     const detail = DETAIL.exec(from)
-    if (detail)
-      slugs[detail[1] === "services" ? "service" : "article"].push(detail[2])
+    if (detail) slugs[detailKind(detail[1])].push(detail[2])
     const builder = BUILDER.exec(from)
     if (builder) slugs.builder.push(builder[1])
     const legal = LEGAL.exec(from)
     if (legal) slugs.legal.push(legal[1])
   }
-  const [services, articles, builders, legals] = await Promise.all([
+  const [services, articles, jobs, builders, legals] = await Promise.all([
     listPublishedSlugs(db, "service", slugs.service),
     listPublishedSlugs(db, "article", slugs.article),
+    listPublishedSlugs(db, "job", slugs.job),
     listPublishedSlugs(db, "builder", slugs.builder),
     listPublishedSlugs(db, "legal", slugs.legal),
   ])
   return new Set([
     ...[...services].map((s) => `/services/${s}`),
     ...[...articles].map((s) => `/blog/${s}`),
+    ...[...jobs].map((s) => `/careers/${s}`),
     ...[...builders].map((s) => `/p/${s}`),
     ...[...legals].map((s) => `/${s}`),
   ])

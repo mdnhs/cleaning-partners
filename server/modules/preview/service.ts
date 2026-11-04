@@ -9,7 +9,9 @@ import { getDb } from "@/server/db/client"
 import type { Actor } from "@/server/lib/actor"
 import { forbidden, notFound } from "@/server/lib/errors"
 import { pagePath } from "@/lib/schemas/api/builder-pages"
+import { jobPath } from "@/lib/schemas/api/job-postings"
 import { findBuilderPageForEdit } from "@/server/modules/builder-pages/repo"
+import { findJobById } from "@/server/modules/job-postings/repo"
 import { findArticleForEdit } from "@/server/modules/articles/repo"
 import { findServiceById } from "@/server/modules/services/repo"
 import { isPageKey, PAGE_PATHS } from "@/templates/registry"
@@ -19,6 +21,7 @@ const READ: Record<PreviewEntity, PermissionRequest> = {
   service: { service: ["read"] },
   article: { article: ["read"] },
   "builder-page": { page: ["read"] },
+  job: { job: ["read"] },
   settings: { settings: ["read"] },
 }
 
@@ -56,6 +59,14 @@ export async function previewPath(
       const service = await findServiceById(getDb(), id)
       if (!service) throw notFound("Service")
       return `/services/${service.slug}`
+    }
+    case "job": {
+      // job_postings.id is a uuid column: a malformed id would be a 500.
+      if (!z.uuid().safeParse(id).success) throw notFound("Job")
+      const job = await findJobById(getDb(), id)
+      if (!job) throw notFound("Job")
+      // Draft mode reads the working copy, published or not.
+      return jobPath(job.slug)
     }
     case "article": {
       const article = z.uuid().safeParse(id).success

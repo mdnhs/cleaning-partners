@@ -81,6 +81,7 @@ const SINGULAR: Record<string, string> = {
   article: "an article",
   media: "a file",
   "builder-page": "a custom page",
+  job: "a job",
 }
 
 const PLURAL: Record<string, string> = {

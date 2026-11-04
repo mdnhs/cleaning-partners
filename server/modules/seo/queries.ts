@@ -48,6 +48,7 @@ export async function listSitemapEntries(): Promise<SitemapSource[]> {
     tag.services,
     tag.articles,
     tag.builderPages,
+    tag.jobs,
     ...PAGE_KEYS.map((key) => tag.page(key))
   )
   const rows = await listSitemapRows(getDb())
@@ -69,6 +70,7 @@ export async function listSitemapEntries(): Promise<SitemapSource[]> {
 function pathOf(row: SitemapRow): string | null {
   if (row.kind === "service") return `/services/${row.key}`
   if (row.kind === "article") return `/blog/${row.key}`
+  if (row.kind === "job") return `/careers/${row.key}`
   if (row.kind === "builder") return row.legal ? `/${row.key}` : `/p/${row.key}`
   return isPageKey(row.key) ? PAGE_PATHS[row.key] : null
 }
