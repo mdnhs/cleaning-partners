@@ -197,6 +197,13 @@
       "when": 1793810509733,
       "tag": "0027_hero_background_video_null",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793812926999,
+      "tag": "0028_job_postings",
+      "breakpoints": true
     }
   ]
 }
