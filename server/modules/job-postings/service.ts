@@ -48,6 +48,8 @@ function toDto(row: JobEditRow, now = new Date()): JobDto {
     path: jobPath(row.slug),
     sortOrder: row.sortOrder,
     title: row.draft.title,
+    category: row.draft.category,
+    location: row.draft.location,
     closedAt: row.closedAt?.toISOString() ?? null,
     open: isOpenJob(
       {

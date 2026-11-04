@@ -278,6 +278,7 @@ describe("⌘K command palette (master 4.1)", () => {
       "New article",
       "New page",
       "New service",
+      "New job",
       "Open the live site",
       "Switch to light theme",
       "Switch to dark theme",

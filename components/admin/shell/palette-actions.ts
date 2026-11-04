@@ -85,6 +85,13 @@ export function buildActions({
       run: () => navigate("/admin/services/new"),
     },
     {
+      id: "new-job",
+      label: "New job",
+      keywords: ["create", "add", "vacancy", "hiring", "careers"],
+      permission: { job: ["create"] },
+      run: () => navigate("/admin/careers/new"),
+    },
+    {
       id: "open-site",
       label: "Open the live site",
       keywords: ["website", "view", "public", "preview"],

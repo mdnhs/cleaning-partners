@@ -346,6 +346,7 @@ describe("AdminShell (master 4.1)", () => {
       "Legal pages",
       "Blog",
       "Services",
+      "Careers",
       "Collections",
       "Media",
       "SEO",

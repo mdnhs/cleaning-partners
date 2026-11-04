@@ -44,6 +44,9 @@ export type JobDto = VersionedDto<JobContent> & {
   path: string
   sortOrder: number
   title: string
+  /** Draft values, for the admin list. */
+  category: string
+  location: string
   /** Closed by hand (the role is filled); null = not closed by hand. */
   closedAt: string | null
   /** Taking applications now (lib/careers/open.ts). */

@@ -1,4 +1,5 @@
 import {
+  BriefcaseBusiness,
   Building2,
   CircleHelp,
   Component,
@@ -171,6 +172,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: { service: ["read"] },
     match: "prefix",
     keywords: ["cleaning services", "offerings"],
+  },
+  {
+    id: "careers",
+    group: "menu",
+    label: "Careers",
+    href: "/admin/careers",
+    icon: BriefcaseBusiness,
+    permission: { job: ["read"] },
+    match: "prefix",
+    keywords: ["jobs", "vacancies", "hiring", "recruitment", "positions"],
   },
   {
     id: "collections",

@@ -72,6 +72,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       "legal-pages",
       "blog",
       "services",
+      "careers",
       "collections",
       "media",
       "leads",
