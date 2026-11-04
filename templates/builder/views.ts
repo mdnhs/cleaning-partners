@@ -18,8 +18,6 @@ import type { WithMedia } from "@/lib/media"
 import type { RichTextDoc } from "@/lib/schemas/common"
 import type { SiteSources } from "@/templates/shared/sources"
 import {
-  type ChromeView,
-  chromeView,
   clientsView,
   contactSectionView,
   heroView,
@@ -138,7 +136,6 @@ export function blockView(block: ResolvedBlock, s: SiteSources): BlockView {
 }
 
 export type BuilderView = {
-  chrome: ChromeView
   blocks: {
     id: string
     anchor: string
@@ -154,7 +151,6 @@ export function builderView(
   blocks: readonly ResolvedBlock[]
 ): BuilderView {
   return {
-    chrome: chromeView(s),
     blocks: blocks
       .filter((block) => !block.hidden)
       .map((block) => {

@@ -8,15 +8,12 @@ import { Hero } from "@/components/home/hero"
 import { LocationMap } from "@/components/home/location-map"
 import { PageHero } from "@/components/home/page-hero"
 import { Services } from "@/components/home/services"
-import { SiteFooter } from "@/components/home/site-footer"
-import { SiteHeader } from "@/components/home/site-header"
 import { Team } from "@/components/home/team"
 import { Testimonials } from "@/components/home/testimonials"
 import { WhyChooseUs } from "@/components/home/why-choose-us"
 import { HomeMotion } from "@/components/motion/home-motion"
 import { HowItWorks } from "@/components/services/how-it-works"
 import { ServicesGrid } from "@/components/services/services-grid"
-import { SiteLocale } from "@/components/site-locale"
 import { RichTextSection } from "@/templates/shared/rich-text-section"
 
 import type { BlockView, BuilderView } from "./views"
@@ -67,7 +64,6 @@ export function BuilderTemplate({ view }: { view: BuilderView }) {
     <>
       <HomeMotion>
         <div className="bg-white text-ink">
-          <SiteHeader {...view.chrome.header} />
           <main>
             {view.blocks.map((block) =>
               block.owned ? (
@@ -79,10 +75,8 @@ export function BuilderTemplate({ view }: { view: BuilderView }) {
               )
             )}
           </main>
-          <SiteFooter {...view.chrome.footer} />
         </div>
       </HomeMotion>
-      <SiteLocale lang={view.chrome.locale} />
     </>
   )
 }

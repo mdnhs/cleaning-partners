@@ -7,6 +7,7 @@ import "../globals.css"
 import { barlow, fontMono, roboto } from "@/app/fonts"
 import { AttributionCapture } from "@/components/attribution-capture"
 import { PreviewBar } from "@/components/preview-bar"
+import { SiteFooterSlot, SiteHeaderSlot } from "@/components/site-chrome"
 import { SiteExtras } from "@/components/site-extras"
 import { SiteThemeStyle } from "@/components/site-theme-style"
 import { SmoothScroll } from "@/components/motion/smooth-scroll"
@@ -51,12 +52,22 @@ export default function RootLayout({
         barlow.variable
       )}
     >
-      <body>
+      {/* bg-white: the design is light only, but next-themes puts `dark` on
+          <html> in a dark browser, which turns the body's own background
+          near-black (a black flash behind the content between two pages). */}
+      <body className="bg-white text-ink">
         <noscript>
           <style>{`[data-intro]{visibility:visible!important}`}</style>
         </noscript>
         <SmoothScroll />
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {/* The navbar and footer live here, not in each page: moving
+              between pages swaps only what is between them. min-h-svh keeps
+              the footer below the fold while the next page's content loads. */}
+          <SiteHeaderSlot />
+          <div className="min-h-svh">{children}</div>
+          <SiteFooterSlot />
+        </ThemeProvider>
         {/* The consent banner uses the brand colours: the overrides share
             its boundary (each page's content has its own, SiteThemed). */}
         <Suspense fallback={null}>

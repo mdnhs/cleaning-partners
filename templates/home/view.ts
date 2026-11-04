@@ -9,8 +9,6 @@ import type { TestimonialsProps } from "@/components/home/testimonials"
 import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
 import type { SiteSources } from "@/templates/shared/sources"
 import {
-  type ChromeView,
-  chromeView,
   clientsView,
   contactSectionView,
   heroView,
@@ -23,7 +21,6 @@ import {
 } from "@/templates/shared/views"
 
 export type HomeView = {
-  chrome: ChromeView
   hero: HeroProps
   clients: ClientsProps
   services: ServicesProps
@@ -39,7 +36,6 @@ export function homeView(s: SiteSources): HomeView {
   const page = s.pages.home.data
   const { hero, services, blog } = page
   return {
-    chrome: chromeView(s),
     hero: heroView(s, hero),
     clients: clientsView(s),
     services: servicesIntroView(s, services),

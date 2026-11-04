@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest"
 
 import { LOTTIE_WASM_URL } from "@/components/home/logo-animation"
 import { fixtureSiteSources } from "@/server/db/seed/fixtures/sources"
-import { homeView } from "@/templates/home/view"
+import { chromeView } from "@/templates/shared/views"
 
 import pkg from "../../package.json"
 
@@ -16,7 +16,7 @@ const sha = (path: string) =>
 
 describe("animated logo plumbing", () => {
   it("chrome props carry no animation key while logoAnimation is null", () => {
-    const { header, footer } = homeView(fixtureSiteSources()).chrome
+    const { header, footer } = chromeView(fixtureSiteSources())
     expect(header.logo).toEqual({
       src: "/images/home/logo.png",
       alt: "Cleaning Partners",
@@ -41,7 +41,7 @@ describe("animated logo plumbing", () => {
         },
       },
     }
-    const { header, footer } = homeView(animated).chrome
+    const { header, footer } = chromeView(animated)
     expect(header.logo.animation).toBe("/api/v1/media/file/2026/10/logo.json")
     expect(footer.logo.animation).toBe("/api/v1/media/file/2026/10/logo.json")
   })

@@ -60,24 +60,30 @@ export function ServicesGrid({
           </p>
         </div>
 
-        <ul
-          data-stagger
-          className="grid w-full gap-6 md:grid-cols-2 lg:grid-cols-3"
-        >
+        <ul className="grid w-full gap-6 md:grid-cols-2 lg:grid-cols-3">
           {services.map((service) => (
             <li
               key={service.title}
-              className="flex flex-col gap-[18px] rounded-3xl border border-line bg-white px-8 py-9 transition-[translate,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.12)]"
+              data-service-card
+              className="group relative isolate flex flex-col gap-[18px] rounded-3xl border border-line bg-white px-8 py-9 transition-[translate,box-shadow,border-color] duration-300 ease-out hover:border-brand/40 hover:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.12)] has-[a:focus-visible]:border-brand/40 has-[a:focus-visible]:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.12)] motion-safe:hover:-translate-y-1.5!"
             >
+              <div
+                aria-hidden
+                data-service-glow
+                className="pointer-events-none absolute inset-0 -z-10 rounded-3xl bg-[radial-gradient(circle_at_100%_100%,rgba(17,177,209,0.24),rgba(40,100,143,0.08)_42%,transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+              />
               <div className="flex items-center justify-between">
-                <div className="flex size-16 items-center justify-center rounded-[18px] bg-brand">
+                <div
+                  data-service-icon
+                  className="flex size-16 items-center justify-center rounded-[18px] bg-brand"
+                >
                   <Image src={service.icon} alt="" width={32} height={32} />
                 </div>
                 <span className="rounded-full bg-surface px-3.5 py-1.5 font-heading text-sm/[normal] font-semibold text-navy">
                   {priceBadge}
                 </span>
               </div>
-              <h3 className="font-heading text-[26px]/[normal] font-bold text-ink">
+              <h3 className="font-heading text-[26px]/[normal] font-bold text-ink group-hover:bg-linear-to-r group-hover:from-brand group-hover:to-navy group-hover:bg-clip-text group-hover:text-transparent group-has-[a:focus-visible]:bg-linear-to-r group-has-[a:focus-visible]:from-brand group-has-[a:focus-visible]:to-navy group-has-[a:focus-visible]:bg-clip-text group-has-[a:focus-visible]:text-transparent">
                 {service.title}
               </h3>
               <p className="text-base leading-[1.6] text-body">
@@ -100,7 +106,13 @@ export function ServicesGrid({
                   aria-label={service.learnMoreAria}
                   className="font-heading text-base/[normal] font-bold text-navy hover:text-brand"
                 >
-                  {learnMore}
+                  {`${learnMore} `}
+                  <span
+                    aria-hidden
+                    className="inline-block transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-1"
+                  >
+                    →
+                  </span>
                 </Link>
                 <a
                   href={quoteCta.href}
@@ -132,7 +144,7 @@ export function ServicesGrid({
               className={buttonVariants({
                 variant: "light",
                 size: "pill",
-                className: "text-navy",
+                className: "text-navy max-sm:w-full",
               })}
             >
               {helpCard.cta.label}

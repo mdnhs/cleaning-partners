@@ -4,6 +4,7 @@ import { useRef } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { SplitText } from "gsap/SplitText"
+import { pageStory } from "@/components/motion/page-story"
 import { useGSAP } from "@gsap/react"
 
 gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP)
@@ -40,6 +41,7 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
           // Pinned section first so later triggers measure with its spacer
           if (desktop) servicesStory()
           else servicesList()
+          const stopStory = pageStory(Boolean(desktop))
           heroIntro()
           heroScroll()
           splitHeadings()
@@ -49,6 +51,12 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
           featureIcons()
           teamPhotos()
           mapScene()
+          const stopCards = serviceCards()
+          footerStory()
+          return () => {
+            stopCards?.()
+            stopStory?.()
+          }
         },
         root
       )
@@ -68,7 +76,6 @@ function heroIntro() {
 
   gsap
     .timeline({ defaults: { ease: "power3.out" } })
-    .from("[data-header]", { yPercent: -100, duration: 0.8 })
     .from(
       "[data-hero-badge]",
       {
@@ -313,4 +320,124 @@ function mapScene() {
     ease: "bounce.out",
     scrollTrigger: { trigger: "[data-map]", start: "top 60%", once: true },
   })
+}
+
+// Service cards follow a fine pointer: the card tilts toward it, the icon
+// drifts the opposite way, and the corner glow swells in. Touch and coarse
+// pointers keep the plain CSS hover only.
+function serviceCards() {
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return
+  const stops: (() => void)[] = []
+
+  for (const card of gsap.utils.toArray<HTMLElement>("[data-service-card]")) {
+    const icon = card.querySelector<HTMLElement>("[data-service-icon]")
+    const quick = (target: Element, prop: string) =>
+      gsap.quickTo(target, prop, { duration: 0.6, ease: "power3.out" })
+    const rotateX = quick(card, "rotationX")
+    const rotateY = quick(card, "rotationY")
+    const iconX = icon && quick(icon, "x")
+    const iconY = icon && quick(icon, "y")
+    const glow = card.querySelector<HTMLElement>("[data-service-glow]")
+    if (glow) gsap.set(glow, { transformOrigin: "100% 100%" })
+    gsap.set(card, { transformPerspective: 900 })
+
+    const move = (event: PointerEvent) => {
+      const box = card.getBoundingClientRect()
+      const px = (event.clientX - box.left) / box.width
+      const py = (event.clientY - box.top) / box.height
+      rotateY((px - 0.5) * 8)
+      rotateX((0.5 - py) * 8)
+      iconX?.((px - 0.5) * -16)
+      iconY?.((py - 0.5) * -16)
+    }
+    const enter = () => {
+      if (glow)
+        gsap.fromTo(
+          glow,
+          { scale: 0.5 },
+          { scale: 1, duration: 0.9, ease: "power3.out", overwrite: true }
+        )
+      if (icon)
+        gsap.to(icon, { rotate: -6, duration: 0.5, ease: "back.out(3)" })
+    }
+    const leave = () => {
+      if (glow)
+        gsap.to(glow, { scale: 0.5, duration: 0.5, ease: "power3.inOut" })
+      rotateX(0)
+      rotateY(0)
+      iconX?.(0)
+      iconY?.(0)
+      if (icon) gsap.to(icon, { rotate: 0, duration: 0.5, ease: "power3.out" })
+    }
+
+    card.addEventListener("pointermove", move as EventListener)
+    card.addEventListener("pointerenter", enter)
+    card.addEventListener("pointerleave", leave)
+    stops.push(() => {
+      card.removeEventListener("pointermove", move as EventListener)
+      card.removeEventListener("pointerenter", enter)
+      card.removeEventListener("pointerleave", leave)
+    })
+  }
+
+  return () => stops.forEach((stop) => stop())
+}
+
+// The footer lives in the layout, outside this component's root, so it is
+// reached through the document. It plays once, the first time it nears the
+// viewport: the aurora fades in, the logo pops, the columns follow.
+function footerStory() {
+  const footer = document.querySelector("footer")
+  const grid = footer?.querySelector("[data-stagger]")
+  if (!footer || !grid) return
+  const [intro, quick, contact, group] = Array.from(grid.children)
+  const rule = footer.querySelector(":scope > div > div.h-px")
+  const bottom = rule?.nextElementSibling ?? null
+
+  const story = gsap.timeline({
+    defaults: { ease: "power3.out" },
+    scrollTrigger: { trigger: footer, start: "top 88%", once: true },
+  })
+  const aurora = footer.querySelector(".footer-aurora")
+  if (aurora) story.from(aurora, { autoAlpha: 0, duration: 2 }, 0)
+  const logo = intro?.firstElementChild
+  if (logo)
+    story.from(
+      logo,
+      {
+        autoAlpha: 0,
+        scale: 0.7,
+        rotate: -8,
+        duration: 0.9,
+        ease: "back.out(2)",
+      },
+      0.1
+    )
+  const tagline = intro?.querySelector("p")
+  if (tagline) story.from(tagline, { autoAlpha: 0, y: 16, duration: 0.8 }, 0.3)
+  const headings = [quick, contact, group]
+    .map((column) => column?.firstElementChild)
+    .filter((el): el is Element => Boolean(el))
+  story.from(
+    headings,
+    { autoAlpha: 0, y: 18, duration: 0.7, stagger: 0.12 },
+    0.25
+  )
+  const links = [quick, contact].flatMap((column) =>
+    Array.from(column?.children ?? []).slice(1)
+  )
+  story.from(
+    links,
+    { autoAlpha: 0, x: -18, duration: 0.7, stagger: 0.06 },
+    0.45
+  )
+  const companies = Array.from(group?.children ?? []).slice(1)
+  story.from(
+    companies,
+    { autoAlpha: 0, y: 24, duration: 0.8, stagger: 0.12 },
+    0.55
+  )
+  if (rule)
+    story.from(rule, { scaleX: 0, transformOrigin: "0 50%", duration: 1 }, 0.8)
+  if (bottom) story.from(bottom, { autoAlpha: 0, y: 12, duration: 0.7 }, 1)
 }

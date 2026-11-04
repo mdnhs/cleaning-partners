@@ -25,7 +25,11 @@ export function PostCard({
   readArticle: string
 }) {
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-[0px_10px_30px_0px_rgba(13,38,64,0.06)] transition-[translate,box-shadow] duration-300 hover:-translate-y-1.5 hover:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.12)]">
+    <article
+      data-card="light"
+      data-post-card
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-[0px_10px_30px_0px_rgba(13,38,64,0.06)] transition-[translate,box-shadow] duration-300 hover:-translate-y-1.5! hover:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.12)]"
+    >
       <div className="relative h-[230px] w-full overflow-hidden">
         <Image
           src={post.cover}

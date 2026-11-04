@@ -37,13 +37,14 @@ export function Blog({
             className={buttonVariants({
               variant: "outline-navy",
               size: "pill-sm",
+              className: "max-sm:w-full",
             })}
           >
             {viewAll.label}
           </Link>
         </div>
 
-        <ul data-stagger className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
             <li key={post.slug}>
               <PostCard post={post} readArticle={readArticle} />

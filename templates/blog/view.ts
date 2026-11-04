@@ -9,8 +9,6 @@ import type { PageHeroProps } from "@/components/home/page-hero"
 import type { SiteSources } from "@/templates/shared/sources"
 import {
   articleDates,
-  type ChromeView,
-  chromeView,
   contactSectionView,
   featuredArticle,
   filterCategories,
@@ -27,7 +25,6 @@ export const categoryPath = (name: string) =>
   `/blog?category=${encodeURIComponent(name)}`
 
 export type BlogView = {
-  chrome: ChromeView
   hero: PageHeroProps
   /** The list, without ?category= (the page adds it: request data). */
   posts: Omit<BlogListProps, "initialCategory" | "initialQuery">
@@ -39,7 +36,6 @@ export function blogView(s: SiteSources): BlogView {
   const { microcopy } = s.settings
   const featured = featuredArticle(s)
   return {
-    chrome: chromeView(s),
     hero: pageHeroView(s, page.hero),
     posts: {
       posts: s.articles.map((a) => postCard(s, a)),
@@ -67,7 +63,6 @@ export function blogView(s: SiteSources): BlogView {
 }
 
 export type ArticleView = {
-  chrome: ChromeView
   header: ArticleHeaderProps & { article: { slug: string } }
   body: ArticleBodyProps
   related: {
@@ -100,7 +95,6 @@ export function articleView(s: SiteSources, slug: string): ArticleView | null {
     href: hrefView(s, navigation.breadcrumbHomeHref),
   }
   return {
-    chrome: chromeView(s),
     header: {
       article: {
         slug,

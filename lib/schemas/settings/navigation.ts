@@ -11,6 +11,8 @@ export const navigationSettings = z.object({
   links: z.array(link).min(1),
   cta: link,
   menuAria: text,
+  /** Rows saved before this field read as the default (no migration needed). */
+  closeMenuAria: text.default("Close menu"),
   breadcrumbHome: text,
   breadcrumbHomeHref: href,
 })

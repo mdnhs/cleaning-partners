@@ -19,6 +19,7 @@ export function Stats({ stats }: StatsProps) {
               className="flex flex-col items-center gap-2 rounded-3xl border border-white/18 bg-white/8 px-6 py-8"
             >
               <p
+                data-countup
                 className={cn(
                   "font-heading font-extrabold text-white",
                   // Long word steps down so it fits the card

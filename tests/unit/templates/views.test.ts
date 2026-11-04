@@ -6,6 +6,7 @@ import { aboutView } from "@/templates/about/view"
 import { articleView, blogView } from "@/templates/blog/view"
 import { contactView } from "@/templates/contact/view"
 import { homeView } from "@/templates/home/view"
+import { chromeView } from "@/templates/shared/views"
 import { serviceDetailView, servicesView } from "@/templates/services/view"
 import {
   articleMetadata,
@@ -50,7 +51,7 @@ const { blogPosts, blogCategories } = frozenModule<{
 
 describe("view builders reproduce the static site's data (fixture sources)", () => {
   it("chrome: header, footer, locale", () => {
-    const { chrome } = homeView(s)
+    const chrome = chromeView(s)
     expect(chrome.locale).toBe("en")
     expect(chrome.header.topBar).toEqual({
       phone: "24hr contact: (085) 8062369",
@@ -69,14 +70,19 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       href: "#contact",
     })
     expect(chrome.header.menuAria).toBe("Open menu")
-    expect(chrome.header.links).toEqual([
+    // Services carries its hover list (tests/unit/header-services-menu.test.ts).
+    expect(
+      chrome.header.links.map(({ label, href }) => ({ label, href }))
+    ).toEqual([
       { label: "Home", href: "/" },
       { label: "About", href: "/about" },
       { label: "Services", href: "/services" },
       { label: "Blog", href: "/blog" },
       { label: "Contact", href: "/contact" },
     ])
-    expect(chrome.footer.quickLinks.links).toEqual(chrome.header.links)
+    expect(chrome.footer.quickLinks.links).toEqual(
+      chrome.header.links.map(({ label, href }) => ({ label, href }))
+    )
     expect(chrome.footer.contact.lines).toEqual([
       "Derryguile, Mountmellick",
       "Co. Laois, R32 YX49",
@@ -365,7 +371,7 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
 
 describe("chrome logo animation", () => {
   it("is absent unless settings.site.logoAnimation is set", () => {
-    const { chrome } = homeView(s)
+    const chrome = chromeView(s)
     expect(chrome.header.logo).not.toHaveProperty("animation")
     expect(chrome.footer.logo).not.toHaveProperty("animation")
   })
@@ -384,7 +390,7 @@ describe("chrome logo animation", () => {
         },
       },
     }
-    const { chrome } = homeView(animated)
+    const chrome = chromeView(animated)
     expect(chrome.header.logo.animation).toBe("/api/v1/media/file/a.json")
     expect(chrome.footer.logo.animation).toBe("/api/v1/media/file/a.json")
   })

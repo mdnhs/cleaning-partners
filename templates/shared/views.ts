@@ -27,7 +27,7 @@ import {
 import type { WithMedia } from "@/lib/media"
 import type { Link, PageHero, PageHeroText } from "@/lib/schemas/common"
 
-import type { SiteArticle, SiteSources } from "./sources"
+import type { ChromeSources, SiteArticle, SiteSources } from "./sources"
 
 type Pages = SiteSources["pages"]
 
@@ -37,18 +37,21 @@ type Pages = SiteSources["pages"]
 // pages render the same whatever dimensions the media rows carry.
 
 /** Settings.contact fields + derived tel: hrefs for {placeholders}. */
-export const placeholders = (s: SiteSources) =>
+export const placeholders = (s: Pick<ChromeSources, "settings">) =>
   contactPlaceholders(s.settings.contact)
 
 /**
  * An admin-editable href: {placeholders} filled, then re-checked; an unsafe
  * or unresolved result renders "#".
  */
-export const hrefView = (s: SiteSources, href: string) =>
+export const hrefView = (s: Pick<ChromeSources, "settings">, href: string) =>
   interpolateHref(href, placeholders(s))
 
 /** A stored { label, href } link with its label and href filled in. */
-export const linkView = (s: SiteSources, link: Link): Link => ({
+export const linkView = (
+  s: Pick<ChromeSources, "settings">,
+  link: Link
+): Link => ({
   label: interpolate(link.label, placeholders(s)),
   href: hrefView(s, link.href),
 })
@@ -64,15 +67,32 @@ export type ChromeView = {
   locale: string
 }
 
-export function chromeView(s: SiteSources): ChromeView {
+export function chromeView(s: ChromeSources): ChromeView {
   const { site, contact, navigation, footer } = s.settings
   const values = placeholders(s)
   const links = navigation.links.map((l) => linkView(s, l))
+  // Services gets a hover list of the published services (one link per
+  // service page); every other link, and the footer, stays plain.
+  const headerLinks = links.map((link) =>
+    link.href === "/services" && s.services.length > 0
+      ? {
+          ...link,
+          children: s.services.map((x) => ({
+            label: x.content.title,
+            href: `/services/${x.slug}`,
+            icon: x.content.icon.url,
+          })),
+        }
+      : link
+  )
   // `animation` only when set: without one the props are exactly what they
   // were before the field existed.
   const animation = site.logoAnimation
     ? { animation: site.logoAnimation.url }
     : {}
+  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${contact.addressLine1}, ${footer.addressLine2}`
+  )}`
   return {
     locale: site.locale,
     header: {
@@ -89,9 +109,10 @@ export function chromeView(s: SiteSources): ChromeView {
         href: hrefView(s, navigation.breadcrumbHomeHref),
         ...animation,
       },
-      links,
+      links: headerLinks,
       cta: linkView(s, navigation.cta),
       menuAria: navigation.menuAria,
+      closeMenuAria: navigation.closeMenuAria,
     },
     footer: {
       logo: { src: site.logo.url, alt: site.logoAlt, ...animation },
@@ -104,6 +125,14 @@ export function chromeView(s: SiteSources): ChromeView {
           footer.addressLine2,
           interpolate(footer.contactOfficeLine, values),
           contact.email,
+        ],
+        // One destination per line (null = plain text): both address lines
+        // open the place on a map, the phone line dials, the email composes.
+        hrefs: [
+          mapsHref,
+          mapsHref,
+          String(values.officeHref),
+          `mailto:${contact.email}`,
         ],
       },
       group: {
@@ -186,6 +215,8 @@ export function testimonialsView(s: SiteSources): TestimonialsProps {
     eyebrow: section.eyebrow,
     title: section.title,
     verifiedLabel: section.verifiedLabel,
+    prevLabel: section.prevLabel,
+    nextLabel: section.nextLabel,
     items: s.testimonials.map((t) => ({
       name: t.name,
       initials: t.initials,

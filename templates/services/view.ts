@@ -9,8 +9,6 @@ import type { ServicesGridProps } from "@/components/services/services-grid"
 import { interpolate } from "@/lib/interpolate"
 import type { SiteSources } from "@/templates/shared/sources"
 import {
-  type ChromeView,
-  chromeView,
   clientsView,
   contactSectionView,
   hrefView,
@@ -27,7 +25,6 @@ import {
 export { servicePath }
 
 export type ServicesView = {
-  chrome: ChromeView
   hero: PageHeroProps
   grid: ServicesGridProps
   whyChooseUs: WhyChooseUsProps
@@ -40,7 +37,6 @@ export function servicesView(s: SiteSources): ServicesView {
   const page = s.pages.services.data
   const { grid } = page
   return {
-    chrome: chromeView(s),
     hero: pageHeroView(s, page.hero),
     grid: servicesGridView(s, grid),
     whyChooseUs: whyChooseUsView(s),
@@ -51,7 +47,6 @@ export function servicesView(s: SiteSources): ServicesView {
 }
 
 export type ServiceDetailView = {
-  chrome: ChromeView
   hero: PageHeroProps
   overview: ServiceOverviewProps
   howItWorks: HowItWorksProps
@@ -72,7 +67,6 @@ export function serviceDetailView(
   const { contact, microcopy } = s.settings
   const values = placeholders(s)
   return {
-    chrome: chromeView(s),
     hero: pageHeroView(
       s,
       {

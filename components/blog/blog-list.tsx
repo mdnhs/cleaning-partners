@@ -176,10 +176,7 @@ export function BlogList({
         )}
 
         {visible.length > 0 ? (
-          <ul
-            data-stagger
-            className="grid w-full gap-6 md:grid-cols-2 lg:grid-cols-3"
-          >
+          <ul className="grid w-full gap-6 md:grid-cols-2 lg:grid-cols-3">
             {visible.map((post) => (
               <li key={post.slug}>
                 <PostCard post={post} readArticle={labels.readArticle} />

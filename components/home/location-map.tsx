@@ -114,6 +114,12 @@ export function LocationMap({
           pattern={tilePattern}
         />
       </div>
+      {/* The top edge melts into the white section above: white fading out
+          over the first 14rem of the map. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[linear-gradient(to_bottom,rgba(255,255,255,1)_0%,rgba(255,255,255,0.97)_10%,rgba(255,255,255,0.88)_22%,rgba(255,255,255,0.72)_36%,rgba(255,255,255,0.5)_52%,rgba(255,255,255,0.28)_68%,rgba(255,255,255,0.12)_83%,rgba(255,255,255,0.03)_93%,rgba(255,255,255,0)_100%)]"
+      />
 
       <a
         href={href}

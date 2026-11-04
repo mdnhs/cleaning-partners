@@ -2,10 +2,7 @@ import { ArticleBody, ArticleHeader } from "@/components/blog/article"
 import { RelatedPosts } from "@/components/blog/related-posts"
 import { Contact } from "@/components/home/contact"
 import { PageHero } from "@/components/home/page-hero"
-import { SiteFooter } from "@/components/home/site-footer"
-import { SiteHeader } from "@/components/home/site-header"
 import { HomeMotion } from "@/components/motion/home-motion"
-import { SiteLocale } from "@/components/site-locale"
 
 import type { ArticleView, BlogView } from "./view"
 
@@ -25,16 +22,13 @@ export function BlogTemplate({
     <>
       <HomeMotion>
         <div className="bg-white text-ink">
-          <SiteHeader {...view.chrome.header} />
           <main>
             <PageHero {...view.hero} />
             {posts}
             <Contact {...view.contact} />
           </main>
-          <SiteFooter {...view.chrome.footer} />
         </div>
       </HomeMotion>
-      <SiteLocale lang={view.chrome.locale} />
     </>
   )
 }
@@ -45,17 +39,14 @@ export function ArticleTemplate({ view }: { view: ArticleView }) {
     <>
       <HomeMotion>
         <div className="bg-white text-ink">
-          <SiteHeader {...view.chrome.header} />
           <main>
             <ArticleHeader {...view.header} />
             <ArticleBody {...view.body} />
             <RelatedPosts {...view.related} />
             <Contact {...view.contact} />
           </main>
-          <SiteFooter {...view.chrome.footer} />
         </div>
       </HomeMotion>
-      <SiteLocale lang={view.chrome.locale} />
     </>
   )
 }

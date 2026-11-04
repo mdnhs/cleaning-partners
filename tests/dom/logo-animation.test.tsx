@@ -53,6 +53,7 @@ const header = (animation?: string): SiteHeaderProps => ({
   links: [{ label: "About", href: "/about" }],
   cta: { label: "Quote", href: "#contact" },
   menuAria: "Menu",
+  closeMenuAria: "Close",
 })
 
 const footer = (animation?: string): SiteFooterProps => ({

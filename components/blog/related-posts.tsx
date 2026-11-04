@@ -42,14 +42,15 @@ export function RelatedPosts({
             className={buttonVariants({
               variant: "outline-navy",
               size: "pill-sm",
-              className: "px-[22px] py-[11px] text-[15px]/[normal]",
+              className:
+                "px-[22px] py-[11px] text-[15px]/[normal] max-sm:w-full",
             })}
           >
             {viewAll.label}
           </Link>
         </div>
 
-        <ul data-stagger className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((item) => (
             <li key={item.slug}>
               <PostCard post={item} readArticle={readArticle} />

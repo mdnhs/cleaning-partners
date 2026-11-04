@@ -11,7 +11,8 @@ export type SiteFooterProps = {
   logo: { src: string; alt: string; animation?: string }
   tagline: string
   quickLinks: { title: string; links: FooterLink[] }
-  contact: { title: string; lines: string[] }
+  /** hrefs[i] is the destination of lines[i]; a missing or empty one is plain text. */
+  contact: { title: string; lines: string[]; hrefs?: (string | null)[] }
   group: {
     title: string
     companies: {
@@ -24,6 +25,48 @@ export type SiteFooterProps = {
   }
   copyright: string
   legal: { privacy: FooterLink; terms: FooterLink; login?: FooterLink }
+}
+
+const FOOTER_LINK_CLASS =
+  "group/link inline-flex w-fit items-center text-[15px] leading-[1.5] [overflow-wrap:anywhere] text-white/80 transition-[color,translate] duration-300 ease-out hover:text-white focus-visible:text-white motion-safe:hover:translate-x-1 motion-safe:focus-visible:translate-x-1"
+
+/**
+ * A footer link that answers the pointer: a brand-coloured bar grows in
+ * front of the text, the text brightens and slides a little to the right.
+ * Page links use next/link; maps, phone and email are plain anchors.
+ */
+function FooterLink({
+  href,
+  external,
+  children,
+}: {
+  href: string
+  external?: boolean
+  children: React.ReactNode
+}) {
+  const bar = (
+    <span
+      aria-hidden
+      className="h-0.5 w-0 shrink-0 rounded-full bg-brand transition-[width,margin] duration-300 ease-out group-hover/link:mr-2 group-hover/link:w-3 group-focus-visible/link:mr-2 group-focus-visible/link:w-3"
+    />
+  )
+  if (/^(https?:|mailto:|tel:)/.test(href))
+    return (
+      <a
+        href={href}
+        className={FOOTER_LINK_CLASS}
+        {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
+      >
+        {bar}
+        {children}
+      </a>
+    )
+  return (
+    <Link href={href} className={FOOTER_LINK_CLASS}>
+      {bar}
+      {children}
+    </Link>
+  )
 }
 
 function ColumnTitle({ children }: { children: React.ReactNode }) {
@@ -44,13 +87,21 @@ export function SiteFooter({
   legal,
 }: SiteFooterProps) {
   return (
-    <footer className="bg-navy-dark pt-20 pb-8">
+    <footer className="relative isolate overflow-hidden bg-navy-dark pt-20 pb-8">
+      <div
+        aria-hidden="true"
+        className="footer-aurora pointer-events-none absolute inset-0 -z-10"
+      >
+        <span />
+        <span />
+        <span />
+      </div>
       <Container className="flex flex-col gap-12">
         <div
           data-stagger
-          className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[340px_1fr_1fr_300px] lg:gap-14"
+          className="grid grid-cols-2 gap-x-6 gap-y-10 sm:gap-12 lg:grid-cols-[340px_1fr_1fr_300px] lg:gap-14"
         >
-          <div className="flex flex-col items-start gap-5">
+          <div className="flex flex-col items-start gap-5 max-sm:col-span-2">
             <div className="rounded-2xl bg-white px-3 py-2">
               <div className="relative h-[76px] w-[84px]">
                 <Image
@@ -71,26 +122,36 @@ export function SiteFooter({
           <nav className="flex flex-col gap-3.5">
             <ColumnTitle>{quickLinks.title}</ColumnTitle>
             {quickLinks.links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-[15px] leading-[1.5] text-white/80 hover:text-white"
-              >
+              <FooterLink key={link.href} href={link.href}>
                 {link.label}
-              </Link>
+              </FooterLink>
             ))}
           </nav>
 
           <div className="flex flex-col gap-3.5">
             <ColumnTitle>{contact.title}</ColumnTitle>
-            {contact.lines.map((line) => (
-              <p key={line} className="text-[15px] leading-[1.5] text-white/80">
-                {line}
-              </p>
-            ))}
+            {contact.lines.map((line, index) => {
+              const href = contact.hrefs?.[index]
+              return href ? (
+                <FooterLink
+                  key={line}
+                  href={href}
+                  external={href.startsWith("http")}
+                >
+                  {line}
+                </FooterLink>
+              ) : (
+                <p
+                  key={line}
+                  className="text-[15px] leading-[1.5] [overflow-wrap:anywhere] text-white/80"
+                >
+                  {line}
+                </p>
+              )
+            })}
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 max-sm:col-span-2">
             <ColumnTitle>{group.title}</ColumnTitle>
             {group.companies.map((company) => (
               <a
@@ -132,17 +193,26 @@ export function SiteFooter({
         <div className="flex flex-col justify-between gap-2 text-sm/[normal] text-white/60 sm:flex-row">
           <p>{copyright}</p>
           <p className="flex gap-3">
-            <Link href={legal.privacy.href} className="hover:text-white">
+            <Link
+              href={legal.privacy.href}
+              className="underline-offset-4 transition-colors duration-200 hover:text-white hover:underline"
+            >
               {legal.privacy.label}
             </Link>
             <span aria-hidden>·</span>
-            <Link href={legal.terms.href} className="hover:text-white">
+            <Link
+              href={legal.terms.href}
+              className="underline-offset-4 transition-colors duration-200 hover:text-white hover:underline"
+            >
               {legal.terms.label}
             </Link>
             {legal.login ? (
               <>
                 <span aria-hidden>·</span>
-                <Link href={legal.login.href} className="hover:text-white">
+                <Link
+                  href={legal.login.href}
+                  className="underline-offset-4 transition-colors duration-200 hover:text-white hover:underline"
+                >
                   {legal.login.label}
                 </Link>
               </>

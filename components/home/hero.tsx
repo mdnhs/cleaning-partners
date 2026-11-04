@@ -81,7 +81,11 @@ export function Hero({
         >
           <a
             href={primaryCta.href}
-            className={buttonVariants({ variant: "brand", size: "pill" })}
+            className={buttonVariants({
+              variant: "brand",
+              size: "pill",
+              className: "max-sm:w-full",
+            })}
           >
             {primaryCta.label}
           </a>
@@ -90,6 +94,7 @@ export function Hero({
             className={buttonVariants({
               variant: "outline-light",
               size: "pill",
+              className: "max-sm:w-full",
             })}
           >
             {secondaryCta.label}

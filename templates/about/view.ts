@@ -8,8 +8,6 @@ import type { TestimonialsProps } from "@/components/home/testimonials"
 import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
 import type { SiteSources } from "@/templates/shared/sources"
 import {
-  type ChromeView,
-  chromeView,
   clientsView,
   contactSectionView,
   ourStoryView,
@@ -21,7 +19,6 @@ import {
 } from "@/templates/shared/views"
 
 export type AboutView = {
-  chrome: ChromeView
   hero: PageHeroProps
   story: OurStoryProps
   stats: StatsProps
@@ -36,7 +33,6 @@ export function aboutView(s: SiteSources): AboutView {
   const page = s.pages.about.data
   const { story } = page
   return {
-    chrome: chromeView(s),
     hero: pageHeroView(s, page.hero),
     story: ourStoryView(s, story),
     stats: statsView(s, page.stats),

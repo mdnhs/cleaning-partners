@@ -103,7 +103,11 @@ export function Services({
             <p className="text-base text-body italic">{moreText}</p>
             <Link
               href={cta.href}
-              className={buttonVariants({ variant: "navy", size: "pill" })}
+              className={buttonVariants({
+                variant: "navy",
+                size: "pill",
+                className: "max-sm:w-full",
+              })}
             >
               {cta.label}
             </Link>

@@ -12,6 +12,9 @@ export const testimonialsSectionSettings = z.object({
   title: text,
   starsAria: text,
   verifiedLabel: text,
+  /** Rows saved before these fields read as the defaults (no migration needed). */
+  prevLabel: text.default("Previous testimonial"),
+  nextLabel: text.default("Next testimonial"),
 })
 export type TestimonialsSectionSettings = z.infer<
   typeof testimonialsSectionSettings

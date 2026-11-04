@@ -49,12 +49,13 @@ export function Team({
         />
 
         <ul
-          data-stagger
+          data-team-list
           className="grid w-full gap-6 md:grid-cols-2 lg:grid-cols-3"
         >
           {members.map((member) => (
             <li
               key={member.name}
+              data-card="light"
               className="flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0px_20px_40px_0px_rgba(0,0,0,0.18)]"
             >
               <div

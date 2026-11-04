@@ -142,6 +142,10 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         label: "Menu button label (screen readers)",
         help: "Not visible; read aloud by assistive technology.",
       },
+      closeMenuAria: {
+        label: "Close menu button label (screen readers)",
+        help: "Not visible; read aloud by assistive technology.",
+      },
       breadcrumbHome: { label: "Breadcrumb home text" },
       breadcrumbHomeHref: { label: "Breadcrumb home link" },
     },
@@ -155,7 +159,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Call to action",
           description: "The highlighted button at the end of the menu.",
-          fields: ["cta", "menuAria"],
+          fields: ["cta", "menuAria", "closeMenuAria"],
         },
         {
           title: "Breadcrumbs",
@@ -333,6 +337,14 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         width: "full",
       },
       verifiedLabel: { label: "Verified label" },
+      prevLabel: {
+        label: "Previous button label (screen readers)",
+        help: "Not visible; read aloud by assistive technology.",
+      },
+      nextLabel: {
+        label: "Next button label (screen readers)",
+        help: "Not visible; read aloud by assistive technology.",
+      },
     },
     groups: {
       "": [
@@ -345,7 +357,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Labels",
           description: "Small text on each testimonial.",
-          fields: ["starsAria", "verifiedLabel"],
+          fields: ["starsAria", "verifiedLabel", "prevLabel", "nextLabel"],
         },
       ],
     },

@@ -26,6 +26,7 @@ const props = {
   ],
   cta: { label: "Ask", href: "#contact" },
   menuAria: "Menu",
+  closeMenuAria: "Close",
 }
 
 const current = () =>

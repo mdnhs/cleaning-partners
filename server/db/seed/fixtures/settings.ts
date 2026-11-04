@@ -52,6 +52,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       ],
       cta: { label: "Get a Quote", href: "#contact" },
       menuAria: "Open menu",
+      closeMenuAria: "Close menu",
       breadcrumbHome: "Home",
       breadcrumbHomeHref: "/",
     },
@@ -108,6 +109,8 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       title: "What Our Customers Say",
       starsAria: "{rating} out of 5 stars",
       verifiedLabel: "Verified customer",
+      prevLabel: "Previous testimonial",
+      nextLabel: "Next testimonial",
     },
     "sections.team": {
       background: media("/images/home/meet-the-team.png"),
@@ -212,6 +215,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         sameAs: [],
       },
       robots: "index",
+      preferredHost: "off",
       verification: { google: "", bing: "" },
     },
     consent: {
