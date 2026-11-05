@@ -153,17 +153,18 @@ Owner decisions and the go-live checklist are in `docs/launch.md`.
 The release that adds Careers (migrations `0028_job_postings`,
 `0029_careers_nav_link`) adds a fixed page `careers`, a settings key
 `careers` and starter job postings. Migrations create the table and add the
-"Careers" header link; the page row, the settings row and the starter jobs
-are seed data, so on a site that already has content run once after the
-deploy (it only inserts missing rows and never changes existing ones):
+"Careers" header link. The container start (`seed.mjs --if-empty`) adds the
+missing fixed page row and settings row on its own; it never adds the
+starter jobs to a site that already has content. Starter jobs are optional:
+to add them, run once (it only inserts missing rows, including any demo
+content deleted earlier, and never changes existing ones):
 
 ```sh
 docker compose exec app node scripts/dist/seed.mjs --allow-production
 ```
 
-Until it has run, every public page fails with "Missing published content:
-page careers". Then review the starter jobs under Admin › Careers and close
-or edit them, and set the recipients under Settings › Job applications.
+Then set the recipients under Settings › Job applications and add jobs
+under Admin › Careers.
 
 The application form uploads a CV of up to 5 MB, so the public endpoint
 `/api/v1/public/applications` takes bodies up to about 5.1 MB (the app

@@ -4,8 +4,9 @@
 // databases unless --allow-production.
 //   dev:       pnpm db:seed
 //   container: node scripts/dist/seed.mjs --if-empty   (docker-entrypoint.sh,
-//              every start: seeds only a database with no pages, else logs
-//              that it skipped; never changes existing data, so it needs no
+//              every start: seeds a database with no pages; otherwise adds
+//              only missing fixed pages and settings keys a new release
+//              needs; never changes existing data, so it needs no
 //              --allow-production)
 //              node scripts/dist/seed.mjs --allow-production   (manual: adds
 //              missing fixture rows to a database that already has content)
@@ -32,10 +33,17 @@ await runScript("db:seed", async () => {
   })
   if (values["if-empty"]) {
     const result = await seedIfEmpty(getDb())
+    if (result.seeded) {
+      console.log(
+        `[db:seed] empty database (no pages): content seeded (${summary(result.report)})`
+      )
+      return
+    }
+    const { media, settings, pages } = result.filled
     console.log(
-      result.seeded
-        ? `[db:seed] empty database (no pages): content seeded (${summary(result.report)})`
-        : `[db:seed] ${result.pages} page(s) already exist: auto-seed skipped, no data changed`
+      media + settings + pages === 0
+        ? `[db:seed] ${result.pages} page(s) already exist: auto-seed skipped, no data changed`
+        : `[db:seed] ${result.pages} page(s) already exist: added the fixed rows this release needs (pages +${pages}, settings +${settings}, media +${media}); nothing else changed`
     )
     return
   }

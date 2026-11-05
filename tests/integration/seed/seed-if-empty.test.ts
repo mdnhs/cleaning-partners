@@ -1,10 +1,17 @@
 import { spawnSync } from "node:child_process"
 
-import { eq, sql } from "drizzle-orm"
+import { eq, like, sql } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { getDb } from "@/server/db/client"
-import { pages, services } from "@/server/db/schema"
+import {
+  jobPostings,
+  media,
+  mediaUsages,
+  pages,
+  services,
+  settings,
+} from "@/server/db/schema"
 import { seedContent, seedIfEmpty } from "@/server/db/seed"
 
 import { NON_DISPOSABLE_URL, resetDb, TEST_DATABASE_URL } from "../db"
@@ -38,7 +45,11 @@ describe("seedIfEmpty (container auto-seed, spec §1.2 #6)", () => {
 
     const result = await seedIfEmpty(getDb())
 
-    expect(result).toEqual({ seeded: false, pages: await count("pages") })
+    expect(result).toEqual({
+      seeded: false,
+      pages: await count("pages"),
+      filled: { media: 0, settings: 0, pages: 0 },
+    })
     expect(await count("services")).toBe(before)
     const [home] = await getDb()
       .select({ status: pages.status })
@@ -53,7 +64,47 @@ describe("seedIfEmpty (container auto-seed, spec §1.2 #6)", () => {
     expect(await seedIfEmpty(getDb())).toEqual({
       seeded: false,
       pages: pagesAfterFirst,
+      filled: { media: 0, settings: 0, pages: 0 },
     })
+  })
+
+  // A release that adds a fixed page (careers) to a site that already has
+  // content: every public page loads the fixed pages, so a missing row took
+  // the whole site down (500) until someone ran db:seed by hand.
+  it("adds fixed pages and settings keys a new release brings, and nothing else", async () => {
+    await seedContent(getDb())
+    const [first] = await getDb().select().from(services).limit(1)
+    await getDb().delete(services).where(eq(services.id, first.id))
+    await getDb().delete(pages).where(eq(pages.key, "careers"))
+    await getDb().delete(settings).where(eq(settings.key, "careers"))
+    await getDb().delete(jobPostings)
+    await getDb().delete(mediaUsages) // the seed recomputes the ledger
+    await getDb()
+      .delete(media)
+      .where(like(media.key, "/images/careers/%"))
+    // A static library image no fixed page or setting uses, deleted by an
+    // admin: it stays deleted.
+    const unused = "/images/blog/search.svg"
+    await getDb().delete(media).where(eq(media.key, unused))
+    const servicesBefore = await count("services")
+
+    const result = await seedIfEmpty(getDb())
+
+    expect(result.seeded).toBe(false)
+    expect(result).toMatchObject({ filled: { pages: 1, settings: 1 } })
+    const [careers] = await getDb()
+      .select({ status: pages.status })
+      .from(pages)
+      .where(eq(pages.key, "careers"))
+    expect(careers?.status).toBe("published")
+    expect(
+      await getDb().select().from(settings).where(eq(settings.key, "careers"))
+    ).toHaveLength(1)
+    expect(await count("services")).toBe(servicesBefore)
+    expect(await count("job_postings")).toBe(0)
+    expect(
+      await getDb().select().from(media).where(eq(media.key, unused))
+    ).toHaveLength(0)
   })
 })
 
@@ -88,7 +139,18 @@ describe("db:seed --if-empty (what docker-entrypoint.sh runs)", () => {
     )
   }, 60_000)
 
-  it("needs no --allow-production (it never writes to a database with content)", () => {
+  it("adds a missing fixed page to a database with content and says so", async () => {
+    await seedContent(getDb())
+    await getDb().delete(pages).where(eq(pages.key, "careers"))
+    const n = await count("pages")
+    const result = run(TEST_DATABASE_URL)
+    expect(result.status, result.stderr).toBe(0)
+    expect(result.stdout).toContain(
+      `[db:seed] ${n} page(s) already exist: added the fixed rows this release needs (pages +1, settings +0, media +0); nothing else changed`
+    )
+  }, 60_000)
+
+  it("needs no --allow-production (it only adds missing fixed rows to a database with content)", () => {
     // Non-disposable, unresolvable host: the guard must not reject it first;
     // the run then fails on the connection, not on the disposable check.
     const result = run(NON_DISPOSABLE_URL)
