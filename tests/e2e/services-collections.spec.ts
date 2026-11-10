@@ -29,8 +29,7 @@ async function publicText(browser: Browser, path: string) {
   const anonymous = await browser.newContext()
   try {
     const page = await anonymous.newPage()
-    // The text is in the server HTML: no need to wait for every image to load.
-    await page.goto(path, { waitUntil: "domcontentloaded" })
+    await page.goto(path)
     return (await page.locator("body").innerText()).replace(/\s+/g, " ")
   } finally {
     await anonymous.close()
@@ -100,13 +99,22 @@ test("create a service → publish → /services shows it", async ({
   await expect(dialog).toBeHidden()
 
   await expect
-    .poll(async () =>
-      (await publicText(browser, "/services")).includes(SERVICE_TITLE)
+    .poll(
+      async () =>
+        (await publicText(browser, "/services")).includes(SERVICE_TITLE),
+      { timeout: 20_000 }
     )
     .toBe(true)
-  expect(await publicText(browser, `/services/${SERVICE_SLUG}`)).toContain(
-    "About gutter cleaning"
-  )
+  // The detail page refreshes on its own schedule: poll it too.
+  await expect
+    .poll(
+      async () =>
+        (await publicText(browser, `/services/${SERVICE_SLUG}`)).includes(
+          "About gutter cleaning"
+        ),
+      { timeout: 20_000 }
+    )
+    .toBe(true)
 })
 
 const TESTIMONIAL = "Thomas Murray"

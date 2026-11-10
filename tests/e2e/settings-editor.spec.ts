@@ -31,7 +31,7 @@ const EDITED = "Why Households Choose Us"
 async function publicTitles(browser: Browser) {
   const anonymous = await browser.newContext()
   const page = await anonymous.newPage()
-  await page.goto("/", { waitUntil: "domcontentloaded" })
+  await page.goto("/")
   const titles = await page.getByRole("heading", { level: 2 }).allTextContents()
   await anonymous.close()
   return titles.map((t) => t.replace(/\s+/g, " ").trim())
