@@ -28,13 +28,23 @@ const KEY = "sections.whyChooseUs"
 const ORIGINAL = "Why Choose Us?"
 const EDITED = "Why Households Choose Us"
 
+// The h2 texts in the server's HTML (no browser rendering: what a publish
+// changes is in that HTML, and a slow CI runner should not decide the test).
 async function publicTitles(browser: Browser) {
   const anonymous = await browser.newContext()
-  const page = await anonymous.newPage()
-  await page.goto("/")
-  const titles = await page.getByRole("heading", { level: 2 }).allTextContents()
-  await anonymous.close()
-  return titles.map((t) => t.replace(/\s+/g, " ").trim())
+  try {
+    const html = await (await anonymous.request.get("/")).text()
+    return [...html.matchAll(/<h2[^>]*>([\s\S]*?)<\/h2>/g)].map((m) =>
+      m[1]
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&#x27;/g, "'")
+        .replace(/&amp;/g, "&")
+        .replace(/\s+/g, " ")
+        .trim()
+    )
+  } finally {
+    await anonymous.close()
+  }
 }
 
 test("/admin/settings opens Identity (site)", async ({ page }) => {

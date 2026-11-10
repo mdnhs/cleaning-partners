@@ -24,13 +24,21 @@ async function signIn(page: Page, email: string, name: string) {
   ).toBeVisible()
 }
 
-/** Public page text, fetched as an anonymous visitor. */
+/**
+ * Public page text, fetched as an anonymous visitor. The server's HTML is read
+ * directly (no browser rendering): what a publish changes is in that HTML, and
+ * waiting for a slow CI runner to load every image and script is not the test.
+ */
 async function publicText(browser: Browser, path: string) {
   const anonymous = await browser.newContext()
   try {
-    const page = await anonymous.newPage()
-    await page.goto(path)
-    return (await page.locator("body").innerText()).replace(/\s+/g, " ")
+    const html = await (await anonymous.request.get(path)).text()
+    return html
+      .replace(/<(script|style)[\s\S]*?<\/\1>/g, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&#x27;/g, "'")
+      .replace(/&amp;/g, "&")
+      .replace(/\s+/g, " ")
   } finally {
     await anonymous.close()
   }
