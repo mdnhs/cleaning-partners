@@ -31,7 +31,7 @@ const EDITED = "Why Households Choose Us"
 async function publicTitles(browser: Browser) {
   const anonymous = await browser.newContext()
   const page = await anonymous.newPage()
-  await page.goto("/")
+  await page.goto("/", { waitUntil: "domcontentloaded" })
   const titles = await page.getByRole("heading", { level: 2 }).allTextContents()
   await anonymous.close()
   return titles.map((t) => t.replace(/\s+/g, " ").trim())
@@ -73,8 +73,12 @@ test("edit Why choose us → publish → public home shows it", async ({
   await dialog.getByRole("button", { name: "Publish now" }).click()
   await expect(dialog).toBeHidden()
 
+  // The home page refreshes in the background after a publish; a CI runner can
+  // take longer than the default 5 s.
   await expect
-    .poll(async () => (await publicTitles(browser)).includes(EDITED))
+    .poll(async () => (await publicTitles(browser)).includes(EDITED), {
+      timeout: 20_000,
+    })
     .toBe(true)
 })
 

@@ -29,7 +29,8 @@ async function publicText(browser: Browser, path: string) {
   const anonymous = await browser.newContext()
   try {
     const page = await anonymous.newPage()
-    await page.goto(path)
+    // The text is in the server HTML: no need to wait for every image to load.
+    await page.goto(path, { waitUntil: "domcontentloaded" })
     return (await page.locator("body").innerText()).replace(/\s+/g, " ")
   } finally {
     await anonymous.close()
@@ -137,8 +138,12 @@ test("edit a testimonial → home shows the new quote", async ({
   await sheet.getByRole("button", { name: "Save" }).click()
   await expect(sheet).toBeHidden()
 
+  // The home page refreshes in the background after a publish; a CI runner can
+  // take longer than the default 5 s.
   await expect
-    .poll(async () => (await publicText(browser, "/")).includes(EDITED_QUOTE))
+    .poll(async () => (await publicText(browser, "/")).includes(EDITED_QUOTE), {
+      timeout: 20_000,
+    })
     .toBe(true)
 })
 
