@@ -11,7 +11,8 @@ import {
   Lock,
 } from "lucide-react"
 import Link from "next/link"
-import { useId, useRef, useState, type ReactNode } from "react"
+import { animate } from "motion"
+import { useEffect, useId, useRef, useState, type ReactNode } from "react"
 
 import { useTurnstile } from "@/components/contact/use-turnstile"
 import {
@@ -50,6 +51,7 @@ const REQUIRED_TEXT: FieldKey[] = [
   "experience",
 ]
 const REQUIRED_YES_NO: FieldKey[] = ["gardaVetting", "livedAbroad", "transport"]
+
 /** Keys whose errors show beside a field; any other 422 key gets the generic message. */
 const SHOWN_FIELDS = new Set<string>([
   ...REQUIRED_TEXT,
@@ -97,18 +99,24 @@ function ErrorText({ id, message }: { id: string; message?: string }) {
 
 function Section({
   step,
+  current = true,
   children,
 }: {
   step: Form["sections"][keyof Form["sections"]]
+  /** On phones only the current step shows (the form is a wizard there) */
+  current?: boolean
   children: ReactNode
 }) {
   const id = useId()
   return (
     <section
       aria-labelledby={id}
-      className="flex flex-col gap-5 border-t border-line pt-9 first:border-t-0 first:pt-0"
+      className={cn(
+        "flex flex-col gap-5 max-md:rounded-[20px] max-md:border max-md:border-line max-md:bg-white max-md:p-5 md:border-t md:border-line md:pt-9 md:first:border-t-0 md:first:pt-0",
+        !current && "max-md:hidden"
+      )}
     >
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-3.5 max-md:hidden">
         <span className="flex size-[38px] shrink-0 items-center justify-center rounded-full bg-brand font-heading text-[15px] leading-[1.2] font-extrabold text-white">
           {step.number}
         </span>
@@ -126,7 +134,9 @@ function Section({
           ) : null}
         </div>
       </div>
-      <div className="grid gap-x-4 gap-y-5 md:grid-cols-2">{children}</div>
+      <div className="grid gap-x-4 gap-y-4 md:grid-cols-2 md:gap-y-5">
+        {children}
+      </div>
     </section>
   )
 }
@@ -157,7 +167,25 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
   )
   const [message, setMessage] = useState<string | null>(null)
   const [cv, setCv] = useState<File | null>(null)
-
+  const [step, setStep] = useState(0)
+  /** The phone wizard: the fields each step owns, in step order. */
+  const STEP_KEYS: string[][] = [
+    ["firstName", "surname", "email", "phone", "address", "town", "eircode"],
+    ["rightToWork", "permissionExpiry", "gardaVetting", "livedAbroad"],
+    ["startDate", "hoursPerWeek", "shifts", "transport"],
+    ["experience", "healthcareExperience", "recentRole", "certificates"],
+    ["cv", "note", "heardAbout"],
+    ["declaration", "privacy", "keepOnFile"],
+  ]
+  const SECTION_KEYS: (keyof Form["sections"])[] = [
+    "personal",
+    "eligibility",
+    "availability",
+    "experience",
+    "cv",
+    "consent",
+  ]
+  const LAST_STEP = SECTION_KEYS.length - 1
   const idFor = (key: string) => `${uid}-${key}`
   const errorId = (key: string) => `${uid}-${key}-error`
   const invalid = (key: string) =>
@@ -176,6 +204,50 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
     if (!data.get("declaration")) out.declaration = form.errors.required
     if (!data.get("privacy")) out.privacy = form.errors.required
     return out
+  }
+
+  // Phone wizard: the new step slides in from the side it was reached from.
+  const lastStep = useRef(0)
+  useEffect(() => {
+    const from = lastStep.current
+    lastStep.current = step
+    if (from === step) return
+    if (!window.matchMedia("(max-width: 767px)").matches) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const section = formRef.current?.querySelectorAll("section")[step]
+    if (!section) return
+    animate(
+      section,
+      {
+        opacity: [0, 1],
+        transform: [
+          `translateX(${step > from ? 28 : -28}px)`,
+          "translateX(0px)",
+        ],
+      },
+      { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
+    )
+  }, [step])
+
+  /** Phone wizard: check this step's fields, then move on. */
+  const next = () => {
+    const form = formRef.current
+    if (!form) return
+    const found = validate(new FormData(form))
+    const own: FieldErrors = {}
+    for (const key of STEP_KEYS[step]) if (found[key]) own[key] = found[key]
+    setErrors(own)
+    const first = Object.keys(own)[0]
+    if (first) {
+      form.querySelector<HTMLElement>(`[name="${first}"]`)?.focus()
+      return
+    }
+    setStep(step + 1)
+    window.scrollTo({ top: 0 })
+  }
+  const back = () => {
+    setStep(step - 1)
+    window.scrollTo({ top: 0 })
   }
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -232,15 +304,54 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
     return (
       <div
         role="status"
-        className="flex flex-col items-center gap-4 self-start rounded-3xl border border-line bg-white px-6 py-14 text-center"
+        className="flex flex-col items-center gap-5 text-center md:gap-4 md:self-start md:rounded-3xl md:border md:border-line md:bg-white md:px-6 md:py-14"
       >
-        <CheckCircle2 aria-hidden className="size-12 text-brand" />
-        <h2 className="font-heading text-2xl font-bold text-ink">
+        <span className="flex size-[72px] items-center justify-center rounded-full bg-brand text-white md:size-12 md:bg-transparent md:text-brand">
+          <CheckCircle2 aria-hidden className="size-9 md:size-12" />
+        </span>
+        <h2 className="font-heading text-[28px] leading-[1.15] font-bold tracking-[-0.084px] text-ink md:text-2xl md:tracking-normal">
           {form.success.title}
         </h2>
         <p className="max-w-[520px] text-base leading-[1.6] text-body">
           {form.success.body}
         </p>
+        <div className="flex w-full flex-col gap-4 rounded-[20px] border border-line bg-white p-5 text-left md:hidden">
+          <p className="font-heading text-[17px]/[1.3] font-bold text-ink">
+            {view.sidebar.nextTitle}
+          </p>
+          <ol className="flex flex-col">
+            {view.sidebar.nextSteps.map((item, i, all) => (
+              <li
+                key={item.title}
+                className="relative pt-1.5 pb-6 pl-[50px] last:pb-0"
+              >
+                <span className="absolute top-0 left-0 flex size-9 items-center justify-center rounded-full bg-brand font-heading text-sm/[1.3] font-semibold text-white">
+                  {item.number}
+                </span>
+                {i < all.length - 1 && (
+                  <span
+                    aria-hidden
+                    className="absolute top-[42px] bottom-0 left-[17px] w-0.5 bg-[#cfe3ec]"
+                  />
+                )}
+                <p className="font-heading text-[17px]/[1.3] font-bold text-ink">
+                  {item.title}
+                </p>
+                <p className="mt-1 text-sm leading-[1.55] text-body">
+                  {item.description}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </div>
+        {form.back ? (
+          <Link
+            href={form.back.href}
+            className="inline-flex w-full items-center justify-center rounded-full bg-brand px-6 py-4 font-heading text-base/[1.2] font-bold text-white md:hidden"
+          >
+            {form.back.label}
+          </Link>
+        ) : null}
       </div>
     )
 
@@ -489,9 +600,42 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
       noValidate
       onSubmit={submit}
       onFocus={() => void turnstile.prepare()}
-      className="relative flex flex-col gap-9 self-start rounded-3xl border border-line bg-white p-6 shadow-[0px_6px_24px_0px_rgba(13,28,51,0.04)] md:p-12"
+      className="relative flex flex-col gap-4 md:gap-9 md:self-start md:rounded-3xl md:border md:border-line md:bg-white md:p-12 md:shadow-[0px_6px_24px_0px_rgba(13,28,51,0.04)]"
     >
-      <div className="flex flex-col gap-2.5">
+      <div className="-mx-5 flex flex-col gap-3 border-b border-line bg-white px-5 py-[18px] sm:-mx-8 sm:px-8 md:hidden">
+        <p className="font-heading text-xs/[1.2] font-bold tracking-[1.44px] text-brand">
+          {form.sections[SECTION_KEYS[step]!].number}
+        </p>
+        <p className="font-heading text-[28px] leading-[1.15] font-bold tracking-[-0.084px] text-ink">
+          {form.sections[SECTION_KEYS[step]!].title}
+        </p>
+        {form.sections[SECTION_KEYS[step]!].description ? (
+          <p className="text-[13px] leading-[1.5] text-subtle">
+            {form.sections[SECTION_KEYS[step]!].description}
+          </p>
+        ) : null}
+        <div className="flex gap-1.5" aria-hidden>
+          {Array.from({ length: SECTION_KEYS.length }, (_, i) => (
+            <span
+              key={i}
+              className={cn(
+                "h-[5px] flex-1 rounded-[3px]",
+                "transition-colors duration-500 motion-reduce:transition-none",
+                i <= step ? "bg-brand" : "bg-line"
+              )}
+            />
+          ))}
+        </div>
+        {view.job ? (
+          <p className="flex items-center gap-2 rounded-xl bg-[#e6f7fb] px-3 py-2.5 text-[13px]/[1.5] font-medium text-body">
+            {view.sidebar.applyingFor}
+            <span className="min-w-0 flex-1 font-heading text-sm/[1.3] font-semibold text-[#1c3f5a]">
+              {view.job.title}
+            </span>
+          </p>
+        ) : null}
+      </div>
+      <div className="flex flex-col gap-2.5 max-md:hidden">
         {form.back ? (
           <Link
             href={form.back.href}
@@ -506,8 +650,8 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
         </h2>
         <p className="text-base leading-[1.55] text-body">{form.intro}</p>
       </div>
-      <div className="flex flex-col gap-9">
-        <Section step={form.sections.personal}>
+      <div className="flex flex-col gap-4 md:gap-9">
+        <Section step={form.sections.personal} current={step === 0}>
           {text("firstName", { required: true, autoComplete: "given-name" })}
           {text("surname", { required: true, autoComplete: "family-name" })}
           {text("email", {
@@ -521,7 +665,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
           {text("eircode", { autoComplete: "postal-code" })}
         </Section>
 
-        <Section step={form.sections.eligibility}>
+        <Section step={form.sections.eligibility} current={step === 1}>
           {radios(
             "rightToWork",
             options.rightToWork.map((o) => ({ value: o, label: o }))
@@ -532,21 +676,21 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
           {radios("livedAbroad", yesNo)}
         </Section>
 
-        <Section step={form.sections.availability}>
+        <Section step={form.sections.availability} current={step === 2}>
           {text("startDate", { type: "date", required: true })}
           {select("hoursPerWeek", options.hours, true)}
           {checkboxes("shifts", options.shifts, true)}
           {radios("transport", yesNo)}
         </Section>
 
-        <Section step={form.sections.experience}>
+        <Section step={form.sections.experience} current={step === 3}>
           {select("experience", options.years, true)}
           {select("healthcareExperience", options.healthcare)}
           {text("recentRole", { wide: true })}
           {checkboxes("certificates", options.certificates)}
         </Section>
 
-        <Section step={form.sections.cv}>
+        <Section step={form.sections.cv} current={step === 4}>
           <div className="md:col-span-2">
             <CvDropzone
               name="cv"
@@ -577,7 +721,7 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
           {select("heardAbout", options.heardAbout, false, true)}
         </Section>
 
-        <Section step={form.sections.consent}>
+        <Section step={form.sections.consent} current={step === 5}>
           {consent("declaration")}
           {consent("privacy")}
           {consent("keepOnFile")}
@@ -585,11 +729,53 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
         </Section>
       </div>
 
-      <div className="flex flex-col items-center gap-3 border-t border-line pt-9">
+      <div className="-mx-5 flex gap-2.5 border-t border-line bg-white px-4 py-3 sm:-mx-8 md:hidden">
+        {step > 0 ? (
+          <button
+            type="button"
+            onClick={back}
+            className="shrink-0 rounded-full border-[1.5px] border-navy px-6 py-4 font-heading text-base/[1.2] font-bold text-navy"
+          >
+            {form.back?.label ?? ""}
+          </button>
+        ) : form.back ? (
+          <Link
+            href={form.back.href}
+            className="shrink-0 rounded-full border-[1.5px] border-navy px-6 py-4 font-heading text-base/[1.2] font-bold text-navy"
+          >
+            {form.back.label}
+          </Link>
+        ) : null}
+        {step < LAST_STEP ? (
+          <button
+            type="button"
+            onClick={next}
+            className="inline-flex min-w-0 flex-1 items-center justify-center rounded-full bg-brand px-6 py-4 font-heading text-base/[1.2] font-bold text-white"
+          >
+            {form.next}
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={state === "sending"}
+            className="inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-brand px-6 py-4 font-heading text-base/[1.2] font-bold text-white disabled:opacity-70"
+          >
+            {state === "sending" ? (
+              <>
+                <Loader2 aria-hidden className="size-[18px] animate-spin" />
+                {form.sending}
+              </>
+            ) : (
+              form.submit
+            )}
+          </button>
+        )}
+      </div>
+      <div className="flex flex-col items-center gap-3 md:border-t md:border-line md:pt-9">
         <button
           type="submit"
           disabled={state === "sending"}
-          className="inline-flex h-[52px] w-full items-center justify-center gap-2.5 rounded-full bg-brand px-[30px] font-heading text-[17px] leading-[1.2] font-bold text-white transition-colors outline-none hover:bg-brand-deep focus-visible:ring-3 focus-visible:ring-brand/30 disabled:opacity-70"
+          className="inline-flex h-[52px] w-full items-center justify-center gap-2.5 rounded-full bg-brand px-[30px] font-heading text-[17px] leading-[1.2] font-bold text-white transition-colors outline-none hover:bg-brand-deep focus-visible:ring-3 focus-visible:ring-brand/30 disabled:opacity-70 max-md:hidden"
         >
           {state === "sending" ? (
             <>
@@ -603,7 +789,12 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
             </>
           )}
         </button>
-        <p className="flex items-center gap-2 text-center text-[13px] leading-[1.3] text-body">
+        <p
+          className={cn(
+            "flex items-center gap-2 text-center text-[13px] leading-[1.3] text-body",
+            step < LAST_STEP && "max-md:hidden"
+          )}
+        >
           <Lock aria-hidden className="size-3.5 shrink-0" />
           {form.privacyNote}
         </p>

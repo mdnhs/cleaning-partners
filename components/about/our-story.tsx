@@ -28,14 +28,16 @@ export function OurStory({
   sectors,
   cta,
 }: OurStoryProps) {
+  // The first paragraph is the intro: under the heading on mobile
+  const [first, ...rest] = paragraphs.content
   return (
-    <section className="bg-white py-16 md:py-28">
-      <Container className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
+    <section className="bg-white py-12 lg:py-28">
+      <Container className="flex flex-col gap-5 lg:flex-row lg:items-center lg:gap-16">
         <div
           data-stagger
-          className="flex w-full max-w-[580px] shrink-0 gap-5 lg:w-auto"
+          className="order-2 flex w-full max-w-[580px] shrink-0 gap-3 sm:gap-5 lg:order-none lg:w-auto"
         >
-          <div className="relative aspect-[280/440] flex-1 overflow-hidden rounded-[28px] lg:h-[440px] lg:w-[280px] lg:flex-none">
+          <div className="relative h-[200px] flex-1 overflow-hidden rounded-[20px] sm:rounded-[28px] lg:h-[440px] lg:w-[280px] lg:flex-none">
             <Image
               src={imageA.src}
               alt={imageA.alt}
@@ -44,8 +46,8 @@ export function OurStory({
               className="object-cover"
             />
           </div>
-          <div className="flex-1 pt-[60px] lg:flex-none">
-            <div className="relative aspect-[280/440] overflow-hidden rounded-[28px] lg:h-[440px] lg:w-[280px]">
+          <div className="flex-1 pt-6 sm:pt-[60px] lg:flex-none">
+            <div className="relative h-[200px] overflow-hidden rounded-[20px] sm:rounded-[28px] lg:h-[440px] lg:w-[280px]">
               <Image
                 src={imageB.src}
                 alt={imageB.alt}
@@ -57,41 +59,59 @@ export function OurStory({
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col items-start gap-[22px]">
-          <div className="flex w-full flex-col gap-3">
-            <p
-              data-reveal
-              className="font-heading text-[15px]/[normal] font-bold tracking-[1.5px] text-brand"
-            >
-              {eyebrow}
-            </p>
-            <h2
-              data-split
-              className="font-heading text-4xl leading-[1.15] font-bold text-ink md:text-5xl"
-            >
-              {title}
-            </h2>
+        <div className="contents lg:flex lg:min-w-0 lg:flex-1 lg:flex-col lg:items-start lg:gap-[22px]">
+          <div className="order-1 flex w-full flex-col gap-5 lg:gap-[22px]">
+            <div className="flex w-full flex-col gap-2 lg:gap-3">
+              <p
+                data-reveal
+                className="font-heading text-xs/[1.2] font-bold tracking-[1.44px] text-brand lg:text-[15px]/[normal] lg:tracking-[1.5px]"
+              >
+                {eyebrow}
+              </p>
+              <h2
+                data-split
+                className="font-heading text-[28px] leading-[1.15] font-bold text-ink lg:text-4xl lg:leading-[1.15] xl:text-5xl"
+              >
+                {title}
+              </h2>
+              {first ? (
+                <p
+                  data-reveal
+                  className="text-base leading-[1.6] text-body lg:hidden"
+                >
+                  {renderInline(first.content)}
+                </p>
+              ) : null}
+            </div>
+            {first ? (
+              <p
+                data-reveal
+                className="hidden text-[17px] leading-[1.65] text-body lg:block"
+              >
+                {renderInline(first.content)}
+              </p>
+            ) : null}
           </div>
 
-          {paragraphs.content.map((paragraph, i) => (
+          {rest.map((paragraph, i) => (
             <p
               key={i}
               data-reveal
-              className="text-[17px] leading-[1.65] text-body"
+              className="order-3 text-[15px] leading-[1.6] text-body lg:text-[17px] lg:leading-[1.65]"
             >
               {renderInline(paragraph.content)}
             </p>
           ))}
 
-          <div data-reveal className="flex w-full flex-col gap-3">
-            <h3 className="font-heading text-lg/[normal] font-bold text-ink">
+          <div data-reveal className="order-3 flex w-full flex-col gap-3">
+            <h3 className="font-heading text-[17px]/[1.3] font-bold text-ink lg:text-lg/[normal]">
               {sectorsHeading}
             </h3>
-            <ul className="flex flex-wrap gap-2.5">
+            <ul className="flex flex-wrap gap-2 lg:gap-2.5">
               {sectors.map((sector) => (
                 <li
                   key={sector}
-                  className="rounded-full border border-line bg-surface px-[18px] py-2.5 font-heading text-[15px]/[normal] font-semibold text-navy"
+                  className="rounded-full border border-line bg-white px-3.5 py-[9px] font-heading text-sm/[1.3] font-semibold text-ink lg:bg-surface lg:px-[18px] lg:py-2.5 lg:text-[15px]/[normal] lg:text-navy"
                 >
                   {sector}
                 </li>
@@ -102,7 +122,11 @@ export function OurStory({
           <a
             data-reveal
             href={cta.href}
-            className={buttonVariants({ variant: "brand", size: "pill" })}
+            className={buttonVariants({
+              variant: "brand",
+              size: "pill",
+              className: "order-3 max-lg:w-full",
+            })}
           >
             {cta.label}
           </a>

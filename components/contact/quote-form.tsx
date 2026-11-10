@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import { PhoneIcon } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { Container } from "@/components/home/section-heading"
@@ -73,7 +74,7 @@ async function readFieldErrors(res: Response): Promise<FieldErrors> {
 }
 
 const fieldClass =
-  "w-full rounded-xl border border-[#d6e3ea] bg-[#f9fcfd] px-[18px] py-[15px] text-base/[normal] text-ink outline-none transition-colors placeholder:text-[#8a949e] focus:border-navy"
+  "w-full rounded-xl border border-line bg-[#f9fcfd] px-4 py-3.5 text-[15px]/[1.6] text-ink md:border-[#d6e3ea] md:px-[18px] md:py-[15px] md:text-base/[normal] outline-none transition-colors placeholder:text-[#9aa5b1] md:placeholder:text-[#8a949e] focus:border-navy"
 
 function Field({
   label,
@@ -95,7 +96,7 @@ function Field({
     <div className={cn("flex flex-col gap-2", className)}>
       <label
         htmlFor={htmlFor}
-        className="font-heading text-[15px]/[normal] font-semibold text-ink"
+        className="font-heading text-sm/[1.3] font-semibold text-ink md:text-[15px]/[normal]"
       >
         {label}
         {required && (
@@ -217,45 +218,58 @@ export function QuoteForm({
   }
 
   return (
-    <section id="quote" className="scroll-mt-8 bg-surface py-16 md:py-28">
-      <Container className="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_620px] lg:gap-16">
-        <div className="flex flex-col gap-8">
-          <div className="flex flex-col gap-3">
+    <section id="quote" className="scroll-mt-8 bg-surface py-12 md:py-28">
+      <Container className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_620px] lg:gap-16">
+        <div className="contents lg:flex lg:flex-col lg:gap-8">
+          <div className="order-1 flex flex-col gap-2 lg:order-none lg:gap-3">
             <p
               data-reveal
-              className="font-heading text-[15px]/[normal] font-bold tracking-[1.5px] text-brand"
+              className="font-heading text-xs/[1.2] font-bold tracking-[1.44px] text-brand md:text-[15px]/[normal] md:tracking-[1.5px]"
             >
               {eyebrow}
             </p>
             <h2
               data-split
-              className="font-heading text-4xl leading-[1.15] font-bold text-ink md:text-5xl"
+              className="font-heading text-[28px] leading-[1.15] font-bold tracking-[-0.084px] text-ink md:text-5xl md:tracking-normal"
             >
               {title}
             </h2>
-            <p data-reveal className="text-lg leading-[1.6] text-body">
+            <p
+              data-reveal
+              className="text-base leading-[1.6] text-body md:text-lg"
+            >
               {intro}
             </p>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <h3 className="font-heading text-[22px]/[normal] font-bold text-ink">
+          <div className="order-3 flex flex-col gap-4 lg:order-none">
+            <h3 className="font-heading text-xl/[1.25] font-bold text-ink md:text-[22px]/[normal]">
               {stepsHeading}
             </h3>
-            <ol data-stagger className="flex flex-col gap-4">
+            <ol data-stagger className="flex flex-col md:gap-4">
               {steps.map((step, i) => (
                 <li
                   key={step.title}
-                  className="flex items-center gap-4 rounded-[18px] border border-line bg-white px-[22px] py-5"
+                  className="relative flex items-center gap-4 max-md:block max-md:pt-1.5 max-md:pb-6 max-md:pl-[50px] max-md:last:pb-0 md:rounded-[18px] md:border md:border-line md:bg-white md:px-[22px] md:py-5"
                 >
-                  <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand font-heading text-[17px]/[normal] font-extrabold text-white">
+                  <span
+                    data-timeline-badge
+                    className="absolute top-0 left-0 flex size-9 items-center justify-center rounded-full bg-brand font-heading text-sm/[1.3] font-semibold text-white md:static md:size-12 md:text-[17px]/[normal] md:font-extrabold"
+                  >
                     {String(i + 1).padStart(2, "0")}
                   </span>
+                  {i < steps.length - 1 && (
+                    <span
+                      aria-hidden
+                      data-timeline-line
+                      className="absolute top-[42px] bottom-0 left-[17px] w-0.5 bg-[#cfe3ec] md:hidden"
+                    />
+                  )}
                   <div className="flex flex-col gap-1">
-                    <p className="font-heading text-[19px]/[normal] font-bold text-ink">
+                    <p className="font-heading text-[17px]/[1.3] font-bold text-ink md:text-[19px]/[normal]">
                       {step.title}
                     </p>
-                    <p className="text-[15px] leading-[1.5] text-body">
+                    <p className="text-sm leading-[1.55] text-body md:text-[15px] md:leading-[1.5]">
                       {step.description}
                     </p>
                   </div>
@@ -266,16 +280,25 @@ export function QuoteForm({
 
           <div
             data-reveal
-            className="flex flex-col gap-1 rounded-[18px] bg-navy px-6 py-[22px]"
+            className="order-4 flex items-center gap-3.5 rounded-[20px] bg-[#1c3f5a] p-5 md:rounded-[18px] md:bg-navy md:px-6 md:py-[22px] lg:order-none"
           >
-            <p className="font-heading text-[19px]/[normal] font-bold text-white">
-              {urgent.title}
-            </p>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <p className="font-heading text-[17px]/[1.3] font-bold text-white md:text-[19px]/[normal]">
+                {urgent.title}
+              </p>
+              <a
+                href={urgent.phoneHref}
+                className="text-sm/[1.55] text-white/85 hover:text-white md:text-base/[normal] md:font-medium md:text-white/90"
+              >
+                {urgent.phone}
+              </a>
+            </div>
             <a
               href={urgent.phoneHref}
-              className="text-base/[normal] font-medium text-white/90 hover:text-white"
+              aria-label={urgent.phone}
+              className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand text-white md:hidden"
             >
-              {urgent.phone}
+              <PhoneIcon aria-hidden className="size-5" />
             </a>
           </div>
         </div>
@@ -285,13 +308,13 @@ export function QuoteForm({
           ref={formRef}
           onSubmit={handleSubmit}
           onFocus={() => void turnstile.prepare()}
-          className="flex flex-col gap-5 rounded-[28px] bg-white p-6 shadow-[0px_16px_48px_0px_rgba(41,99,143,0.08)] sm:p-10"
+          className="order-2 flex flex-col gap-4 rounded-[20px] border border-line bg-white p-5 sm:p-10 md:gap-5 md:rounded-[28px] md:border-0 md:p-6 md:shadow-[0px_16px_48px_0px_rgba(41,99,143,0.08)] lg:order-none"
         >
-          <h3 className="font-heading text-[28px]/[normal] font-bold text-ink">
+          <h3 className="font-heading text-xl/[1.25] font-bold text-ink md:text-[28px]/[normal]">
             {formTitle}
           </h3>
 
-          <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
+          <div className="grid gap-x-4 gap-y-4 sm:grid-cols-2 md:gap-y-5">
             <Field
               label={fields.name.label}
               htmlFor="quote-name"
@@ -399,17 +422,17 @@ export function QuoteForm({
               {...invalid("message", "quote-message")}
               name="message"
               placeholder={fields.message.placeholder}
-              className={cn(fieldClass, "h-[140px] resize-y")}
+              className={cn(fieldClass, "h-[120px] resize-y md:h-[140px]")}
             />
           </Field>
 
-          <label className="flex cursor-pointer items-center gap-3 text-[15px]/[normal] text-body">
+          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-line px-4 py-3.5 text-[15px]/[1.6] text-ink md:rounded-none md:border-0 md:p-0 md:text-[15px]/[normal] md:text-body">
             <input
               type="checkbox"
               name="consent"
               required
               {...invalid("consent", "quote-consent")}
-              className="size-[22px] shrink-0 cursor-pointer rounded-md border border-[#b9cbd6] accent-brand"
+              className="size-5 shrink-0 cursor-pointer rounded-md border border-[#b9cbd6] accent-brand md:size-[22px]"
             />
             {fields.consent.label}
           </label>

@@ -1,6 +1,12 @@
 "use client"
 
-import { Briefcase, ChevronDown, MapPin, Search } from "lucide-react"
+import {
+  Briefcase,
+  ChevronDown,
+  MapPin,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react"
 import { useMemo, useState } from "react"
 
 import { Container } from "@/components/home/section-heading"
@@ -65,6 +71,7 @@ export function OpenPositions(props: OpenPositionsProps) {
   const [location, setLocation] = useState("")
   const [type, setType] = useState("")
   const [category, setCategory] = useState("")
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -82,68 +89,88 @@ export function OpenPositions(props: OpenPositionsProps) {
 
   const chip = (active: boolean) =>
     cn(
-      "rounded-full border px-[18px] py-2.5 font-heading text-[15px]/[1.2] font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-brand/30",
+      "shrink-0 rounded-full border px-3.5 py-[9px] font-heading text-sm/[1.3] font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-brand/30 md:px-[18px] md:py-2.5 md:text-[15px]/[1.2]",
       active
-        ? "border-brand bg-brand text-white"
-        : "border-line bg-surface text-ink hover:border-brand/50"
+        ? "border-navy bg-navy text-white md:border-brand md:bg-brand"
+        : "border-line bg-white text-ink hover:border-brand/50 md:bg-surface"
     )
 
   return (
-    <section id="open-positions" className="bg-surface py-16 md:py-28">
-      <Container className="flex flex-col gap-8">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="flex flex-col gap-3.5">
+    <section id="open-positions" className="bg-surface py-12 md:py-28">
+      <Container className="flex flex-col gap-4 md:gap-8">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between md:gap-6">
+          <div className="flex flex-col gap-2 md:gap-3.5">
             <p
               data-reveal
-              className="font-heading text-[15px]/[normal] font-bold tracking-[2.1px] text-brand"
+              className="font-heading text-xs/[1.2] font-bold tracking-[1.44px] text-brand md:text-[15px]/[normal] md:tracking-[2.1px]"
             >
               {props.eyebrow}
             </p>
             <h2
               data-split
-              className="font-heading text-4xl leading-[1.1] font-bold text-ink md:text-5xl"
+              className="font-heading text-[28px] leading-[1.15] font-bold tracking-[-0.084px] text-ink md:text-5xl md:leading-[1.1] md:tracking-normal"
             >
               {props.title}
             </h2>
-            <p data-reveal className="text-lg leading-[1.55] text-body">
+            <p
+              data-reveal
+              className="text-base leading-[1.6] text-body md:text-lg md:leading-[1.55]"
+            >
               {props.intro}
             </p>
           </div>
-          <p className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-line bg-white px-[18px] py-2.5 font-heading text-[15px]/[1.2] font-bold text-ink">
-            <Briefcase aria-hidden className="size-[18px] text-brand" />
+          <p className="inline-flex w-fit shrink-0 items-center gap-2 rounded-full bg-[#e6f7fb] px-2.5 py-[5px] text-[13px]/[1.5] font-medium text-[#0e93ad] md:border md:border-line md:bg-white md:px-[18px] md:py-2.5 md:font-heading md:text-[15px]/[1.2] md:font-bold md:text-ink">
+            <Briefcase
+              aria-hidden
+              className="size-[18px] text-brand max-md:hidden"
+            />
             {props.count}
           </p>
         </div>
 
         <div
           data-reveal
-          className="flex flex-col gap-4 rounded-[20px] border border-line bg-white p-5 shadow-[0px_6px_24px_0px_rgba(13,28,51,0.04)]"
+          className="flex flex-col gap-4 md:rounded-[20px] md:border md:border-line md:bg-white md:p-5 md:shadow-[0px_6px_24px_0px_rgba(13,28,51,0.04)]"
         >
           <div className="flex flex-col gap-3 md:flex-row">
-            <label className="relative min-w-0 flex-1">
-              <span className="sr-only">{props.searchPlaceholder}</span>
-              <Search
-                aria-hidden
-                className="pointer-events-none absolute top-1/2 left-[18px] size-[18px] -translate-y-1/2 text-subtle"
-              />
-              <input
-                type="search"
-                value={query}
-                placeholder={props.searchPlaceholder}
-                onChange={(event) => setQuery(event.target.value)}
-                className={cn(
-                  CONTROL_CLASS,
-                  "pr-4 pl-12 placeholder:text-subtle"
-                )}
-              />
-            </label>
+            <div className="flex gap-2.5 md:contents">
+              <label className="relative min-w-0 flex-1">
+                <span className="sr-only">{props.searchPlaceholder}</span>
+                <Search
+                  aria-hidden
+                  className="pointer-events-none absolute top-1/2 left-[18px] size-[18px] -translate-y-1/2 text-subtle"
+                />
+                <input
+                  type="search"
+                  value={query}
+                  placeholder={props.searchPlaceholder}
+                  onChange={(event) => setQuery(event.target.value)}
+                  className={cn(
+                    CONTROL_CLASS,
+                    "h-12 rounded-full border-line bg-white pr-4 pl-12 text-[15px] placeholder:text-[#9aa5b1] md:h-[52px] md:rounded-xl md:border-[#d6e3ea] md:bg-[#f9fcfd] md:text-base md:placeholder:text-subtle"
+                  )}
+                />
+              </label>
+              <button
+                type="button"
+                aria-expanded={filtersOpen}
+                aria-label={props.allTypes}
+                onClick={() => setFiltersOpen((open) => !open)}
+                className="flex size-12 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink md:hidden"
+              >
+                <SlidersHorizontal aria-hidden className="size-[18px]" />
+              </button>
+            </div>
             <FilterSelect
               icon={MapPin}
               label={props.allLocations}
               value={location}
               onChange={setLocation}
               options={filters.locations}
-              className="md:w-[260px]"
+              className={cn(
+                "md:block md:w-[260px]",
+                !filtersOpen && "max-md:hidden"
+              )}
             />
             <FilterSelect
               icon={Briefcase}
@@ -151,10 +178,13 @@ export function OpenPositions(props: OpenPositionsProps) {
               value={type}
               onChange={setType}
               options={filters.types}
-              className="md:w-[240px]"
+              className={cn(
+                "md:block md:w-[240px]",
+                !filtersOpen && "max-md:hidden"
+              )}
             />
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="-mx-5 flex [scrollbar-width:none] gap-2 overflow-x-auto px-5 sm:-mx-8 sm:px-8 md:mx-0 md:flex-wrap md:gap-2.5 md:overflow-visible md:px-0">
             <button
               type="button"
               aria-pressed={category === ""}
@@ -177,7 +207,7 @@ export function OpenPositions(props: OpenPositionsProps) {
           </div>
         </div>
 
-        <ul aria-label={props.title} className="flex flex-col gap-4">
+        <ul aria-label={props.title} className="flex flex-col gap-3 md:gap-4">
           {shown.map((job) => (
             <JobRow
               key={job.slug}

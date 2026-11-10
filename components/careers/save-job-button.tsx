@@ -64,8 +64,8 @@ export function SaveJobButton({
         className
       )}
     >
-      <Icon aria-hidden className="size-4" />
-      {saved ? savedLabel : label}
+      <Icon aria-hidden className="size-4 max-sm:size-5" />
+      <span className="max-sm:sr-only">{saved ? savedLabel : label}</span>
     </button>
   )
 }

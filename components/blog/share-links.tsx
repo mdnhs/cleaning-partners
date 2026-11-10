@@ -18,8 +18,8 @@ export type ShareLinksProps = {
 
 export function ShareLinks({ label, aria, title, networks }: ShareLinksProps) {
   return (
-    <div className="flex items-center gap-2">
-      <p className="font-heading text-base/[normal] font-bold text-ink">
+    <div className="flex items-center gap-2.5 md:gap-2">
+      <p className="font-heading text-sm/[1.3] font-semibold text-ink md:text-base/[normal] md:font-bold">
         {label}
       </p>
       {networks.map((network) => (

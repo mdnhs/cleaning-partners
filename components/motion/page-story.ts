@@ -18,6 +18,7 @@ const q = <T extends Element = HTMLElement>(
 // has plus a few data-* hooks; no copy is touched.
 export function pageStory(desktop: boolean): (() => void) | void {
   pageHeroShrinks()
+  timelines()
   countUps()
   whyChooseStory(desktop)
   teamStory(desktop)
@@ -46,6 +47,43 @@ function pageHeroShrinks() {
         },
       }
     )
+  }
+}
+
+// Step lists on phones (data-timeline-line is the rail between two number
+// badges): the rail draws down as the step scrolls through and the badge pops
+// in, like following the steps with a finger.
+function timelines() {
+  for (const line of q("[data-timeline-line]")) {
+    const step = line.parentElement
+    if (!step) continue
+    gsap.fromTo(
+      line,
+      { scaleY: 0, transformOrigin: "top" },
+      {
+        scaleY: 1,
+        ease: "none",
+        scrollTrigger: {
+          trigger: step,
+          start: "top 72%",
+          end: "bottom 55%",
+          scrub: true,
+        },
+      }
+    )
+  }
+  for (const badge of q("[data-timeline-badge]")) {
+    gsap.from(badge, {
+      scale: 0.6,
+      autoAlpha: 0.35,
+      duration: 0.5,
+      ease: "back.out(2.2)",
+      scrollTrigger: {
+        trigger: badge,
+        start: "top 85%",
+        toggleActions: REPLAY,
+      },
+    })
   }
 }
 

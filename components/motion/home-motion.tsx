@@ -93,9 +93,13 @@ function heroIntro() {
       "-=0.6"
     )
     .from("[data-hero-copy]", { y: 24, autoAlpha: 0, duration: 0.7 }, "-=0.5")
-    .from(
+    // fromTo, not from: if the intro ran before (dev double-mount), the
+    // buttons are still at their hidden start, and a plain from() would
+    // read that as the end state and leave them invisible.
+    .fromTo(
       "[data-hero-actions] > *",
-      { y: 20, autoAlpha: 0, duration: 0.6, stagger: 0.1 },
+      { y: 20, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 0.6, stagger: 0.1 },
       "-=0.4"
     )
     .from("[data-hero-member]", { autoAlpha: 0, duration: 0.6 }, "-=0.3")

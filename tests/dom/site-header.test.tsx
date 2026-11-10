@@ -27,6 +27,12 @@ const props = {
   cta: { label: "Ask", href: "#contact" },
   menuAria: "Menu",
   closeMenuAria: "Close",
+  mobile: {
+    helpTitle: "Need help now?",
+    callLabel: "Call Now",
+    allServicesLabel: "View All Services",
+    directionsLabel: "Get Directions",
+  },
 }
 
 const current = () =>
@@ -53,7 +59,10 @@ describe("SiteHeader", () => {
     expect(screen.getByText("Always open")).toBeInTheDocument()
     expect(screen.getByAltText("Example")).toBeInTheDocument()
     expect(screen.getByLabelText("Menu")).toBeInTheDocument()
-    expect(screen.getByText("Ask")).toHaveAttribute("href", "#contact")
+    // The header button and the phone's fixed bar both carry the label.
+    for (const link of screen.getAllByText("Ask")) {
+      expect(link).toHaveAttribute("href", "#contact")
+    }
   })
 
   it("marks only Home on /", () => {

@@ -57,7 +57,8 @@ export function TestimonialsCarousel({
     const el = track.current
     const card = el?.firstElementChild as HTMLElement | null
     if (!el || !card) return
-    const step = card.offsetWidth + 24
+    const step =
+      card.offsetWidth + (parseFloat(getComputedStyle(el).columnGap) || 0)
     el.scrollBy({ left: direction * step, behavior: "smooth" })
   }
 
@@ -69,44 +70,45 @@ export function TestimonialsCarousel({
       role="group"
       aria-roledescription="carousel"
       aria-label={label}
-      className="flex w-full flex-col gap-8"
+      className="flex w-full flex-col gap-8 max-sm:gap-0"
     >
       <ul
         ref={track}
+        data-testimonial-track
         onScroll={measure}
         tabIndex={0}
         aria-label={label}
-        className="flex snap-x snap-mandatory [scrollbar-width:none] gap-6 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] motion-reduce:scroll-auto [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory [scrollbar-width:none] gap-3 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] motion-reduce:scroll-auto max-sm:-mx-5 max-sm:scroll-px-5 max-sm:px-5 max-sm:pb-0 sm:gap-6 [&::-webkit-scrollbar]:hidden"
       >
         {items.map((t) => (
           <li
             key={t.name}
-            className="flex shrink-0 basis-full snap-start flex-col gap-[18px] rounded-3xl bg-surface px-8 py-9 md:basis-[calc(50%-12px)] lg:basis-[calc(33.333%-16px)]"
+            className="flex min-h-[326px] shrink-0 basis-[300px] snap-start flex-col gap-4 rounded-[20px] bg-surface p-6 sm:min-h-0 sm:basis-full sm:gap-[18px] sm:rounded-3xl sm:px-8 sm:py-9 md:basis-[calc(50%-12px)] lg:basis-[calc(33.333%-16px)]"
           >
             <div className="flex items-center justify-between">
               <span
                 aria-hidden
-                className="font-heading text-[64px] leading-[0.6] font-extrabold text-brand"
+                className="font-heading text-[56px] leading-[0.6] font-extrabold text-brand sm:text-[64px]"
               >
                 “
               </span>
               <span
                 role="img"
                 aria-label={t.starsAria}
-                className="text-lg text-star"
+                className="text-base text-star sm:text-lg"
               >
                 {t.stars}
               </span>
             </div>
-            <blockquote className="flex-1 text-base leading-[1.65] text-ink-soft">
+            <blockquote className="flex-1 text-[15px] leading-[1.6] text-ink-soft sm:text-base sm:leading-[1.65]">
               {t.quote}
             </blockquote>
-            <div className="flex items-center gap-3.5 pt-[19px]">
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-navy font-heading text-lg font-bold text-white">
+            <div className="flex items-center gap-3 sm:gap-3.5 sm:pt-[19px]">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-navy font-heading text-base font-bold text-white sm:size-12 sm:text-lg">
                 {t.initials}
               </div>
               <div className="flex flex-col gap-0.5">
-                <p className="font-heading text-lg/[normal] font-bold text-ink">
+                <p className="font-heading text-[17px]/[1.3] font-bold text-ink sm:text-lg/[normal]">
                   {t.name}
                 </p>
                 <p className="text-[13px]/[normal] text-body">
@@ -118,7 +120,9 @@ export function TestimonialsCarousel({
         ))}
       </ul>
 
-      <div className={cn("flex items-center justify-center gap-3")}>
+      <div
+        className={cn("flex items-center justify-center gap-3 max-sm:hidden")}
+      >
         <button
           type="button"
           aria-label={prevLabel}

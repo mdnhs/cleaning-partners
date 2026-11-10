@@ -1,3 +1,4 @@
+import { ScrollDots } from "@/components/home/scroll-dots"
 import { TestimonialsCarousel } from "@/components/home/testimonials-carousel"
 import { Container, SectionHeading } from "@/components/home/section-heading"
 
@@ -26,9 +27,13 @@ export function Testimonials({
   items,
 }: TestimonialsProps) {
   return (
-    <section className="bg-white py-16 md:py-28">
-      <Container className="flex flex-col items-center gap-14">
-        <SectionHeading eyebrow={eyebrow} title={title} />
+    <section className="bg-white py-12 sm:py-16 md:py-28">
+      <Container className="flex flex-col items-center gap-6 sm:gap-14">
+        <SectionHeading
+          eyebrow={eyebrow}
+          title={title}
+          className="max-sm:items-start max-sm:text-left"
+        />
 
         <div data-reveal className="w-full">
           <TestimonialsCarousel
@@ -39,6 +44,12 @@ export function Testimonials({
             items={items}
           />
         </div>
+        <ScrollDots
+          target="[data-testimonial-track]"
+          count={items.length}
+          tone="dark"
+          className="w-full sm:hidden"
+        />
       </Container>
     </section>
   )

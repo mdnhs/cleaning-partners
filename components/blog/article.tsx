@@ -1,5 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
+import { ChevronRightIcon } from "lucide-react"
 
 import { ShareLinks, type ShareLinksProps } from "@/components/blog/share-links"
 import { QuoteCard, type QuoteCardProps } from "@/components/home/quote-card"
@@ -36,29 +37,33 @@ export function ArticleHeader({
   breadcrumb,
 }: ArticleHeaderProps) {
   return (
-    <section className="bg-surface pt-12 pb-16 md:pt-[72px] md:pb-20">
-      <Container className="flex flex-col items-center gap-6 text-center">
+    <section className="bg-surface pt-6 pb-0 md:pt-[72px] md:pb-20">
+      <Container className="flex flex-col items-start gap-3.5 text-left md:items-center md:gap-6 md:text-center">
         <nav
           aria-label={breadcrumb.ariaLabel}
           data-intro
           data-hero-copy
-          className="flex flex-wrap justify-center gap-2.5 font-heading text-[15px]/[normal] font-medium text-body"
+          className="flex flex-wrap items-center gap-1.5 text-[13px]/[1.5] font-medium text-[#7a8590] md:justify-center md:gap-2.5 md:font-heading md:text-[15px]/[normal] md:text-body"
         >
-          <Link href={breadcrumb.home.href} className="hover:text-navy">
+          <Link
+            href={breadcrumb.home.href}
+            className="hover:text-navy max-md:hidden"
+          >
             {breadcrumb.home.label}
           </Link>
-          <span aria-hidden className="text-body/50">
+          <span aria-hidden className="text-body/50 max-md:hidden">
             /
           </span>
           <Link href={breadcrumb.blog.href} className="hover:text-navy">
             {breadcrumb.blog.label}
           </Link>
-          <span aria-hidden className="text-body/50">
+          <span aria-hidden className="text-body/50 max-md:hidden">
             /
           </span>
+          <ChevronRightIcon aria-hidden className="size-3.5 md:hidden" />
           <Link
             href={post.categoryHref}
-            className="font-bold text-navy hover:text-brand"
+            className="text-navy hover:text-brand md:font-bold"
           >
             {post.category}
           </Link>
@@ -67,7 +72,7 @@ export function ArticleHeader({
         <span
           data-intro
           data-hero-copy
-          className="rounded-full bg-brand/12 px-3.5 py-1.5 font-heading text-sm/[normal] font-bold text-brand"
+          className="rounded-full bg-[#e6f7fb] px-2.5 py-[5px] text-[13px]/[1.5] font-medium text-[#0e93ad] md:bg-brand/12 md:px-3.5 md:py-1.5 md:font-heading md:text-sm/[normal] md:font-bold md:text-brand"
         >
           {post.category}
         </span>
@@ -75,7 +80,7 @@ export function ArticleHeader({
         <h1
           data-intro
           data-hero-title
-          className="max-w-[900px] font-heading text-4xl leading-[1.15] font-bold text-ink md:text-[56px]"
+          className="max-w-[900px] font-heading text-[28px] leading-[1.15] font-bold tracking-[-0.084px] text-ink md:text-[56px] md:tracking-normal"
         >
           {post.title}
         </h1>
@@ -83,16 +88,16 @@ export function ArticleHeader({
         <div
           data-intro
           data-hero-copy
-          className="flex items-center gap-3.5 text-left"
+          className="flex items-center gap-3 text-left md:gap-3.5"
         >
-          <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-line bg-white">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-full border border-line bg-white md:size-12">
             <Image src={logo} alt="" width={36} height={32} />
           </div>
-          <div className="flex flex-col gap-0.5">
-            <p className="font-heading text-base/[normal] font-bold text-ink">
+          <div className="flex flex-col gap-px md:gap-0.5">
+            <p className="font-heading text-[17px]/[1.3] font-bold text-ink md:text-base/[normal]">
               {post.author}
             </p>
-            <p className="text-sm/[normal] text-body">
+            <p className="text-[13px]/[1.5] text-[#7a8590] md:text-sm/[normal] md:text-body">
               <time dateTime={post.date}>{post.displayDate}</time>
               {post.readTime && <>&nbsp;&nbsp;·&nbsp;&nbsp;{post.readTime}</>}
             </p>
@@ -101,7 +106,7 @@ export function ArticleHeader({
 
         <div
           data-reveal
-          className="relative h-[280px] w-full overflow-hidden rounded-[28px] md:h-[560px]"
+          className="relative -mx-5 mt-2.5 h-[230px] w-[calc(100%+40px)] max-w-none shrink-0 overflow-hidden sm:-mx-8 sm:w-[calc(100%+64px)] md:mx-0 md:mt-0 md:h-[560px] md:w-full md:rounded-[28px]"
         >
           <Image
             src={post.cover}
@@ -185,22 +190,22 @@ export function ArticleBody({
   quoteCard,
 }: ArticleBodyProps) {
   return (
-    <section className="bg-white py-16 md:py-20">
+    <section className="bg-white pt-7 pb-10 md:py-20">
       <Container className="grid items-start gap-16 lg:grid-cols-[minmax(0,776px)_1fr]">
-        <article className="flex flex-col gap-5">
+        <article className="flex flex-col gap-4 md:gap-5">
           <ArticleBlocks doc={body} checkIcon={checkIcon} />
 
           <div className="h-px w-full bg-line" />
 
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-col items-start gap-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="font-heading text-base/[normal] font-bold text-ink">
+              <p className="font-heading text-sm/[1.3] font-semibold text-ink md:text-base/[normal] md:font-bold">
                 {tags.label}
               </p>
               {tags.items.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-surface px-3.5 py-1.5 text-sm/[normal] font-medium text-navy"
+                  className="rounded-full bg-[#eceff3] px-2.5 py-[5px] text-[13px]/[1.5] font-medium text-body md:bg-surface md:px-3.5 md:py-1.5 md:text-sm/[normal] md:text-navy"
                 >
                   {tag}
                 </span>
@@ -209,22 +214,28 @@ export function ArticleBody({
             <ShareLinks {...share} />
           </div>
 
-          <div className="flex items-center gap-5 rounded-[20px] bg-surface p-7">
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-white">
-              <Image src={author.logo} alt="" width={60} height={54} />
+          <div className="flex items-center gap-3.5 rounded-[20px] bg-surface p-4 md:gap-5 md:p-7">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-white md:size-20">
+              <Image
+                src={author.logo}
+                alt=""
+                width={60}
+                height={54}
+                className="h-10 w-11 object-cover md:h-auto md:w-auto"
+              />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <p className="font-heading text-xl/[normal] font-bold text-ink">
+            <div className="flex flex-col gap-1 md:gap-1.5">
+              <p className="font-heading text-[17px]/[1.3] font-bold text-ink md:text-xl/[normal]">
                 {author.writtenBy}
               </p>
-              <p className="text-[15px] leading-[1.6] text-body">
+              <p className="text-[13px] leading-[1.5] text-body md:text-[15px] md:leading-[1.6]">
                 {author.bio}
               </p>
             </div>
           </div>
         </article>
 
-        <aside className="flex flex-col gap-6 lg:sticky lg:top-8">
+        <aside className="flex flex-col gap-6 max-md:hidden lg:sticky lg:top-8">
           <form
             action={search.action}
             role="search"

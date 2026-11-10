@@ -16,8 +16,8 @@ export function PreviousOpenings({
 }: PreviousOpeningsProps) {
   if (jobs.length === 0) return null
   return (
-    <section className="bg-white py-16 md:py-28">
-      <Container className="flex flex-col gap-8">
+    <section className="bg-white py-12 md:py-28">
+      <Container className="flex flex-col gap-4 md:gap-8">
         <SectionHeading
           align="left"
           eyebrow={eyebrow}
@@ -28,14 +28,14 @@ export function PreviousOpenings({
           {jobs.map((job) => (
             <li
               key={job.slug}
-              className="flex flex-col gap-4 rounded-[20px] border border-line bg-surface/60 px-6 py-6 md:flex-row md:items-center md:gap-8 md:px-8"
+              className="flex flex-col gap-3 rounded-[18px] border border-line bg-surface p-[18px] md:flex-row md:items-center md:gap-8 md:rounded-[20px] md:bg-surface/60 md:px-8 md:py-6"
             >
               <div className="flex min-w-0 flex-1 flex-col gap-3 opacity-80">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 md:gap-2">
                   <JobPill tone="category">{job.category}</JobPill>
                   <JobPill tone="closed">{closedPill}</JobPill>
                 </div>
-                <h3 className="font-heading text-xl/[1.2] font-bold text-ink">
+                <h3 className="font-heading text-xl/[1.25] font-bold text-[#3d4650] md:text-xl/[1.2] md:text-ink">
                   {job.title}
                 </h3>
                 <JobFacts
@@ -45,9 +45,11 @@ export function PreviousOpenings({
                   pay={job.pay}
                 />
               </div>
-              <div className="flex flex-col gap-1 md:items-end">
-                <p className="text-[13px]/[normal] text-subtle">{job.closed}</p>
-                <p className="inline-flex items-center gap-1.5 font-heading text-[15px] font-semibold text-body">
+              <div className="flex items-center justify-between gap-1 border-t border-line pt-3 md:flex-col md:items-end md:justify-start md:border-0 md:pt-0">
+                <p className="text-[13px]/[1.5] text-[#7a8590] md:text-[13px]/[normal] md:text-subtle">
+                  {job.closed}
+                </p>
+                <p className="inline-flex items-center gap-1.5 font-heading text-sm font-semibold text-[#7a8590] md:text-[15px] md:text-body">
                   <CalendarCheck aria-hidden className="size-4" />
                   {filled}
                 </p>

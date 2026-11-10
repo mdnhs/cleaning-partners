@@ -15,8 +15,8 @@ export function SimilarRoles({
 }) {
   if (similar.jobs.length === 0) return null
   return (
-    <section className="bg-surface py-16 md:py-24">
-      <Container className="flex flex-col gap-10">
+    <section className="bg-surface py-12 md:py-24">
+      <Container className="flex flex-col gap-4 md:gap-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHeading
             align="left"
@@ -29,19 +29,22 @@ export function SimilarRoles({
               variant: "outline-navy",
               size: "pill-sm",
               className:
-                "px-[22px] py-[11px] text-[15px]/[normal] max-sm:w-full",
+                "px-[22px] py-[11px] text-[15px]/[normal] max-md:hidden",
             })}
           >
             {similar.viewAll.label}
             <ArrowRight aria-hidden className="size-4" />
           </Link>
         </div>
-        <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <ul
+          data-stagger
+          className="-mx-5 flex snap-x [scrollbar-width:none] gap-3 overflow-x-auto px-5 sm:-mx-8 sm:px-8 md:mx-0 md:grid md:snap-none md:grid-cols-2 md:gap-6 md:overflow-visible md:px-0 lg:grid-cols-3"
+        >
           {similar.jobs.map((job) => (
             <li
               key={job.slug}
               data-card="light"
-              className="flex flex-col gap-4 rounded-3xl border border-line bg-white p-6"
+              className="flex w-[300px] shrink-0 snap-start flex-col gap-3 rounded-[20px] border border-line bg-white p-5 md:w-auto md:gap-4 md:rounded-3xl md:p-6"
             >
               <div className="flex flex-wrap gap-2">
                 <JobPill tone="category">{job.category}</JobPill>
@@ -71,6 +74,16 @@ export function SimilarRoles({
             </li>
           ))}
         </ul>
+        <Link
+          href={similar.viewAll.href}
+          className={buttonVariants({
+            variant: "outline-navy",
+            size: "pill",
+            className: "w-full md:hidden",
+          })}
+        >
+          {similar.viewAll.label}
+        </Link>
       </Container>
     </section>
   )

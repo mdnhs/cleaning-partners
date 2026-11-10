@@ -86,17 +86,17 @@ function ArticleBlock({
   switch (block.type) {
     case "paragraph":
       return block.attrs?.variant === "lead" ? (
-        <p className="text-xl leading-[1.7] text-ink">
+        <p className="text-[17px] leading-[1.7] text-[#3d4650] md:text-xl md:text-ink">
           {renderInline(block.content)}
         </p>
       ) : (
-        <p className="text-[17px] leading-[1.75] text-body">
+        <p className="text-base leading-[1.6] text-[#3d4650] md:text-[17px] md:leading-[1.75] md:text-body">
           {renderInline(block.content)}
         </p>
       )
     case "heading":
       return block.attrs.level === 2 ? (
-        <h2 className="font-heading text-[26px] leading-[1.25] font-bold text-ink md:text-[30px]">
+        <h2 className="font-heading text-xl leading-[1.25] font-bold text-ink md:text-[26px] lg:text-[30px]">
           {renderInline(block.content)}
         </h2>
       ) : (
@@ -114,17 +114,20 @@ function ArticleBlock({
           </ul>
         )
       return (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-2.5 md:gap-3">
           {block.content.map((item, i) => (
-            <li key={i} className="flex items-center gap-3">
+            <li
+              key={i}
+              className="flex items-start gap-2.5 md:items-center md:gap-3"
+            >
               <Image
                 src={checkIcon}
                 alt=""
                 width={24}
                 height={24}
-                className="shrink-0"
+                className="size-[22px] shrink-0 md:size-6"
               />
-              <span className="text-[17px]/[normal] font-medium text-ink">
+              <span className="text-[15px]/[1.6] text-[#3d4650] md:text-[17px]/[normal] md:font-medium md:text-ink">
                 {renderParagraphs(item.content)}
               </span>
             </li>
@@ -144,14 +147,14 @@ function ArticleBlock({
       )
     case "blockquote":
       return (
-        <figure className="flex gap-5 rounded-[20px] bg-surface px-8 py-7">
+        <figure className="flex gap-3.5 rounded-2xl bg-surface p-[18px] md:gap-5 md:rounded-[20px] md:px-8 md:py-7">
           <div aria-hidden className="w-1 shrink-0 rounded-xs bg-brand" />
-          <div className="flex flex-col gap-2.5">
-            <blockquote className="font-heading text-[22px] leading-[1.4] font-semibold text-ink">
+          <div className="flex flex-col gap-2 md:gap-2.5">
+            <blockquote className="font-heading text-[17px] leading-[1.3] font-bold text-ink md:text-[22px] md:leading-[1.4] md:font-semibold">
               &ldquo;{renderParagraphs(block.content)}&rdquo;
             </blockquote>
             {block.attrs?.cite && (
-              <figcaption className="text-[15px]/[normal] font-medium text-navy">
+              <figcaption className="text-[13px]/[1.5] font-medium text-navy md:text-[15px]/[normal]">
                 — {block.attrs.cite}
               </figcaption>
             )}

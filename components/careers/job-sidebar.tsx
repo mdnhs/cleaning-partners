@@ -41,8 +41,11 @@ export function JobSidebar({
   checkIcon: string
 }) {
   return (
-    <aside className="flex flex-col gap-6 lg:sticky lg:top-28 lg:self-start">
-      <section className="flex flex-col gap-5 rounded-3xl border border-line bg-white p-6 shadow-[0px_10px_30px_0px_rgba(13,28,51,0.06)]">
+    <aside className="flex flex-col gap-4 md:gap-6 lg:sticky lg:top-28 lg:self-start">
+      <section
+        data-reveal
+        className="flex flex-col gap-5 rounded-[20px] border border-line bg-white p-5 md:rounded-3xl md:p-6 md:shadow-[0px_10px_30px_0px_rgba(13,28,51,0.06)]"
+      >
         <h2 className="font-heading text-xl font-bold text-ink">
           {sidebar.summaryTitle}
         </h2>
@@ -83,7 +86,10 @@ export function JobSidebar({
         />
       </section>
 
-      <section className="flex flex-col gap-4 rounded-3xl bg-navy p-6 text-white">
+      <section
+        data-reveal
+        className="flex flex-col gap-3.5 rounded-[20px] bg-[#1c3f5a] p-5 text-white md:gap-4 md:rounded-3xl md:bg-navy md:p-6"
+      >
         <h2 className="font-heading text-xl font-bold">
           {sidebar.questionsTitle}
         </h2>
@@ -105,7 +111,10 @@ export function JobSidebar({
         ))}
       </section>
 
-      <section className="flex flex-col gap-3 rounded-3xl border border-line bg-surface p-6">
+      <section
+        data-reveal
+        className="flex flex-col gap-3 rounded-[20px] border border-line bg-surface p-5 md:rounded-3xl md:p-6"
+      >
         <h2 className="font-heading text-lg font-bold text-ink">
           {sidebar.beforeTitle}
         </h2>

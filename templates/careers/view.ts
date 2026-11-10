@@ -394,6 +394,7 @@ export function applyView(
       keepOnFile: a.keepOnFile,
       equalOpportunities: a.equalOpportunities,
       submit: a.submit,
+      next: a.next ?? "Continue",
       sending: a.sending,
       privacyNote: a.privacyNote,
       success: a.success,

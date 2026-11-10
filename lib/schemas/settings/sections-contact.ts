@@ -7,9 +7,30 @@ import { href, link, mediaRef, text } from "../common"
  * info cards, ICCA membership, social links and the quote box. Lines may
  * carry {placeholders} (lib/interpolate.ts); the enquiry form is page data.
  */
+/** Used for rows saved before `mobile` existed (also by the views). */
+export const contactMobileDefaults = {
+  callLabel: "Call",
+  emailLabel: "Email",
+  directionsLabel: "Directions",
+  mapLabel: "Map",
+  followLabel: "Follow us",
+}
+
 export const contactSectionSettings = z.object({
   eyebrow: text,
   title: text,
+  /** Shown under the title on a phone (the mobile design) */
+  description: text.optional(),
+  /** Short labels of the phone layout's action pills */
+  mobile: z
+    .object({
+      callLabel: text,
+      emailLabel: text,
+      directionsLabel: text,
+      mapLabel: text,
+      followLabel: text,
+    })
+    .default(contactMobileDefaults),
   infoCards: z
     .array(
       z.object({

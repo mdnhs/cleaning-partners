@@ -1,6 +1,9 @@
 "use client"
 
+import { motion } from "motion/react"
 import { useState } from "react"
+
+import { useEntrance } from "@/components/motion/use-entrance"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -53,6 +56,7 @@ export function BlogList({
 }: BlogListProps) {
   const ALL = labels.all
   const categories = [ALL, ...categoryNames]
+  const entrance = useEntrance()
   const [category, setCategory] = useState(
     initialCategory && categoryNames.includes(initialCategory)
       ? initialCategory
@@ -178,9 +182,15 @@ export function BlogList({
         {visible.length > 0 ? (
           <ul className="grid w-full gap-6 md:grid-cols-2 lg:grid-cols-3">
             {visible.map((post) => (
-              <li key={post.slug}>
+              <motion.li
+                key={post.slug}
+                layout
+                initial={entrance}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <PostCard post={post} readArticle={labels.readArticle} />
-              </li>
+              </motion.li>
             ))}
           </ul>
         ) : (

@@ -32,7 +32,7 @@ export type SiteFooterProps = {
 }
 
 const FOOTER_LINK_CLASS =
-  "group/link inline-flex w-fit items-center text-[15px] leading-[1.5] [overflow-wrap:anywhere] text-white/80 transition-[color,translate] duration-300 ease-out hover:text-white focus-visible:text-white motion-safe:hover:translate-x-1 motion-safe:focus-visible:translate-x-1"
+  "group/link inline-flex w-fit items-center text-sm leading-[1.55] sm:text-[15px] sm:leading-[1.5] [overflow-wrap:anywhere] text-white/80 transition-[color,translate] duration-300 ease-out hover:text-white focus-visible:text-white motion-safe:hover:translate-x-1 motion-safe:focus-visible:translate-x-1"
 
 /**
  * A footer link that answers the pointer: a brand-coloured bar grows in
@@ -75,7 +75,7 @@ function FooterLink({
 
 function ColumnTitle({ children }: { children: React.ReactNode }) {
   return (
-    <p className="font-heading text-base/[normal] font-bold tracking-[1.28px] text-brand">
+    <p className="font-heading text-sm/[normal] font-bold tracking-[1.12px] text-brand sm:text-base/[normal] sm:tracking-[1.28px]">
       {children}
     </p>
   )
@@ -91,7 +91,7 @@ export function SiteFooter({
   legal,
 }: SiteFooterProps) {
   return (
-    <footer className="relative isolate overflow-hidden bg-navy-dark pt-20 pb-8">
+    <footer className="relative isolate overflow-hidden bg-navy-dark pt-12 pb-28 sm:pt-20 md:pb-8">
       <div
         aria-hidden="true"
         className="footer-aurora pointer-events-none absolute inset-0 -z-10"
@@ -100,14 +100,14 @@ export function SiteFooter({
         <span />
         <span />
       </div>
-      <Container className="flex flex-col gap-12">
+      <Container className="flex flex-col gap-8 sm:gap-12">
         <div
           data-stagger
-          className="grid grid-cols-2 gap-x-6 gap-y-10 sm:gap-12 lg:grid-cols-[340px_1fr_1fr_300px] lg:gap-14"
+          className="grid grid-cols-2 gap-x-5 gap-y-8 sm:gap-12 lg:grid-cols-[340px_1fr_1fr_300px] lg:gap-14"
         >
-          <div className="flex flex-col items-start gap-5 max-sm:col-span-2">
-            <div className="rounded-2xl bg-white px-3 py-2">
-              <div className="relative h-[76px] w-[84px]">
+          <div className="flex flex-col items-start gap-4 max-sm:col-span-2 sm:gap-5">
+            <div className="rounded-[13px] bg-white px-2.5 py-1.5 sm:rounded-2xl sm:px-3 sm:py-2">
+              <div className="relative h-[61px] w-[67px] sm:h-[76px] sm:w-[84px]">
                 <Image
                   src={logo.src}
                   alt={logo.alt}
@@ -118,12 +118,12 @@ export function SiteFooter({
                 {logo.animation ? <LogoAnimation src={logo.animation} /> : null}
               </div>
             </div>
-            <p className="text-[15px] leading-[1.65] text-white/70">
+            <p className="text-[15px] leading-[1.6] text-white/70 sm:leading-[1.65]">
               {tagline}
             </p>
           </div>
 
-          <nav className="flex flex-col gap-3.5">
+          <nav className="flex flex-col gap-3 sm:gap-3.5">
             <ColumnTitle>{quickLinks.title}</ColumnTitle>
             {quickLinks.links.map((link) => (
               <FooterLink key={link.href} href={link.href}>
@@ -132,7 +132,7 @@ export function SiteFooter({
             ))}
           </nav>
 
-          <div className="flex flex-col gap-3.5">
+          <div className="flex flex-col gap-3 sm:gap-3.5">
             <ColumnTitle>{contact.title}</ColumnTitle>
             {contact.lines.map((line, index) => {
               const href = contact.hrefs?.[index]
@@ -147,7 +147,7 @@ export function SiteFooter({
               ) : (
                 <p
                   key={line}
-                  className="text-[15px] leading-[1.5] [overflow-wrap:anywhere] text-white/80"
+                  className="text-sm leading-[1.55] [overflow-wrap:anywhere] text-white/80 sm:text-[15px] sm:leading-[1.5]"
                 >
                   {line}
                 </p>
@@ -155,7 +155,7 @@ export function SiteFooter({
             })}
           </div>
 
-          <div className="flex flex-col gap-4 max-sm:col-span-2">
+          <div className="flex flex-col gap-3 max-sm:col-span-2 sm:gap-4">
             <ColumnTitle>{group.title}</ColumnTitle>
             {group.companies.map((company) => (
               <a
@@ -177,13 +177,13 @@ export function SiteFooter({
                   </div>
                 </div>
                 <div className="flex min-w-0 flex-col gap-0.5">
-                  <p className="font-heading text-base/[normal] font-bold text-white">
+                  <p className="font-heading text-base/[1.2] font-bold text-white sm:leading-[normal]">
                     {company.name}
                   </p>
-                  <p className="text-[13px]/[normal] text-white/70">
+                  <p className="text-[13px]/[1.5] text-white/70 sm:leading-[normal]">
                     {company.phone}
                   </p>
-                  <p className="text-[13px]/[normal] text-white/70">
+                  <p className="text-[13px]/[1.5] text-white/70 sm:leading-[normal]">
                     {company.site}
                   </p>
                 </div>
@@ -194,9 +194,9 @@ export function SiteFooter({
 
         <div className="h-px w-full bg-white/12" />
 
-        <div className="flex flex-col justify-between gap-2 text-sm/[normal] text-white/60 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-2 text-center text-[13px]/[1.5] text-white/60 sm:flex-row sm:text-left sm:text-sm/[normal]">
           <p>{copyright}</p>
-          <p className="flex flex-wrap gap-x-3 gap-y-1">
+          <p className="flex flex-wrap justify-center gap-x-3 gap-y-1 sm:justify-start">
             {[...legal.pages, ...(legal.login ? [legal.login] : [])].map(
               (link, index) => (
                 <span key={link.href} className="contents">

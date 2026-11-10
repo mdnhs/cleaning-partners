@@ -1,4 +1,5 @@
 import Image from "next/image"
+import { NavigationIcon } from "lucide-react"
 
 import { interpolate } from "@/lib/interpolate"
 
@@ -81,6 +82,7 @@ export type LocationMapProps = {
   tilePattern: string
   href: string
   markerLabel: string
+  directionsLabel: string
   logo: string
   pin: string
 }
@@ -90,6 +92,7 @@ export function LocationMap({
   tilePattern,
   href,
   markerLabel,
+  directionsLabel,
   logo,
   pin,
 }: LocationMapProps) {
@@ -97,7 +100,7 @@ export function LocationMap({
     <section
       aria-label={ariaLabel}
       data-map
-      className="relative h-[480px] overflow-hidden bg-[#e8eae6]"
+      className="relative h-[300px] overflow-hidden bg-[#e8eae6] md:h-[480px]"
     >
       <div data-map-tiles className="absolute inset-0">
         <TileLayer
@@ -126,7 +129,7 @@ export function LocationMap({
         target="_blank"
         rel="noreferrer"
         data-map-marker
-        className="absolute top-[calc(50%-17px)] left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5"
+        className="absolute top-16 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5 md:top-[calc(50%-17px)] md:-translate-y-1/2"
       >
         <div className="flex items-center gap-2.5 rounded-full bg-white py-2 pr-4 pl-2 shadow-[0px_6px_18px_0px_rgba(0,0,0,0.18)]">
           <div className="relative size-9 shrink-0 overflow-hidden rounded-full border border-brand/25 bg-white">
@@ -143,6 +146,16 @@ export function LocationMap({
           </p>
         </div>
         <Image src={pin} alt="" width={120} height={96} />
+      </a>
+      {/* Phones: the design's own "Get Directions" button under the pin. */}
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="absolute bottom-5 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-navy px-6 py-4 font-heading text-base/[1.2] font-bold whitespace-nowrap text-white md:hidden"
+      >
+        <NavigationIcon aria-hidden className="size-5" />
+        {directionsLabel}
       </a>
     </section>
   )

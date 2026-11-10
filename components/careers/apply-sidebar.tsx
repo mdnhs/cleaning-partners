@@ -35,7 +35,7 @@ export function ApplySidebar({
     { icon: Mail, link: sidebar.email },
   ]
   return (
-    <aside className="flex flex-col gap-6 lg:sticky lg:top-28 lg:self-start">
+    <aside className="flex flex-col gap-6 max-md:hidden lg:sticky lg:top-28 lg:self-start">
       {job ? (
         <div className="flex flex-col gap-4 rounded-3xl bg-navy-dark p-7">
           <p className="font-heading text-sm leading-[1.2] font-bold tracking-[0.5px] text-brand uppercase">

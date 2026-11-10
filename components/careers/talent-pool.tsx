@@ -15,22 +15,24 @@ export function TalentPool({
   call,
 }: TalentPoolProps) {
   return (
-    <section className="bg-white py-16 md:py-24">
+    <section className="bg-white py-12 md:py-24">
       <Container>
         <div
           data-reveal
-          className="flex flex-col gap-8 rounded-[28px] bg-navy-dark px-8 py-12 md:flex-row md:items-center md:justify-between md:px-14"
+          className="flex flex-col gap-3.5 rounded-3xl bg-[#1c3f5a] p-6 sm:gap-8 sm:rounded-[28px] sm:bg-navy-dark sm:px-8 sm:py-12 md:flex-row md:items-center md:justify-between md:px-14"
         >
-          <div className="flex max-w-[640px] flex-col gap-3">
-            <p className="font-heading text-[15px]/[normal] font-bold tracking-[2.1px] text-brand">
+          <div className="flex max-w-[640px] flex-col gap-3.5 sm:gap-3">
+            <p className="font-heading text-xs/[1.2] font-bold tracking-[1.44px] text-brand sm:text-[15px]/[normal] sm:tracking-[2.1px]">
               {eyebrow}
             </p>
-            <h2 className="font-heading text-3xl/[1.15] font-bold text-white md:text-[40px]">
+            <h2 className="font-heading text-[28px]/[1.15] font-bold tracking-[-0.084px] text-white sm:text-3xl sm:tracking-normal md:text-[40px]">
               {title}
             </h2>
-            <p className="text-base leading-[1.6] text-white/80">{body}</p>
+            <p className="text-sm leading-[1.55] text-white/85 sm:text-base sm:leading-[1.6] sm:text-white/80">
+              {body}
+            </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row md:shrink-0">
+          <div className="flex flex-col gap-3.5 sm:flex-row sm:gap-3 md:shrink-0">
             <Link
               href={cta.href}
               className={buttonVariants({

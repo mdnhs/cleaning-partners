@@ -1,3 +1,5 @@
+import { navigationMobileDefaults } from "@/lib/schemas/settings/navigation"
+import { contactMobileDefaults } from "@/lib/schemas/settings/sections-contact"
 import type { StatsProps } from "@/components/about/stats"
 import type { OurStoryProps } from "@/components/about/our-story"
 import type { ArticleBodyProps } from "@/components/blog/article"
@@ -113,6 +115,7 @@ export function chromeView(s: ChromeSources): ChromeView {
       cta: linkView(s, navigation.cta),
       menuAria: navigation.menuAria,
       closeMenuAria: navigation.closeMenuAria,
+      mobile: navigation.mobile ?? navigationMobileDefaults,
     },
     footer: {
       logo: { src: site.logo.url, alt: site.logoAlt, ...animation },
@@ -258,6 +261,8 @@ export function contactSectionView(
   return {
     eyebrow: section.eyebrow,
     title: title ?? section.title,
+    description: section.description,
+    labels: section.mobile ?? contactMobileDefaults,
     cards: section.infoCards.map((card) => ({
       title: card.title,
       icon: card.icon.url,
@@ -289,6 +294,8 @@ export function locationMapView(s: SiteSources): LocationMapProps {
     tilePattern: map.tileImagePattern,
     href: hrefView(s, map.href),
     markerLabel: map.markerLabel,
+    directionsLabel: (s.settings.navigation.mobile ?? navigationMobileDefaults)
+      .directionsLabel,
     logo: s.settings.site.logo.url,
     pin: map.pin.url,
   }

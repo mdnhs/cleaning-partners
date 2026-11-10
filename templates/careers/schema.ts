@@ -167,6 +167,7 @@ export const careersTemplate = z.object({
     keepOnFile: text,
     equalOpportunities: text,
     submit: text,
+    next: text.default("Continue"),
     sending: text,
     privacyNote: text,
     success: z.object({ title: text, body: text }),

@@ -8,6 +8,7 @@ type SectionHeadingProps = {
   tone?: "default" | "inverted"
   className?: string
   titleClassName?: string
+  eyebrowClassName?: string
 }
 
 export function SectionHeading({
@@ -18,13 +19,14 @@ export function SectionHeading({
   tone = "default",
   className,
   titleClassName,
+  eyebrowClassName,
 }: SectionHeadingProps) {
   const inverted = tone === "inverted"
 
   return (
     <div
       className={cn(
-        "flex w-full flex-col gap-3",
+        "flex w-full flex-col gap-2 sm:gap-3",
         align === "center" ? "items-center text-center" : "items-start",
         className
       )}
@@ -32,8 +34,9 @@ export function SectionHeading({
       <p
         data-reveal
         className={cn(
-          "font-heading text-[15px]/[normal] font-bold tracking-[2.1px]",
-          inverted ? "text-sky" : "text-brand"
+          "font-heading text-xs/[1.2] font-bold tracking-[1.44px] sm:text-[15px]/[normal] sm:tracking-[2.1px]",
+          inverted ? "text-sky" : "text-brand",
+          eyebrowClassName
         )}
       >
         {eyebrow}
@@ -41,7 +44,7 @@ export function SectionHeading({
       <h2
         data-split
         className={cn(
-          "font-heading text-4xl leading-[1.1] font-bold md:text-5xl",
+          "font-heading text-[28px] leading-[1.15] font-bold tracking-[-0.084px] sm:text-4xl sm:leading-[1.1] sm:tracking-normal md:text-5xl",
           inverted ? "text-white" : "text-ink",
           titleClassName
         )}
@@ -52,7 +55,7 @@ export function SectionHeading({
         <p
           data-reveal
           className={cn(
-            "text-lg leading-[1.6]",
+            "text-base leading-[1.6] sm:text-lg",
             inverted ? "text-sky-soft" : "text-body",
             align === "center" && "max-w-[680px]"
           )}
@@ -71,7 +74,7 @@ export function Container({
   return (
     <div
       className={cn(
-        "relative mx-auto w-full max-w-[1440px] px-4 sm:px-8 xl:px-[120px]",
+        "relative mx-auto w-full max-w-[1440px] px-5 sm:px-8 xl:px-[120px]",
         className
       )}
       {...props}

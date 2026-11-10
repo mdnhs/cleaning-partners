@@ -20,7 +20,7 @@ export function WhyChooseUs({
   return (
     <section
       data-story-track
-      className="relative overflow-hidden py-16 md:py-28"
+      className="relative overflow-hidden py-12 sm:py-16 md:py-28"
     >
       <div aria-hidden className="absolute inset-0">
         <Image
@@ -35,36 +35,37 @@ export function WhyChooseUs({
       </div>
 
       <div data-story-stage>
-        <Container className="flex flex-col items-center gap-14">
+        <Container className="flex flex-col items-center gap-6 sm:gap-14">
           <SectionHeading
             tone="inverted"
             eyebrow={eyebrow}
             title={title}
             description={description}
+            className="max-sm:items-start max-sm:text-left"
           />
 
           {/* The line that fills while the reasons light up (page-story.ts). */}
           <div
             aria-hidden
             data-story-bar
-            className="h-0.5 w-full max-w-[420px] origin-left rounded-full bg-white/70"
+            className="h-0.5 w-full max-w-[420px] origin-left rounded-full bg-white/70 max-sm:hidden"
           />
 
           <ul
             data-features
-            className="grid w-full gap-6 sm:grid-cols-2 lg:grid-cols-4"
+            className="grid w-full grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4"
           >
             {features.map((feature) => (
               <li
                 key={feature.title}
                 data-story-card
-                className="group flex flex-col items-center gap-3.5 rounded-3xl border border-white/25 bg-white/10 px-6 py-8 text-center transition-[translate,background-color,border-color,box-shadow] duration-300 ease-out hover:border-white/50 hover:bg-white/20 hover:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.28)] has-[a:focus-visible]:border-white/50 motion-safe:hover:-translate-y-1.5!"
+                className="group flex min-h-[184px] flex-col items-start gap-2.5 rounded-[18px] border border-white/25 bg-white/10 p-4 text-left transition-[translate,background-color,border-color,box-shadow] duration-300 ease-out hover:border-white/50 hover:bg-white/20 hover:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.28)] has-[a:focus-visible]:border-white/50 motion-safe:hover:-translate-y-1.5! sm:min-h-0 sm:items-center sm:gap-3.5 sm:rounded-3xl sm:px-6 sm:py-8 sm:text-center"
               >
                 {/* 110px icon clipped to a 96×78 frame, top-aligned */}
-                <div className="flex h-[78px] w-24 justify-center overflow-hidden transition-transform duration-300 ease-out motion-safe:group-hover:scale-110">
+                <div className="flex h-[42px] w-[52px] justify-start overflow-hidden transition-transform duration-300 ease-out motion-safe:group-hover:scale-110 sm:h-[78px] sm:w-24 sm:justify-center">
                   <div
                     data-feature-icon
-                    className="relative size-[110px] shrink-0"
+                    className="relative size-[52px] shrink-0 sm:size-[110px]"
                   >
                     <Image
                       src={feature.icon}
@@ -75,10 +76,10 @@ export function WhyChooseUs({
                     />
                   </div>
                 </div>
-                <h3 className="font-heading text-[22px]/[normal] font-bold text-white">
+                <h3 className="font-heading text-[17px]/[1.3] font-bold text-white sm:text-[22px]/[normal]">
                   {feature.title}
                 </h3>
-                <p className="text-[15px] leading-[1.55] text-white/85">
+                <p className="text-[13px] leading-[1.5] text-white/85 sm:text-[15px] sm:leading-[1.55]">
                   {feature.description}
                 </p>
               </li>

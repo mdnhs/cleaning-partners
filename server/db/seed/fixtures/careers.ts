@@ -328,6 +328,7 @@ export function careersPageFixture(media: MediaLookup): PageFixture<"careers"> {
         equalOpportunities:
           "Cleaning Partners is an equal opportunities employer. We do not ask for your age, date of birth, marital or family status. If you need any reasonable accommodation during the process, please let us know above.",
         submit: "Submit Application",
+        next: "Continue",
         sending: "Sending…",
         privacyNote:
           "Your information is encrypted and handled in line with GDPR.",

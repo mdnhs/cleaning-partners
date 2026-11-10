@@ -231,6 +231,8 @@ export type ApplyView = {
     keepOnFile: string
     equalOpportunities: string
     submit: string
+    /** The phone wizard's "Continue" button */
+    next: string
     sending: string
     privacyNote: string
     success: { title: string; body: string }

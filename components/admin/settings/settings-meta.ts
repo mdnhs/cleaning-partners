@@ -146,6 +146,11 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         label: "Close menu button label (screen readers)",
         help: "Not visible; read aloud by assistive technology.",
       },
+      mobile: { label: "Phone menu texts" },
+      "mobile.helpTitle": { label: "Help block title" },
+      "mobile.callLabel": { label: "Call button" },
+      "mobile.allServicesLabel": { label: "All services link" },
+      "mobile.directionsLabel": { label: "Directions button (map)" },
       breadcrumbHome: { label: "Breadcrumb home text" },
       breadcrumbHomeHref: { label: "Breadcrumb home link" },
     },
@@ -159,7 +164,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Call to action",
           description: "The highlighted button at the end of the menu.",
-          fields: ["cta", "menuAria", "closeMenuAria"],
+          fields: ["cta", "menuAria", "closeMenuAria", "mobile"],
         },
         {
           title: "Breadcrumbs",
@@ -384,6 +389,18 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
     fields: {
       eyebrow: { label: "Small heading" },
       title: { label: "Heading" },
+      description: {
+        label: "Intro text (phones)",
+        widget: "textarea",
+        rows: 2,
+        width: "full",
+      },
+      mobile: { label: "Phone layout texts" },
+      "mobile.callLabel": { label: "Call" },
+      "mobile.emailLabel": { label: "Email" },
+      "mobile.directionsLabel": { label: "Directions" },
+      "mobile.mapLabel": { label: "Map" },
+      "mobile.followLabel": { label: "Follow us" },
       infoCards: {
         label: "Contact cards",
         itemName: "Card",
@@ -420,7 +437,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Heading",
           description: "The top of the Contact section.",
-          fields: ["eyebrow", "title"],
+          fields: ["eyebrow", "title", "description", "mobile"],
         },
         {
           title: "Contact cards",

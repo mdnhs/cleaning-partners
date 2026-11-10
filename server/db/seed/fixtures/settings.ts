@@ -54,6 +54,12 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       cta: { label: "Get a Quote", href: "#contact" },
       menuAria: "Open menu",
       closeMenuAria: "Close menu",
+      mobile: {
+        helpTitle: "Need help now?",
+        callLabel: "Call Now",
+        allServicesLabel: "View All Services",
+        directionsLabel: "Get Directions",
+      },
       breadcrumbHome: "Home",
       breadcrumbHomeHref: "/",
     },
@@ -119,6 +125,14 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
     "sections.contact": {
       eyebrow: "GET IN TOUCH",
       title: "Contact Us",
+      description: "Questions, quotes or a 24hr call-out – we’re one tap away.",
+      mobile: {
+        callLabel: "Call",
+        emailLabel: "Email",
+        directionsLabel: "Directions",
+        mapLabel: "Map",
+        followLabel: "Follow us",
+      },
       infoCards: [
         {
           title: "Phone",

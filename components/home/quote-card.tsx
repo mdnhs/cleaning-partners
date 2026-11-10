@@ -1,3 +1,5 @@
+import { PhoneIcon } from "lucide-react"
+
 import { buttonVariants } from "@/components/ui/button"
 
 export type QuoteCardProps = {
@@ -10,15 +12,21 @@ export type QuoteCardProps = {
 /** Sidebar call-to-action shared by service and blog detail pages */
 export function QuoteCard({ title, body, tel, cta }: QuoteCardProps) {
   return (
-    <div className="flex flex-col gap-3.5 rounded-3xl bg-navy p-8">
-      <h2 className="font-heading text-[28px]/[normal] font-bold text-white">
+    <div
+      data-reveal
+      className="flex flex-col gap-3 rounded-[20px] bg-navy p-6 md:gap-3.5 md:rounded-3xl md:p-8"
+    >
+      <h2 className="font-heading text-xl/[1.25] font-bold text-white md:text-[28px]/[normal]">
         {title}
       </h2>
-      <p className="text-base leading-[1.6] text-white/85">{body}</p>
+      <p className="text-sm leading-[1.55] text-white/85 md:text-base md:leading-[1.6]">
+        {body}
+      </p>
       <a
         href={tel.href}
-        className="text-base/[normal] font-medium text-white hover:text-sky"
+        className="flex items-center gap-2 text-[15px]/[1.45] font-medium text-white hover:text-sky md:text-base/[normal]"
       >
+        <PhoneIcon aria-hidden className="size-4 md:hidden" />
         {tel.label}
       </a>
       <a

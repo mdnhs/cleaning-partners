@@ -519,13 +519,16 @@ describe("QuoteForm submit (R7-4)", () => {
       (el) => !el.className.split(" ").includes("absolute")
     )
     expect(inFlow.map((el) => [el.tagName, el.className])).toEqual([
-      ["H3", "font-heading text-[28px]/[normal] font-bold text-ink"],
-      ["DIV", "grid gap-x-4 gap-y-5 sm:grid-cols-2"],
+      [
+        "H3",
+        "font-heading text-xl/[1.25] font-bold text-ink md:text-[28px]/[normal]",
+      ],
+      ["DIV", "grid gap-x-4 gap-y-4 sm:grid-cols-2 md:gap-y-5"],
       ["DIV", "flex flex-col gap-2"],
       ["DIV", "flex flex-col gap-2"],
       [
         "LABEL",
-        "flex cursor-pointer items-center gap-3 text-[15px]/[normal] text-body",
+        "flex cursor-pointer items-center gap-3 rounded-xl border border-line px-4 py-3.5 text-[15px]/[1.6] text-ink md:rounded-none md:border-0 md:p-0 md:text-[15px]/[normal] md:text-body",
       ],
       [
         "BUTTON",

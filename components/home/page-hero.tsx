@@ -1,6 +1,7 @@
 import { Fragment } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { ChevronRightIcon } from "lucide-react"
 
 import { Container } from "@/components/home/section-heading"
 
@@ -44,23 +45,30 @@ export function PageHero({
 
       <Container
         data-hero-content
-        className="flex min-h-[460px] flex-col items-center justify-center gap-5 py-16 text-center"
+        className="flex flex-col items-start gap-2.5 pt-6 pb-8 text-left sm:min-h-[460px] sm:items-center sm:justify-center sm:gap-5 sm:py-16 sm:text-center"
       >
         <nav
           aria-label={ariaLabel}
           data-intro
           data-hero-copy
-          className="flex flex-wrap items-center justify-center gap-2.5 rounded-full bg-white/14 px-[18px] py-2 font-heading text-[15px]/[normal]"
+          className="flex flex-wrap items-center gap-1.5 text-[13px] leading-normal sm:justify-center sm:gap-2.5 sm:rounded-full sm:bg-white/14 sm:px-[18px] sm:py-2 sm:font-heading sm:text-[15px]/[normal]"
         >
           {[home, ...parents].map((parent) => (
             <Fragment key={parent.href}>
               <Link
                 href={parent.href}
-                className="font-medium text-white/80 transition-colors hover:text-white"
+                className="font-medium text-white/70 transition-colors hover:text-white sm:text-white/80"
               >
                 {parent.label}
               </Link>
-              <span aria-hidden className="font-medium text-white/50">
+              <ChevronRightIcon
+                aria-hidden
+                className="size-3.5 text-white/70 sm:hidden"
+              />
+              <span
+                aria-hidden
+                className="font-medium text-white/50 max-sm:hidden"
+              >
                 /
               </span>
             </Fragment>
@@ -73,14 +81,14 @@ export function PageHero({
         <h1
           data-intro
           data-hero-title
-          className="font-heading text-[44px] leading-[normal] font-bold text-white md:text-[64px]"
+          className="font-heading text-[32px] leading-[1.1] font-bold tracking-[-0.16px] text-white sm:text-[44px] sm:leading-[normal] sm:tracking-normal md:text-[64px]"
         >
           {title}
         </h1>
         <p
           data-intro
           data-hero-copy
-          className="max-w-[720px] text-lg leading-[1.5] text-white/92 md:text-xl"
+          className="max-w-[720px] text-base leading-[1.6] text-white/90 sm:text-lg sm:leading-[1.5] sm:text-white/92 md:text-xl"
         >
           {description}
         </p>

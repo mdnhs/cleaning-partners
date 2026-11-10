@@ -54,6 +54,12 @@ const header = (animation?: string): SiteHeaderProps => ({
   cta: { label: "Quote", href: "#contact" },
   menuAria: "Menu",
   closeMenuAria: "Close",
+  mobile: {
+    helpTitle: "Need help now?",
+    callLabel: "Call Now",
+    allServicesLabel: "View All Services",
+    directionsLabel: "Get Directions",
+  },
 })
 
 const footer = (animation?: string): SiteFooterProps => ({

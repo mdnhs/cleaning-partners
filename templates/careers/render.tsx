@@ -52,8 +52,8 @@ export function JobDetailTemplate({
         {jsonLd ? <JsonLd data={jsonLd} /> : null}
         <main>
           <JobHero slug={view.slug} open={view.open} hero={view.hero} />
-          <section className="bg-white py-16 md:py-24">
-            <Container className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16">
+          <section className="bg-white pt-8 pb-12 md:py-24">
+            <Container className="grid gap-8 md:gap-12 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-16">
               <JobBody body={view.body} />
               <JobSidebar
                 sidebar={view.sidebar}
@@ -77,19 +77,21 @@ export function ApplyTemplate({ view }: { view: ApplyView }) {
     <HomeMotion>
       <div className="bg-white text-ink">
         <main>
-          <PageHero
-            crumb={hero.crumb}
-            parents={[
-              hero.crumbs.careers,
-              ...(hero.jobCrumb ? [hero.jobCrumb] : []),
-            ]}
-            title={hero.title}
-            description={hero.subtitle}
-            image={hero.image}
-            home={hero.crumbs.home}
-            ariaLabel={hero.crumbs.ariaLabel}
-          />
-          <section className="bg-surface py-16 md:py-28">
+          <div className="max-md:hidden">
+            <PageHero
+              crumb={hero.crumb}
+              parents={[
+                hero.crumbs.careers,
+                ...(hero.jobCrumb ? [hero.jobCrumb] : []),
+              ]}
+              title={hero.title}
+              description={hero.subtitle}
+              image={hero.image}
+              home={hero.crumbs.home}
+              ariaLabel={hero.crumbs.ariaLabel}
+            />
+          </div>
+          <section className="bg-surface pb-8 md:py-28">
             <Container className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_384px] lg:gap-10">
               {view.closed ? (
                 <div

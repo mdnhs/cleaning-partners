@@ -4,7 +4,15 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { MenuIcon, XIcon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ClockIcon,
+  MailIcon,
+  MenuIcon,
+  PhoneIcon,
+  XIcon,
+} from "lucide-react"
 
 import { buttonClassName } from "@/components/ui/button"
 import {
@@ -42,6 +50,12 @@ export type SiteHeaderProps = {
   cta: NavLink
   menuAria: string
   closeMenuAria: string
+  mobile: {
+    helpTitle: string
+    callLabel: string
+    allServicesLabel: string
+    directionsLabel: string
+  }
 }
 
 /**
@@ -185,25 +199,41 @@ export function SiteHeader({
   cta,
   menuAria,
   closeMenuAria,
+  mobile,
 }: SiteHeaderProps) {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [servicesOpen, setServicesOpen] = useState(true)
   // Past the very top the bar turns to blurred glass, so the page shows
   // through it as it scrolls underneath.
   const [scrolled, setScrolled] = useState(false)
+  // The phone's fixed call/quote bar: shown once the hero is scrolled away.
+  const [stickyCta, setStickyCta] = useState(false)
   useEffect(() => {
-    const update = () => setScrolled(window.scrollY > 8)
+    const update = () => {
+      setScrolled(window.scrollY > 8)
+      const hero = document.querySelector<HTMLElement>("[data-hero]")
+      const after = hero ? hero.offsetTop + hero.offsetHeight : 320
+      setStickyCta(window.scrollY > after - 80)
+    }
     update()
     window.addEventListener("scroll", update, { passive: true })
     return () => window.removeEventListener("scroll", update)
-  }, [])
+  }, [pathname])
 
   return (
     <>
-      <div id="top" className="bg-navy text-[13px]/[normal]">
-        <Container className="flex items-center justify-between gap-4 py-2.5">
+      <div
+        id="top"
+        className="bg-navy text-xs/[normal] sm:text-[13px]/[normal]"
+      >
+        <Container className="flex items-center justify-between gap-4 py-[9px] sm:py-2.5">
           <div className="flex gap-7">
-            <a href={topBar.phoneHref} className="font-medium text-white">
+            <a
+              href={topBar.phoneHref}
+              className="flex items-center gap-1.5 font-medium text-white"
+            >
+              <PhoneIcon aria-hidden className="size-[13px] sm:hidden" />
               {topBar.phone}
             </a>
             <a
@@ -228,7 +258,7 @@ export function SiteHeader({
         <Container className="flex items-center justify-between py-2.5">
           <Link
             href={logo.href}
-            className="relative h-[60px] w-[68px] shrink-0"
+            className="relative h-[50px] w-14 shrink-0 sm:h-[60px] sm:w-[68px]"
           >
             <Image
               src={logo.src}
@@ -267,7 +297,14 @@ export function SiteHeader({
             })}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <a
+              href={topBar.phoneHref}
+              aria-label={topBar.phone}
+              className="inline-flex size-11 items-center justify-center rounded-full border border-line text-brand hover:bg-surface lg:hidden"
+            >
+              <PhoneIcon aria-hidden className="size-5" />
+            </a>
             <a
               href={cta.href}
               className={buttonClassName(
@@ -280,19 +317,19 @@ export function SiteHeader({
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger
                 aria-label={menuAria}
-                className="inline-flex size-11 items-center justify-center rounded-full text-ink hover:bg-surface lg:hidden"
+                className="inline-flex size-11 items-center justify-center rounded-full bg-brand text-white hover:bg-brand/90 lg:hidden"
               >
-                <MenuIcon className="size-6" />
+                <MenuIcon className="size-[22px]" />
               </SheetTrigger>
               <SheetContent
                 side="right"
                 showCloseButton={false}
                 data-lenis-prevent
-                className="w-[min(88vw,22rem)] gap-0 bg-white p-0 text-ink lg:hidden"
+                className="w-full gap-0 bg-white p-0 text-ink sm:w-[24rem] lg:hidden"
               >
-                <SheetHeader className="flex-row items-center justify-between border-b border-line px-5 py-4">
+                <SheetHeader className="flex-row items-center justify-between border-b border-line px-5 py-2.5">
                   <SheetTitle className="sr-only">{menuAria}</SheetTitle>
-                  <span aria-hidden className="relative h-[48px] w-[56px]">
+                  <span aria-hidden className="relative h-[50px] w-14">
                     <Image
                       src={logo.src}
                       alt=""
@@ -303,60 +340,195 @@ export function SiteHeader({
                   </span>
                   <SheetClose
                     aria-label={closeMenuAria}
-                    className="inline-flex size-11 items-center justify-center rounded-full text-ink hover:bg-surface"
+                    className="inline-flex size-11 items-center justify-center rounded-full bg-surface text-ink hover:bg-brand-soft"
                   >
-                    <XIcon className="size-6" />
+                    <XIcon className="size-[22px]" />
                   </SheetClose>
                 </SheetHeader>
                 <nav
                   aria-label={menuAria}
-                  className="flex flex-1 flex-col overflow-y-auto px-3 py-3 font-heading text-[17px] font-semibold"
+                  className="flex flex-1 flex-col overflow-y-auto px-5 py-2 font-heading text-xl"
                 >
-                  {links.map((link) => (
+                  {links.map((link) => {
+                    const active = isActiveHref(pathname, link.href)
+                    const rowClass = cn(
+                      "flex items-center justify-between py-4 text-left leading-[normal]",
+                      active ? "font-bold text-brand" : "font-semibold text-ink"
+                    )
+                    if (link.children?.length) {
+                      return (
+                        <div key={link.href}>
+                          <button
+                            type="button"
+                            aria-expanded={servicesOpen}
+                            onClick={() => setServicesOpen((v) => !v)}
+                            className={cn(rowClass, "w-full")}
+                          >
+                            {link.label}
+                            {servicesOpen ? (
+                              <ChevronDownIcon
+                                aria-hidden
+                                className="size-5 text-body"
+                              />
+                            ) : (
+                              <ChevronRightIcon
+                                aria-hidden
+                                className="size-5 text-body"
+                              />
+                            )}
+                          </button>
+                          {servicesOpen ? (
+                            <ul className="flex flex-col gap-0.5 border-b border-line pb-3 pl-3.5 font-sans text-[15px]">
+                              {[
+                                ...link.children,
+                                {
+                                  label: mobile.allServicesLabel,
+                                  href: link.href,
+                                  all: true,
+                                },
+                              ].map((child) => (
+                                <li key={child.href + child.label}>
+                                  <SheetClose
+                                    nativeButton={false}
+                                    render={
+                                      <Link
+                                        href={child.href}
+                                        className={cn(
+                                          "flex items-center gap-2.5 py-2 hover:text-brand",
+                                          "all" in child
+                                            ? "leading-[1.45] font-medium text-navy"
+                                            : "leading-[1.6] text-body"
+                                        )}
+                                      />
+                                    }
+                                  >
+                                    <span
+                                      aria-hidden
+                                      className="size-1.5 shrink-0 rounded-full bg-brand"
+                                    />
+                                    {child.label}
+                                  </SheetClose>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="border-b border-line" />
+                          )}
+                        </div>
+                      )
+                    }
+                    return (
+                      <SheetClose
+                        key={link.href}
+                        nativeButton={false}
+                        render={
+                          <Link
+                            href={link.href}
+                            aria-current={active ? "page" : undefined}
+                            className={cn(
+                              rowClass,
+                              "border-b border-line hover:text-brand"
+                            )}
+                          />
+                        }
+                      >
+                        {link.label}
+                        <ChevronRightIcon
+                          aria-hidden
+                          className={cn(
+                            "size-5",
+                            active ? "text-brand" : "text-body"
+                          )}
+                        />
+                      </SheetClose>
+                    )
+                  })}
+                </nav>
+                <div className="flex flex-col gap-3.5 bg-surface px-5 pt-5 pb-7">
+                  <p className="font-heading text-lg/[normal] font-bold">
+                    {mobile.helpTitle}
+                  </p>
+                  <ul className="flex flex-col gap-2 text-sm/[1.55] text-body">
+                    {[
+                      {
+                        Icon: PhoneIcon,
+                        text: topBar.phone,
+                        href: topBar.phoneHref,
+                      },
+                      {
+                        Icon: MailIcon,
+                        text: topBar.email,
+                        href: topBar.emailHref,
+                      },
+                      { Icon: ClockIcon, text: topBar.hours, href: undefined },
+                    ].map(({ Icon, text, href }) => (
+                      <li key={text} className="flex items-center gap-2.5">
+                        <Icon aria-hidden className="size-[18px] text-brand" />
+                        {href ? <a href={href}>{text}</a> : text}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex gap-2.5">
+                    <a
+                      href={topBar.phoneHref}
+                      className={buttonClassName(
+                        { variant: "outline-navy", size: "pill" },
+                        "min-w-0 flex-1 gap-2 px-4"
+                      )}
+                    >
+                      <PhoneIcon aria-hidden className="size-5" />
+                      {mobile.callLabel}
+                    </a>
                     <SheetClose
-                      key={link.href}
                       nativeButton={false}
                       render={
                         <Link
-                          href={link.href}
-                          aria-current={
-                            isActiveHref(pathname, link.href)
-                              ? "page"
-                              : undefined
-                          }
-                          className={cn(
-                            "rounded-xl px-3 py-3.5 hover:bg-surface hover:text-brand",
-                            isActiveHref(pathname, link.href) &&
-                              "font-bold text-brand"
+                          href={cta.href}
+                          className={buttonClassName(
+                            { variant: "brand", size: "pill" },
+                            "min-w-0 flex-1 px-4"
                           )}
                         />
                       }
                     >
-                      {link.label}
+                      {cta.label}
                     </SheetClose>
-                  ))}
-                </nav>
-                <div className="border-t border-line p-5">
-                  <SheetClose
-                    nativeButton={false}
-                    render={
-                      <Link
-                        href={cta.href}
-                        className={buttonClassName(
-                          { variant: "brand", size: "pill" },
-                          "w-full"
-                        )}
-                      />
-                    }
-                  >
-                    {cta.label}
-                  </SheetClose>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
           </div>
         </Container>
       </header>
+      <div
+        data-sticky-cta
+        aria-hidden={!stickyCta}
+        inert={!stickyCta}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-40 flex gap-2.5 bg-white px-4 pt-3 pb-6 shadow-[0px_-6px_12px_0px_rgba(13,38,64,0.12)] transition-transform duration-300 ease-out motion-reduce:transition-none md:hidden",
+          stickyCta ? "translate-y-0" : "translate-y-full"
+        )}
+      >
+        <a
+          href={topBar.phoneHref}
+          className={buttonClassName(
+            { variant: "outline-navy", size: "pill" },
+            "min-w-0 flex-1 gap-2 px-4"
+          )}
+        >
+          <PhoneIcon aria-hidden className="size-5" />
+          {mobile.callLabel}
+        </a>
+        <a
+          href={cta.href}
+          className={buttonClassName(
+            { variant: "brand", size: "pill" },
+            "min-w-0 flex-1 px-4"
+          )}
+        >
+          {cta.label}
+        </a>
+      </div>
     </>
   )
 }

@@ -45,14 +45,14 @@ export function Hero({
 
       <Container
         data-hero-content
-        className="flex min-h-[700px] flex-col items-center justify-center gap-6 py-16 text-center"
+        className="flex min-h-0 flex-col items-center justify-center gap-[18px] pt-9 pb-10 text-center sm:min-h-[700px] sm:gap-6 sm:py-16"
       >
         <div
           data-intro
           data-hero-badge
-          className="flex size-[180px] items-center justify-center rounded-full bg-white/92 md:size-[220px]"
+          className="flex size-28 items-center justify-center rounded-full bg-white/92 sm:size-[180px] md:size-[220px]"
         >
-          <div className="relative h-[130px] w-[146px] md:h-40 md:w-[180px]">
+          <div className="relative h-[82px] w-[92px] sm:h-[130px] sm:w-[146px] md:h-40 md:w-[180px]">
             <Image
               src={logo.src}
               alt={logo.alt}
@@ -67,14 +67,14 @@ export function Hero({
         <h1
           data-intro
           data-hero-title
-          className="font-heading text-[44px] leading-[1.05] font-bold text-white md:text-[64px]"
+          className="font-heading text-[32px] leading-[1.1] font-bold tracking-[-0.16px] text-white sm:text-[44px] sm:leading-[1.05] md:text-[64px]"
         >
           {title}
         </h1>
         <p
           data-intro
           data-hero-copy
-          className="max-w-[640px] text-lg leading-[1.55] text-white/90 md:text-xl"
+          className="max-w-[640px] text-base leading-[1.6] text-white/90 sm:text-lg sm:leading-[1.55] md:text-xl"
         >
           {subtitle}
         </p>
@@ -82,7 +82,7 @@ export function Hero({
         <div
           data-intro
           data-hero-actions
-          className="flex flex-wrap justify-center gap-4 pt-2"
+          className="flex w-full flex-wrap justify-center gap-[10px] sm:w-auto sm:gap-4 sm:pt-2"
         >
           <a
             href={primaryCta.href}
@@ -109,7 +109,7 @@ export function Hero({
         <div
           data-intro
           data-hero-member
-          className="flex items-center gap-3 pt-3"
+          className="flex items-center gap-3 pt-3 max-sm:pt-3"
         >
           <p className="text-sm font-medium text-white/80">{member.label}</p>
           <div className="relative h-[42px] w-20">

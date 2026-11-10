@@ -1,7 +1,10 @@
 import { ArrowRight } from "lucide-react"
+import { motion } from "motion/react"
 import Link from "next/link"
 
 import { buttonVariants } from "@/components/ui/button"
+
+import { useEntrance } from "@/components/motion/use-entrance"
 
 import { JobFacts, JobPill } from "./job-facts"
 import type { JobRowView } from "./types"
@@ -16,19 +19,24 @@ export function JobRow({
   openPill: string
   viewJob: string
 }) {
+  const entrance = useEntrance()
   return (
-    <li
+    <motion.li
+      layout
+      initial={entrance}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       data-card="light"
-      className="group flex flex-col gap-5 rounded-[20px] border border-line bg-white px-6 py-6 shadow-[0px_8px_15px_0px_rgba(13,28,51,0.05)] transition-[border-color,box-shadow] duration-300 hover:border-brand/40 hover:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.12)] md:flex-row md:items-center md:gap-8 md:px-8 md:py-7"
+      className="group flex flex-col gap-3 rounded-[18px] border border-line bg-white p-[18px] transition-[border-color,box-shadow] duration-300 hover:border-brand/40 hover:shadow-[0px_18px_40px_0px_rgba(13,38,64,0.12)] md:flex-row md:items-center md:gap-8 md:rounded-[20px] md:px-8 md:py-7 md:shadow-[0px_8px_15px_0px_rgba(13,28,51,0.05)]"
     >
       <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 md:gap-2">
           <JobPill tone="category">{job.category}</JobPill>
           <JobPill tone="open">{openPill}</JobPill>
         </div>
         <h3
           id={`job-${job.slug}`}
-          className="font-heading text-[22px]/[1.2] font-bold text-ink"
+          className="font-heading text-xl/[1.25] font-bold text-ink md:text-[22px]/[1.2]"
         >
           <Link
             href={job.href}
@@ -44,15 +52,18 @@ export function JobRow({
           pay={job.pay}
         />
       </div>
-      <div className="flex items-center justify-between gap-4 md:flex-col md:items-end">
-        <p className="text-[13px]/[normal] text-subtle">{job.posted}</p>
+      <div className="flex items-center justify-between gap-4 border-t border-line pt-3 md:flex-col md:items-end md:border-0 md:pt-0">
+        <p className="text-[13px]/[1.5] text-[#7a8590] md:text-[13px]/[normal] md:text-subtle">
+          {job.posted}
+        </p>
         <Link
           href={job.href}
           aria-describedby={`job-${job.slug}`}
           className={buttonVariants({
             variant: "brand",
             size: "pill-sm",
-            className: "px-[22px] py-[11px] text-[15px]/[normal]",
+            className:
+              "px-4 py-[9px] text-sm/[1.3] md:px-[22px] md:py-[11px] md:text-[15px]/[normal]",
           })}
         >
           {viewJob}
@@ -62,6 +73,6 @@ export function JobRow({
           />
         </Link>
       </div>
-    </li>
+    </motion.li>
   )
 }
