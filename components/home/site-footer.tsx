@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 
+import { FooterReady } from "@/components/home/footer-ready"
 import { LogoAnimation } from "@/components/home/logo-animation"
 import { Container } from "@/components/home/section-heading"
 
@@ -213,6 +214,7 @@ export function SiteFooter({
           </p>
         </div>
       </Container>
+      <FooterReady />
     </footer>
   )
 }

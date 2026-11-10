@@ -52,8 +52,9 @@ export function HomeMotion({ children }: { children: React.ReactNode }) {
           teamPhotos()
           mapScene()
           const stopCards = serviceCards()
-          footerStory()
+          const stopFooter = footerStory()
           return () => {
+            stopFooter?.()
             stopCards?.()
             stopStory?.()
           }
@@ -390,10 +391,25 @@ function serviceCards() {
 // The footer lives in the layout, outside this component's root, so it is
 // reached through the document. It plays once, the first time it nears the
 // viewport: the aurora fades in, the logo pops, the columns follow.
-function footerStory() {
+// The footer streams in its own boundary, so it may not be hydrated yet:
+// animating it first would leave React a DOM that differs from the server's.
+// Wait for its mark (components/home/footer-ready.tsx).
+function footerStory(): (() => void) | void {
   const footer = document.querySelector("footer")
-  const grid = footer?.querySelector("[data-stagger]")
-  if (!footer || !grid) return
+  if (!footer) return
+  if (footer.dataset.hydrated === "true") return buildFooterStory(footer)
+  const scene = gsap.context(() => {})
+  const start = () => scene.add(() => buildFooterStory(footer))
+  footer.addEventListener("cp:hydrated", start, { once: true })
+  return () => {
+    footer.removeEventListener("cp:hydrated", start)
+    scene.revert()
+  }
+}
+
+function buildFooterStory(footer: HTMLElement) {
+  const grid = footer.querySelector("[data-stagger]")
+  if (!grid) return
   const [intro, quick, contact, group] = Array.from(grid.children)
   const rule = footer.querySelector(":scope > div > div.h-px")
   const bottom = rule?.nextElementSibling ?? null
