@@ -403,6 +403,36 @@ describe("chrome logo animation", () => {
   })
 })
 
+describe("service detail office hours", () => {
+  const withHours = (hours: string): SiteSources => ({
+    ...s,
+    pages: {
+      ...s.pages,
+      services: {
+        ...s.pages.services,
+        data: {
+          ...s.pages.services.data,
+          detail: {
+            ...s.pages.services.data.detail,
+            officeHours: { title: "Office Hours", hours },
+          },
+        },
+      },
+    },
+  })
+  const hoursOf = (src: SiteSources) =>
+    serviceDetailView(src, "medical-cleaning")!.overview.officeHours.hours
+
+  it("fills {hours} from Settings > Contact verbatim, en dash included", () => {
+    expect(hoursOf(withHours("{hours}"))).toBe(s.settings.contact.hours)
+    expect(hoursOf(withHours("{hours}"))).toBe("Mon–Fri: 9am – 6pm")
+  })
+
+  it("passes text without a placeholder through unchanged", () => {
+    expect(hoursOf(withHours("Sat: 10am – 2pm"))).toBe("Sat: 10am – 2pm")
+  })
+})
+
 describe("views never depend on media dimensions", () => {
   /** The same sources as a database would give them: every image has real dimensions. */
   function withDimensions(value: unknown): unknown {
