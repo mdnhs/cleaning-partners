@@ -45,7 +45,10 @@ export const servicesEditorMeta: EditorMeta = {
     "detail.placesHeading": { label: "Places heading" },
     "detail.sidebarAria": { label: "Sidebar: screen reader label" },
     "detail.sidebarHeading": { label: "Sidebar heading" },
-    "detail.officeHours": { label: "Office hours box" },
+    "detail.officeHours": {
+      label: "Office hours box",
+      help: "{hours} is filled from Settings › Contact.",
+    },
   },
   groups: { hero: PAGE_HERO_GROUPS },
 }

@@ -151,7 +151,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           placesHeading: "Where We Clean",
           sidebarAria: "Our services",
           sidebarHeading: "Our Services",
-          officeHours: { title: "Office Hours", hours: "Mon – Fri: 9am – 6pm" },
+          officeHours: { title: "Office Hours", hours: "{hours}" },
         },
       },
     },

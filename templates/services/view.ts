@@ -107,7 +107,7 @@ export function serviceDetailView(
       quoteCard: quoteCardView(s),
       officeHours: {
         title: detail.officeHours.title,
-        hours: detail.officeHours.hours,
+        hours: interpolate(detail.officeHours.hours, values),
         phone: interpolate(contact.phone24Label, values),
         phoneHref: String(values.phone24hHref),
       },

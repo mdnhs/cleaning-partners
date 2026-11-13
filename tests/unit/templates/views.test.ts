@@ -246,7 +246,7 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     })
     expect(view.overview.officeHours).toEqual({
       title: "Office Hours",
-      hours: "Mon – Fri: 9am – 6pm",
+      hours: "Mon–Fri: 9am – 6pm",
       phone: "24hr contact: (085) 8062369",
       phoneHref: "tel:+353858062369",
     })

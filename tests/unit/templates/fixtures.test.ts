@@ -76,6 +76,8 @@ function mediaIds(value: unknown, out = new Set<string>()): Set<string> {
 const CHANGED_SINCE_BASELINE = new Set([
   // The mailto handoff was removed when the form began posting to the leads API (7.3).
   "pages.contact.quoteForm.sentMessage",
+  // Office hours follow Settings › Contact ({hours}), whose en dash is unspaced.
+  "pages.services.detail.officeHours.hours",
 ])
 
 describe("page fixtures (master 3.2)", () => {
@@ -102,9 +104,12 @@ describe("page fixtures (master 3.2)", () => {
     "%s is verbatim",
     (_id, e) => {
       if (CHANGED_SINCE_BASELINE.has(e.path)) {
-        expect(
-          valuesAt(fixture.contact.data, "quoteForm.sentMessage")[0]
-        ).not.toBe(e.seed)
+        const [, key, ...rest] = e.path.split(".")
+        const actual = valuesAt(
+          fixture[key as keyof typeof fixture].data,
+          rest.join(".")
+        )[0]
+        expect(actual).not.toBe(e.seed)
         return
       }
       const [, key, ...rest] = e.path.split(".")
@@ -142,9 +147,7 @@ describe("page fixtures (master 3.2)", () => {
     expect(fixture.blog.data.pageSize).toBe(6)
     expect(fixture.contact.data.contactTitle).toBe("Ways to Reach Us")
     expect(fixture.services.data.grid.learnMore).toBe("Learn More  →")
-    expect(fixture.services.data.detail.officeHours.hours).toBe(
-      "Mon – Fri: 9am – 6pm"
-    )
+    expect(fixture.services.data.detail.officeHours.hours).toBe("{hours}")
     expect(fixture.contact.data.quoteForm.fields.service.extraOptions).toEqual([
       "Domestic Cleaning",
       "Other",
