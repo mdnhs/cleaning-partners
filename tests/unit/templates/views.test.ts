@@ -6,7 +6,11 @@ import { aboutView } from "@/templates/about/view"
 import { articleView, blogView } from "@/templates/blog/view"
 import { contactView } from "@/templates/contact/view"
 import { homeView } from "@/templates/home/view"
-import { chromeView } from "@/templates/shared/views"
+import {
+  chromeView,
+  NOT_FOUND_FALLBACK,
+  notFoundView,
+} from "@/templates/shared/views"
 import { serviceDetailView, servicesView } from "@/templates/services/view"
 import {
   articleMetadata,
@@ -484,5 +488,35 @@ describe("views never depend on media dimensions", () => {
     const media: WithMedia<{ m: { mediaId: string } }>["m"] =
       s.settings.site.logo
     expect(media.width).toBeNull()
+  })
+})
+
+describe("not found view", () => {
+  it("uses the microcopy 404 copy, the default banner and the breadcrumb home", () => {
+    const { notFound, breadcrumbAria } = s.settings.microcopy
+    const view = notFoundView(s)
+    expect(view).toEqual({
+      image: s.settings.site.defaultHeroImage.url,
+      crumb: notFound.crumb,
+      parents: [],
+      title: notFound.title,
+      description: notFound.description,
+      home: {
+        label: s.settings.navigation.breadcrumbHome,
+        href: s.settings.navigation.breadcrumbHomeHref,
+      },
+      ariaLabel: breadcrumbAria,
+      homeLabel: notFound.homeLabel,
+    })
+  })
+
+  it("falls back to fixed copy equal to the seed when settings are unavailable", () => {
+    const { notFound } = s.settings.microcopy
+    expect(NOT_FOUND_FALLBACK).toMatchObject({
+      crumb: notFound.crumb,
+      title: notFound.title,
+      description: notFound.description,
+      homeLabel: notFound.homeLabel,
+    })
   })
 })

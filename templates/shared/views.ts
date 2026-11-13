@@ -181,6 +181,32 @@ export function pageHeroView(
   }
 }
 
+/** What the 404 page shows: a page hero plus a button back home. */
+export type NotFoundViewProps = PageHeroProps & { homeLabel: string }
+
+/**
+ * The 404 page's copy when settings cannot be read (the database is down).
+ * Kept equal to the seeded settings.microcopy.notFound (a unit test checks).
+ */
+export const NOT_FOUND_FALLBACK: NotFoundViewProps = {
+  image: "/images/home/hero.png",
+  crumb: "Not found",
+  title: "Page not found",
+  description: "The page you are looking for has moved or no longer exists.",
+  home: { label: "Home", href: "/" },
+  ariaLabel: "Breadcrumb",
+  homeLabel: "Back to home",
+}
+
+/** The 404 page: settings.microcopy.notFound on the default banner. */
+export function notFoundView(s: SiteSources): NotFoundViewProps {
+  const { notFound } = s.settings.microcopy
+  return {
+    ...pageHeroView(s, notFound),
+    homeLabel: textView(s, notFound.homeLabel),
+  }
+}
+
 export function clientsView(s: SiteSources): ClientsProps {
   const { eyebrow, title } = s.settings["sections.clients"]
   return {

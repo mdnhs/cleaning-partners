@@ -283,6 +283,13 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         telLabel: "Tel: {office} Ext {officeExtension}",
         cta: { label: "Get a Free Quote", href: "#contact" },
       },
+      notFound: {
+        crumb: "Not found",
+        title: "Page not found",
+        description:
+          "The page you are looking for has moved or no longer exists.",
+        homeLabel: "Back to home",
+      },
     },
     leads: {
       recipients: ["info@cleaningpartners.ie"],

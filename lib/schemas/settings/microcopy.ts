@@ -22,5 +22,12 @@ export const microcopySettings = z.object({
     telLabel: text,
     cta: link,
   }),
+  /** The 404 page (unknown addresses and missing posts, jobs, services). */
+  notFound: z.object({
+    crumb: text,
+    title: text,
+    description: text,
+    homeLabel: text,
+  }),
 })
 export type MicrocopySettings = z.infer<typeof microcopySettings>

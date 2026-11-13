@@ -251,6 +251,16 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         help: "{office} and {officeExtension} are filled from Contact details.",
       },
       "quoteCard.cta": { label: "Button" },
+      notFound: { label: "Page not found" },
+      "notFound.crumb": { label: "Breadcrumb" },
+      "notFound.title": { label: "Heading" },
+      "notFound.description": {
+        label: "Text",
+        widget: "textarea",
+        rows: 2,
+        width: "full",
+      },
+      "notFound.homeLabel": { label: "Home button" },
     },
     groups: {
       "": [
@@ -273,6 +283,12 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
           title: "Quote card",
           description: "The card that invites visitors to ask for a quote.",
           fields: ["quoteCard"],
+        },
+        {
+          title: "Page not found",
+          description:
+            "Shown when an address does not exist or a post, job or service was removed.",
+          fields: ["notFound"],
         },
       ],
     },
