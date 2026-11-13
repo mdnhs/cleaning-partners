@@ -201,7 +201,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       copyright: { label: "Copyright line", width: "full" },
       loginLink: {
         label: "Staff sign-in link",
-        help: "Shown after the legal links. Clear it to hide the link.",
+        help: "Shown after the legal links. Remove it to hide the link.",
       },
     },
     groups: {

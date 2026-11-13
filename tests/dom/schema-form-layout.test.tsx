@@ -202,7 +202,7 @@ describe("SchemaForm layout (JW field groups)", () => {
     renderSchema(
       z.object({ cta: link, extra: link.nullable() }),
       { fields: {} },
-      { cta: { label: "Go", href: "/" }, extra: null }
+      { cta: { label: "Go", href: "/" }, extra: { label: "", href: "" } }
     )
     const cta = screen.getByRole("group", { name: "Cta" })
     expect(within(cta).getByRole("textbox", { name: "Text" })).toHaveAttribute(
