@@ -114,6 +114,21 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     )
   })
 
+  it("footer: the sign-in link is editable and null hides it", () => {
+    const withLink = (loginLink: { label: string; href: string } | null) =>
+      chromeView({
+        ...s,
+        settings: {
+          ...s.settings,
+          footer: { ...s.settings.footer, loginLink },
+        },
+      })
+    expect(
+      withLink({ label: "Staff", href: "/staff" }).footer.legal.login
+    ).toEqual({ label: "Staff", href: "/staff" })
+    expect(withLink(null).footer.legal.login).toBeUndefined()
+  })
+
   it("home: hero, services intro and the 3 posts after the featured one", () => {
     const view = homeView(s)
     expect(view.hero.background).toBe("/images/home/hero.png")

@@ -199,6 +199,10 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       },
       groupTitle: { label: "Group heading" },
       copyright: { label: "Copyright line", width: "full" },
+      loginLink: {
+        label: "Staff sign-in link",
+        help: "Shown after the legal links. Clear it to hide the link.",
+      },
     },
     groups: {
       "": [
@@ -216,7 +220,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
           title: "Legal",
           description:
             "The copyright line. Legal links come from Legal pages in the menu.",
-          fields: ["copyright"],
+          fields: ["copyright", "loginLink"],
         },
       ],
     },

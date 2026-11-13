@@ -73,6 +73,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       contactOfficeLine: "Tel: {office} Ext {officeExtension}",
       groupTitle: "OTHER SERVICES IN THE GROUP",
       copyright: "© 2026 Cleaning Partners Ltd. All rights reserved.",
+      loginLink: { label: "Login", href: "/admin/sign-in" },
     },
     "sections.clients": {
       eyebrow: "TRUSTED PARTNERS",

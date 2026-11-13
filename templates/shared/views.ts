@@ -151,7 +151,7 @@ export function chromeView(s: ChromeSources): ChromeView {
       copyright: footer.copyright,
       legal: {
         pages: s.legalLinks ?? [],
-        login: { label: "Login", href: "/admin/sign-in" },
+        ...(footer.loginLink ? { login: linkView(s, footer.loginLink) } : {}),
       },
     },
   }
