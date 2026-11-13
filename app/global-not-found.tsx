@@ -22,6 +22,10 @@ export const metadata: Metadata = {
 // settings.microcopy.notFound, footer. Each part reads settings on its own and
 // degrades on its own when the database is down (chrome hides, copy falls
 // back to fixed text).
+//
+// SiteExtras (consent banner, tracking) and AttributionCapture are left out
+// on purpose: a missing page is not a landing page to measure, and no
+// visitor consents or is attributed from here.
 export default function GlobalNotFound() {
   return (
     <html

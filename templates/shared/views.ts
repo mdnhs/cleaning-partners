@@ -29,7 +29,15 @@ import {
 import type { WithMedia } from "@/lib/media"
 import type { Link, PageHero, PageHeroText } from "@/lib/schemas/common"
 
-import type { ChromeSources, SiteArticle, SiteSources } from "./sources"
+import type {
+  ChromeSources,
+  NotFoundSources,
+  SiteArticle,
+  SiteSources,
+} from "./sources"
+
+/** Anything that carries settings.contact (the {placeholders} source). */
+type WithContact = { settings: Pick<SiteSources["settings"], "contact"> }
 
 type Pages = SiteSources["pages"]
 
@@ -39,14 +47,14 @@ type Pages = SiteSources["pages"]
 // pages render the same whatever dimensions the media rows carry.
 
 /** Settings.contact fields + derived tel: hrefs for {placeholders}. */
-export const placeholders = (s: Pick<ChromeSources, "settings">) =>
+export const placeholders = (s: WithContact) =>
   contactPlaceholders(s.settings.contact)
 
 /**
  * An admin-editable href: {placeholders} filled, then re-checked; an unsafe
  * or unresolved result renders "#".
  */
-export const hrefView = (s: Pick<ChromeSources, "settings">, href: string) =>
+export const hrefView = (s: WithContact, href: string) =>
   interpolateHref(href, placeholders(s))
 
 /** A stored { label, href } link with its label and href filled in. */
@@ -59,7 +67,7 @@ export const linkView = (
 })
 
 /** A stored text with {placeholders} filled in. */
-export const textView = (s: SiteSources, text: string) =>
+export const textView = (s: WithContact, text: string) =>
   interpolate(text, placeholders(s))
 
 export type ChromeView = {
@@ -162,7 +170,7 @@ export function chromeView(s: ChromeSources): ChromeView {
  * the site's default hero image.
  */
 export function pageHeroView(
-  s: SiteSources,
+  s: NotFoundSources,
   hero: WithMedia<PageHero> | WithMedia<PageHeroText>,
   parents: PageHeroProps["parents"] = []
 ): PageHeroProps {
@@ -182,6 +190,8 @@ export function pageHeroView(
 }
 
 /** What the 404 page shows: a page hero plus a button back home. */
+type NotFoundViewSettings = NotFoundSources["settings"]["microcopy"]["notFound"]
+
 export type NotFoundViewProps = PageHeroProps & { homeLabel: string }
 
 /**
@@ -191,6 +201,7 @@ export type NotFoundViewProps = PageHeroProps & { homeLabel: string }
 export const NOT_FOUND_FALLBACK: NotFoundViewProps = {
   image: "/images/home/hero.png",
   crumb: "Not found",
+  parents: [],
   title: "Page not found",
   description: "The page you are looking for has moved or no longer exists.",
   home: { label: "Home", href: "/" },
@@ -199,8 +210,13 @@ export const NOT_FOUND_FALLBACK: NotFoundViewProps = {
 }
 
 /** The 404 page: settings.microcopy.notFound on the default banner. */
-export function notFoundView(s: SiteSources): NotFoundViewProps {
-  const { notFound } = s.settings.microcopy
+export function notFoundView(s: NotFoundSources): NotFoundViewProps {
+  // Settings saved before migration 0034 have no notFound: the fixed copy
+  // (equal to the migration's backfill) is the right answer, not an error.
+  const notFound = s.settings.microcopy.notFound as
+    | NotFoundViewSettings
+    | undefined
+  if (!notFound) return NOT_FOUND_FALLBACK
   return {
     ...pageHeroView(s, notFound),
     homeLabel: textView(s, notFound.homeLabel),

@@ -1,37 +1,43 @@
 import { expect, test } from "@playwright/test"
 
-// R8-9: an unknown service or article slug is a real 404 (status 404: the
-// proxy rewrites it to /_cp-missing/404 before anything streams, and
-// app/global-not-found.tsx answers). It must render the same branded 404 page
-// as an unmatched URL, noindex'ed, pixel-identical (tests/visual:
-// /this-page-does-not-exist).
-test.describe("unknown slugs render the site's 404 page", () => {
-  for (const path of ["/blog/no-such-article", "/services/no-such-service"]) {
-    test(`${path} looks like an unmatched URL`, async ({ page }) => {
-      await page.goto("/this-page-does-not-exist", { waitUntil: "load" })
-      await expect(page.getByRole("heading", { name: "404" })).toBeVisible()
-      const unmatched = await page.screenshot({
-        fullPage: true,
-        animations: "disabled",
-      })
-
+// A missing page is a real 404 (status 404: unmatched URLs hit
+// app/global-not-found.tsx, and the proxy rewrites unknown posts, services,
+// jobs and pages to /_cp-missing/404 before anything streams). It renders the
+// site's chrome around the copy from settings.microcopy.notFound (seeded as
+// "Page not found"), noindex'ed.
+//
+// There is no notFound() path inside a (site) page that bypasses the proxy
+// rewrite: every detail route (/services|blog|careers|p/<slug>, careers apply,
+// /<slug>) is checked by proxy.ts first, so app/(site)/not-found.tsx is only
+// a backstop and cannot be reached from a browser. Both entries share
+// components/not-found-content.tsx, which this covers.
+test.describe("missing pages render the branded 404", () => {
+  for (const path of [
+    "/this-page-does-not-exist",
+    "/blog/does-not-exist",
+    "/services/no-such-service",
+  ]) {
+    test(`${path} answers 404 with the configured copy and the site chrome`, async ({
+      page,
+    }) => {
       const response = await page.goto(path, { waitUntil: "load" })
       expect(response?.status()).toBe(404)
       await expect(
-        page.getByText("This page could not be found.")
+        page.getByRole("heading", { level: 1, name: "Page not found" })
       ).toBeVisible()
-      await expect(page.getByRole("heading", { name: "404" })).toBeVisible()
-      // Nothing of the article or service page around it.
-      await expect(page.locator("[data-header]")).toHaveCount(0)
-      await expect(page.locator("footer")).toHaveCount(0)
       await expect(
-        page.locator('meta[name="robots"][content="noindex"]').first()
+        page.getByText(
+          "The page you are looking for has moved or no longer exists."
+        )
+      ).toBeVisible()
+      await expect(
+        page.getByRole("link", { name: "Back to home" })
+      ).toHaveAttribute("href", "/")
+      await expect(page.getByRole("banner")).toBeVisible()
+      await expect(page.locator("footer")).toBeVisible()
+      await expect(
+        page.locator('meta[name="robots"][content*="noindex"]').first()
       ).toBeAttached()
-      const unknown = await page.screenshot({
-        fullPage: true,
-        animations: "disabled",
-      })
-      expect(unknown.equals(unmatched)).toBe(true)
     })
   }
 })

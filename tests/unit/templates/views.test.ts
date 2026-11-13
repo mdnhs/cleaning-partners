@@ -510,13 +510,23 @@ describe("not found view", () => {
     })
   })
 
-  it("falls back to fixed copy equal to the seed when settings are unavailable", () => {
-    const { notFound } = s.settings.microcopy
-    expect(NOT_FOUND_FALLBACK).toMatchObject({
-      crumb: notFound.crumb,
-      title: notFound.title,
-      description: notFound.description,
-      homeLabel: notFound.homeLabel,
-    })
+  it("falls back to fixed copy equal to the whole seeded view when settings are unavailable", () => {
+    expect(NOT_FOUND_FALLBACK).toEqual(notFoundView(s))
+  })
+
+  it("returns the fixed copy, without throwing, for settings saved before microcopy.notFound existed", () => {
+    const legacyMicrocopy: Partial<typeof s.settings.microcopy> = {
+      ...s.settings.microcopy,
+    }
+    delete legacyMicrocopy.notFound
+    const legacy = {
+      settings: {
+        site: s.settings.site,
+        contact: s.settings.contact,
+        navigation: s.settings.navigation,
+        microcopy: legacyMicrocopy,
+      },
+    } as unknown as Parameters<typeof notFoundView>[0]
+    expect(notFoundView(legacy)).toBe(NOT_FOUND_FALLBACK)
   })
 })

@@ -57,3 +57,22 @@ export type ChromeSources = {
   /** Published legal pages in footer order (/<slug>); empty when none. */
   legalLinks?: { label: string; href: string }[]
 }
+
+/** The settings keys the 404 page reads (copy, default banner, placeholders). */
+export const NOT_FOUND_SETTINGS_KEYS = [
+  "site",
+  "contact",
+  "navigation",
+  "microcopy",
+] as const satisfies readonly PublicSettingsKey[]
+
+/**
+ * What the 404 page needs (templates/shared/views.ts notFoundView): a slice
+ * of SiteSources, so a full SiteSources is accepted wherever this is.
+ */
+export type NotFoundSources = {
+  settings: Pick<
+    SiteSources["settings"],
+    (typeof NOT_FOUND_SETTINGS_KEYS)[number]
+  >
+}

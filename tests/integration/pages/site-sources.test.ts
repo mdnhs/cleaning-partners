@@ -18,7 +18,10 @@ import { seedContent } from "@/server/db/seed"
 import { fixtureSiteSources } from "@/server/db/seed/fixtures/sources"
 import { invalidate, tag } from "@/server/lib/cache-tags"
 import { findPageByKey, updatePageIfVersion } from "@/server/modules/pages/repo"
-import { loadSiteSources } from "@/server/modules/pages/sources"
+import {
+  loadNotFoundSources,
+  loadSiteSources,
+} from "@/server/modules/pages/sources"
 
 import { resetDb } from "../db"
 
@@ -101,5 +104,33 @@ describe("loadSiteSources (DB)", () => {
     await expect(loadSiteSources()).rejects.toThrow(
       "Missing published content: page about. Run pnpm db:seed."
     )
+  })
+})
+
+describe("loadNotFoundSources (DB)", () => {
+  it("returns just the settings the 404 page reads, equal to the full load's", async () => {
+    const full = await loadSiteSources()
+    const slim = await loadNotFoundSources()
+    expect(Object.keys(slim.settings).sort()).toEqual([
+      "contact",
+      "microcopy",
+      "navigation",
+      "site",
+    ])
+    expect(Object.keys(slim)).toEqual(["settings"])
+    expect(comparable(slim.settings.microcopy)).toEqual(
+      comparable(full.settings.microcopy)
+    )
+    expect(comparable(slim.settings.site)).toEqual(
+      comparable(full.settings.site)
+    )
+  })
+
+  it("does not need the rest of the content (a missing page does not break it)", async () => {
+    await getDb()
+      .update(pages)
+      .set({ published: null })
+      .where(eq(pages.key, "about"))
+    await expect(loadNotFoundSources()).resolves.toBeDefined()
   })
 })

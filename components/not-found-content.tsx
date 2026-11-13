@@ -3,7 +3,7 @@ import { connection } from "next/server"
 
 import { NotFoundView } from "@/components/not-found-view"
 import { SiteThemed } from "@/components/site-themed"
-import { loadSiteSources } from "@/server/modules/pages/sources"
+import { loadNotFoundSources } from "@/server/modules/pages/sources"
 import {
   NOT_FOUND_FALLBACK,
   notFoundView,
@@ -18,7 +18,7 @@ import {
 async function notFoundProps(): Promise<NotFoundViewProps> {
   await connection()
   try {
-    return notFoundView(await loadSiteSources())
+    return notFoundView(await loadNotFoundSources())
   } catch (error) {
     unstable_rethrow(error)
     console.error("[not found] settings unavailable, using fixed copy", error)

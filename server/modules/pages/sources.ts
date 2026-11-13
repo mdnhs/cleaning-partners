@@ -22,6 +22,8 @@ import { PAGE_KEYS } from "@/templates/registry"
 import {
   CHROME_SETTINGS_KEYS,
   type ChromeSources,
+  NOT_FOUND_SETTINGS_KEYS,
+  type NotFoundSources,
   type SiteSources,
 } from "@/templates/shared/sources"
 
@@ -123,4 +125,24 @@ export async function loadChromeSources(): Promise<ChromeSources> {
     })) as Omit<ChromeSources, "legalLinks">),
     legalLinks,
   }
+}
+
+/**
+ * Just what the 404 page renders (see NotFoundSources): a missing page must
+ * not load every page, service and article. Same cached readers and preview
+ * check as loadSiteSources; call only after `await connection()` inside
+ * <Suspense>.
+ */
+export async function loadNotFoundSources(): Promise<NotFoundSources> {
+  await assertPreviewAccess()
+  const settingsValues = await Promise.all(
+    NOT_FOUND_SETTINGS_KEYS.map((key) => getSettings(key))
+  )
+  const settings = Object.fromEntries(
+    NOT_FOUND_SETTINGS_KEYS.map((key, i) => [
+      key,
+      required(settingsValues[i], `settings.${key}`),
+    ])
+  )
+  return (await resolveMedia({ settings })) as NotFoundSources
 }
