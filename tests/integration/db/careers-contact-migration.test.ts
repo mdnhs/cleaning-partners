@@ -130,6 +130,52 @@ describe("careers_contact_placeholders (custom data migration)", () => {
     expect(draft.job.email).toEqual(mailNew)
   })
 
+  it("leaves an admin-edited link in published alone", async () => {
+    const edited = { label: "Call us", href: "tel:+353000" }
+    await insertPage(careers(), careers({ jobPhone: edited }))
+    await migrate()
+    const after = await pageRow()
+    const published = after.published as ReturnType<typeof careers>
+    expect(published.job.phone).toEqual(edited)
+    expect(published.job.email).toEqual(mailNew)
+    expect((after.draft as ReturnType<typeof careers>).job.phone).toEqual(
+      telNew
+    )
+  })
+
+  it("backfills settings published from the careers published email", async () => {
+    const edited = {
+      ...careers(),
+      job: { phone: tel, email: { ...mail, label: "hr@example.ie" } },
+    }
+    await getDb()
+      .insert(settings)
+      .values({ key: "contact", draft: contact, published: contact })
+    await insertPage(careers(), edited)
+    await migrate()
+    const after = await settingRow()
+    expect((after.draft as Record<string, unknown>).recruitmentEmail).toBe(
+      "jobs@cleaningpartners.ie"
+    )
+    expect((after.published as Record<string, unknown>).recruitmentEmail).toBe(
+      "hr@example.ie"
+    )
+  })
+
+  it("skips the backfill only when neither careers nor contact has an email", async () => {
+    const bare = { phone24h: "1" }
+    await getDb()
+      .insert(settings)
+      .values({ key: "contact", draft: bare, published: bare })
+    await migrate()
+    expect((await settingRow()).draft).toEqual(bare)
+    await insertPage(careers(), careers())
+    await migrate()
+    expect(
+      (await settingRow()).published as Record<string, unknown>
+    ).toHaveProperty("recruitmentEmail", "jobs@cleaningpartners.ie")
+  })
+
   it("null published stays null; safe to re-run", async () => {
     await getDb()
       .insert(settings)
