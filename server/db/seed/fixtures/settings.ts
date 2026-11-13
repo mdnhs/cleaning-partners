@@ -38,6 +38,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       officeExtension: "4",
       mobile: "085 806 2369",
       email: "info@cleaningpartners.ie",
+      recruitmentEmail: "jobs@cleaningpartners.ie",
       hours: "Mon–Fri: 9am – 6pm",
       addressLine1: "Derryguile, Mountmellick",
       addressLine2: "Co. Laois, Ireland. R32 YX49",

@@ -93,6 +93,10 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       officeExtension: { label: "Office extension" },
       mobile: { label: "Mobile number", icon: "phone" },
       email: { label: "Main email" },
+      recruitmentEmail: {
+        label: "Recruitment email",
+        help: "Shown on the careers pages.",
+      },
       hours: { label: "Office hours", icon: "clock", width: "full" },
       addressLine1: { label: "Address line 1", icon: "map" },
       addressLine2: { label: "Address line 2" },
@@ -114,7 +118,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Email",
           description: "Where people write to you.",
-          fields: ["email"],
+          fields: ["email", "recruitmentEmail"],
         },
         {
           title: "Address",

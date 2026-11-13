@@ -15,6 +15,7 @@ export const CONTACT_FIELDS = [
   "officeExtension",
   "mobile",
   "email",
+  "recruitmentEmail",
   "hours",
   "addressLine1",
   "addressLine2",

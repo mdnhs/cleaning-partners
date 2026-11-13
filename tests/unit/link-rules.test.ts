@@ -6,6 +6,7 @@ import {
   CONTACT_PLACEHOLDERS,
   CONTACT_TEMPLATE_FIELDS,
   linkPlaceholderProblems,
+  unknownPlaceholder,
 } from "@/lib/link-rules"
 import { link } from "@/lib/schemas/common"
 import { settingsSchemas, type SettingsKey } from "@/lib/schemas/settings"
@@ -32,6 +33,11 @@ describe("link placeholder rules (server and editor)", () => {
     expect([...CONTACT_PLACEHOLDERS].sort()).toEqual(
       Object.keys(contactPlaceholders(contact)).sort()
     )
+  })
+
+  it("fills {recruitmentEmail} from settings.contact", () => {
+    expect(unknownPlaceholder("mailto:{recruitmentEmail}")).toBeUndefined()
+    expect(unknownPlaceholder("{recruitmentEmail}")).toBeUndefined()
   })
 
   it("accepts the shipped link shapes", () => {

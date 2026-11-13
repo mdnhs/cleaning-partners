@@ -218,6 +218,13 @@
       "when": 1793817014188,
       "tag": "0030_job_applications",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793820000000,
+      "tag": "0031_careers_contact_placeholders",
+      "breakpoints": true
     }
   ]
 }

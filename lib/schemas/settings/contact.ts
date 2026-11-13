@@ -15,6 +15,8 @@ export const contactSettings = z.object({
   officeExtension: text,
   mobile: text,
   email: z.email(),
+  /** Shown on the careers pages (job and apply sidebars, talent pool). */
+  recruitmentEmail: z.email(),
   hours: text,
   addressLine1: text,
   addressLine2: text,

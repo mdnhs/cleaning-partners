@@ -8,10 +8,10 @@ const f = (label: string, placeholder = "", help = "") => ({
   placeholder,
   help,
 })
-const tel = { label: "(085) 806 2369", href: "tel:+353858062369" }
+const tel = { label: "{mobile}", href: "{mobileHref}" }
 const mail = {
-  label: "jobs@cleaningpartners.ie",
-  href: "mailto:jobs@cleaningpartners.ie",
+  label: "{recruitmentEmail}",
+  href: "mailto:{recruitmentEmail}",
 }
 
 /**
@@ -119,7 +119,7 @@ export function careersPageFixture(media: MediaLookup): PageFixture<"careers"> {
         title: "Don’t see the right role?",
         body: "Send us your CV and we’ll be in touch when a role near you opens up. We hire across Laois, Offaly, Kildare and Westmeath all year round.",
         cta: { label: "Send Us Your CV", href: "/careers/apply" },
-        call: { label: "Call (085) 806 2369", href: tel.href },
+        call: { label: "Call {mobile}", href: tel.href },
       },
       job: {
         nowHiring: "Now Hiring",
