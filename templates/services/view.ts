@@ -2,7 +2,7 @@ import type { ClientsProps } from "@/components/home/clients"
 import type { ContactProps } from "@/components/home/contact"
 import type { PageHeroProps } from "@/components/home/page-hero"
 import type { TestimonialsProps } from "@/components/home/testimonials"
-import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
+import type { IconCardsSectionProps } from "@/components/home/icon-cards-section"
 import type { StepsSectionProps } from "@/components/home/steps-section"
 import type { ServiceOverviewProps } from "@/components/services/service-overview"
 import type { ServicesGridProps } from "@/components/services/services-grid"
@@ -27,7 +27,7 @@ export { servicePath }
 export type ServicesView = {
   hero: PageHeroProps
   grid: ServicesGridProps
-  whyChooseUs: WhyChooseUsProps
+  whyChooseUs: IconCardsSectionProps
   clients: ClientsProps
   testimonials: TestimonialsProps
   contact: ContactProps
@@ -50,7 +50,7 @@ export type ServiceDetailView = {
   hero: PageHeroProps
   overview: ServiceOverviewProps
   howItWorks: StepsSectionProps
-  whyChooseUs: WhyChooseUsProps
+  whyChooseUs: IconCardsSectionProps
   testimonials: TestimonialsProps
   contact: ContactProps
 }

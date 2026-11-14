@@ -5,7 +5,7 @@ import { Contact } from "@/components/home/contact"
 import { PageHero } from "@/components/home/page-hero"
 import { Team } from "@/components/home/team"
 import { Testimonials } from "@/components/home/testimonials"
-import { WhyChooseUs } from "@/components/home/why-choose-us"
+import { IconCardsSection } from "@/components/home/icon-cards-section"
 import { HomeMotion } from "@/components/motion/home-motion"
 
 import type { AboutView } from "./view"
@@ -21,7 +21,7 @@ export function AboutTemplate({ view }: { view: AboutView }) {
             <OurStory {...view.story} />
             <Stats {...view.stats} />
             <Clients {...view.clients} />
-            <WhyChooseUs {...view.whyChooseUs} />
+            <IconCardsSection {...view.whyChooseUs} />
             <Team {...view.team} />
             <Testimonials {...view.testimonials} />
             <Contact {...view.contact} />

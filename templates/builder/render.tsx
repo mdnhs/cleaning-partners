@@ -11,7 +11,7 @@ import { Services } from "@/components/home/services"
 import { StepsSection } from "@/components/home/steps-section"
 import { Team } from "@/components/home/team"
 import { Testimonials } from "@/components/home/testimonials"
-import { WhyChooseUs } from "@/components/home/why-choose-us"
+import { IconCardsSection } from "@/components/home/icon-cards-section"
 import { HomeMotion } from "@/components/motion/home-motion"
 import { ServicesGrid } from "@/components/services/services-grid"
 import { RichTextSection } from "@/templates/shared/rich-text-section"
@@ -36,7 +36,7 @@ export function Section({ view }: { view: BlockView }) {
         <ServicesGrid {...view.props} />
       )
     case "whyChooseUs":
-      return <WhyChooseUs {...view.props} />
+      return <IconCardsSection {...view.props} />
     case "clients":
       return <Clients {...view.props} />
     case "team":

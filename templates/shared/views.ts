@@ -20,8 +20,8 @@ import type { SiteFooterProps } from "@/components/home/site-footer"
 import type { SiteHeaderProps } from "@/components/home/site-header"
 import type { TeamProps } from "@/components/home/team"
 import type { TestimonialsProps } from "@/components/home/testimonials"
-import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
 import type { StepsSectionProps } from "@/components/home/steps-section"
+import type { IconCardsSectionProps } from "@/components/home/icon-cards-section"
 import type { ServicesGridProps } from "@/components/services/services-grid"
 import { formatPostDate, isoDate, siteLocale, siteTimeZone } from "@/lib/format"
 import {
@@ -29,8 +29,13 @@ import {
   interpolate,
   interpolateHref,
 } from "@/lib/interpolate"
-import type { WithMedia } from "@/lib/media"
-import type { Link, PageHero, StepsSectionData } from "@/lib/schemas/common"
+import type { MediaView, WithMedia } from "@/lib/media"
+import type {
+  IconCardsSectionData,
+  Link,
+  PageHero,
+  StepsSectionData,
+} from "@/lib/schemas/common"
 
 import type {
   ChromeSources,
@@ -234,19 +239,25 @@ export function clientsView(s: SiteSources): ClientsProps {
   }
 }
 
-export function whyChooseUsView(s: SiteSources): WhyChooseUsProps {
-  const section = s.settings["sections.whyChooseUs"]
+/** Icon cards; the photo variant when the section has a background. */
+export function iconCardsView(
+  section: WithMedia<IconCardsSectionData> & { background?: MediaView }
+): IconCardsSectionProps {
   return {
-    background: section.background.url,
+    ...(section.background ? { background: section.background.url } : {}),
     eyebrow: section.eyebrow,
     title: section.title,
     description: section.description,
-    features: section.features.map((f) => ({
-      title: f.title,
-      description: f.description,
-      icon: f.icon.url,
+    cards: section.cards.map((card) => ({
+      title: card.title,
+      description: card.description,
+      icon: card.icon.url,
     })),
   }
+}
+
+export function whyChooseUsView(s: SiteSources): IconCardsSectionProps {
+  return iconCardsView(s.settings["sections.whyChooseUs"])
 }
 
 export function testimonialsView(s: SiteSources): TestimonialsProps {

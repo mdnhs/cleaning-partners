@@ -327,9 +327,9 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         rows: 3,
         width: "full",
       },
-      features: { label: "Features", itemName: "Feature", itemLabel: "title" },
-      "features[].icon": { label: "Icon", aspect: "square" },
-      "features[].description": {
+      cards: { label: "Cards", itemName: "Card", itemLabel: "title" },
+      "cards[].icon": { label: "Icon", aspect: "square" },
+      "cards[].description": {
         label: "Description",
         widget: "textarea",
         rows: 2,
@@ -348,9 +348,9 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
           fields: ["background"],
         },
         {
-          title: "Features",
+          title: "Cards",
           description: "The reasons, each with an icon.",
-          fields: ["features"],
+          fields: ["cards"],
         },
       ],
     },

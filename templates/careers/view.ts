@@ -12,6 +12,7 @@ import { jobPath } from "@/lib/schemas/api/job-postings"
 import type { PublicJob } from "@/server/modules/job-postings/queries"
 import type { SiteSources } from "@/templates/shared/sources"
 import {
+  iconCardsView,
   linkView,
   pageHeroView,
   stepsSectionView,
@@ -165,16 +166,7 @@ export function careersView(
   )
   return {
     hero: pageHeroView(s, page.hero),
-    why: {
-      eyebrow: page.why.eyebrow,
-      title: page.why.title,
-      description: page.why.description,
-      cards: page.why.cards.map((card) => ({
-        title: card.title,
-        description: card.description,
-        icon: card.icon.url,
-      })),
-    },
+    why: iconCardsView(page.why),
     open: {
       eyebrow: page.open.eyebrow,
       title: page.open.title,

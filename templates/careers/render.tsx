@@ -14,7 +14,7 @@ import type {
 } from "@/components/careers/types"
 import { Container } from "@/components/home/section-heading"
 import { JsonLd } from "@/components/seo/json-ld"
-import { WhyJoin } from "@/components/careers/why-join"
+import { IconCardsSection } from "@/components/home/icon-cards-section"
 import { PageHero } from "@/components/home/page-hero"
 import { StepsSection } from "@/components/home/steps-section"
 import { HomeMotion } from "@/components/motion/home-motion"
@@ -27,7 +27,7 @@ export function CareersTemplate({ view }: { view: CareersView }) {
       <div className="bg-white text-ink">
         <main>
           <PageHero {...view.hero} />
-          <WhyJoin {...view.why} />
+          <IconCardsSection {...view.why} />
           <OpenPositions {...view.open} />
           <PreviousOpenings {...view.previous} />
           <StepsSection {...view.process} />

@@ -10,7 +10,7 @@ import type { PageHeroProps } from "@/components/home/page-hero"
 import type { ServicesProps } from "@/components/home/services"
 import type { TeamProps } from "@/components/home/team"
 import type { TestimonialsProps } from "@/components/home/testimonials"
-import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
+import type { IconCardsSectionProps } from "@/components/home/icon-cards-section"
 import type { StepsSectionProps } from "@/components/home/steps-section"
 import type { ServicesGridProps } from "@/components/services/services-grid"
 import type { BlockInstance } from "@/blocks/registry"
@@ -46,7 +46,7 @@ export type BlockView =
   | { type: "stats"; props: StatsProps }
   | { type: "services"; layout: "intro"; props: ServicesProps }
   | { type: "services"; layout: "grid"; props: ServicesGridProps }
-  | { type: "whyChooseUs"; props: WhyChooseUsProps }
+  | { type: "whyChooseUs"; props: IconCardsSectionProps }
   | { type: "clients"; props: ClientsProps }
   | { type: "team"; props: TeamProps }
   | { type: "testimonials"; props: TestimonialsProps }

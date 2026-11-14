@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 import {
-  iconCard,
+  iconCardsSection,
   link,
   pageHero,
   step,
@@ -24,12 +24,7 @@ const choices = z.array(text).min(1).max(20)
  */
 export const careersTemplate = z.object({
   hero: pageHero,
-  why: z.object({
-    eyebrow: text,
-    title: text,
-    description: text,
-    cards: z.array(iconCard).min(1).max(8),
-  }),
+  why: iconCardsSection,
   open: z.object({
     eyebrow: text,
     title: text,

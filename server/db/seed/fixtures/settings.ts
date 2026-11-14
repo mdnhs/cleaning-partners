@@ -89,7 +89,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       title: "Why Choose Us?",
       description:
         "We at Cleaning Partners Ltd strive to meet the high standards our clients expect.",
-      features: [
+      cards: [
         {
           title: "Skilled Cleaners",
           description: "Trained, vetted staff who take pride in their work.",

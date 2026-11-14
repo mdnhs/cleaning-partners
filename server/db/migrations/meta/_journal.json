@@ -295,6 +295,13 @@
       "when": 1793920000000,
       "tag": "0041_steps_section_intro",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1793930000000,
+      "tag": "0042_icon_cards_section",
+      "breakpoints": true
     }
   ]
 }

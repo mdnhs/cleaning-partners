@@ -56,6 +56,16 @@ export const RELOCATED_SINCE_BASELINE: Readonly<Record<string, string | null>> =
     // The footer prints the address from Settings › Contact instead of its
     // own copy of the second line (phase 2, task 8; migration 0040).
     "settings.footer.addressLine2": "settings.contact.addressLine2",
+    // Why choose us shares one icon-cards shape with the careers benefits,
+    // whose list is `cards` (phase 2, task 10; migration 0042).
+    "settings.sections.whyChooseUs.features":
+      "settings.sections.whyChooseUs.cards",
+    "settings.sections.whyChooseUs.features[].title":
+      "settings.sections.whyChooseUs.cards[].title",
+    "settings.sections.whyChooseUs.features[].description":
+      "settings.sections.whyChooseUs.cards[].description",
+    "settings.sections.whyChooseUs.features[].icon":
+      "settings.sections.whyChooseUs.cards[].icon",
   }
 
 /**

@@ -6,7 +6,7 @@ import { LocationMap } from "@/components/home/location-map"
 import { Services } from "@/components/home/services"
 import { Team } from "@/components/home/team"
 import { Testimonials } from "@/components/home/testimonials"
-import { WhyChooseUs } from "@/components/home/why-choose-us"
+import { IconCardsSection } from "@/components/home/icon-cards-section"
 import { HomeMotion } from "@/components/motion/home-motion"
 
 import type { HomeView } from "./view"
@@ -21,7 +21,7 @@ export function HomeTemplate({ view }: { view: HomeView }) {
             <Hero {...view.hero} />
             <Clients {...view.clients} />
             <Services {...view.services} />
-            <WhyChooseUs {...view.whyChooseUs} />
+            <IconCardsSection {...view.whyChooseUs} />
             <Testimonials {...view.testimonials} />
             <Team {...view.team} />
             <Blog {...view.blog} />

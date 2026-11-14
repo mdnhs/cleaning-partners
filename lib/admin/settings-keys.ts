@@ -89,7 +89,7 @@ export const SETTINGS_ENTRIES: Record<
   "sections.whyChooseUs": {
     label: "Why choose us",
     description:
-      "Background, heading, text and features of the “Why choose us” section.",
+      "Background, heading, text and cards of the “Why choose us” section.",
     group: "Shared sections",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,

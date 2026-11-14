@@ -5,6 +5,7 @@ import type { WithMedia } from "@/lib/media"
 import { fixtureSiteSources } from "@/server/db/seed/fixtures/sources"
 import { aboutView } from "@/templates/about/view"
 import { articleView, blogView } from "@/templates/blog/view"
+import { careersView } from "@/templates/careers/view"
 import { contactView } from "@/templates/contact/view"
 import { homeView } from "@/templates/home/view"
 import {
@@ -14,6 +15,7 @@ import {
   mapsSearchHref,
   NOT_FOUND_FALLBACK,
   notFoundView,
+  whyChooseUsView,
 } from "@/templates/shared/views"
 import { serviceDetailView, servicesView } from "@/templates/services/view"
 import {
@@ -379,6 +381,21 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       },
     }
     expect(howItWorksView(withIntro).intro).toBe("Shown under the heading.")
+  })
+
+  it("icon cards: why choose us has the photo, the careers cards do not", () => {
+    const why = whyChooseUsView(s)
+    expect(why.cards).toHaveLength(4)
+    expect(why.cards[0]!.title).toBe("Skilled Cleaners")
+    expect(why.background).toBe(
+      s.settings["sections.whyChooseUs"].background.url
+    )
+    expect(homeView(s).whyChooseUs).toEqual(why)
+    const careers = careersView(s, [], new Date("2026-11-04T12:00:00Z")).why
+    expect(careers).not.toHaveProperty("background")
+    expect(careers.cards.map((c) => c.title)).toEqual(
+      s.pages.careers.data.why.cards.map((c) => c.title)
+    )
   })
 
   it("blog: featured is the newest, every category filters, page size 6", () => {

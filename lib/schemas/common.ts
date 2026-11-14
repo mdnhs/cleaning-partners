@@ -160,6 +160,14 @@ export const iconCard = z.object({
   icon: mediaRef,
 })
 
+/** A heading and icon cards (why choose us, why work with us). */
+export const iconCardsSection = z.object({
+  eyebrow: text,
+  title: text,
+  description: text,
+  cards: z.array(iconCard).min(1).max(8),
+})
+
 /** One numbered step: a title and a line under it. */
 export const step = z.object({ title: text, description: text })
 
@@ -207,5 +215,6 @@ export type ParagraphsDoc = z.infer<typeof paragraphsText>
 export type Seo = z.infer<typeof seo>
 export type PageHero = z.infer<typeof pageHero>
 export type IconCard = z.infer<typeof iconCard>
+export type IconCardsSectionData = z.infer<typeof iconCardsSection>
 export type Step = z.infer<typeof step>
 export type StepsSectionData = z.infer<typeof stepsSection>
