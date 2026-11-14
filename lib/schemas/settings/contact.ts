@@ -21,7 +21,10 @@ export const contactSettings = z.object({
   addressLine1: text,
   addressLine2: text,
   /** Text of every {quoteLabel} button (header, hero, quote cards…). */
-  quoteLabel: text,
+  quoteLabel: text.refine(
+    (value) => !value.includes("{"),
+    "Type the button text itself, without {placeholders}"
+  ),
   /**
    * Where every {quoteHref} button goes. A real address: it is itself the
    * value of {quoteHref}, so it can never be a placeholder.

@@ -235,6 +235,77 @@ describe("quote_cta_placeholders (custom data migration)", () => {
     })
   })
 
+  it("rewrites each link only where it was seeded", async () => {
+    // Seeded shapes of other places, set by an admin here: kept.
+    const headerShape: Link = { label: "Get a Quote", href: "#contact" }
+    const servicesShape: Link = { label: "Get A Quote", href: "#contact" }
+    await insertSettings([
+      ["navigation", legacyNavigation(OLD.hero), legacyNavigation(OLD.help)],
+      ["microcopy", legacyMicrocopy(headerShape), legacyMicrocopy()],
+      [
+        "sections.contact",
+        legacySectionsContact(OLD.hero),
+        legacySectionsContact(),
+      ],
+    ])
+    await insertPages([
+      ["home", legacyHome(servicesShape), legacyHome(headerShape)],
+      ["about", legacyAbout(OLD.help), legacyAbout(OLD.quoteBox)],
+      [
+        "services",
+        legacyServices(OLD.hero, OLD.servicesQuote),
+        legacyServices(OLD.help, OLD.hero),
+      ],
+    ])
+    const hero = blocksFromTemplate("home", legacyHome(OLD.help))
+    const story = blocksFromTemplate("about", legacyAbout(headerShape))
+    const grid = blocksFromTemplate(
+      "services",
+      legacyServices(OLD.help, OLD.hero)
+    )
+    const edited = blocksFromTemplate(
+      "home",
+      legacyHome({ label: "Get a Free Quote", href: "#book" })
+    )
+    const docs = [
+      { slug: "hero", draft: { blocks: hero } },
+      { slug: "story", draft: { blocks: story } },
+      { slug: "grid", draft: { blocks: grid } },
+      { slug: "edited", draft: { blocks: edited } },
+    ]
+    await getDb()
+      .insert(builderPages)
+      .values(docs.map((d) => ({ ...d, title: d.slug, published: d.draft })))
+    await migrate()
+
+    const nav = await setting("navigation")
+    expect(at(nav.draft, "cta")).toEqual(OLD.hero)
+    expect(at(nav.published, "cta")).toEqual(OLD.help)
+    const micro = await setting("microcopy")
+    expect(at(micro.draft, "quoteCard.cta")).toEqual(headerShape)
+    expect(at(micro.published, "quoteCard.cta")).toEqual(QUOTE)
+    const box = await setting("sections.contact")
+    expect(at(box.draft, "quoteBox.cta")).toEqual(OLD.hero)
+    const home = await page("home")
+    expect(at(home.draft, "hero.primaryCta")).toEqual(servicesShape)
+    expect(at(home.published, "hero.primaryCta")).toEqual(headerShape)
+    const about = await page("about")
+    expect(at(about.draft, "story.cta")).toEqual(OLD.help)
+    expect(at(about.published, "story.cta")).toEqual(OLD.quoteBox)
+    const services = await page("services")
+    expect(at(services.draft, "grid.quoteCta")).toEqual(OLD.hero)
+    expect(at(services.draft, "grid.helpCard.cta")).toEqual(servicesShape)
+    expect(at(services.published, "grid.quoteCta")).toEqual(OLD.help)
+    expect(at(services.published, "grid.helpCard.cta")).toEqual(OLD.hero)
+
+    for (const row of await getDb().select().from(builderPages)) {
+      expect(row.version, row.slug).toBe(1)
+      expect(row.draft, row.slug).toEqual(
+        docs.find((d) => d.slug === row.slug)!.draft
+      )
+    }
+  })
+
   it("leaves a NULL published NULL", async () => {
     await insertSettings([
       ["contact", legacyContact(), null],

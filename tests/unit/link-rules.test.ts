@@ -71,6 +71,19 @@ describe("link placeholder rules (server and editor)", () => {
       ).toBe(false)
   })
 
+  it("rejects a placeholder as the quote button text itself", () => {
+    const contact = settingsFixture(fixtureMediaLookup).contact
+    expect(
+      contactSettings.safeParse({ ...contact, quoteLabel: "Get a Quote" })
+        .success
+    ).toBe(true)
+    for (const quoteLabel of ["{office}", "{quoteLabel}", "Call {x}", ""]) {
+      const result = contactSettings.safeParse({ ...contact, quoteLabel })
+      expect(result.success, quoteLabel).toBe(false)
+      expect(result.error?.issues[0].path).toEqual(["quoteLabel"])
+    }
+  })
+
   it("accepts the shipped link shapes", () => {
     for (const value of [
       { label: "Call 24/7: {phone24h}", href: "{phone24hHref}" },
