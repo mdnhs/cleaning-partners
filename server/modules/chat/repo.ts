@@ -98,6 +98,22 @@ export async function assigneeName(
   return row?.name ?? null
 }
 
+/** Name, roles and ban flag of a user a chat may be assigned to. */
+export async function findStaffUser(
+  userId: string,
+  db: DbOrTx = getDb()
+): Promise<{
+  name: string
+  role: string | null
+  banned: boolean | null
+} | null> {
+  const [row] = await db
+    .select({ name: users.name, role: users.role, banned: users.banned })
+    .from(users)
+    .where(eq(users.id, userId))
+  return row ?? null
+}
+
 // ---------- messages ----------
 
 export async function messagesAfter(

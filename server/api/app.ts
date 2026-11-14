@@ -29,6 +29,7 @@ import {
   testimonialsRoutes,
 } from "@/server/modules/collections/routes"
 import { chatPublicRoutes } from "@/server/modules/chat/public-routes"
+import { chatRoutes } from "@/server/modules/chat/routes"
 import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
 import { internalRoutes } from "@/server/modules/internal/routes"
@@ -81,6 +82,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/media", mediaRoutes)
   .route("/integrations", integrationsRoutes)
   .route("/leads", leadsRoutes)
+  .route("/chat", chatRoutes)
   .route("/applications", applicationsRoutes)
   .route("/seo", seoRoutes)
   .route("/redirects", redirectsRoutes)

@@ -78,8 +78,10 @@ export const chatMessages = pgTable(
     sender: text("sender").notNull(),
     senderName: text("sender_name"),
     body: text("body").notNull(),
-    // Set on one-off notices (handoff, limit, failed, joined): the partial
-    // unique index below lets each be written at most once per chat.
+    // Set only on the once-per-chat notices (handoff, limit, failed): the
+    // partial unique index below lets each be written at most once. The
+    // joined, back and ended notices leave it null because they can recur
+    // (joined once per claim, back once per handback).
     noticeKind: text("notice_kind"),
     createdAt: tsz("created_at").notNull().defaultNow(),
   },

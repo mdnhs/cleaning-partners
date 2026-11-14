@@ -762,10 +762,16 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       "notices.failed": chatNotice("Assistant unavailable"),
       "notices.joined": chatNotice(
         "Team member joined",
-        "Shown when a team member replies. {name} is filled in."
+        "Shown each time a team member takes the chat over, by replying or with Take over. {name} is filled in."
       ),
-      "notices.back": chatNotice("Assistant back on"),
-      "notices.ended": chatNotice("Chat closed"),
+      "notices.back": chatNotice(
+        "Assistant back on",
+        "Shown each time the chat is handed back to the assistant. {team} is filled in."
+      ),
+      "notices.ended": chatNotice(
+        "Chat closed",
+        "Shown when the chat is closed. {team} is filled in."
+      ),
       alerts: { label: "Alerts" },
       "alerts.includeMessage": {
         label: "Include the visitor's message in alert emails",
