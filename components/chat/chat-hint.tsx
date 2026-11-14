@@ -51,6 +51,9 @@ export function ChatHint({
   )
   const hovering = useRef(false)
   const pressing = useRef(false)
+  const trigger = useRef<HTMLButtonElement>(null)
+  // Escape moves focus back to the trigger; that focus must not re-expand.
+  const refocusing = useRef(false)
   const playEntrance = useRef(!skipEntrance)
   const announceEntered = useRef(onEntered)
 
@@ -256,6 +259,10 @@ export function ChatHint({
       onFocusCapture={() => {
         // A tap focuses the button after pointerup and before click, so touch
         // screens are left to the click.
+        if (refocusing.current) {
+          refocusing.current = false
+          return
+        }
         if (!pressing.current && !touchOnly()) expandNow()
       }}
       onBlurCapture={(event) => {
@@ -266,7 +273,15 @@ export function ChatHint({
           setExpanded(false)
       }}
       onKeyDown={(event) => {
-        if (event.key === "Escape" && expanded) setExpanded(false)
+        if (event.key !== "Escape" || !expanded) return
+        // The folded tray is hidden: focus on an option would drop to the
+        // page, so it goes back to the trigger first.
+        if (tray.current?.contains(document.activeElement)) {
+          refocusing.current = true
+          trigger.current?.focus()
+          refocusing.current = false
+        }
+        setExpanded(false)
       }}
       className="relative w-[min(272px,calc(100vw-104px))] overflow-hidden rounded-[28px] border border-white/16 bg-navy-dark/50 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_18px_44px_-14px_rgb(0_0_0/0.5)] backdrop-blur-md backdrop-saturate-150 will-change-transform max-[339px]:hidden"
     >
@@ -307,6 +322,7 @@ export function ChatHint({
 
       <div className="relative flex items-center">
         <button
+          ref={trigger}
           type="button"
           aria-label={hint.title}
           aria-expanded={hasTray ? expanded : undefined}

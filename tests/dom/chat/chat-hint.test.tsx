@@ -99,6 +99,20 @@ describe("ChatHint", () => {
     expect(trigger()).toHaveAttribute("aria-expanded", "false")
   })
 
+  it("Escape on an option moves focus to the trigger and collapses", () => {
+    stubMedia(true)
+    setup()
+    fireEvent.click(trigger())
+    const option = screen.getByRole("button", {
+      name: HINT.presets[0]!.label,
+    })
+    option.focus()
+    expect(trigger()).toHaveAttribute("aria-expanded", "true")
+    fireEvent.keyDown(option, { key: "Escape" })
+    expect(trigger()).toHaveFocus()
+    expect(trigger()).toHaveAttribute("aria-expanded", "false")
+  })
+
   it("the dismiss button hides the pill at once with reduced motion", () => {
     stubMedia(true)
     const { onGone } = setup()
