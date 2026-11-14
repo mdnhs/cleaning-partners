@@ -540,7 +540,11 @@ export function statsView(
   }
 }
 
-/** The home page's services intro (copy, photos and the short list). */
+/**
+ * The home page's services intro (copy, photos and the short list). Each
+ * item names a service by slug; one that is not published (unpublished or
+ * deleted) is skipped, so the list never links to a missing page.
+ */
 export function servicesIntroView(
   s: SiteSources,
   services: Pages["home"]["data"]["services"]
@@ -551,7 +555,18 @@ export function servicesIntroView(
     eyebrow: services.eyebrow,
     title: services.title,
     description: services.description,
-    items: services.items,
+    items: services.items.flatMap((item) => {
+      const service = s.services.find((x) => x.slug === item.service)
+      return service
+        ? [
+            {
+              title: service.content.title,
+              description: item.description,
+              href: servicePath(service.slug),
+            },
+          ]
+        : []
+    }),
     itemIcon: services.itemIcon.url,
     moreText: services.moreText,
     cta: linkView(s, services.cta),

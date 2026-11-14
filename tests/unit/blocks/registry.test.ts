@@ -164,7 +164,7 @@ describe("block registry (R10-2)", () => {
       eyebrow: "Services",
       title: "What we do",
       description: "Intro",
-      items: [{ title: "Office", description: "Cleaning" }],
+      items: [{ service: "office-cleaning", description: "Cleaning" }],
       itemIcon: { mediaId: MEDIA },
       moreText: "More",
       cta: link,

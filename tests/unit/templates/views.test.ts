@@ -160,7 +160,26 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       logo: "/images/home/icca.png",
       logoAlt: "Irish Contract Cleaning Association",
     })
-    expect(view.services.items).toHaveLength(3)
+    expect(view.services.items).toEqual([
+      {
+        title: "Medical Cleaning",
+        description:
+          "Hygienic, compliant cleaning for clinics and healthcare settings.",
+        href: "/services/medical-cleaning",
+      },
+      {
+        title: "Commercial Cleaning",
+        description:
+          "Offices, schools and workplaces kept spotless, on your schedule.",
+        href: "/services/commercial-cleaning",
+      },
+      {
+        title: "Retail Cleaning",
+        description:
+          "Shops, showrooms and salons kept customer-ready, on your schedule.",
+        href: "/services/retail-cleaning",
+      },
+    ])
     expect(view.services.itemIcon).toBe("/images/home/check.svg")
     expect(view.blog.posts.map((p) => p.slug)).toEqual(
       blogPosts.slice(1, 4).map((p) => p.slug)
@@ -382,6 +401,35 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       "Nationwide",
     ])
     expect(view.stats.stats[2].label).toBe("Contact line: (085) 8062369")
+  })
+
+  it("home services list: names and links come from published services; others are skipped", () => {
+    const home = s.pages.home.data
+    const items = [
+      { service: "gone", description: "No such service." },
+      ...home.services.items,
+    ]
+    // retail-cleaning unpublished or deleted: not among the published services.
+    const sources: SiteSources = {
+      ...s,
+      services: s.services.filter((x) => x.slug !== "retail-cleaning"),
+      pages: {
+        ...s.pages,
+        home: {
+          ...s.pages.home,
+          data: { ...home, services: { ...home.services, items } },
+        },
+      },
+    }
+    expect(
+      homeView(sources).services.items.map(({ title, href }) => [title, href])
+    ).toEqual([
+      ["Medical Cleaning", "/services/medical-cleaning"],
+      ["Commercial Cleaning", "/services/commercial-cleaning"],
+    ])
+
+    const none: SiteSources = { ...sources, services: [] }
+    expect(homeView(none).services.items).toEqual([])
   })
 
   it("contact: hero, ways-to-reach-us title and the form copy", () => {

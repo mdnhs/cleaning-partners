@@ -316,6 +316,13 @@
       "when": 1793950000000,
       "tag": "0044_shared_quote_card",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1793960000000,
+      "tag": "0045_home_featured_services",
+      "breakpoints": true
     }
   ]
 }

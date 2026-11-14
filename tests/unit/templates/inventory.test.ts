@@ -83,6 +83,8 @@ const POST_BASELINE_PAGE_LEAVES = new Set([
   // Optional own banner on every page hero (null = the site default).
   "about:hero.image",
   "contact:hero.image",
+  // The home services list picks services from the collection (phase 2, task 13).
+  "home:services.items[].service",
 ])
 
 function expectInventoryCovered(

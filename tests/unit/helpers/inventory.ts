@@ -73,6 +73,9 @@ export const RELOCATED_SINCE_BASELINE: Readonly<Record<string, string | null>> =
       "settings.microcopy.quoteCard.phoneLabel",
     "pages.services.grid.helpCard.callLabel":
       "pages.services.grid.helpCard.phoneLabel",
+    // The home services list names services from the collection; the name
+    // comes from the service itself (phase 2, task 13; migration 0045).
+    "pages.home.services.items[].title": null,
   }
 
 /**

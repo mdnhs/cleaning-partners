@@ -276,15 +276,17 @@ describe("SchemaForm layout (JW field groups)", () => {
       templateEditorMeta[PAGES.home],
       pages.home.data
     )
-    const items = screen.getByRole("group", { name: "Highlights" })
-    const first = within(items).getByRole("listitem", { name: "Highlight 1" })
+    const items = screen.getByRole("group", { name: "Services" })
+    const first = within(items).getByRole("listitem", { name: "Service 1" })
     const [item] = pages.home.data.services.items
     const toggle = within(first).getByRole("button", { expanded: true })
-    // The naming field (itemLabel "title") leads the summary.
+    // The naming field (itemLabel "service") leads the summary.
     expect(toggle).toHaveTextContent(
-      `Highlight 1${item.title} · ${item.description}`
+      `Service 1${item.service} · ${item.description}`
     )
-    const label = within(first).getByRole("textbox", { name: "Title" })
+    const label = within(first).getByRole("textbox", {
+      name: "Short description",
+    })
     await user.click(toggle)
     expect(toggle).toHaveAttribute("aria-expanded", "false")
     expect(label).not.toBeVisible()
@@ -299,11 +301,11 @@ describe("SchemaForm layout (JW field groups)", () => {
       templateSchemaFor("home"),
       templateEditorMeta[PAGES.home],
       pages.home.data,
-      { errors: { "services.items.0.title": ["Required"] } }
+      { errors: { "services.items.0.description": ["Required"] } }
     )
     const first = within(
-      screen.getByRole("group", { name: "Highlights" })
-    ).getByRole("listitem", { name: "Highlight 1" })
+      screen.getByRole("group", { name: "Services" })
+    ).getByRole("listitem", { name: "Service 1" })
     const toggle = within(first).getByRole("button", { expanded: true })
     expect(toggle).toBeDisabled()
     expect(toggle).toHaveTextContent("fix its errors to collapse it")

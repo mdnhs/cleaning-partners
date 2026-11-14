@@ -19,16 +19,26 @@ import type { HomeTemplate } from "@/templates/home/schema"
 import { templates } from "@/templates/registry"
 
 const home = pagesFixture(fixtureMediaLookup).home.data
+const [MEDICAL, , RETAIL] = home.services.items.map((item) => item.description)
+
+const json = (body: unknown) =>
+  new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "content-type": "application/json" },
+  })
+const SERVICE_OPTIONS = [
+  ["medical-cleaning", "Medical Cleaning"],
+  ["commercial-cleaning", "Commercial Cleaning"],
+  ["retail-cleaning", "Retail Cleaning"],
+].map(([value, label]) => ({ value, label, group: "Services" }))
 
 beforeEach(() => {
   vi.stubGlobal(
     "fetch",
-    vi.fn(
-      async () =>
-        new Response(
-          JSON.stringify({ items: [], page: 1, pageSize: 24, total: 0 }),
-          { status: 200, headers: { "content-type": "application/json" } }
-        )
+    vi.fn(async (input: RequestInfo | URL) =>
+      String(input).includes("/options/services")
+        ? json({ items: SERVICE_OPTIONS })
+        : json({ items: [], page: 1, pageSize: 24, total: 0 })
     )
   )
 })
@@ -63,13 +73,17 @@ const settle = () =>
 
 const last = (onChange: ReturnType<typeof vi.fn>) =>
   onChange.mock.calls.at(-1)![0] as HomeTemplate
-const stats = () => screen.getByRole("group", { name: "Highlights" })
+const stats = () => screen.getByRole("group", { name: "Services" })
 const stat = (n: number) =>
-  within(stats()).getByRole("listitem", { name: `Highlight ${n}` })
+  within(stats()).getByRole("listitem", { name: `Service ${n}` })
+const descriptions = (onChange: ReturnType<typeof vi.fn>) =>
+  last(onChange).services.items.map((item) => item.description)
 
-/** Edits Highlight 2's title (an edit inside an item, not to the array itself). */
+/** Edits Service 2's description (an edit inside an item, not to the array itself). */
 async function editSecondLabel(user: ReturnType<typeof userEvent.setup>) {
-  const label = within(stat(2)).getByRole("textbox", { name: "Title" })
+  const label = within(stat(2)).getByRole("textbox", {
+    name: "Short description",
+  })
   await user.clear(label)
   await user.type(label, "Control room")
 }
@@ -81,34 +95,27 @@ describe("SchemaForm lists keep edits made inside items", () => {
     await editSecondLabel(user)
 
     await user.click(
-      within(stats()).getByRole("button", { name: "Move Highlight 1 down" })
+      within(stats()).getByRole("button", { name: "Move Service 1 down" })
     )
-    expect(last(onChange).services.items.map((item) => item.title)).toEqual([
-      "Control room",
-      "Medical Cleaning",
-      "Domestic Cleaning",
-    ])
+    expect(descriptions(onChange)).toEqual(["Control room", MEDICAL, RETAIL])
+    expect(last(onChange).services.items[0].service).toBe("commercial-cleaning")
 
     await user.click(
-      within(stats()).getByRole("button", { name: "Add highlight" })
+      within(stats()).getByRole("button", { name: "Add service" })
     )
-    expect(last(onChange).services.items[0].title).toBe("Control room")
+    expect(last(onChange).services.items[0].description).toBe("Control room")
 
     await user.click(
-      within(stats()).getByRole("button", { name: "Remove Highlight 4" })
+      within(stats()).getByRole("button", { name: "Remove Service 4" })
     )
-    expect(last(onChange).services.items.map((item) => item.title)).toEqual([
-      "Control room",
-      "Medical Cleaning",
-      "Domestic Cleaning",
-    ])
+    expect(descriptions(onChange)).toEqual(["Control room", MEDICAL, RETAIL])
   })
 
   it("survives a keyboard drag", async () => {
     // jsdom has no layout: each stat card is a 100px row inside a tall list.
     vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
       function (this: Element) {
-        const item = this.closest("li[aria-label^='Highlight ']")
+        const item = this.closest("li[aria-label^='Service ']")
         const index = item
           ? Array.from(item.parentElement!.children).indexOf(item)
           : 0
@@ -132,7 +139,7 @@ describe("SchemaForm lists keep edits made inside items", () => {
     await editSecondLabel(user)
 
     const handle = within(stat(1)).getByRole("button", {
-      name: "Drag to reorder Highlight 1",
+      name: "Drag to reorder Service 1",
     })
     handle.focus()
     fireEvent.keyDown(handle, { code: "Space", key: " " })
@@ -147,12 +154,24 @@ describe("SchemaForm lists keep edits made inside items", () => {
       key: " ",
     })
     await waitFor(() =>
-      expect(last(onChange).services.items.map((item) => item.title)).toEqual([
-        "Control room",
-        "Medical Cleaning",
-        "Domestic Cleaning",
-      ])
+      expect(descriptions(onChange)).toEqual(["Control room", MEDICAL, RETAIL])
     )
+  })
+})
+
+describe("SchemaForm home services list", () => {
+  it("picks each item's service from the services collection", async () => {
+    renderHome()
+    const names = ["Medical Cleaning", "Commercial Cleaning", "Retail Cleaning"]
+    for (const [i, name] of names.entries()) {
+      const picker = within(stat(i + 1)).getByRole("combobox", {
+        name: "Service",
+      })
+      await waitFor(() => expect(picker).toHaveTextContent(name))
+      expect(
+        within(stat(i + 1)).queryByRole("textbox", { name: "Service" })
+      ).not.toBeInTheDocument()
+    }
   })
 })
 
@@ -160,23 +179,19 @@ describe("SchemaForm list focus and validation", () => {
   it("keeps focus on a Move button when an item reaches an end", async () => {
     const user = userEvent.setup()
     renderHome()
-    within(stats())
-      .getByRole("button", { name: "Move Highlight 2 down" })
-      .focus()
+    within(stats()).getByRole("button", { name: "Move Service 2 down" }).focus()
     await user.keyboard("{Enter}")
     // Now last: its Move down is disabled, so focus goes to its Move up.
     await waitFor(() =>
-      expect(document.activeElement).toHaveAccessibleName("Move Highlight 3 up")
+      expect(document.activeElement).toHaveAccessibleName("Move Service 3 up")
     )
     await user.keyboard("{Enter}")
     await waitFor(() =>
-      expect(document.activeElement).toHaveAccessibleName("Move Highlight 2 up")
+      expect(document.activeElement).toHaveAccessibleName("Move Service 2 up")
     )
     await user.keyboard("{Enter}")
     await waitFor(() =>
-      expect(document.activeElement).toHaveAccessibleName(
-        "Move Highlight 1 down"
-      )
+      expect(document.activeElement).toHaveAccessibleName("Move Service 1 down")
     )
   })
 
@@ -184,11 +199,11 @@ describe("SchemaForm list focus and validation", () => {
     const user = userEvent.setup()
     renderHome()
     await user.click(
-      within(stats()).getByRole("button", { name: "Remove Highlight 3" })
+      within(stats()).getByRole("button", { name: "Remove Service 3" })
     )
     await waitFor(() =>
       expect(document.activeElement).toHaveAccessibleName(
-        "Drag to reorder Highlight 2"
+        "Drag to reorder Service 2"
       )
     )
   })
@@ -197,7 +212,7 @@ describe("SchemaForm list focus and validation", () => {
     const user = userEvent.setup()
     renderHome()
     await user.click(
-      within(stats()).getByRole("button", { name: "Add highlight" })
+      within(stats()).getByRole("button", { name: "Add service" })
     )
     await act(async () => {})
     for (const input of within(stat(4)).getAllByRole("textbox"))
@@ -211,7 +226,7 @@ describe("SchemaForm error display", () => {
     const { setErrors } = renderHome({
       _root: ["This page changed elsewhere"],
       hero: ["Hero needs attention"],
-      "services.items": ["Too many stats"],
+      "services.items": ["Too many services"],
       "hero.background.mediaId": ["Image no longer exists"],
       "hero.subtitle": ["Too long"],
     })
@@ -221,7 +236,7 @@ describe("SchemaForm error display", () => {
     const hero = screen.getByRole("region", { name: "Hero" })
     expect(hero).toHaveAccessibleDescription("Hero needs attention")
     expect(stats()).toHaveAccessibleDescription(
-      expect.stringContaining("Too many stats")
+      expect.stringContaining("Too many services")
     )
     const image = within(hero).getByRole("button", {
       name: "Change image: Background image",
@@ -236,7 +251,7 @@ describe("SchemaForm error display", () => {
       ).not.toBeInTheDocument()
     )
     expect(screen.queryByText("Hero needs attention")).not.toBeInTheDocument()
-    expect(screen.queryByText("Too many stats")).not.toBeInTheDocument()
+    expect(screen.queryByText("Too many services")).not.toBeInTheDocument()
     expect(image).toHaveAttribute("aria-invalid", "false")
     expect(screen.getByText("Too long")).toBeInTheDocument()
   })
@@ -271,7 +286,7 @@ describe("SchemaForm list-item errors (ledger P04-5)", () => {
       "services.items.1": ["Description is inconsistent"],
       "services.items.1.description": ["Description is inconsistent"],
     })
-    // If list items render collapsed (04b Task 13), open Highlight 2 first.
+    // If list items render collapsed (04b Task 13), open Service 2 first.
     const toggle = within(stat(2)).queryByRole("button", { expanded: false })
     if (toggle) fireEvent.click(toggle)
     const messages = await within(stat(2)).findAllByText(
@@ -288,7 +303,7 @@ describe("SchemaForm list-item errors (ledger P04-5)", () => {
     expect(described).not.toBeNull()
     expect(described).toHaveAttribute("role", "group")
     // Named like its list item, so the group is not anonymous (axe).
-    expect(described).toHaveAccessibleName("Highlight 2")
+    expect(described).toHaveAccessibleName("Service 2")
     expect(error.mock.calls.flat().join(" ")).not.toContain("same key")
     error.mockRestore()
   })

@@ -13,6 +13,7 @@ import {
 } from "@/server/db/seed/fixtures/media"
 import { legalPagesFixture } from "@/server/db/seed/fixtures/legal-pages"
 import { pagesFixture } from "@/server/db/seed/fixtures/pages"
+import { servicesFixture } from "@/server/db/seed/fixtures/services"
 import { settingsFixture } from "@/server/db/seed/fixtures/settings"
 
 import { frozenArray } from "../helpers/frozen"
@@ -262,10 +263,13 @@ describe("page fixtures (master 3.2)", () => {
       )
     })
 
+    // The home list now picks services from the collection (phase 2,
+    // task 13): the static site's "Domestic Cleaning" has no service page.
     it("home service items", () => {
-      expect(fixture.home.data.services.items).toEqual(
-        frozenArray("components/home/services.tsx", "services")
-      )
+      const slugs = servicesFixture(fixtureMediaLookup).map((x) => x.slug)
+      const items = fixture.home.data.services.items
+      expect(items).toHaveLength(3)
+      for (const item of items) expect(slugs).toContain(item.service)
     })
 
     it("share networks (the url template with {url} for the page address)", () => {

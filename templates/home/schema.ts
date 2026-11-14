@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { link, mediaRef, text } from "@/lib/schemas/common"
+import { link, mediaRef, slug, text } from "@/lib/schemas/common"
 
 /** Page "home" (/): hero, services intro and the blog strip. Shared sections are settings. */
 export const homeTemplate = z.object({
@@ -26,7 +26,11 @@ export const homeTemplate = z.object({
     eyebrow: text,
     title: text,
     description: text,
-    items: z.array(z.object({ title: text, description: text })).min(1),
+    /** Services from the collection: the name and link come from the service. */
+    items: z
+      .array(z.object({ service: slug, description: text }))
+      .min(1)
+      .max(6),
     itemIcon: mediaRef,
     moreText: text,
     cta: link,

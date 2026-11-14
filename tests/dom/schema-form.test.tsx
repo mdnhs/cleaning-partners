@@ -98,44 +98,40 @@ describe("SchemaForm (master 4.3)", () => {
   it("adds, removes and reorders list items with the keyboard", async () => {
     const user = userEvent.setup()
     const { onChange } = renderForm("home")
-    const items = screen.getByRole("group", { name: "Highlights" })
-    const titles = () =>
-      lastValue(onChange).services.items.map((item) => item.title)
+    const items = screen.getByRole("group", { name: "Services" })
+    const slugs = () =>
+      lastValue(onChange).services.items.map((item) => item.service)
 
-    within(items).getByRole("button", { name: "Move Highlight 1 down" }).focus()
+    within(items).getByRole("button", { name: "Move Service 1 down" }).focus()
     await user.keyboard("{Enter}")
-    expect(titles()).toEqual([
-      "Commercial Cleaning",
-      "Medical Cleaning",
-      "Domestic Cleaning",
+    expect(slugs()).toEqual([
+      "commercial-cleaning",
+      "medical-cleaning",
+      "retail-cleaning",
     ])
     await waitFor(() =>
-      expect(document.activeElement).toHaveAccessibleName(
-        "Move Highlight 2 down"
-      )
+      expect(document.activeElement).toHaveAccessibleName("Move Service 2 down")
     )
     expect(
-      within(items).getByRole("listitem", { name: "Highlight 2" })
-    ).toHaveTextContent("Medical Cleaning")
+      within(items).getByRole("listitem", { name: "Service 2" })
+    ).toHaveTextContent("medical-cleaning")
 
-    await user.click(
-      within(items).getByRole("button", { name: "Add highlight" })
-    )
+    await user.click(within(items).getByRole("button", { name: "Add service" }))
     expect(lastValue(onChange).services.items).toHaveLength(4)
     expect(lastValue(onChange).services.items[3]).toEqual({
-      title: "",
+      service: "",
       description: "",
     })
 
     await user.click(
-      within(items).getByRole("button", { name: "Remove Highlight 4" })
+      within(items).getByRole("button", { name: "Remove Service 4" })
     )
     expect(lastValue(onChange).services.items).toHaveLength(3)
     expect(
-      within(items).getByRole("button", { name: "Move Highlight 1 up" })
+      within(items).getByRole("button", { name: "Move Service 1 up" })
     ).toBeDisabled()
     expect(
-      within(items).getByRole("button", { name: "Move Highlight 3 down" })
+      within(items).getByRole("button", { name: "Move Service 3 down" })
     ).toBeDisabled()
   })
 

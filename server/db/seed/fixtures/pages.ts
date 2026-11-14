@@ -41,19 +41,19 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
             "Clean as a button! Professional cleaning tailored to your space, delivered by trained and trusted teams.",
           items: [
             {
-              title: "Medical Cleaning",
+              service: "medical-cleaning",
               description:
                 "Hygienic, compliant cleaning for clinics and healthcare settings.",
             },
             {
-              title: "Commercial Cleaning",
+              service: "commercial-cleaning",
               description:
                 "Offices, schools and workplaces kept spotless, on your schedule.",
             },
             {
-              title: "Domestic Cleaning",
+              service: "retail-cleaning",
               description:
-                "Reliable home cleaning, from regular visits to deep cleans.",
+                "Shops, showrooms and salons kept customer-ready, on your schedule.",
             },
           ],
           itemIcon: media("/images/home/check.svg"),
