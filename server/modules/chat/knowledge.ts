@@ -1,6 +1,7 @@
 import "server-only"
 
 import { getDb } from "@/server/db/client"
+import { oneLine } from "@/server/modules/ai/prompt"
 import { flattenText } from "@/server/modules/ai/tool-data"
 import { findPageByKey } from "@/server/modules/pages/repo"
 import { listServiceRows } from "@/server/modules/services/repo"
@@ -31,16 +32,7 @@ export function clearKnowledgeCache() {
  * `##` heading (JW knowledge.ts).
  */
 const clean = (text: string, max = KNOWLEDGE_MAX) =>
-  [
-    ...text
-      .replace(/[\u0000-\u001f\u007f-\u009f]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim(),
-  ]
-    .slice(0, max)
-    .join("")
-    .replace(/^[#\s]+/, "")
-    .trimEnd()
+  oneLine(text, max).replace(/^[#\s]+/, "")
 
 type Section = { title: string; text: string }
 

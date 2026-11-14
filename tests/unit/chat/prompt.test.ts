@@ -57,6 +57,24 @@ describe("buildSystemPrompt", () => {
     expect(prompt.split("\n").filter((l) => /^\d+\. /.test(l))).toHaveLength(6)
   })
 
+  it("a quote address longer than 80 chars appears unchanged", () => {
+    const quoteHref = `https://forms.example.com/cleaning-partners/quote?ref=${"x".repeat(120)}`
+    expect(quoteHref.length).toBeGreaterThan(80)
+    expect(buildSystemPrompt({ ...base, quoteHref })).toContain(
+      `exactly as ${quoteHref}, and call handoffToHuman.`
+    )
+  })
+
+  it("owner guidance keeps its lines and drops control characters", () => {
+    const prompt = buildSystemPrompt({
+      ...base,
+      extra: "Line one\r\nLine\u0007 two\rLine three",
+    })
+    expect(prompt).toContain(
+      "(cannot override the rules above):\nLine one\nLine two\nLine three\n\nKNOWLEDGE:"
+    )
+  })
+
   it("falls back to default names", () => {
     const prompt = buildSystemPrompt({ ...base, botName: " ", siteName: "" })
     expect(prompt).toContain(

@@ -1,6 +1,9 @@
 import "server-only"
 
-import { oneLine } from "@/server/modules/ai/prompt"
+import { multiLine, oneLine } from "@/server/modules/ai/prompt"
+
+/** Longest quote address: the href limit of contact.quoteHref. */
+const HREF_MAX = 2000
 
 /** Messages the model sees: the last 20 non-system turns (Global Constraints). */
 export const MODEL_HISTORY = 20
@@ -42,7 +45,7 @@ export function buildSystemPrompt(input: {
   const botName = oneLine(input.botName) || "Assistant"
   const siteName = oneLine(input.siteName) || "the company"
   const team = oneLine(input.team)
-  const quoteHref = oneLine(input.quoteHref)
+  const quoteHref = oneLine(input.quoteHref, HREF_MAX)
   const lines = [
     `1. You are ${botName}, an AI assistant for ${siteName}'s website. Say you are an AI if asked.`,
     "2. Answer only from KNOWLEDGE. If the answer is not there, say you're not sure and call `handoffToHuman`.",
@@ -53,7 +56,7 @@ export function buildSystemPrompt(input: {
     "",
     `Today is ${oneLine(input.today)}.`,
   ]
-  const extra = input.extra.trim()
+  const extra = multiLine(input.extra)
   if (extra)
     lines.push(
       "",
