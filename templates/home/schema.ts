@@ -26,11 +26,26 @@ export const homeTemplate = z.object({
     eyebrow: text,
     title: text,
     description: text,
-    /** Services from the collection: the name and link come from the service. */
+    /**
+     * Services from the collection: the name and link come from the service.
+     * Each service at most once (a repeat would be the same link twice).
+     */
     items: z
       .array(z.object({ service: slug, description: text }))
       .min(1)
-      .max(6),
+      .max(6)
+      .superRefine((items, ctx) => {
+        const seen = new Set<string>()
+        items.forEach((item, index) => {
+          if (seen.has(item.service))
+            ctx.addIssue({
+              code: "custom",
+              path: [index, "service"],
+              message: "This service is already in the list",
+            })
+          seen.add(item.service)
+        })
+      }),
     itemIcon: mediaRef,
     moreText: text,
     cta: link,

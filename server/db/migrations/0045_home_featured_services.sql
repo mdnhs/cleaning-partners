@@ -4,8 +4,8 @@
 -- becomes the new seeded list. Any other old-shape list keeps its items whose
 -- title matches a service's title (case-insensitive, trimmed; published title,
 -- else draft), carrying the description verbatim; unmatched items are dropped
--- and an empty result becomes the new seeded list. At most six items (the
--- schema's limit). Lists already in the new shape are left alone. The home
+-- and an empty result becomes the new seeded list. A service listed twice
+-- keeps only its first item, and at most six items stay (the schema's rules). Lists already in the new shape are left alone. The home
 -- page, builder services intro blocks (version + 1) and their revisions.
 -- Re-runnable.
 CREATE OR REPLACE FUNCTION pg_temp.home_seeded_items() RETURNS jsonb
@@ -43,19 +43,24 @@ LANGUAGE sql STABLE AS $$
     ELSE COALESCE((
       SELECT jsonb_agg(kept.item ORDER BY kept.ord)
       FROM (
-        SELECT m.ord, m.item
+        SELECT d.ord, d.item
         FROM (
-          SELECT t.ord,
-            CASE WHEN t.el ? 'service' THEN t.el
-              ELSE jsonb_build_object(
-                'service', pg_temp.service_slug(t.el ->> 'title'),
-                'description', t.el -> 'description')
-            END AS item
-          FROM jsonb_array_elements(items) WITH ORDINALITY AS t(el, ord)
-          WHERE jsonb_typeof(t.el) = 'object'
-        ) AS m
-        WHERE m.item ->> 'service' IS NOT NULL
-        ORDER BY m.ord
+          -- Each service once (the schema rejects repeats): its first item.
+          SELECT DISTINCT ON (m.item ->> 'service') m.ord, m.item
+          FROM (
+            SELECT t.ord,
+              CASE WHEN t.el ? 'service' THEN t.el
+                ELSE jsonb_build_object(
+                  'service', pg_temp.service_slug(t.el ->> 'title'),
+                  'description', t.el -> 'description')
+              END AS item
+            FROM jsonb_array_elements(items) WITH ORDINALITY AS t(el, ord)
+            WHERE jsonb_typeof(t.el) = 'object'
+          ) AS m
+          WHERE m.item ->> 'service' IS NOT NULL
+          ORDER BY m.item ->> 'service', m.ord
+        ) AS d
+        ORDER BY d.ord
         LIMIT 6
       ) AS kept
     ), pg_temp.home_seeded_items())

@@ -76,8 +76,8 @@ export function Services({
           />
 
           <ul className="flex w-full flex-col gap-2.5 sm:gap-3.5">
-            {items.map((service) => (
-              <li key={service.href} data-service-item>
+            {items.map((service, index) => (
+              <li key={`${index}:${service.href}`} data-service-item>
                 <Link
                   href={service.href}
                   className="flex items-center gap-3.5 rounded-2xl border border-line bg-white p-4 sm:gap-4 sm:rounded-[18px] sm:px-5 sm:py-[18px]"

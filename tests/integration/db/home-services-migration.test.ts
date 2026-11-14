@@ -139,11 +139,44 @@ describe("home_featured_services (custom data migration)", () => {
       expect(homeParse(value)).toBeUndefined()
   })
 
+  it("keeps a service listed twice only once (its first item)", async () => {
+    await insertHome(
+      legacyHome([
+        { title: "Medical Cleaning", description: "first" },
+        { title: "Retail Cleaning", description: "retail" },
+        { title: "medical cleaning ", description: "again" },
+      ]),
+      null
+    )
+    await migrate()
+    const draft = (await homePage()).draft
+    expect(items(draft)).toEqual([
+      { service: "medical-cleaning", description: "first" },
+      { service: "retail-cleaning", description: "retail" },
+    ])
+    expect(homeParse(draft)).toBeUndefined()
+  })
+
   it("keeps at most six items (the schema's limit)", async () => {
-    const many = Array.from({ length: 8 }, (_, i) => ({
-      title: "Medical Cleaning",
-      description: `d${i}`,
-    }))
+    const base = servicesFixture(fixtureMediaLookup)[0]
+    await getDb()
+      .insert(services)
+      .values(
+        [0, 1, 2].map((i) => ({
+          slug: `extra-${i}`,
+          sortOrder: 10 + i,
+          draft: { ...base.content, title: `Extra ${i}` },
+          published: { ...base.content, title: `Extra ${i}` },
+        }))
+      )
+    const titles = [
+      ...servicesFixture(fixtureMediaLookup).map((x) => x.content.title),
+      "Extra 0",
+      "Extra 1",
+      "Extra 2",
+    ]
+    expect(titles).toHaveLength(8)
+    const many = titles.map((title, i) => ({ title, description: `d${i}` }))
     await insertHome(legacyHome(many), null)
     await migrate()
     const draft = (await homePage()).draft

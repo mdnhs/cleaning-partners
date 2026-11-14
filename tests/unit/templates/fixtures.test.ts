@@ -5,6 +5,7 @@ import { RICH_TEXT_MAX_CHARS, RICH_TEXT_MAX_NODES } from "@/blocks/registry"
 import { contactPlaceholders, interpolate } from "@/lib/interpolate"
 import { seo } from "@/lib/schemas/common"
 import { settingsSchemas, type SettingsKey } from "@/lib/schemas/settings"
+import { homeTemplate } from "@/templates/home/schema"
 import { PAGE_KEYS, PAGES, templates } from "@/templates/registry"
 import {
   fixtureMediaKey,
@@ -328,5 +329,27 @@ describe("page fixtures (master 3.2)", () => {
         RICH_TEXT_MAX_CHARS
       )
     }
+  })
+})
+
+describe("home services list", () => {
+  it("the same service cannot be listed twice", () => {
+    const home = fixture.home.data
+    expect(homeTemplate.safeParse(home).success).toBe(true)
+    const [first] = home.services.items
+    const result = homeTemplate.safeParse({
+      ...home,
+      services: {
+        ...home.services,
+        items: [first, { ...first, description: "Again." }],
+      },
+    })
+    expect(result.success).toBe(false)
+    expect(result.error?.issues).toEqual([
+      expect.objectContaining({
+        path: ["services", "items", 1, "service"],
+        message: "This service is already in the list",
+      }),
+    ])
   })
 })
