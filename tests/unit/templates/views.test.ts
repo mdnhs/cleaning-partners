@@ -183,6 +183,27 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     expect(view.map.logo).toBe("/images/home/logo.png")
   })
 
+  it("contact member card: logo and name from Settings › Site › Membership", () => {
+    const membership = {
+      logo: {
+        ...s.settings.site.logoLarge,
+        url: "/api/v1/media/file/badge.png",
+      },
+      logoAlt: "Badge description",
+      name: "Badge Association",
+    }
+    const sources = {
+      ...s,
+      settings: { ...s.settings, site: { ...s.settings.site, membership } },
+    }
+    expect(contactSectionView(sources).member).toEqual({
+      logo: membership.logo.url,
+      logoAlt: membership.logoAlt,
+      title: s.settings["sections.contact"].memberTitle,
+      subtitle: membership.name,
+    })
+  })
+
   it("contact cards carry their kind and the action href", () => {
     const cards = contactSectionView(s).cards
     expect(cards.map((card) => card.kind)).toEqual([

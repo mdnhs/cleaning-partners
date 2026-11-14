@@ -328,6 +328,7 @@ export function contactSectionView(
   title?: string
 ): ContactProps {
   const section = s.settings["sections.contact"]
+  const { membership } = s.settings.site
   return {
     eyebrow: section.eyebrow,
     title: title ?? section.title,
@@ -341,10 +342,10 @@ export function contactSectionView(
       href: contactCardHref(s, card.kind),
     })),
     member: {
-      logo: section.memberLogo.url,
-      logoAlt: section.memberLogoAlt,
+      logo: membership.logo.url,
+      logoAlt: membership.logoAlt,
       title: section.memberTitle,
-      subtitle: section.memberSubtitle,
+      subtitle: membership.name,
     },
     socials: section.socials.map((social) => ({
       label: social.label,
@@ -475,7 +476,7 @@ export function recentPosts(
 // One mapping per section, called by the fixed pages' views and by the page
 // builder (templates/builder/views.ts), so both render the same props.
 
-/** The home hero. The logo is the site's large logo. */
+/** The home hero. The logo is the site's large logo; the badge is Settings › Site › Membership. */
 export function heroView(
   s: SiteSources,
   hero: Pages["home"]["data"]["hero"]
@@ -494,8 +495,8 @@ export function heroView(
     secondaryCta: linkView(s, hero.secondaryCta),
     member: {
       label: hero.memberLabel,
-      logo: hero.memberLogo.url,
-      logoAlt: hero.memberLogoAlt,
+      logo: site.membership.logo.url,
+      logoAlt: site.membership.logoAlt,
     },
   }
 }

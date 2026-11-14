@@ -60,7 +60,7 @@ describe("seedContent (master Task 3.4)", () => {
   it("is idempotent: a second run inserts nothing and counts stay equal", async () => {
     const first = await seedContent(getDb())
     expect(first).toEqual({
-      media: 45,
+      media: 44,
       articleCategories: 6,
       settings: 19,
       pages: 6,
@@ -167,7 +167,7 @@ describe("seedContent (master Task 3.4)", () => {
   it("registers library images as static media with dimensions", async () => {
     await seedContent(getDb())
     const rows = await getDb().select().from(media)
-    expect(rows).toHaveLength(45)
+    expect(rows).toHaveLength(44)
     for (const row of rows) {
       expect(row.driver).toBe("static")
       expect(row.key).toMatch(/^\/images\//)
@@ -182,7 +182,7 @@ describe("seedContent (master Task 3.4)", () => {
       .select()
       .from(media)
       .where(like(media.mime, "image/%"))
-    expect(rows.length).toBe(45)
+    expect(rows.length).toBe(44)
     expect(rows.filter((r) => r.alt === "" && !r.isDecorative)).toEqual([])
     // Decorative means no alt text; described images are not decorative.
     for (const row of rows) expect(row.isDecorative).toBe(row.alt === "")

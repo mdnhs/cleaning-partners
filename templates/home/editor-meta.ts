@@ -22,8 +22,6 @@ export const homeEditorMeta: EditorMeta = {
     "hero.primaryCta": { label: "Primary button" },
     "hero.secondaryCta": { label: "Secondary button" },
     "hero.memberLabel": { label: "Membership label" },
-    "hero.memberLogo": { label: "Membership logo", aspect: "square" },
-    "hero.memberLogoAlt": { label: "Membership logo description" },
     services: {
       label: "Services section",
       help: "The photos, heading and short list beside the service cards.",
@@ -67,8 +65,8 @@ export const homeEditorMeta: EditorMeta = {
       },
       {
         title: "Membership",
-        description: "The “Proud member of” line.",
-        fields: ["memberLabel", "memberLogo", "memberLogoAlt"],
+        description: "Logo and name are in Settings › Site › Membership.",
+        fields: ["memberLabel"],
       },
     ],
   },

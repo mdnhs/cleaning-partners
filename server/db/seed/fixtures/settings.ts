@@ -30,6 +30,11 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       productionUrl: null,
       timezone: "Europe/Dublin",
       locale: "en",
+      membership: {
+        logo: media("/images/home/icca.png"),
+        logoAlt: "Irish Contract Cleaning Association",
+        name: "Irish Contract Cleaning Association",
+      },
     },
     contact: {
       phone24h: "(085) 8062369",
@@ -165,10 +170,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
           lines: ["{hours}"],
         },
       ],
-      memberLogo: media("/images/home/icca-member.png"),
-      memberLogoAlt: "ICCA",
       memberTitle: "Member of the ICCA",
-      memberSubtitle: "Irish Contract Cleaning Association",
       socials: [
         {
           label: "Facebook",

@@ -44,7 +44,16 @@ export const DERIVED_SETTINGS_PATHS = new Set(["settings.footer.contactLines"])
  * live schema path. Add one line per moved field, with a comment saying why.
  */
 export const RELOCATED_SINCE_BASELINE: Readonly<Record<string, string | null>> =
-  {}
+  {
+    // One ICCA badge for the home hero and the contact section, edited in
+    // Settings › Site › Membership (phase 2, task 7; migration 0039).
+    "pages.home.hero.memberLogo": "settings.site.membership.logo",
+    "pages.home.hero.memberLogoAlt": "settings.site.membership.logoAlt",
+    "settings.sections.contact.memberLogo": "settings.site.membership.logo",
+    "settings.sections.contact.memberLogoAlt":
+      "settings.site.membership.logoAlt",
+    "settings.sections.contact.memberSubtitle": "settings.site.membership.name",
+  }
 
 /**
  * Inventory entries whose seeded value was changed on purpose after the
@@ -60,6 +69,14 @@ export const CHANGED_SINCE_BASELINE: ReadonlyMap<string, string> = new Map([
   [
     "serviceDetail.officeHours.hours",
     "Office hours follow Settings › Contact ({hours}), whose en dash is unspaced.",
+  ],
+  [
+    "contact.member.logo",
+    "The contact card shows the one membership logo (icca.png, the same artwork as icca-member.png).",
+  ],
+  [
+    "contact.member.logoAlt",
+    "The one membership logo's alt text is the association's full name.",
   ],
 ])
 

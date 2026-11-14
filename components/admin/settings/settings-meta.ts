@@ -46,6 +46,12 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         label: "Language",
         help: "Language tag of the public site and its dates, e.g. en (12 Sep 2026). en-GB prints Sept. Dates always show day, month, year in that order.",
       },
+      "membership.logo": { label: "Logo", aspect: "square" },
+      "membership.logoAlt": { label: "Logo description (alt text)" },
+      "membership.name": {
+        label: "Name",
+        help: "Shown under the logo in the contact section.",
+      },
     },
     groups: {
       "": [
@@ -77,6 +83,12 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
           title: "Language and time",
           description: "Used for dates, times and the page language.",
           fields: ["timezone", "locale"],
+        },
+        {
+          title: "Membership",
+          description:
+            "The trade association badge in the home hero and the contact section.",
+          fields: ["membership"],
         },
       ],
     },
@@ -448,10 +460,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         label: "Lines",
         itemName: "Line",
       },
-      memberLogo: { label: "Membership logo", aspect: "square" },
-      memberLogoAlt: { label: "Membership logo description (alt text)" },
       memberTitle: { label: "Membership title" },
-      memberSubtitle: { label: "Membership subtitle" },
       socials: {
         label: "Social links",
         itemName: "Link",
@@ -483,12 +492,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Membership",
           description: "The trade association badge.",
-          fields: [
-            "memberLogo",
-            "memberLogoAlt",
-            "memberTitle",
-            "memberSubtitle",
-          ],
+          fields: ["memberTitle"],
         },
         {
           title: "Social links",

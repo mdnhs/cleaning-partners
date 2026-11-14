@@ -17,8 +17,6 @@ export const homeTemplate = z.object({
     primaryCta: link,
     secondaryCta: link,
     memberLabel: text,
-    memberLogo: mediaRef,
-    memberLogoAlt: text,
   }),
   services: z.object({
     imageA: mediaRef,

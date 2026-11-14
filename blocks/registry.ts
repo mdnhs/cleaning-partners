@@ -25,7 +25,6 @@ const hero = defineBlock({
     primaryCta: { label: "", href: "" },
     secondaryCta: { label: "", href: "" },
     memberLabel: "",
-    memberLogoAlt: "",
   },
   first: true,
   max: 1,

@@ -93,7 +93,6 @@ describe("BlockForm CP cases", () => {
       expect.objectContaining({
         title: "x",
         background: null,
-        memberLogo: null,
       })
     )
   })

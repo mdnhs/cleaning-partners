@@ -29,8 +29,6 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           primaryCta: { label: "Get a Free Quote", href: "#contact" },
           secondaryCta: { label: "Our Services", href: "#services" },
           memberLabel: "Proud member of",
-          memberLogo: media("/images/home/icca.png"),
-          memberLogoAlt: "Irish Contract Cleaning Association",
         },
         services: {
           imageA: media("/images/home/cleaning-the-counter.png"),

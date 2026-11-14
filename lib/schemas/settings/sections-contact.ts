@@ -4,7 +4,7 @@ import { href, link, mediaRef, text } from "../common"
 
 /**
  * settings.sections.contact — the Contact section shared by / and /contact:
- * info cards, ICCA membership, social links and the quote box. Lines may
+ * info cards, the membership title, social links and the quote box. Lines may
  * carry {placeholders} (lib/interpolate.ts); the enquiry form is page data.
  */
 /** Used for rows saved before `mobile` existed (also by the views). */
@@ -51,10 +51,8 @@ export const contactSectionSettings = z.object({
       })
     )
     .min(1),
-  memberLogo: mediaRef,
-  memberLogoAlt: text,
+  /** The member card's heading; its logo and name are Settings › Site › Membership. */
   memberTitle: text,
-  memberSubtitle: text,
   socials: z.array(z.object({ label: text, icon: mediaRef, href })),
   quoteBox: z.object({ title: text, body: text, cta: link }),
 })
