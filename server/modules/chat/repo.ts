@@ -565,3 +565,63 @@ export async function purgeBefore(
     .returning({ id: chatConversations.id })
   return rows.length
 }
+
+// ---------- sweep (JW sweep.ts, JW §6.12) ----------
+
+// Bot-owned = open, AI on, not flagged, unassigned (as requireBotOwns above).
+const BOT_OWNED = sql`(c.ai_enabled and not c.needs_human and c.assigned_to is null)`
+const LEASE_FREE = sql`(c.ai_lease_until is null or c.ai_lease_until < now())`
+
+type IdRow = { id: string }
+
+/** Closes open chats idle for 24 h and clears their lease; returns their ids. */
+export async function closeIdle(db: DbOrTx = getDb()): Promise<string[]> {
+  const { rows } = await db.execute<IdRow>(sql`
+    update chat_conversations c set
+      status = 'closed',
+      closed_at = coalesce(c.closed_at, now()),
+      ai_lease_until = null
+    where c.status = 'open'
+      and c.last_message_at < now() - interval '24 hours'
+    returning c.id`)
+  return rows.map((r) => r.id)
+}
+
+/**
+ * Stamps the no-reply alert, once per waiting episode: the visitor spoke
+ * last, over 5 min ago. A bot-owned chat whose bot holds a live lease is
+ * skipped while `botActive`; with the bot off no chat is bot-owned.
+ */
+export async function claimNoReplyAlerts(
+  botActive: boolean,
+  db: DbOrTx = getDb()
+): Promise<string[]> {
+  const waitingOnBot = botActive
+    ? sql`(${BOT_OWNED} and not ${LEASE_FREE})`
+    : sql`false`
+  const { rows } = await db.execute<IdRow>(sql`
+    update chat_conversations c set no_reply_alerted_at = now()
+    where c.status = 'open'
+      and c.last_visitor_message_at < now() - interval '5 minutes'
+      and c.last_visitor_message_at > coalesce(c.last_reply_at, 'epoch'::timestamptz)
+      and (c.no_reply_alerted_at is null
+           or c.no_reply_alerted_at < c.last_visitor_message_at)
+      and not ${waitingOnBot}
+    returning c.id`)
+  return rows.map((r) => r.id)
+}
+
+/** Stalled bot: the visitor spoke last, over 90 s ago, and no one holds the lease. */
+export async function stalledBotChats(db: DbOrTx = getDb()): Promise<string[]> {
+  const { rows } = await db.execute<IdRow>(sql`
+    select c.id from chat_conversations c
+    where c.status = 'open'
+      and ${BOT_OWNED}
+      and ${LEASE_FREE}
+      and c.last_visitor_message_at is not null
+      and c.last_visitor_message_at >= c.last_message_at
+      and c.last_visitor_message_at > coalesce(c.last_reply_at, 'epoch'::timestamptz)
+      and c.last_visitor_message_at < now() - interval '90 seconds'
+    order by c.last_visitor_message_at`)
+  return rows.map((r) => r.id)
+}
