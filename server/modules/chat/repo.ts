@@ -7,6 +7,7 @@ import {
   chatConversations,
   chatMessages,
   chatPresence,
+  users,
 } from "@/server/db/schema"
 
 // Port of JW server/modules/chat/repo.ts (live chat plan, Task 2).
@@ -83,6 +84,18 @@ export async function findById(
     .from(chatConversations)
     .where(eq(chatConversations.id, id))
   return row ?? null
+}
+
+/** The assigned staff member's display name (shown to the visitor). */
+export async function assigneeName(
+  userId: string,
+  db: DbOrTx = getDb()
+): Promise<string | null> {
+  const [row] = await db
+    .select({ name: users.name })
+    .from(users)
+    .where(eq(users.id, userId))
+  return row?.name ?? null
 }
 
 // ---------- messages ----------

@@ -28,6 +28,7 @@ import {
   teamRoutes,
   testimonialsRoutes,
 } from "@/server/modules/collections/routes"
+import { chatPublicRoutes } from "@/server/modules/chat/public-routes"
 import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
 import { internalRoutes } from "@/server/modules/internal/routes"
@@ -115,6 +116,7 @@ export function createApp() {
   api.use("/v1/public/*", limitPublicBody)
   api.route("/v1/public/leads", publicLeadsRoutes)
   api.route("/v1/public/applications", publicApplicationsRoutes)
+  api.route("/v1/public/chat", chatPublicRoutes)
 
   // 4. Admin endpoints: session → signed in → same origin → body limit (1 MB; uploads 20 MB)
   api.use(
