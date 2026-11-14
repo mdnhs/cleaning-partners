@@ -385,11 +385,12 @@ describe("⌘K command palette (master 4.1)", () => {
       const { user, dialog, input } = await openPalette()
       await user.type(input(), "blog cat")
       const goTo = within(dialog).getByRole("group", { name: "Go to" })
+      // Website › Blog lists its parts (Articles, Categories) as keywords.
       expect(
         within(goTo)
           .getAllByRole("option")
           .map((o) => o.textContent)
-      ).toEqual(["CategoriesBlog"])
+      ).toEqual(["BlogWebsite", "CategoriesBlog"])
       // Assistive tech hears the section apart from the label.
       expect(
         within(goTo).getByRole("option", { name: "Categories, in Blog" })
@@ -448,7 +449,8 @@ describe("⌘K command palette (master 4.1)", () => {
       const open = vi.spyOn(window, "open").mockReturnValue(null)
       renderShell(["author"])
       const { user, input } = await openPalette()
-      await user.type(input(), "website")
+      // "website" alone now also finds the Website screens.
+      await user.type(input(), "live site")
       await user.keyboard("{Enter}")
       expect(open).toHaveBeenCalledWith("/", "_blank", "noopener,noreferrer")
       open.mockRestore()

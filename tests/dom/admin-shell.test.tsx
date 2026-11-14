@@ -342,6 +342,7 @@ describe("AdminShell (master 4.1)", () => {
         .map((a) => a.textContent)
     ).toEqual([
       "Dashboard",
+      "Website",
       "Pages",
       "Legal pages",
       "Blog",

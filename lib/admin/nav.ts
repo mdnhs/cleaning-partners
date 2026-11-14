@@ -5,6 +5,7 @@ import {
   CircleHelp,
   Component,
   FileText,
+  Globe,
   Images,
   Inbox,
   LayoutDashboard,
@@ -30,6 +31,12 @@ import {
   EDITABLE_SETTINGS_KEYS,
   SETTINGS_ENTRIES,
 } from "@/lib/admin/settings-keys"
+import {
+  partHref,
+  WEBSITE_PARTS,
+  WEBSITE_SCREENS,
+  websiteHref,
+} from "@/lib/admin/website"
 import { hasPermission, type PermissionRequest } from "@/lib/auth/permissions"
 import type { Role } from "@/lib/auth/roles"
 
@@ -116,6 +123,36 @@ export const NAV_ITEMS: readonly NavItem[] = [
     permission: null,
     match: "exact",
     keywords: ["home", "overview"],
+  },
+  {
+    id: "website",
+    group: "menu",
+    label: "Website",
+    href: "/admin/website",
+    icon: Globe,
+    // Shown when any screen is: each screen guards its own pages.
+    permission: null,
+    match: "prefix",
+    keywords: [
+      "pages",
+      "home page",
+      "about",
+      "contact",
+      "builder",
+      "sections",
+      "collections",
+      "footer",
+      "navigation",
+    ],
+    children: WEBSITE_SCREENS.map((screen): NavLink => ({
+      id: `website-${screen.key}`,
+      label: screen.label,
+      href: websiteHref(screen.key),
+      permission: screen.permission,
+      keywords: WEBSITE_PARTS.filter((part) => part.screen === screen.key).map(
+        (part) => part.label
+      ),
+    })),
   },
   {
     id: "pages",
@@ -476,7 +513,11 @@ export function dockLinks(roles: readonly Role[]): NavLink[] {
 export function reachableLinks(roles: readonly Role[]): ReachableLink[] {
   const seen = new Set<string>()
   const out: ReachableLink[] = []
-  const add = (link: NavLink, icon: LucideIcon, section?: NavItem) => {
+  const add = (
+    link: NavLink,
+    icon: LucideIcon,
+    section?: Pick<NavItem, "label" | "keywords">
+  ) => {
     if (seen.has(link.href)) return
     seen.add(link.href)
     out.push({
@@ -490,6 +531,24 @@ export function reachableLinks(roles: readonly Role[]): ReachableLink[] {
     if (item.children)
       for (const child of item.children) add(child, item.icon, item)
     else add(item, item.icon)
+  }
+  // Each Website part on its own page (route parts are listed at their own
+  // sections), labelled with its screen.
+  for (const part of WEBSITE_PARTS) {
+    if (part.source.kind === "route" || !hasPermission(roles, part.permission))
+      continue
+    const screen = WEBSITE_SCREENS.find((s) => s.key === part.screen)!
+    if (!hasPermission(roles, screen.permission)) continue
+    add(
+      {
+        id: `website-${part.screen}-${part.id}`,
+        label: part.label,
+        href: partHref(part),
+        permission: part.permission,
+      },
+      Globe,
+      { label: screen.label, keywords: [] }
+    )
   }
   for (const link of [HELP_LINK, ...EXTRA_LINKS])
     if (allowed(roles, link)) add(link, link.icon ?? CircleHelp)

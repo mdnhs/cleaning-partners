@@ -28,6 +28,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
           "Menu",
           [
             "Dashboard",
+            "Website",
             "Pages",
             "Legal pages",
             "Blog",
@@ -49,6 +50,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
           "Menu",
           [
             "Dashboard",
+            "Website",
             "Pages",
             "Legal pages",
             "Blog",
@@ -69,6 +71,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
           "Menu",
           [
             "Dashboard",
+            "Website",
             "Pages",
             "Legal pages",
             "Blog",
@@ -89,6 +92,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
           "Menu",
           [
             "Dashboard",
+            "Website",
             "Pages",
             "Legal pages",
             "Blog",
@@ -101,7 +105,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
         ["General", ["Appearance"]],
       ],
     ],
-    ["author", [["Menu", ["Dashboard", "Blog", "Media"]]]],
+    ["author", [["Menu", ["Dashboard", "Website", "Blog", "Media"]]]],
     ["intake", [["Menu", ["Dashboard", "Careers", "Enquiries"]]]],
   ])("%s sees %j", (role, expected) => {
     expect(menu([role])).toEqual(expected)
@@ -224,6 +228,16 @@ describe("registry items (ported from the JW nav tests)", () => {
     )
     expect(activeItem("/admin/users-archive", ["owner"])).toBeNull()
     expect(activeItem("/admin/blog/0192", ["author"])!.id).toBe("blog")
+  })
+})
+
+describe("Website", () => {
+  it("author sees Website › Blog only", () => {
+    expect(children(["author"], "website")).toEqual(["Blog"])
+  })
+
+  it("is hidden from intake (no screen to open)", () => {
+    expect(children(["intake"], "website")).toBeNull()
   })
 })
 

@@ -104,6 +104,23 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "seo/page.tsx": { seo: ["read"] },
   "seo/defaults/page.tsx": { seo: ["read"] },
   "seo/redirects/page.tsx": { redirect: ["read"] },
+  "website/page.tsx": null,
+  // Static parent's; each screen's own is pinned by KEYED_GUARDS + the
+  // website-pages test (e.g. /admin/website/blog → article:read).
+  "website/[key]/page.tsx": null,
+  "website/[key]/[part]/page.tsx": null,
+}
+
+/**
+ * Pages whose registry href includes their [key]: each Website screen has
+ * its own permission (Blog is article:read, Header & footer settings:read),
+ * registered at /admin/website/<key>, so these guard with the screen's
+ * href, not the static parent. An unknown key falls back to /admin/website
+ * (any signed-in user) and the page then 404s.
+ */
+const KEYED_GUARDS: Record<string, string> = {
+  "website/[key]/page.tsx": "`/admin/website/${key}`",
+  "website/[key]/[part]/page.tsx": "`/admin/website/${key}`",
 }
 
 const rel = (file: string) => file.slice(ROOT.length + 1)
@@ -119,6 +136,14 @@ describe("panel page guards", () => {
       const src = source(file)
       const calls = [...src.matchAll(/requirePage\(\s*([^)]*)\)/g)]
       expect(calls, "calls requirePage").toHaveLength(1)
+      const keyed = KEYED_GUARDS[rel(file)]
+      if (keyed) {
+        expect(calls[0]![1]).toBe(keyed)
+        expect(src, "the guard is awaited").toContain(
+          `await requirePage(${keyed})`
+        )
+        return
+      }
       const m = calls[0]![1]!.match(/^"([^"]+)"$/)
       expect(m, "requirePage takes a string literal").not.toBeNull()
       expect(src, "the guard is awaited").toMatch(/await requirePage\("/)

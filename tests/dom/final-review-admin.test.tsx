@@ -372,7 +372,7 @@ describe("shell unsaved-changes registry (I2/I3)", () => {
       name: "Search the admin",
     })
     await user.click(
-      await within(palette).findByRole("option", { name: /^Services/ })
+      await within(palette).findByRole("option", { name: "Services" })
     )
     expect(
       await screen.findByRole("alertdialog", { name: "Leave without saving?" })

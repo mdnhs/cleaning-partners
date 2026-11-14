@@ -17,6 +17,7 @@ import {
   reachableLinks,
   visibleNav,
 } from "@/lib/admin/nav"
+import { WEBSITE_SCREENS } from "@/lib/admin/website"
 import { statements } from "@/lib/auth/permissions"
 import { ROLES } from "@/lib/auth/roles"
 
@@ -68,6 +69,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
   it("registers the spec's item ids in order", () => {
     expect(NAV_ITEMS.map((i) => i.id)).toEqual([
       "dashboard",
+      "website",
       "pages",
       "legal-pages",
       "blog",
@@ -88,6 +90,31 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       ["account", "/admin/account"],
       ["design", "/admin/design"],
     ])
+  })
+
+  it("Website lists its screens from the registry", () => {
+    const website = NAV_ITEMS.find((i) => i.id === "website")!
+    expect(website).toMatchObject({
+      group: "menu",
+      label: "Website",
+      href: "/admin/website",
+      permission: null,
+      match: "prefix",
+    })
+    expect(website.children?.map((c) => c.id)).toEqual(
+      WEBSITE_SCREENS.map((s) => `website-${s.key}`)
+    )
+    expect(permissionFor("/admin/website/blog")).toEqual({
+      article: ["read"],
+    })
+  })
+
+  it("⌘K finds Testimonials in Home", () => {
+    expect(
+      reachableLinks(["owner"]).find(
+        (l) => l.href === "/admin/website/home/testimonials"
+      )
+    ).toMatchObject({ label: "Testimonials", parent: "Home" })
   })
 
   it("only /admin matches exactly", () => {
