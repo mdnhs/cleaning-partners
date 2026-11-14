@@ -31,6 +31,7 @@ export const careersEditorMeta: EditorMeta = {
       help: "Closed roles. {date} is the closing date.",
     },
     process: { label: "Hiring process" },
+    "process.intro": { help: "Optional. Shown under the heading." },
     "process.steps": { label: "Steps", itemName: "Step", itemLabel: "title" },
     talentPool: {
       label: "Talent pool banner",

@@ -22,10 +22,10 @@
     "components/home/services.tsx": "c67bc7554c7a18fb40fd022101d6dfdaaa835d4f7ddb7de361c0abd234f07674",
     "components/home/site-footer.tsx": "cbb8dbf12f2a3956e9628d24e8429ee96bd8898e1c28b19833b83ce0c3b806ec",
     "components/home/site-header.tsx": "aa9757e56b928bfb57d2a75f46250a4db8f650a65960f1a3dcad37cc6cf41edd",
+    "components/home/steps-section.tsx": "5dc0df188d051e27ccdb94c299ead00e8febe922039949af13d194aff809c78b",
     "components/home/team.tsx": "c5d71d9d182b0be31418b8dea497325087e24596442266b9e6bde88c5f9229cd",
     "components/home/testimonials.tsx": "26be2d3991fcf7b1c58ba8779a959c2f3cdef88fb5a046894c41a579ad4474f7",
     "components/home/why-choose-us.tsx": "c0c54423306f3fb67cc10e4ed1788eaa38fe163d7cd39b2268b9665a494f1dd0",
-    "components/services/how-it-works.tsx": "9432fb336714aa5cb09cfdfa91832d7f77ba9194cb37e056facf48b6076c1815",
     "components/services/service-overview.tsx": "1b1b17ee790bc540e8de0227e1c67e0a6577e5289b4215b2e5c98830e958714c",
     "components/services/services-grid.tsx": "060f99a3a1e59cb3ba08b56be2612f07a756e8c301247d5ad3c40e70e8235121"
   }

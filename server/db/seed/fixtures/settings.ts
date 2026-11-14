@@ -198,6 +198,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
     "sections.howItWorks": {
       eyebrow: "HOW IT WORKS",
       title: "Simple From Start to Finish",
+      intro: null,
       steps: [
         {
           title: "Get in touch",

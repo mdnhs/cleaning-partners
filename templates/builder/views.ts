@@ -11,7 +11,7 @@ import type { ServicesProps } from "@/components/home/services"
 import type { TeamProps } from "@/components/home/team"
 import type { TestimonialsProps } from "@/components/home/testimonials"
 import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
-import type { HowItWorksProps } from "@/components/services/how-it-works"
+import type { StepsSectionProps } from "@/components/home/steps-section"
 import type { ServicesGridProps } from "@/components/services/services-grid"
 import type { BlockInstance } from "@/blocks/registry"
 import type { WithMedia } from "@/lib/media"
@@ -51,7 +51,7 @@ export type BlockView =
   | { type: "team"; props: TeamProps }
   | { type: "testimonials"; props: TestimonialsProps }
   | { type: "blog"; props: BlogProps }
-  | { type: "howItWorks"; props: HowItWorksProps }
+  | { type: "howItWorks"; props: StepsSectionProps }
   | { type: "contact"; props: ContactProps }
   | { type: "quoteForm"; props: QuoteFormProps }
   | { type: "map"; props: LocationMapProps }

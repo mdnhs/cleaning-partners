@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { mediaRef, pageHero, text } from "@/lib/schemas/common"
+import { mediaRef, pageHero, step, text } from "@/lib/schemas/common"
 
 const field = z.object({
   label: text,
@@ -19,7 +19,7 @@ export const contactTemplate = z.object({
     title: text,
     intro: text,
     stepsHeading: text,
-    steps: z.array(z.object({ title: text, description: text })).min(1),
+    steps: z.array(step).min(1),
     urgentTitle: text,
     formTitle: text,
     fields: z.object({

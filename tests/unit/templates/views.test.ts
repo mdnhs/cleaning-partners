@@ -10,6 +10,7 @@ import { homeView } from "@/templates/home/view"
 import {
   chromeView,
   contactSectionView,
+  howItWorksView,
   mapsSearchHref,
   NOT_FOUND_FALLBACK,
   notFoundView,
@@ -357,6 +358,27 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       phoneHref: "tel:+353858062369",
     })
     expect(serviceDetailView(s, "no-such-service")).toBeNull()
+  })
+
+  it("how it works: the shared steps, compact, no intro unless set", () => {
+    const hiw = s.settings["sections.howItWorks"]
+    expect(howItWorksView(s)).toEqual({
+      eyebrow: hiw.eyebrow,
+      title: hiw.title,
+      steps: hiw.steps,
+      variant: "compact",
+    })
+    expect(serviceDetailView(s, "medical-cleaning")!.howItWorks).toEqual(
+      howItWorksView(s)
+    )
+    const withIntro: SiteSources = {
+      ...s,
+      settings: {
+        ...s.settings,
+        "sections.howItWorks": { ...hiw, intro: "Shown under the heading." },
+      },
+    }
+    expect(howItWorksView(withIntro).intro).toBe("Shown under the heading.")
   })
 
   it("blog: featured is the newest, every category filters, page size 6", () => {

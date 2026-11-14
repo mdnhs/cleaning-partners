@@ -24,6 +24,21 @@ const jobs: PublicJob[] = jobsFixture().map((job, sortOrder) => ({
 describe("careersView", () => {
   const view = careersView(fixtureSiteSources(), jobs, now)
 
+  it("hiring process: the wide steps section, numbers drawn by the component", () => {
+    const process = fixtureSiteSources().pages.careers.data.process
+    expect(view.process).toEqual({
+      eyebrow: process.eyebrow,
+      title: process.title,
+      intro: process.intro,
+      steps: process.steps.map((step) => ({
+        title: step.title,
+        description: step.description,
+      })),
+      variant: "wide",
+    })
+    for (const step of view.process.steps)
+      expect(step).not.toHaveProperty("number")
+  })
   it("lists the open jobs in order with their row facts", () => {
     expect(view.open.jobs.map((j) => j.title)).toEqual([
       "Cleaning Operative – Healthcare",

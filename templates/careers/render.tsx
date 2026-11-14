@@ -1,4 +1,3 @@
-import { HiringProcess } from "@/components/careers/hiring-process"
 import { OpenPositions } from "@/components/careers/open-positions"
 import { PreviousOpenings } from "@/components/careers/previous-openings"
 import { TalentPool } from "@/components/careers/talent-pool"
@@ -17,6 +16,7 @@ import { Container } from "@/components/home/section-heading"
 import { JsonLd } from "@/components/seo/json-ld"
 import { WhyJoin } from "@/components/careers/why-join"
 import { PageHero } from "@/components/home/page-hero"
+import { StepsSection } from "@/components/home/steps-section"
 import { HomeMotion } from "@/components/motion/home-motion"
 import Link from "next/link"
 
@@ -30,7 +30,7 @@ export function CareersTemplate({ view }: { view: CareersView }) {
           <WhyJoin {...view.why} />
           <OpenPositions {...view.open} />
           <PreviousOpenings {...view.previous} />
-          <HiringProcess {...view.process} />
+          <StepsSection {...view.process} />
           <TalentPool {...view.talentPool} />
         </main>
       </div>

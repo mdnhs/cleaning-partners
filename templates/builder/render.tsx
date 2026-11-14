@@ -8,11 +8,11 @@ import { Hero } from "@/components/home/hero"
 import { LocationMap } from "@/components/home/location-map"
 import { PageHero } from "@/components/home/page-hero"
 import { Services } from "@/components/home/services"
+import { StepsSection } from "@/components/home/steps-section"
 import { Team } from "@/components/home/team"
 import { Testimonials } from "@/components/home/testimonials"
 import { WhyChooseUs } from "@/components/home/why-choose-us"
 import { HomeMotion } from "@/components/motion/home-motion"
-import { HowItWorks } from "@/components/services/how-it-works"
 import { ServicesGrid } from "@/components/services/services-grid"
 import { RichTextSection } from "@/templates/shared/rich-text-section"
 
@@ -46,7 +46,7 @@ export function Section({ view }: { view: BlockView }) {
     case "blog":
       return <Blog {...view.props} />
     case "howItWorks":
-      return <HowItWorks {...view.props} />
+      return <StepsSection {...view.props} />
     case "contact":
       return <Contact {...view.props} />
     case "quoteForm":

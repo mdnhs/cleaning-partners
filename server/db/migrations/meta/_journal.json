@@ -288,6 +288,13 @@
       "when": 1793910000000,
       "tag": "0040_footer_address_from_contact",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793920000000,
+      "tag": "0041_steps_section_intro",
+      "breakpoints": true
     }
   ]
 }

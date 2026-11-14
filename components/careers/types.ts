@@ -2,6 +2,7 @@
 // Every string is the careers page copy or a job's own content.
 
 import type { PageHeroProps } from "@/components/home/page-hero"
+import type { StepsSectionProps } from "@/components/home/steps-section"
 
 export type Link = { label: string; href: string }
 
@@ -68,13 +69,6 @@ export type PreviousOpeningsProps = {
   jobs: ClosedJobView[]
 }
 
-export type HiringProcessProps = {
-  eyebrow: string
-  title: string
-  intro: string
-  steps: { number: string; title: string; description: string }[]
-}
-
 export type TalentPoolProps = {
   eyebrow: string
   title: string
@@ -88,7 +82,7 @@ export type CareersView = {
   why: WhyJoinProps
   open: OpenPositionsProps
   previous: PreviousOpeningsProps
-  process: HiringProcessProps
+  process: StepsSectionProps
   talentPool: TalentPoolProps
 }
 

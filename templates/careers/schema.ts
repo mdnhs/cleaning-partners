@@ -1,6 +1,13 @@
 import { z } from "zod"
 
-import { iconCard, link, pageHero, text } from "@/lib/schemas/common"
+import {
+  iconCard,
+  link,
+  pageHero,
+  step,
+  stepsSection,
+  text,
+} from "@/lib/schemas/common"
 
 /** Optional copy (help texts, placeholders): may be left empty. */
 const hint = z.string().max(500)
@@ -8,7 +15,6 @@ const hint = z.string().max(500)
 const field = z.object({ label: text, placeholder: hint, help: hint })
 /** An editable list of choices (select options, checkboxes). */
 const choices = z.array(text).min(1).max(20)
-const step = z.object({ title: text, description: text })
 
 /**
  * Page "careers" (/careers, every /careers/<slug> and its application form):
@@ -50,12 +56,7 @@ export const careersTemplate = z.object({
     closedOn: text,
     filled: text,
   }),
-  process: z.object({
-    eyebrow: text,
-    title: text,
-    intro: text,
-    steps: z.array(step).min(2).max(6),
-  }),
+  process: stepsSection,
   talentPool: z.object({
     eyebrow: text,
     title: text,

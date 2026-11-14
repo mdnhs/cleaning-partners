@@ -160,6 +160,18 @@ export const iconCard = z.object({
   icon: mediaRef,
 })
 
+/** One numbered step: a title and a line under it. */
+export const step = z.object({ title: text, description: text })
+
+/** A numbered steps section (how it works, the hiring process). */
+export const stepsSection = z.object({
+  eyebrow: text,
+  title: text,
+  /** null = no line under the heading. */
+  intro: text.nullable(),
+  steps: z.array(step).min(1).max(8),
+})
+
 /** Per page/service/article SEO overrides (edited in the SEO screens; empty fields fall back to seo.defaults). */
 export const seo = z.object({
   title: z.string().max(200).optional(),
@@ -195,3 +207,5 @@ export type ParagraphsDoc = z.infer<typeof paragraphsText>
 export type Seo = z.infer<typeof seo>
 export type PageHero = z.infer<typeof pageHero>
 export type IconCard = z.infer<typeof iconCard>
+export type Step = z.infer<typeof step>
+export type StepsSectionData = z.infer<typeof stepsSection>

@@ -11,7 +11,12 @@ import { interpolate } from "@/lib/interpolate"
 import { jobPath } from "@/lib/schemas/api/job-postings"
 import type { PublicJob } from "@/server/modules/job-postings/queries"
 import type { SiteSources } from "@/templates/shared/sources"
-import { linkView, pageHeroView, textView } from "@/templates/shared/views"
+import {
+  linkView,
+  pageHeroView,
+  stepsSectionView,
+  textView,
+} from "@/templates/shared/views"
 
 const DAY = 24 * 60 * 60_000
 
@@ -197,16 +202,7 @@ export function careersView(
       filled: page.previous.filled,
       jobs: previous.map((job) => closedRow(s, job, page.previous.closedOn)),
     },
-    process: {
-      eyebrow: page.process.eyebrow,
-      title: page.process.title,
-      intro: page.process.intro,
-      steps: page.process.steps.map((step, i) => ({
-        number: String(i + 1).padStart(2, "0"),
-        title: step.title,
-        description: step.description,
-      })),
-    },
+    process: stepsSectionView(page.process, "wide"),
     talentPool: {
       eyebrow: page.talentPool.eyebrow,
       title: page.talentPool.title,

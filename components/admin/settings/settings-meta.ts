@@ -542,6 +542,10 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
     fields: {
       eyebrow: { label: "Small heading" },
       title: { label: "Heading" },
+      intro: {
+        label: "Introduction",
+        help: "Optional. Shown under the heading.",
+      },
       steps: { label: "Steps", itemName: "Step", itemLabel: "title" },
       "steps[].description": {
         label: "Description",
@@ -554,7 +558,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Heading",
           description: "Shown on every service page.",
-          fields: ["eyebrow", "title"],
+          fields: ["eyebrow", "title", "intro"],
         },
         {
           title: "Steps",

@@ -21,7 +21,7 @@ import type { SiteHeaderProps } from "@/components/home/site-header"
 import type { TeamProps } from "@/components/home/team"
 import type { TestimonialsProps } from "@/components/home/testimonials"
 import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
-import type { HowItWorksProps } from "@/components/services/how-it-works"
+import type { StepsSectionProps } from "@/components/home/steps-section"
 import type { ServicesGridProps } from "@/components/services/services-grid"
 import { formatPostDate, isoDate, siteLocale, siteTimeZone } from "@/lib/format"
 import {
@@ -30,7 +30,7 @@ import {
   interpolateHref,
 } from "@/lib/interpolate"
 import type { WithMedia } from "@/lib/media"
-import type { Link, PageHero } from "@/lib/schemas/common"
+import type { Link, PageHero, StepsSectionData } from "@/lib/schemas/common"
 
 import type {
   ChromeSources,
@@ -601,13 +601,25 @@ export function homeBlogView(
   }
 }
 
-export function howItWorksView(s: SiteSources): HowItWorksProps {
-  const howItWorks = s.settings["sections.howItWorks"]
+/** A steps section's props (no `intro` key when the intro is unset). */
+export function stepsSectionView(
+  section: StepsSectionData,
+  variant: StepsSectionProps["variant"]
+): StepsSectionProps {
   return {
-    eyebrow: howItWorks.eyebrow,
-    title: howItWorks.title,
-    steps: howItWorks.steps,
+    eyebrow: section.eyebrow,
+    title: section.title,
+    ...(section.intro === null ? {} : { intro: section.intro }),
+    steps: section.steps.map((step) => ({
+      title: step.title,
+      description: step.description,
+    })),
+    variant,
   }
+}
+
+export function howItWorksView(s: SiteSources): StepsSectionProps {
+  return stepsSectionView(s.settings["sections.howItWorks"], "compact")
 }
 
 /** The quote form with the contact page's published copy. */
