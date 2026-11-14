@@ -13,14 +13,18 @@ import { fixtureMediaLookup } from "@/server/db/seed/fixtures/media"
 import { pagesFixture } from "@/server/db/seed/fixtures/pages"
 import { PAGE_KEYS, PAGES, templates } from "@/templates/registry"
 
-import { inventory, normalise } from "../helpers/inventory"
+import { currentTarget, inventory } from "../helpers/inventory"
 import { schemaPaths } from "../helpers/schema-paths"
+
+/** Current inventory targets: relocations applied, removed fields dropped. */
+const targets = inventory
+  .map((e) => currentTarget(e.target))
+  .filter((t): t is string => t !== null)
 
 /** Inventory field paths under `prefix` (prefix stripped), minus collection markers. */
 function inventoryPaths(prefix: string): Set<string> {
   return new Set(
-    inventory
-      .map((e) => normalise(e.target))
+    targets
       .filter((t) => t.startsWith(prefix) && !t.endsWith("[].*"))
       .map((t) => t.slice(prefix.length))
   )
@@ -31,7 +35,7 @@ function inventoryPaths(prefix: string): Set<string> {
  * column instead of storing in the schema.
  */
 const DERIVED: Record<string, string[]> = {
-  // Four lines composed from contact.addressLine1, footer.addressLine2,
+  // Four lines composed from contact.addressLine1, contact.addressLine2,
   // footer.contactOfficeLine and contact.email (Task 1).
   "settings.footer.": ["contactLines"],
   // publishedAt / readTimeMinutes / categoryId are columns; the byline
@@ -76,6 +80,11 @@ const POST_BASELINE_PAGE_LEAVES = new Set([
   ...["name", "phone", "email", "service", "address", "message", "consent"].map(
     (f) => `contact:quoteForm.fields.${f}.error`
   ),
+  // Optional own banner on every page hero (null = the site default).
+  "about:hero.image",
+  "contact:hero.image",
+  // The home services list picks services from the collection (phase 2, task 13).
+  "home:services.items[].service",
 ])
 
 function expectInventoryCovered(
@@ -184,8 +193,7 @@ describe("template schemas match docs/brief-inventory.json (master Task 3.2)", (
 
   it("page seo.* fields map onto the seo column schema", () => {
     const seoPaths = schemaPaths(seo).leaves
-    const seoFields = inventory
-      .map((e) => e.target)
+    const seoFields = targets
       .filter((t) => /^pages\.\w+\.seo\./.test(t))
       .map((t) => t.replace(/^pages\.\w+\.seo\./, ""))
     expect(seoFields.length).toBeGreaterThan(0)
@@ -198,8 +206,7 @@ describe("template schemas match docs/brief-inventory.json (master Task 3.2)", (
   })
 
   it("every pages.* target names a registry page", () => {
-    const unknown = inventory
-      .map((e) => e.target)
+    const unknown = targets
       .filter((t) => t.startsWith("pages."))
       .filter((t) => !PAGE_KEYS.some((k) => t.startsWith(`pages.${k}.`)))
     expect(unknown).toEqual([])
@@ -210,8 +217,7 @@ describe("settings and collection schemas cover the inventory", () => {
   const settingsKeys = Object.keys(settingsSchemas) as SettingsKey[]
 
   it("every settings.* target names a known settings key", () => {
-    const unknown = inventory
-      .map((e) => e.target)
+    const unknown = targets
       .filter((t) => t.startsWith("settings."))
       .filter((t) => !settingsKeys.some((k) => t.startsWith(`settings.${k}.`)))
     expect(unknown).toEqual([])
@@ -259,9 +265,7 @@ describe("settings and collection schemas cover the inventory", () => {
   })
 
   it("every inventory root is checked", () => {
-    const roots = new Set(
-      inventory.map((e) => normalise(e.target).split(/[.[]/)[0])
-    )
+    const roots = new Set(targets.map((t) => t.split(/[.[]/)[0]))
     expect([...roots].sort()).toEqual([
       "articles",
       "categories",

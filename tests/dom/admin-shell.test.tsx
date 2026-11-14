@@ -88,14 +88,14 @@ beforeEach(() => {
 
 describe("AdminShell (master 4.1)", () => {
   it("marks the current section with aria-current", () => {
-    pathname.current = "/admin/pages/home"
+    pathname.current = "/admin/website/home"
     render(
       <AdminShell session={session(["editor"])}>
         <p>Body</p>
       </AdminShell>
     )
     const nav = screen.getByRole("navigation", { name: "Admin" })
-    expect(within(nav).getByRole("link", { name: "Pages" })).toHaveAttribute(
+    expect(within(nav).getByRole("link", { name: "Website" })).toHaveAttribute(
       "aria-current",
       "page"
     )
@@ -118,7 +118,7 @@ describe("AdminShell (master 4.1)", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "false")
     await user.click(trigger)
     const sheet = await screen.findByRole("dialog", { name: "Navigation" })
-    await user.click(within(sheet).getByRole("link", { name: "Services" }))
+    await user.click(within(sheet).getByRole("link", { name: "Media" }))
     await waitFor(() =>
       expect(screen.queryByRole("dialog", { name: "Navigation" })).toBeNull()
     )
@@ -324,12 +324,12 @@ describe("AdminShell (master 4.1)", () => {
       within(nav)
         .getAllByRole("link")
         .map((a) => a.textContent)
-    ).toEqual(["Dashboard", "Careers", "Enquiries"])
+    ).toEqual(["Dashboard", "Enquiries"])
     expect(screen.getByRole("main")).toHaveTextContent("Body")
   })
 
-  it("lists sections only and marks Collections on a collection page", () => {
-    pathname.current = "/admin/collections/clients"
+  it("lists sections only and marks Website on a moved editor (Services)", () => {
+    pathname.current = "/admin/services/0192"
     render(
       <AdminShell session={session(["editor"])}>
         <p>Body</p>
@@ -342,20 +342,28 @@ describe("AdminShell (master 4.1)", () => {
         .map((a) => a.textContent)
     ).toEqual([
       "Dashboard",
-      "Pages",
-      "Legal pages",
-      "Blog",
-      "Services",
-      "Careers",
-      "Collections",
+      "Website",
       "Media",
       "SEO",
       "Appearance",
       "Site settings",
     ])
-    const collections = within(nav).getByRole("link", { name: "Collections" })
-    expect(collections).toHaveAttribute("aria-current", "page")
-    expect(collections).toHaveAttribute("href", "/admin/collections/team")
+    const website = within(nav).getByRole("link", { name: "Website" })
+    expect(website).toHaveAttribute("aria-current", "page")
+    expect(website).toHaveAttribute("href", "/admin/website/home")
+  })
+
+  it("intake: Job applications marks Enquiries", () => {
+    pathname.current = "/admin/careers/applications/0192"
+    render(
+      <AdminShell session={session(["intake"])}>
+        <p>Body</p>
+      </AdminShell>
+    )
+    const nav = screen.getByRole("navigation", { name: "Admin" })
+    expect(
+      within(nav).getByRole("link", { name: "Enquiries" })
+    ).toHaveAttribute("aria-current", "page")
   })
 
   it("puts the floating panels on the canvas: sidebar, topbar, content", () => {

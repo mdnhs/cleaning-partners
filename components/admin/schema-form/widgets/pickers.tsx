@@ -80,6 +80,55 @@ const grouped = (items: OptionItem[]) =>
 export function LinkWidget({ field, path }: WidgetProps) {
   const { idPrefix, disabled } = useSchemaForm()
   const {
+    field: { value: whole, onChange: onWholeChange },
+  } = useController({ name: path })
+  const removable = field.nullable || field.optional
+  if (removable && (whole === null || whole === undefined)) {
+    return (
+      <fieldset className="flex min-w-0 flex-col gap-2 rounded-xl border bg-muted/30 p-4">
+        <legend className="float-left mb-1 w-full text-sm font-semibold">
+          {field.label}{" "}
+          <span className="font-normal text-muted-foreground">(optional)</span>
+        </legend>
+        {field.meta.help ? (
+          <HelpText id={`${fieldId(idPrefix, path)}-help`}>
+            {field.meta.help}
+          </HelpText>
+        ) : null}
+        <div>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-9 rounded-lg px-3 pointer-coarse:h-11"
+            disabled={disabled}
+            aria-label={`Add link: ${field.label}`}
+            aria-describedby={
+              field.meta.help ? `${fieldId(idPrefix, path)}-help` : undefined
+            }
+            onClick={() => onWholeChange({ label: "", href: "" })}
+          >
+            Add link
+          </Button>
+        </div>
+      </fieldset>
+    )
+  }
+  return (
+    <LinkFields
+      field={field}
+      path={path}
+      onRemove={removable ? () => onWholeChange(null) : undefined}
+    />
+  )
+}
+
+function LinkFields({
+  field,
+  path,
+  onRemove,
+}: WidgetProps & { onRemove?: () => void }) {
+  const { idPrefix, disabled } = useSchemaForm()
+  const {
     field: {
       name: labelName,
       value: labelValue,
@@ -147,6 +196,18 @@ export function LinkWidget({ field, path }: WidgetProps) {
         </div>
       ) : null}
       {ownError ? <ErrorText id={`${id}-error`}>{ownError}</ErrorText> : null}
+      {onRemove ? (
+        <Button
+          type="button"
+          variant="ghost"
+          className="h-9 self-start rounded-lg px-3 text-destructive hover:text-destructive pointer-coarse:h-11"
+          disabled={disabled}
+          aria-label={`Remove: ${field.label}`}
+          onClick={onRemove}
+        >
+          Remove link
+        </Button>
+      ) : null}
       <div className="grid gap-4 @lg/card:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <FieldShell id={`${id}-label`} label="Text" error={labelError}>
           <Input

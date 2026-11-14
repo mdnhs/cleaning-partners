@@ -26,11 +26,9 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           title: "Cleaning Partners Ltd.",
           subtitle:
             "The Clean Team. Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond.",
-          primaryCta: { label: "Get a Free Quote", href: "#contact" },
+          primaryCta: { label: "{quoteLabel}", href: "{quoteHref}" },
           secondaryCta: { label: "Our Services", href: "#services" },
           memberLabel: "Proud member of",
-          memberLogo: media("/images/home/icca.png"),
-          memberLogoAlt: "Irish Contract Cleaning Association",
         },
         services: {
           imageA: media("/images/home/cleaning-the-counter.png"),
@@ -43,19 +41,19 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
             "Clean as a button! Professional cleaning tailored to your space, delivered by trained and trusted teams.",
           items: [
             {
-              title: "Medical Cleaning",
+              service: "medical-cleaning",
               description:
                 "Hygienic, compliant cleaning for clinics and healthcare settings.",
             },
             {
-              title: "Commercial Cleaning",
+              service: "commercial-cleaning",
               description:
                 "Offices, schools and workplaces kept spotless, on your schedule.",
             },
             {
-              title: "Domestic Cleaning",
+              service: "retail-cleaning",
               description:
-                "Reliable home cleaning, from regular visits to deep cleans.",
+                "Shops, showrooms and salons kept customer-ready, on your schedule.",
             },
           ],
           itemIcon: media("/images/home/check.svg"),
@@ -78,6 +76,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
       },
       data: {
         hero: {
+          image: null,
           crumb: "About",
           title: "About Us",
           description:
@@ -103,7 +102,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
             "Commercial",
             "Residential",
           ],
-          cta: { label: "Get a Free Quote", href: "#contact" },
+          cta: { label: "{quoteLabel}", href: "{quoteHref}" },
         },
         stats: [
           { value: "15+", label: "Years of combined experience" },
@@ -134,13 +133,13 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           priceBadge: "Prices Vary",
           learnMoreAria: "Learn more about {title}",
           learnMore: "Learn More  →",
-          quoteCta: { label: "Get A Quote", href: "#contact" },
+          quoteCta: { label: "{quoteLabel}", href: "{quoteHref}" },
           helpCard: {
             icon: media("/images/services/icon-help.svg"),
             title: "Not sure what you need?",
-            body: "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
-            cta: { label: "Contact Us", href: "#contact" },
-            callLabel: "Or call {office} Ext {officeExtension}",
+            body: null,
+            phoneLabel: "Or call {office} Ext {officeExtension}",
+            cta: { label: "Contact Us", href: "{quoteHref}" },
           },
         },
         detail: {
@@ -151,7 +150,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           placesHeading: "Where We Clean",
           sidebarAria: "Our services",
           sidebarHeading: "Our Services",
-          officeHours: { title: "Office Hours", hours: "Mon – Fri: 9am – 6pm" },
+          officeHours: { title: "Office Hours", hours: "{hours}" },
         },
       },
     },
@@ -224,6 +223,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
       },
       data: {
         hero: {
+          image: null,
           crumb: "Contact",
           title: "Contact Us",
           description:

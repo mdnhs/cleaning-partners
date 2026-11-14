@@ -34,7 +34,7 @@ export const SAMPLE_KPIS: KpiCardProps[] = [
     value: "22",
     delta: { label: "+2.1%", direction: "up" },
     caption: "8 pages · 6 services · 8 articles",
-    href: "/admin/pages",
+    href: "/admin/website",
   },
   {
     label: "Drafts in review",

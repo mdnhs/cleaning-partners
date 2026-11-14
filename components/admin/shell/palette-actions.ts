@@ -75,7 +75,7 @@ export function buildActions({
       label: "New page",
       keywords: ["create", "add", "builder", "landing"],
       permission: { page: ["create"] },
-      run: () => navigate("/admin/pages?new=1"),
+      run: () => navigate("/admin/website/custom-pages?new=1"),
     },
     {
       id: "new-service",

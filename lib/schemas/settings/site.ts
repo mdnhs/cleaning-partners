@@ -24,5 +24,10 @@ export const siteSettings = z.object({
   timezone: text,
   /** <html lang> of the public site. */
   locale: text,
+  /**
+   * The trade association badge: the home hero's "Proud member of" logo and
+   * the contact section's member card (logo, and the name under it).
+   */
+  membership: z.object({ logo: mediaRef, logoAlt: text, name: text }),
 })
 export type SiteSettings = z.infer<typeof siteSettings>

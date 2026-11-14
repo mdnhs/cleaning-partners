@@ -90,17 +90,32 @@ type Target = string | readonly [path: string, heading: string]
 /** Audited signed in as the editor (every panel screen they may open). */
 const PANEL: readonly Target[] = [
   "/admin",
-  "/admin/pages",
-  "/admin/pages/home",
-  "/admin/pages/home?tab=seo",
-  "/admin/pages/about",
-  "/admin/pages/services",
-  "/admin/pages/blog",
-  "/admin/pages/contact",
-  "/admin/pages/legal",
+  "/admin/website/home",
+  "/admin/website/home?tab=seo",
+  "/admin/website/home/clients-section",
+  "/admin/website/home/clients",
+  "/admin/website/home/why-choose-us",
+  "/admin/website/home/testimonials-section",
+  "/admin/website/home/testimonials",
+  "/admin/website/about",
+  "/admin/website/about/team-section",
+  "/admin/website/about/team",
+  "/admin/website/services",
+  "/admin/website/services/how-it-works",
+  "/admin/website/blog",
+  "/admin/website/contact",
+  "/admin/website/contact/contact-details",
+  "/admin/website/contact/contact-section",
+  "/admin/website/contact/map",
+  "/admin/website/careers",
+  "/admin/website/custom-pages",
+  "/admin/website/legal",
+  "/admin/website/header-footer/navigation",
+  "/admin/website/header-footer/footer",
+  "/admin/website/header-footer/microcopy",
+  "/admin/website/header-footer/group-companies",
   "/admin/services",
   "/admin/services/new",
-  "/admin/pages/careers",
   "/admin/careers",
   "/admin/careers/new",
   ["/admin/careers/applications", FORBIDDEN], // enquiry staff only
@@ -108,24 +123,8 @@ const PANEL: readonly Target[] = [
   "/admin/blog?status=in_review", // the review queue (empty in the seed)
   "/admin/blog/new",
   "/admin/blog/categories",
-  "/admin/collections",
-  "/admin/collections/team",
-  "/admin/collections/clients",
-  "/admin/collections/group-companies",
-  "/admin/collections/testimonials",
   "/admin/settings",
   "/admin/settings/site",
-  "/admin/settings/contact",
-  "/admin/settings/navigation",
-  "/admin/settings/footer",
-  "/admin/settings/microcopy",
-  "/admin/settings/sections.clients",
-  "/admin/settings/sections.whyChooseUs",
-  "/admin/settings/sections.testimonials",
-  "/admin/settings/sections.team",
-  "/admin/settings/sections.contact",
-  "/admin/settings/sections.map",
-  "/admin/settings/sections.howItWorks",
   "/admin/settings/leads", // read-only for an editor
   "/admin/account",
   "/admin/account?tab=security",
@@ -571,12 +570,12 @@ for (const colorScheme of ["light", "dark"] as const) {
       expect(created.status()).toBe(201)
       const { id } = (await created.json()) as { id: string }
       try {
-        await page.goto("/admin/pages")
+        await page.goto("/admin/website/custom-pages")
         await page.getByRole("button", { name: "New page" }).click()
         await expect(
           page.getByRole("dialog", { name: "New page" })
         ).toBeVisible()
-        await audit("/admin/pages + New page dialog")
+        await audit("/admin/website/custom-pages + New page dialog")
         await page.goto(`/admin/pages/custom/${id}`)
         await expect(
           page.getByRole("navigation", { name: "Page outline" })
@@ -806,7 +805,7 @@ for (const colorScheme of ["light", "dark"] as const) {
       await freezeUploads(page)
       await pinMedia(page)
       await signIn(page, readFixtures().editor)
-      await page.goto("/admin/pages/home")
+      await page.goto("/admin/website/home")
       await page
         .getByRole("region", { name: "Hero" })
         .getByRole("button", { name: "Change image: Background image" })
@@ -859,7 +858,7 @@ for (const colorScheme of ["light", "dark"] as const) {
         failures.push(`user menu → ${violation}`)
       await page.keyboard.press("Escape")
       // A collection record sheet.
-      await page.goto("/admin/collections/team")
+      await page.goto("/admin/website/about/team")
       await page
         .getByRole("button", { name: "Edit Michael McDonald" })
         .first()
@@ -870,7 +869,7 @@ for (const colorScheme of ["light", "dark"] as const) {
       for (const violation of await blocking(page))
         failures.push(`record sheet → ${violation}`)
       await page.keyboard.press("Escape")
-      await page.goto("/admin/collections/testimonials")
+      await page.goto("/admin/website/home/testimonials")
       await page
         .getByRole("button", { name: /^Edit / })
         .first()
@@ -892,7 +891,7 @@ for (const colorScheme of ["light", "dark"] as const) {
       await page.keyboard.press("Escape")
       // The live preview pane (from 1536 px).
       await page.setViewportSize({ width: 1600, height: 900 })
-      await page.goto("/admin/settings/contact")
+      await page.goto("/admin/website/contact/contact-details")
       await expect(
         page.getByRole("status", { name: /^Save status/ })
       ).toBeVisible()
@@ -1017,7 +1016,7 @@ test.describe("ledger checks", () => {
     page,
   }) => {
     await signIn(page, readFixtures().editor)
-    await page.goto("/admin/pages/home")
+    await page.goto("/admin/website/home")
     await expect(
       page.getByRole("status", { name: /^Save status/ })
     ).toBeVisible()
@@ -1057,7 +1056,7 @@ test.describe("ledger checks", () => {
     page,
   }) => {
     await signIn(page, readFixtures().editor)
-    await page.goto("/admin/collections/team")
+    await page.goto("/admin/website/about/team")
     const opener = page
       .getByRole("button", { name: "Edit Michael McDonald" })
       .first()

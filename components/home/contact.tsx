@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { NavigationIcon } from "lucide-react"
 
+import type { ContactCardKind } from "@/lib/schemas/settings/sections-contact"
 import { buttonVariants } from "@/components/ui/button"
 import { Container, SectionHeading } from "@/components/home/section-heading"
 
@@ -16,7 +17,14 @@ export type ContactProps = {
     mapLabel: string
     followLabel: string
   }
-  cards: { title: string; icon: string; lines: string[] }[]
+  cards: {
+    kind: ContactCardKind
+    title: string
+    icon: string
+    lines: string[]
+    /** The card's action: tel:, mailto: or a map search; null for none */
+    href: string | null
+  }[]
   member: { logo: string; logoAlt: string; title: string; subtitle: string }
   socials: { label: string; icon: string; href: string }[]
   quote: { title: string; body: string; cta: { label: string; href: string } }
@@ -24,24 +32,9 @@ export type ContactProps = {
 
 type InfoCard = ContactProps["cards"][number]
 
-/** The first line of a card as a tel: link (digits and a leading +). */
-function telHref(card?: InfoCard) {
-  const line = card?.lines[0] ?? ""
-  const number = line.replace(/^[^\d+]*/, "").replace(/[^\d+]/g, "")
-  return number ? `tel:${number}` : "#"
-}
-
-function mailHref(card?: InfoCard) {
-  const email = card?.lines.join(" ").match(/[^\s@]+@[^\s@]+/)?.[0]
-  return email ? `mailto:${email}` : "#"
-}
-
-function mapHref(card?: InfoCard) {
-  const address = card?.lines.join(" ")
-  return address
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
-    : "#"
-}
+/** The first card of a kind (with two phone cards, the first one wins). */
+const firstOf = (cards: InfoCard[], kind: ContactCardKind) =>
+  cards.find((card) => card.kind === kind)
 
 export function Contact({
   eyebrow,
@@ -53,18 +46,20 @@ export function Contact({
   socials,
   quote,
 }: ContactProps) {
-  const [phone, email, location] = cards
+  const phone = firstOf(cards, "phone")
+  const email = firstOf(cards, "email")
+  const address = firstOf(cards, "address")
   const quickActions = [
-    { label: labels.callLabel, href: telHref(phone), icon: phone?.icon },
-    { label: labels.emailLabel, href: mailHref(email), icon: email?.icon },
-    { label: labels.directionsLabel, href: mapHref(location), icon: null },
+    { label: labels.callLabel, href: phone?.href ?? "#", icon: phone?.icon },
+    { label: labels.emailLabel, href: email?.href ?? "#", icon: email?.icon },
+    { label: labels.directionsLabel, href: address?.href ?? "#", icon: null },
   ]
-  // Rows on a phone: the first three cards get a small action pill.
-  const rowActions = [
-    { label: labels.callLabel, href: telHref(phone) },
-    { label: labels.emailLabel, href: mailHref(email) },
-    { label: labels.mapLabel, href: mapHref(location) },
-  ]
+  // Rows on a phone: phone, email and address cards get a small action pill.
+  const rowLabel: Partial<Record<ContactCardKind, string>> = {
+    phone: labels.callLabel,
+    email: labels.emailLabel,
+    address: labels.mapLabel,
+  }
 
   return (
     <section id="contact" className="bg-white py-12 sm:py-16 md:py-28">
@@ -109,8 +104,10 @@ export function Contact({
           </ul>
 
           <ul className="flex flex-col overflow-hidden rounded-[20px] border border-line bg-white">
-            {cards.map((card, index) => {
-              const action = rowActions[index]
+            {cards.map((card) => {
+              const label = rowLabel[card.kind]
+              const action =
+                label && card.href ? { label, href: card.href } : null
               return (
                 <li
                   key={card.title}
@@ -147,9 +144,9 @@ export function Contact({
               {quote.title}
             </h3>
             <p className="text-sm leading-[1.55] text-white/85">{quote.body}</p>
-            {phone ? (
+            {phone?.href ? (
               <a
-                href={telHref(phone)}
+                href={phone.href}
                 className="flex items-center gap-2 text-[15px]/[1.45] font-medium text-white"
               >
                 <Image src={phone.icon} alt="" width={16} height={16} />

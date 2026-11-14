@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest"
 import { RICH_TEXT_MAX_CHARS, RICH_TEXT_MAX_NODES } from "@/blocks/registry"
 
 import { contactPlaceholders, interpolate } from "@/lib/interpolate"
+import { seo } from "@/lib/schemas/common"
+import { settingsSchemas, type SettingsKey } from "@/lib/schemas/settings"
+import { homeTemplate } from "@/templates/home/schema"
 import { PAGE_KEYS, PAGES, templates } from "@/templates/registry"
 import {
   fixtureMediaKey,
@@ -11,10 +14,19 @@ import {
 } from "@/server/db/seed/fixtures/media"
 import { legalPagesFixture } from "@/server/db/seed/fixtures/legal-pages"
 import { pagesFixture } from "@/server/db/seed/fixtures/pages"
+import { servicesFixture } from "@/server/db/seed/fixtures/services"
 import { settingsFixture } from "@/server/db/seed/fixtures/settings"
 
 import { frozenArray } from "../helpers/frozen"
-import { inventory, normalise } from "../helpers/inventory"
+import {
+  CHANGED_SINCE_BASELINE,
+  currentTarget,
+  expectChangedSinceBaseline,
+  inventory,
+  normalise,
+  RELOCATED_SINCE_BASELINE,
+} from "../helpers/inventory"
+import { schemaPaths } from "../helpers/schema-paths"
 
 const fixture = pagesFixture(fixtureMediaLookup)
 const settings = settingsFixture(fixtureMediaLookup)
@@ -70,13 +82,49 @@ function mediaIds(value: unknown, out = new Set<string>()): Set<string> {
 }
 
 /**
- * Inventory entries (frozen at 3689369) whose seed was changed on purpose
- * after the baseline. Keyed by the entry's target path.
+ * Seeded values at a "pages.<key>.…" path, read from the page's `seo` column
+ * for "pages.<key>.seo.…" and from its template data otherwise.
  */
-const CHANGED_SINCE_BASELINE = new Set([
-  // The mailto handoff was removed when the form began posting to the leads API (7.3).
-  "pages.contact.quoteForm.sentMessage",
-])
+function seededValue(path: string): unknown[] {
+  const [, key, ...rest] = path.split(".")
+  const page = fixture[key as keyof typeof fixture]
+  const isSeo = rest[0] === "seo"
+  return valuesAt(
+    isSeo ? page.seo : page.data,
+    (isSeo ? rest.slice(1) : rest).join(".")
+  )
+}
+
+/** The schema paths a "pages.…" or "settings.…" target lives under. */
+function livePaths(target: string): { rest: string; paths: Set<string> } {
+  const [root, key, ...rest] = target.split(".")
+  if (root === "pages" && !Object.hasOwn(PAGES, key))
+    throw new Error(`${target}: "${key}" is not a registry page`)
+  if (root === "pages" && rest[0] === "seo") {
+    const p = schemaPaths(seo)
+    return {
+      rest: rest.slice(1).join("."),
+      paths: new Set([...p.leaves, ...p.lists]),
+    }
+  }
+  if (root === "pages") {
+    const p = schemaPaths(templates[PAGES[key as keyof typeof PAGES]].schema)
+    return { rest: rest.join("."), paths: new Set([...p.leaves, ...p.lists]) }
+  }
+  if (root === "settings") {
+    const settingsKey = (Object.keys(settingsSchemas) as SettingsKey[])
+      .filter((k) => target.startsWith(`settings.${k}.`))
+      .sort((a, b) => b.length - a.length)[0]
+    if (settingsKey) {
+      const p = schemaPaths(settingsSchemas[settingsKey])
+      return {
+        rest: target.slice(`settings.${settingsKey}.`.length),
+        paths: new Set([...p.leaves, ...p.lists]),
+      }
+    }
+  }
+  throw new Error(`${target}: not a pages.* or settings.* path`)
+}
 
 describe("page fixtures (master 3.2)", () => {
   it.each(PAGE_KEYS)("pages.%s parses against its template", (key) => {
@@ -85,37 +133,69 @@ describe("page fixtures (master 3.2)", () => {
   })
 
   const entries = inventory
-    .map((e) => ({ ...e, path: normalise(e.target) }))
-    .filter((e) => e.path.startsWith("pages."))
+    .map((e) => ({ ...e, path: currentTarget(e.target) }))
+    .filter((e): e is typeof e & { path: string } =>
+      Boolean(e.path?.startsWith("pages."))
+    )
 
   it("checks every pages.* inventory entry", () => {
-    expect(entries.length).toBe(144)
+    expect(
+      inventory.filter((e) => normalise(e.target).startsWith("pages.")).length
+    ).toBe(144)
   })
 
+  /** The seeded value (placeholders filled unless it is a template) a changed entry must differ from. */
+  const changedValue = (e: (typeof entries)[number]) => {
+    const actual = seededValue(e.path)[0]
+    return !e.template && typeof actual === "string" ? fill(actual) : actual
+  }
+
   it("every baseline-change exemption is a real inventory entry (no stale entries)", () => {
-    const targets = new Set(entries.map((e) => e.path))
-    for (const path of CHANGED_SINCE_BASELINE)
-      expect(targets, path).toContain(path)
+    for (const id of CHANGED_SINCE_BASELINE.keys()) {
+      const entry = inventory.find((e) => e.id === id)
+      expect(entry, id).toBeDefined()
+      // A removed field (relocated to null) cannot have a changed value.
+      const target = currentTarget(entry!.target)
+      expect(target, `${id}: relocated to null`).not.toBeNull()
+      expect(target, id).toMatch(/^(pages|settings)\./)
+    }
+  })
+
+  it("every baseline-change exemption still has a seeded value at its (possibly relocated) path", () => {
+    const changed = entries.filter((e) => CHANGED_SINCE_BASELINE.has(e.id))
+    // Guards against a vacuous pass: both seeded exemptions target pages.*,
+    // so an empty list means the filter (or currentTarget) broke.
+    expect(changed.length).toBeGreaterThan(0)
+    for (const e of changed) expectChangedSinceBaseline(e, changedValue(e))
+  })
+
+  it("every relocation names a real inventory target and a live schema path", () => {
+    const targets = new Set(inventory.map((e) => normalise(e.target)))
+    for (const [from, to] of Object.entries(RELOCATED_SINCE_BASELINE)) {
+      expect(targets, from).toContain(from)
+      if (to === null) continue
+      // One hop only: currentTarget does not follow chains.
+      expect(
+        Object.hasOwn(RELOCATED_SINCE_BASELINE, to),
+        `${to}: chained`
+      ).toBe(false)
+      const { rest, paths } = livePaths(to)
+      expect(paths, to).toContain(rest)
+    }
   })
 
   it.each(entries.map((e) => [e.id, e] as const))(
     "%s is verbatim",
     (_id, e) => {
-      if (CHANGED_SINCE_BASELINE.has(e.path)) {
-        expect(
-          valuesAt(fixture.contact.data, "quoteForm.sentMessage")[0]
-        ).not.toBe(e.seed)
+      if (CHANGED_SINCE_BASELINE.has(e.id)) {
+        expectChangedSinceBaseline(e, changedValue(e))
         return
       }
-      const [, key, ...rest] = e.path.split(".")
-      const pageKey = key as keyof typeof fixture
-      const isSeo = rest[0] === "seo"
-      const root = isSeo ? fixture[pageKey].seo : fixture[pageKey].data
-      const path = (isSeo ? rest.slice(1) : rest).join(".")
-      let found = valuesAt(root, path)
+      const pageKey = e.path.split(".")[1] as keyof typeof fixture
+      let found = seededValue(e.path)
       // A blank seo.title is derived: settings.seo.defaults.titleTemplate
       // applied to the page's hero title (M1).
-      if (isSeo && path === "title" && found[0] === undefined)
+      if (e.path === `pages.${pageKey}.seo.title` && found[0] === undefined)
         found = [
           interpolate(settings["seo.defaults"].titleTemplate, {
             title: (fixture[pageKey].data as { hero: { title: string } }).hero
@@ -142,9 +222,7 @@ describe("page fixtures (master 3.2)", () => {
     expect(fixture.blog.data.pageSize).toBe(6)
     expect(fixture.contact.data.contactTitle).toBe("Ways to Reach Us")
     expect(fixture.services.data.grid.learnMore).toBe("Learn More  →")
-    expect(fixture.services.data.detail.officeHours.hours).toBe(
-      "Mon – Fri: 9am – 6pm"
-    )
+    expect(fixture.services.data.detail.officeHours.hours).toBe("{hours}")
     expect(fixture.contact.data.quoteForm.fields.service.extraOptions).toEqual([
       "Domestic Cleaning",
       "Other",
@@ -186,10 +264,13 @@ describe("page fixtures (master 3.2)", () => {
       )
     })
 
+    // The home list now picks services from the collection (phase 2,
+    // task 13): the static site's "Domestic Cleaning" has no service page.
     it("home service items", () => {
-      expect(fixture.home.data.services.items).toEqual(
-        frozenArray("components/home/services.tsx", "services")
-      )
+      const slugs = servicesFixture(fixtureMediaLookup).map((x) => x.slug)
+      const items = fixture.home.data.services.items
+      expect(items).toHaveLength(3)
+      for (const item of items) expect(slugs).toContain(item.service)
     })
 
     it("share networks (the url template with {url} for the page address)", () => {
@@ -205,8 +286,8 @@ describe("page fixtures (master 3.2)", () => {
   })
 
   it("about and contact heroes have no own image; services and blog do", () => {
-    expect("image" in fixture.about.data.hero).toBe(false)
-    expect("image" in fixture.contact.data.hero).toBe(false)
+    expect(fixture.about.data.hero.image).toBeNull()
+    expect(fixture.contact.data.hero.image).toBeNull()
     expect(fixture.services.data.hero.image).toBeDefined()
     expect(fixture.blog.data.hero.image).toBeDefined()
   })
@@ -248,5 +329,27 @@ describe("page fixtures (master 3.2)", () => {
         RICH_TEXT_MAX_CHARS
       )
     }
+  })
+})
+
+describe("home services list", () => {
+  it("the same service cannot be listed twice", () => {
+    const home = fixture.home.data
+    expect(homeTemplate.safeParse(home).success).toBe(true)
+    const [first] = home.services.items
+    const result = homeTemplate.safeParse({
+      ...home,
+      services: {
+        ...home.services,
+        items: [first, { ...first, description: "Again." }],
+      },
+    })
+    expect(result.success).toBe(false)
+    expect(result.error?.issues).toEqual([
+      expect.objectContaining({
+        path: ["services", "items", 1, "service"],
+        message: "This service is already in the list",
+      }),
+    ])
   })
 })

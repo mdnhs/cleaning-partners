@@ -5,43 +5,71 @@ import type {
   JobDetailView,
   JobRowView,
 } from "@/components/careers/types"
-import { irishToday, isOpenJob } from "@/lib/careers/open"
+import { isOpenJob } from "@/lib/careers/open"
+import { type DateOptions, formatDay, isoDate, siteLocale } from "@/lib/format"
 import { interpolate } from "@/lib/interpolate"
 import { jobPath } from "@/lib/schemas/api/job-postings"
 import type { PublicJob } from "@/server/modules/job-postings/queries"
 import type { SiteSources } from "@/templates/shared/sources"
-import { linkView, pageHeroView, textView } from "@/templates/shared/views"
+import {
+  iconCardsView,
+  linkView,
+  pageHeroView,
+  stepsSectionView,
+  textView,
+} from "@/templates/shared/views"
 
 const DAY = 24 * 60 * 60_000
-/** "today", "yesterday", then "3 days ago"; weeks and months always as numbers. */
-const RELATIVE_DAYS = new Intl.RelativeTimeFormat("en-IE", { numeric: "auto" })
-const RELATIVE = new Intl.RelativeTimeFormat("en-IE", { numeric: "always" })
-/** "Sep": en-US keeps the three-letter month the design uses. */
-const PARTS = new Intl.DateTimeFormat("en-US", {
-  timeZone: "Europe/Dublin",
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-})
 
-/** "today", "3 days ago", "1 week ago", "2 months ago" (Irish calendar days). */
-export function postedAgo(posted: Date, now: Date): string {
+/**
+ * "today", "yesterday", "3 days ago", "1 week ago", "2 months ago" in the
+ * site's language, counting calendar days in the site's zone (default Irish).
+ */
+export function postedAgo(
+  posted: Date,
+  now: Date,
+  { locale, timeZone }: DateOptions = {}
+): string {
   const days = Math.round(
-    (Date.parse(irishToday(now)) - Date.parse(irishToday(posted))) / DAY
+    (Date.parse(isoDate(now, timeZone)) -
+      Date.parse(isoDate(posted, timeZone))) /
+      DAY
   )
-  if (days < 7) return RELATIVE_DAYS.format(-days, "day")
-  if (days < 30) return RELATIVE.format(-Math.floor(days / 7), "week")
-  return RELATIVE.format(-Math.floor(days / 30), "month")
+  const tag = siteLocale(locale)
+  if (days < 7)
+    return new Intl.RelativeTimeFormat(tag, { numeric: "auto" }).format(
+      -days,
+      "day"
+    )
+  // Weeks and months always as numbers ("1 week ago", not "last week").
+  const relative = new Intl.RelativeTimeFormat(tag, { numeric: "always" })
+  if (days < 30) return relative.format(-Math.floor(days / 7), "week")
+  return relative.format(-Math.floor(days / 30), "month")
 }
 
-/** "12 Sep 2026" for a moment (Irish date) or a "YYYY-MM-DD" day. */
-export function closedOnDate(value: Date | string): string {
-  const date =
-    typeof value === "string" ? new Date(`${value}T12:00:00Z`) : value
-  const part = (type: string) =>
-    PARTS.formatToParts(date).find((p) => p.type === type)?.value ?? ""
-  return `${part("day")} ${part("month")} ${part("year")}`
+/**
+ * "12 Sep 2026" for a moment (its date in the site's zone) or a "YYYY-MM-DD"
+ * closing day. The day is a zoneless calendar date: it is read at 12:00Z and
+ * shown in UTC, so no site zone (e.g. Pacific/Auckland) can shift it.
+ */
+export function closedOnDate(
+  value: Date | string,
+  options: DateOptions = {}
+): string {
+  if (typeof value === "string")
+    return formatDay(new Date(`${value}T12:00:00Z`), {
+      locale: options.locale,
+      timeZone: "UTC",
+      day: "numeric",
+    })
+  return formatDay(value, { ...options, day: "numeric" })
 }
+
+/** The site's language and zone (settings.site) for public dates. */
+const siteDates = (s: SiteSources): DateOptions => ({
+  locale: s.settings.site.locale,
+  timeZone: s.settings.site.timezone,
+})
 
 /** A job as the public pages test openness (published content). */
 export const openNow = (job: PublicJob, now: Date) =>
@@ -94,12 +122,16 @@ function jobRow(
     hours: c.hours,
     pay: c.pay,
     posted: interpolate(postedLabel, {
-      ago: job.publishedAt ? postedAgo(job.publishedAt, now) : "",
+      ago: job.publishedAt ? postedAgo(job.publishedAt, now, siteDates(s)) : "",
     }),
   }
 }
 
-function closedRow(job: PublicJob, closedOn: string): ClosedJobView {
+function closedRow(
+  s: SiteSources,
+  job: PublicJob,
+  closedOn: string
+): ClosedJobView {
   const c = job.content
   const when = job.closedAt ?? c.closingDate
   return {
@@ -110,7 +142,9 @@ function closedRow(job: PublicJob, closedOn: string): ClosedJobView {
     type: c.employmentType,
     hours: c.hours,
     pay: c.pay,
-    closed: when ? interpolate(closedOn, { date: closedOnDate(when) }) : "",
+    closed: when
+      ? interpolate(closedOn, { date: closedOnDate(when, siteDates(s)) })
+      : "",
   }
 }
 
@@ -132,16 +166,7 @@ export function careersView(
   )
   return {
     hero: pageHeroView(s, page.hero),
-    why: {
-      eyebrow: page.why.eyebrow,
-      title: page.why.title,
-      description: page.why.description,
-      cards: page.why.cards.map((card) => ({
-        title: card.title,
-        description: card.description,
-        icon: card.icon.url,
-      })),
-    },
+    why: iconCardsView(page.why),
     open: {
       eyebrow: page.open.eyebrow,
       title: page.open.title,
@@ -167,18 +192,9 @@ export function careersView(
       intro: page.previous.intro,
       closedPill: page.previous.closedPill,
       filled: page.previous.filled,
-      jobs: previous.map((job) => closedRow(job, page.previous.closedOn)),
+      jobs: previous.map((job) => closedRow(s, job, page.previous.closedOn)),
     },
-    process: {
-      eyebrow: page.process.eyebrow,
-      title: page.process.title,
-      intro: page.process.intro,
-      steps: page.process.steps.map((step, i) => ({
-        number: String(i + 1).padStart(2, "0"),
-        title: step.title,
-        description: step.description,
-      })),
-    },
+    process: stepsSectionView(page.process, "wide"),
     talentPool: {
       eyebrow: page.talentPool.eyebrow,
       title: page.talentPool.title,
@@ -209,7 +225,7 @@ export function jobDetailView(
   const c = job.content
   const hero = pageHeroView(s, page.hero)
   const applyHref = `${jobPath(job.slug)}/apply`
-  const closing = c.closingDate ? closedOnDate(c.closingDate) : ""
+  const closing = c.closingDate ? closedOnDate(c.closingDate, siteDates(s)) : ""
   return {
     slug: job.slug,
     open: openNow(job, now),

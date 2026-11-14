@@ -106,7 +106,7 @@ test("public enquiry → lead in the intake inbox, worked by the intake user", a
   // Intake sees only leads (plus Dashboard/Account) and the API agrees.
   const nav = page.getByRole("navigation", { name: "Admin" })
   await expect(nav.getByRole("link", { name: /^Enquiries/ })).toBeVisible()
-  await expect(nav.getByRole("link", { name: "Pages" })).toHaveCount(0)
+  await expect(nav.getByRole("link", { name: /^Website/ })).toHaveCount(0)
   expect((await page.request.get("/api/v1/admin/pages")).status()).toBe(403)
 
   // The sidebar badge counts the new, unassigned enquiry.

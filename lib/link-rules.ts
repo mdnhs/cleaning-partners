@@ -15,9 +15,12 @@ export const CONTACT_FIELDS = [
   "officeExtension",
   "mobile",
   "email",
+  "recruitmentEmail",
   "hours",
   "addressLine1",
   "addressLine2",
+  "quoteLabel",
+  "quoteHref",
 ] as const
 
 /** settings.contact fields holding a template rather than a value. */

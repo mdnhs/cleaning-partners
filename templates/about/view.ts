@@ -5,7 +5,7 @@ import type { ContactProps } from "@/components/home/contact"
 import type { PageHeroProps } from "@/components/home/page-hero"
 import type { TeamProps } from "@/components/home/team"
 import type { TestimonialsProps } from "@/components/home/testimonials"
-import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
+import type { IconCardsSectionProps } from "@/components/home/icon-cards-section"
 import type { SiteSources } from "@/templates/shared/sources"
 import {
   clientsView,
@@ -23,7 +23,7 @@ export type AboutView = {
   story: OurStoryProps
   stats: StatsProps
   clients: ClientsProps
-  whyChooseUs: WhyChooseUsProps
+  whyChooseUs: IconCardsSectionProps
   team: TeamProps
   testimonials: TestimonialsProps
   contact: ContactProps

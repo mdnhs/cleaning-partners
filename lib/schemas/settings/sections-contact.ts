@@ -1,10 +1,16 @@
 import { z } from "zod"
 
-import { href, link, mediaRef, text } from "../common"
+import {
+  blankDefaults,
+  href,
+  mediaRef,
+  quoteCardOverrides,
+  text,
+} from "../common"
 
 /**
  * settings.sections.contact — the Contact section shared by / and /contact:
- * info cards, ICCA membership, social links and the quote box. Lines may
+ * info cards, the membership title, social links and the quote box. Lines may
  * carry {placeholders} (lib/interpolate.ts); the enquiry form is page data.
  */
 /** Used for rows saved before `mobile` existed (also by the views). */
@@ -15,6 +21,16 @@ export const contactMobileDefaults = {
   mapLabel: "Map",
   followLabel: "Follow us",
 }
+
+/** What a contact card is: picks its phone-layout action (Call, Email, Map). */
+export const CONTACT_CARD_KINDS = [
+  "phone",
+  "email",
+  "address",
+  "hours",
+  "other",
+] as const
+export type ContactCardKind = (typeof CONTACT_CARD_KINDS)[number]
 
 export const contactSectionSettings = z.object({
   eyebrow: text,
@@ -34,17 +50,21 @@ export const contactSectionSettings = z.object({
   infoCards: z
     .array(
       z.object({
+        // A new card is "other" until the admin picks a type: "phone"
+        // (the first option) would give it a Call button.
+        kind: z
+          .enum(CONTACT_CARD_KINDS)
+          .register(blankDefaults, { value: "other" }),
         title: text,
         icon: mediaRef,
         lines: z.array(text).min(1),
       })
     )
     .min(1),
-  memberLogo: mediaRef,
-  memberLogoAlt: text,
+  /** The member card's heading; its logo and name are Settings › Site › Membership. */
   memberTitle: text,
-  memberSubtitle: text,
   socials: z.array(z.object({ label: text, icon: mediaRef, href })),
-  quoteBox: z.object({ title: text, body: text, cta: link }),
+  /** Overrides of the shared quote card (Settings › Microcopy); null = shared. */
+  quoteBox: quoteCardOverrides.omit({ phoneLabel: true }),
 })
 export type ContactSectionSettings = z.infer<typeof contactSectionSettings>

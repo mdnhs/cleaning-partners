@@ -199,6 +199,31 @@ describe("ApplicationForm", () => {
     expect(screen.queryByRole("button", { name: view.form.submit })).toBeNull()
   })
 
+  it("a 422 shows the form's own copy for each rejected field, never the server's", async () => {
+    response = () =>
+      json(422, {
+        error: {
+          code: "VALIDATION_FAILED",
+          message: "x",
+          fieldErrors: {
+            email: ["Enter a valid email address."],
+            rightToWork: ["Choose an option from the list."],
+          },
+        },
+      })
+    render(<ApplicationForm view={view} />)
+    await fillRequired()
+    await userEvent.click(
+      screen.getByRole("button", { name: view.form.submit })
+    )
+    expect(
+      await screen.findByText(view.form.errors.invalid)
+    ).toBeInTheDocument()
+    expect(screen.getByText(view.form.errors.invalidEmail)).toBeInTheDocument()
+    expect(screen.queryByText("Choose an option from the list.")).toBeNull()
+    expect(screen.queryByText(view.form.errors.generic)).toBeNull()
+  })
+
   it("a 422 on a field the page does not show (Turnstile, job) shows the generic error", async () => {
     response = () =>
       json(422, {

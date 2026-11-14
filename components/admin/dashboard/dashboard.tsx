@@ -42,7 +42,7 @@ type Kpi = Pick<KpiCardProps, "label" | "value" | "caption" | "href" | "delta">
 type ContentAccess = { pages: boolean; services: boolean; articles: boolean }
 
 function contentHref(access: ContentAccess): string {
-  if (access.pages) return "/admin/pages"
+  if (access.pages) return "/admin/website"
   if (access.services) return "/admin/services"
   return "/admin/blog"
 }

@@ -255,7 +255,9 @@ test("SEO overview: alt-text card, Needs work / All, Fix links to the editor's S
     .and(page.locator('[href*="?tab=seo"]'))
     .first()
   const href = await fix.getAttribute("href")
-  expect(href).toMatch(/^\/admin\/(pages|services|blog)\/.+\?tab=seo$/)
+  expect(href).toMatch(
+    /^\/admin\/(website|pages\/custom|services|blog)\/.+\?tab=seo$/
+  )
   await fix.click()
   await page.waitForURL((url) => url.searchParams.get("tab") === "seo")
   // The SEO tab itself is asserted by seo-tab.spec.ts (SEO tab task).

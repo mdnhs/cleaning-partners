@@ -13,7 +13,8 @@ export type ServicesProps = {
   eyebrow: string
   title: string
   description: string
-  items: { title: string; description: string; href?: string }[]
+  /** Each links to its service page (/services/<slug>). */
+  items: { title: string; description: string; href: string }[]
   itemIcon: string
   moreText: string
   cta: { label: string; href: string }
@@ -75,9 +76,12 @@ export function Services({
           />
 
           <ul className="flex w-full flex-col gap-2.5 sm:gap-3.5">
-            {items.map((service) => {
-              const body = (
-                <>
+            {items.map((service, index) => (
+              <li key={`${index}:${service.href}`} data-service-item>
+                <Link
+                  href={service.href}
+                  className="flex items-center gap-3.5 rounded-2xl border border-line bg-white p-4 sm:gap-4 sm:rounded-[18px] sm:px-5 sm:py-[18px]"
+                >
                   <Image
                     src={itemIcon}
                     alt=""
@@ -93,31 +97,13 @@ export function Services({
                       {service.description}
                     </p>
                   </div>
-                  {service.href ? (
-                    <ChevronRightIcon
-                      aria-hidden
-                      className="size-5 shrink-0 text-body/60 transition-transform group-hover:translate-x-0.5 sm:hidden"
-                    />
-                  ) : null}
-                </>
-              )
-              const row =
-                "flex items-center gap-3.5 rounded-2xl border border-line bg-white p-4 sm:gap-4 sm:rounded-[18px] sm:px-5 sm:py-[18px]"
-              return (
-                <li key={service.title} data-service-item>
-                  {service.href ? (
-                    <Link
-                      href={service.href}
-                      className={`group ${row} transition-colors hover:border-brand/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`}
-                    >
-                      {body}
-                    </Link>
-                  ) : (
-                    <div className={row}>{body}</div>
-                  )}
-                </li>
-              )
-            })}
+                  <ChevronRightIcon
+                    aria-hidden
+                    className="size-5 shrink-0 text-body/60 sm:hidden"
+                  />
+                </Link>
+              </li>
+            ))}
           </ul>
 
           <div

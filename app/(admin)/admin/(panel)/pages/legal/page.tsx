@@ -1,29 +1,24 @@
-import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 import { Suspense } from "react"
 
-import { LegalPagesScreen } from "@/components/admin/legal/legal-pages-screen"
-import { PageHeader } from "@/components/admin/page-header"
-import { requirePage } from "@/server/auth/session"
+import { websiteHref, withSearch } from "@/lib/admin/website"
+import { requireActor, requirePermission } from "@/server/auth/session"
 
-export const metadata: Metadata = { title: "Legal pages" }
-
-export default function LegalPagesPage() {
+/** Legal pages moved to Website (307, query kept). */
+export default function LegalPagesPage({
+  searchParams,
+}: PageProps<"/admin/pages/legal">) {
   return (
     <Suspense fallback={null}>
-      <LegalPages />
+      <Go searchParams={searchParams} />
     </Suspense>
   )
 }
 
-async function LegalPages() {
-  await requirePage("/admin/pages/legal")
-  return (
-    <>
-      <PageHeader
-        title="Legal pages"
-        description="Privacy, terms, cookies and other policies. Published pages are linked in the footer."
-      />
-      <LegalPagesScreen />
-    </>
-  )
+async function Go({
+  searchParams,
+}: Pick<PageProps<"/admin/pages/legal">, "searchParams">): Promise<never> {
+  await requireActor()
+  await requirePermission({ page: ["read"] })
+  redirect(withSearch(websiteHref("legal"), await searchParams))
 }

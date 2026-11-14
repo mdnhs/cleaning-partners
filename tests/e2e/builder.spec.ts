@@ -64,7 +64,7 @@ test("an editor builds, publishes and views a page", async ({ browser }) => {
   const { context, page } = await signIn(browser, "builder create")
   try {
     await removePages(page, [slug])
-    await page.goto("/admin/pages")
+    await page.goto("/admin/website/custom-pages")
     await page.getByRole("button", { name: "New page" }).click()
     const dialog = page.getByRole("dialog", { name: "New page" })
     await dialog.getByLabel("Title").fill("Spring clean")
@@ -195,9 +195,9 @@ test("a marketer sees the list read-only", async ({ browser }) => {
   try {
     await removePages(editor.page, [slug])
     await createWithStats(editor.page, slug, "E2E read only")
-    await marketer.page.goto("/admin/pages")
+    await marketer.page.goto("/admin/website/custom-pages")
     await expect(
-      marketer.page.getByRole("heading", { name: "Custom pages" })
+      marketer.page.getByRole("heading", { level: 1, name: "Custom pages" })
     ).toBeVisible()
     await expect(
       marketer.page.getByRole("link", { name: "E2E read only" })
@@ -221,7 +221,7 @@ test("⌘K New page opens the new page dialog", async ({ browser }) => {
     const palette = page.getByRole("dialog", { name: "Search the admin" })
     await expect(palette.getByRole("combobox")).toBeVisible()
     await palette.getByRole("option", { name: /^New page/ }).click()
-    await expect(page).toHaveURL(/\/admin\/pages\?new=1$/)
+    await expect(page).toHaveURL(/\/admin\/website\/custom-pages\?new=1$/)
     await expect(page.getByRole("dialog", { name: "New page" })).toBeVisible()
   } finally {
     await context.close()
@@ -235,7 +235,7 @@ test("Copy to new page from Contact creates a page with the four blocks", async 
   const { context, page } = await signIn(browser, "builder copy")
   try {
     await removePages(page, [slug])
-    await page.goto("/admin/pages/contact")
+    await page.goto("/admin/website/contact")
     await page.getByRole("button", { name: "Copy to new page" }).click()
     const dialog = page.getByRole("dialog", { name: "Copy to a new page" })
     await expect(dialog.getByLabel("Title")).toHaveValue("Contact copy")

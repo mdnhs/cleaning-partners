@@ -4,7 +4,10 @@ import { join } from "node:path"
 import { and, eq, sql } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { seoDefaultsSettings } from "@/lib/schemas/settings/seo-defaults"
+import {
+  organizationSettings,
+  seoDefaultsSettings as currentSeoDefaults,
+} from "@/lib/schemas/settings/seo-defaults"
 import { getDb } from "@/server/db/client"
 import { revisions, settings } from "@/server/db/schema"
 
@@ -18,6 +21,11 @@ const statements = readFileSync(join(DIR, file), "utf8")
   .split("--> statement-breakpoint")
   .map((s) => s.trim())
   .filter(Boolean)
+
+// The schema as of 0013: organization.currency arrives with 0037.
+const seoDefaultsSettings = currentSeoDefaults.extend({
+  organization: organizationSettings.omit({ currency: true }),
+})
 
 /** seo.defaults as stored before D1.6 (after 0008). */
 const legacy = {

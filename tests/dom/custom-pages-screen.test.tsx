@@ -17,28 +17,14 @@ const nav = vi.hoisted(() => ({
 }))
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: nav.replace, push: nav.push, refresh: vi.fn() }),
-  usePathname: () => "/admin/pages",
+  usePathname: () => "/admin/website/custom-pages",
   useSearchParams: () => new URLSearchParams(nav.search),
 }))
 
 import { AdminSessionProvider } from "@/components/admin/session-provider"
 import type { Role } from "@/lib/auth/roles"
-import { PagesList } from "@/components/admin/pages/pages-list"
 import { makeQueryClient } from "@/components/admin/providers"
-
-const page = (over: Record<string, unknown>) => ({
-  key: "home",
-  label: "Home",
-  template: "home",
-  path: "/",
-  version: 3,
-  status: "published",
-  dirty: false,
-  publishedAt: "2026-10-01T10:00:00Z",
-  updatedAt: new Date(Date.now() - 2 * 3_600_000).toISOString(),
-  updatedBy: { id: "u1", name: "Edith Editor" },
-  ...over,
-})
+import { CustomPagesScreen } from "@/components/admin/website/custom-pages-screen"
 
 function renderPages(role: Role = "editor") {
   return render(
@@ -56,7 +42,7 @@ function renderPages(role: Role = "editor") {
       }}
     >
       <QueryClientProvider client={makeQueryClient()}>
-        <PagesList />
+        <CustomPagesScreen />
       </QueryClientProvider>
     </AdminSessionProvider>
   )
@@ -89,116 +75,18 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (input: RequestInfo | URL) => {
       calls.push(String(input))
-      if (String(input).includes("/builder-pages"))
-        return Response.json({
-          items: customItems,
-          page: 1,
-          pageSize: 100,
-          total: customItems.length,
-        })
       return Response.json({
-        items: [
-          page({}),
-          page({
-            key: "about",
-            label: "About",
-            path: "/about",
-            dirty: true,
-          }),
-          page({
-            key: "terms",
-            label: "Terms",
-            path: "/terms",
-            publishedAt: null,
-            status: "draft",
-          }),
-        ],
+        items: customItems,
+        page: 1,
+        pageSize: 100,
+        total: customItems.length,
       })
     })
   )
 })
 
-describe("pages list (JW pattern)", () => {
-  it("shows Title, Address, Status and Updated in a card table", async () => {
-    renderPages()
-    const table = await screen.findByRole("table", { name: "Site pages" })
-    expect(
-      within(table)
-        .getAllByRole("columnheader")
-        .map((th) => th.textContent)
-    ).toEqual(["Title", "Address", "Status", "Updated"])
-    expect(table.closest('[data-slot="table-card"]')).toHaveClass(
-      "rounded-card",
-      "bg-card"
-    )
-    // One scroll container (the Table primitive's), and headers wrap like
-    // the cells, as before the shadcn Table.
-    expect(table.closest('[data-slot="table-card"]')).not.toHaveClass(
-      "overflow-x-auto"
-    )
-    for (const th of within(table).getAllByRole("columnheader"))
-      expect(th).toHaveClass("whitespace-normal")
-    const rows = within(table).getAllByRole("row").slice(1)
-    expect(within(rows[0]).getByRole("link", { name: "Home" })).toHaveAttribute(
-      "href",
-      "/admin/pages/home"
-    )
-    expect(
-      within(rows[0]).getByText("/", { selector: "code" })
-    ).toBeInTheDocument()
-    expect(rows[0]).toHaveTextContent("Published")
-    expect(rows[0]).toHaveTextContent("2 hours ago · Edith Editor")
-    expect(rows[1]).toHaveTextContent("PublishedUnpublished changes")
-    expect(rows[2]).toHaveTextContent("Draft")
-  })
-
-  it("lists cards on phones with the same facts", async () => {
-    renderPages()
-    const list = await screen.findByRole("list", { name: "Site pages" })
-    const cards = within(list).getAllByRole("listitem")
-    expect(cards).toHaveLength(3)
-    expect(cards[2]).toHaveTextContent("Terms")
-    expect(cards[2]).toHaveTextContent("/terms")
-    expect(cards[2]).toHaveTextContent("Draft")
-    // The whole card is the link's target (stretched link), like Services.
-    expect(cards[0]).toHaveClass("relative")
-    expect(within(cards[0]).getByRole("link", { name: "Home" })).toHaveClass(
-      "after:absolute",
-      "after:inset-0"
-    )
-  })
-
-  it("dates rows relative to the last fetch, exact time on hover", async () => {
-    renderPages()
-    const table = await screen.findByRole("table", { name: "Site pages" })
-    const time = within(table).getAllByText(/2 hours ago/, {
-      selector: "time",
-    })[0]
-    expect(time).toHaveAttribute("dateTime")
-    expect(time).toHaveAttribute("title")
-  })
-
-  it("offers Try again when the list fails", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () =>
-        Response.json(
-          // 4xx is final for the admin QueryClient (no retry delay).
-          { error: { code: "FORBIDDEN", message: "Not allowed" } },
-          { status: 403 }
-        )
-      )
-    )
-    renderPages()
-    const alert = await screen.findByRole("alert")
-    expect(alert).toHaveTextContent("The pages didn't load")
-    expect(alert).toHaveTextContent("Not allowed")
-    expect(
-      within(alert).getByRole("button", { name: "Try again" })
-    ).toBeInTheDocument()
-  })
-
-  it("lists custom pages linking to the builder, with status and editor", async () => {
+describe("custom pages screen", () => {
+  it("lists custom pages in a card table linking to the builder, with status and editor", async () => {
     customItems = [
       custom({}),
       custom({
@@ -214,6 +102,22 @@ describe("pages list (JW pattern)", () => {
     ]
     renderPages()
     const table = await screen.findByRole("table", { name: "Custom pages" })
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent)
+    ).toEqual(["Title", "Address", "Status", "Updated"])
+    expect(table.closest('[data-slot="table-card"]')).toHaveClass(
+      "rounded-card",
+      "bg-card"
+    )
+    // One scroll container (the Table primitive's), and headers wrap like
+    // the cells.
+    expect(table.closest('[data-slot="table-card"]')).not.toHaveClass(
+      "overflow-x-auto"
+    )
+    for (const th of within(table).getAllByRole("columnheader"))
+      expect(th).toHaveClass("whitespace-normal")
     const rows = within(table).getAllByRole("row").slice(1)
     expect(
       within(rows[0]).getByRole("link", { name: "Spring clean" })
@@ -225,9 +129,35 @@ describe("pages list (JW pattern)", () => {
     expect(
       screen.getByRole("heading", { name: "Custom pages" })
     ).toBeInTheDocument()
+    // The fixed pages live on their own Website screens now.
+    expect(screen.queryByRole("heading", { name: "Site pages" })).toBeNull()
+    expect(calls.some((url) => /\/pages(\?|$)/.test(url))).toBe(false)
+  })
+
+  it("lists cards on phones with the same facts", async () => {
+    customItems = [custom({})]
+    renderPages()
+    const list = await screen.findByRole("list", { name: "Custom pages" })
+    const cards = within(list).getAllByRole("listitem")
+    expect(cards).toHaveLength(1)
+    expect(cards[0]).toHaveTextContent("Spring clean")
+    expect(cards[0]).toHaveTextContent("/p/spring-clean")
+    // The whole card is the link's target (stretched link), like Services.
+    expect(cards[0]).toHaveClass("relative")
     expect(
-      screen.getByRole("heading", { name: "Site pages" })
-    ).toBeInTheDocument()
+      within(cards[0]).getByRole("link", { name: "Spring clean" })
+    ).toHaveClass("after:absolute", "after:inset-0")
+  })
+
+  it("dates rows relative to the last fetch, exact time on hover", async () => {
+    customItems = [custom({})]
+    renderPages()
+    const table = await screen.findByRole("table", { name: "Custom pages" })
+    const time = within(table).getAllByText(/3 hours ago/, {
+      selector: "time",
+    })[0]
+    expect(time).toHaveAttribute("dateTime")
+    expect(time).toHaveAttribute("title")
   })
 
   it("says so when there are no custom pages", async () => {
@@ -258,35 +188,35 @@ describe("pages list (JW pattern)", () => {
     const dialog = await screen.findByRole("dialog", { name: "New page" })
     await user.click(within(dialog).getByRole("button", { name: "Cancel" }))
     await waitFor(() =>
-      expect(nav.replace).toHaveBeenCalledWith("/admin/pages")
+      expect(nav.replace).toHaveBeenCalledWith("/admin/website/custom-pages")
     )
   })
 
   it("?new=1 does nothing for a role that cannot create", async () => {
     nav.search = "new=1"
+    customItems = [custom({})]
     renderPages("marketer")
-    await screen.findByRole("table", { name: "Site pages" })
+    await screen.findByRole("table", { name: "Custom pages" })
     expect(screen.queryByRole("dialog")).toBeNull()
   })
 
-  it("offers Try again when the custom list fails", async () => {
+  it("offers Try again when the list fails", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (input: RequestInfo | URL) =>
-        String(input).includes("/builder-pages")
-          ? Response.json(
-              { error: { code: "FORBIDDEN", message: "Not allowed" } },
-              { status: 403 }
-            )
-          : Response.json({ items: [page({})] })
+      vi.fn(async () =>
+        Response.json(
+          // 4xx is final for the admin QueryClient (no retry delay).
+          { error: { code: "FORBIDDEN", message: "Not allowed" } },
+          { status: 403 }
+        )
       )
     )
     renderPages()
+    const alert = await screen.findByRole("alert")
+    expect(alert).toHaveTextContent("The custom pages didn't load")
+    expect(alert).toHaveTextContent("Not allowed")
     expect(
-      await screen.findByText("The custom pages didn't load")
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole("table", { name: "Site pages" })
+      within(alert).getByRole("button", { name: "Try again" })
     ).toBeInTheDocument()
   })
 })

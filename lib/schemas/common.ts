@@ -7,6 +7,13 @@ import { linkPlaceholderProblems } from "../link-rules"
 // Strings are never trimmed or normalised: seeded copy must render
 // byte-identical (en-dashes, double spaces, "→", apostrophes).
 
+/**
+ * What the admin form puts in a field of a new item/record when the generic
+ * blank (first enum option, "", 0, ...) is wrong, e.g. a new contact card's
+ * kind. Register with `schema.register(blankDefaults, { value })`.
+ */
+export const blankDefaults = z.registry<{ value: unknown }>()
+
 /** Global constraint: slugs match ^[a-z0-9]+(-[a-z0-9]+)*$. */
 export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
@@ -146,20 +153,58 @@ export const paragraphsText = z.object({
 
 /** The PageHero block of an inner page (image, breadcrumb label, title, intro). */
 export const pageHero = z.object({
-  image: mediaRef,
+  /** null = the site's default banner (settings.site.defaultHeroImage). */
+  image: mediaRef.nullable(),
   crumb: text,
   title: text,
   description: text,
 })
-
-/** A page hero without its own banner (about, contact): the site default image is used. */
-export const pageHeroText = pageHero.omit({ image: true })
 
 /** Icon + title + description cards (values, cleaner qualities, features). */
 export const iconCard = z.object({
   title: text,
   description: text,
   icon: mediaRef,
+})
+
+/** A heading and icon cards (why choose us, why work with us). */
+export const iconCardsSection = z.object({
+  eyebrow: text,
+  title: text,
+  description: text,
+  cards: z.array(iconCard).min(1).max(8),
+})
+
+/**
+ * The "Need a Quote?" card (Settings › Microcopy): the service and article
+ * sidebars, the contact section and the services help card. phoneLabel is a
+ * template; {office} and {officeExtension} are filled in at render.
+ */
+export const quoteCard = z.object({
+  title: text,
+  body: text,
+  phoneLabel: text,
+  cta: link,
+})
+
+/** One place's own words for the quote card; null = the shared card's. */
+export const quoteCardOverrides = z.object({
+  title: text.nullable(),
+  body: text.nullable(),
+  phoneLabel: text.nullable(),
+  cta: link.nullable(),
+})
+
+/** One numbered step: a title and a line under it. */
+export const step = z.object({ title: text, description: text })
+
+/** A numbered steps section (how it works, the hiring process). */
+export const stepsSection = z.object({
+  eyebrow: text,
+  title: text,
+  /** null = no line under the heading. */
+  intro: text.nullable(),
+  steps: z.array(step).min(1).max(8),
 })
 
 /** Per page/service/article SEO overrides (edited in the SEO screens; empty fields fall back to seo.defaults). */
@@ -196,5 +241,9 @@ export type RichTextDoc = z.infer<typeof richText>
 export type ParagraphsDoc = z.infer<typeof paragraphsText>
 export type Seo = z.infer<typeof seo>
 export type PageHero = z.infer<typeof pageHero>
-export type PageHeroText = z.infer<typeof pageHeroText>
 export type IconCard = z.infer<typeof iconCard>
+export type IconCardsSectionData = z.infer<typeof iconCardsSection>
+export type QuoteCard = z.infer<typeof quoteCard>
+export type QuoteCardOverrides = z.infer<typeof quoteCardOverrides>
+export type Step = z.infer<typeof step>
+export type StepsSectionData = z.infer<typeof stepsSection>

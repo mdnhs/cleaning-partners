@@ -20,7 +20,7 @@ vi.mock("next/cache", () => ({
 import type { MediaItem, MediaUsage } from "@/lib/schemas/api/media"
 import { app } from "@/server/api/app"
 import { getDb } from "@/server/db/client"
-import { auditLog, jobs, media } from "@/server/db/schema"
+import { auditLog, jobs, media, mediaUsages } from "@/server/db/schema"
 import { seedContent } from "@/server/db/seed"
 import { deleteRetiredMediaJob } from "@/server/lib/jobs/delete-retired-media"
 import { tick } from "@/server/lib/scheduler"
@@ -143,8 +143,35 @@ describe("usages and DELETE (media_usages RESTRICT → 409)", () => {
       entityId: "home",
       field: "hero.background",
       label: "Home page",
-      href: "/admin/pages/home",
+      href: "/admin/website/home",
     })
+  })
+
+  it("links a shared section's usage to its Website part", async () => {
+    const mediaId = await heroId()
+    const [row] = await getDb()
+      .insert(mediaUsages)
+      .values({
+        mediaId,
+        entityType: "settings",
+        entityId: "sections.whyChooseUs",
+        field: "test.image",
+      })
+      .returning({ id: mediaUsages.id })
+    try {
+      const res = await adminRequest(`/media/${mediaId}/usages`, {
+        cookie: editor,
+      })
+      const { items } = (await res.json()) as { items: MediaUsage[] }
+      expect(items).toContainEqual(
+        expect.objectContaining({
+          entityId: "sections.whyChooseUs",
+          href: "/admin/website/home/why-choose-us",
+        })
+      )
+    } finally {
+      await getDb().delete(mediaUsages).where(eq(mediaUsages.id, row.id))
+    }
   })
 
   it("refuses to delete a file in use and names the places", async () => {

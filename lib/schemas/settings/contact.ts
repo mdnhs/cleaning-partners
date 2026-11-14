@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { text } from "../common"
+import { href, text } from "../common"
 
 /**
  * settings.contact — numbers and addresses edited once. tel: hrefs are
@@ -15,8 +15,23 @@ export const contactSettings = z.object({
   officeExtension: text,
   mobile: text,
   email: z.email(),
+  /** Shown on the careers pages (job and apply sidebars, talent pool). */
+  recruitmentEmail: z.email(),
   hours: text,
   addressLine1: text,
   addressLine2: text,
+  /** Text of every {quoteLabel} button (header, hero, quote cards…). */
+  quoteLabel: text.refine(
+    (value) => !value.includes("{"),
+    "Type the button text itself, without {placeholders}"
+  ),
+  /**
+   * Where every {quoteHref} button goes. A real address: it is itself the
+   * value of {quoteHref}, so it can never be a placeholder.
+   */
+  quoteHref: href.refine(
+    (value) => !value.includes("{"),
+    "Use a real address such as /contact#quote"
+  ),
 })
 export type ContactSettings = z.infer<typeof contactSettings>

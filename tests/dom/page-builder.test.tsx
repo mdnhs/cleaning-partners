@@ -171,16 +171,26 @@ function renderWith(children: ReactNode, roles: Role[] = ["editor"]) {
 const keysCalled = () => calls.map((c) => c.key)
 
 describe("PageBuilder", () => {
-  it("header: breadcrumb Pages › title, address, status, actions; outline and block settings", async () => {
+  it("a legal page's breadcrumb returns to Legal pages", async () => {
+    routes[`GET /api/v1/admin/builder-pages/${ID}`] = () =>
+      json(200, page({ legalOrder: 0, path: "/legal/spring-campaign" }))
+    renderWith(<PageBuilder id={ID} />)
+    await screen.findByRole("heading", { level: 1, name: "Spring campaign" })
+    const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" })
+    expect(
+      within(crumbs).getByRole("link", { name: "Legal pages" })
+    ).toHaveAttribute("href", "/admin/website/legal")
+  })
+
+  it("header: breadcrumb Custom pages › title, address, status, actions; outline and block settings", async () => {
     renderWith(<PageBuilder id={ID} />)
     expect(
       await screen.findByRole("heading", { level: 1, name: "Spring campaign" })
     ).toBeInTheDocument()
     const crumbs = screen.getByRole("navigation", { name: "Breadcrumb" })
-    expect(within(crumbs).getByRole("link", { name: "Pages" })).toHaveAttribute(
-      "href",
-      "/admin/pages"
-    )
+    expect(
+      within(crumbs).getByRole("link", { name: "Custom pages" })
+    ).toHaveAttribute("href", "/admin/website/custom-pages")
     expect(screen.getByText("/p/spring-campaign")).toBeInTheDocument()
     expect(screen.getByText("Draft")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "History" })).toBeInTheDocument()

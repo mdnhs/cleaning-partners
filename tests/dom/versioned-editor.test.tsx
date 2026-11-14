@@ -215,7 +215,7 @@ describe("page editor (master 4.4)", () => {
     await user.click(
       within(screen.getByRole("navigation", { name: "Admin" })).getByRole(
         "link",
-        { name: "Services" }
+        { name: "Media" }
       )
     )
     // The shell's styled dialog, not the native confirm().
@@ -601,11 +601,8 @@ describe("page editor section tabs", () => {
     renderEditor()
     const heading = await headingInput()
     const tablist = screen.getByRole("tablist", { name: "Sections" })
-    // A page has a parent list: the header links back to it.
-    expect(screen.getByRole("link", { name: "All pages" })).toHaveAttribute(
-      "href",
-      "/admin/pages"
-    )
+    // No back link: the Website rail and tabs give the context.
+    expect(screen.queryByRole("link", { name: "All pages" })).toBeNull()
     // The sticky tab rail stops below the editor's sticky bar.
     expect(
       tablist

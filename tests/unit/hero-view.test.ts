@@ -35,3 +35,25 @@ describe("home hero view: the background video", () => {
     )
   })
 })
+
+describe("home hero view: the membership badge", () => {
+  it("takes the logo and its description from Settings › Site › Membership", () => {
+    const s = fixtureSiteSources()
+    const membership = {
+      logo: {
+        ...s.settings.site.logoLarge,
+        url: "/api/v1/media/file/badge.png",
+      },
+      logoAlt: "Badge description",
+      name: "Badge Association",
+    }
+    const sources = {
+      ...s,
+      settings: { ...s.settings, site: { ...s.settings.site, membership } },
+    }
+    const { member } = homeView(sources).hero
+    expect(member.logo).toBe(membership.logo.url)
+    expect(member.logoAlt).toBe(membership.logoAlt)
+    expect(member.label).toBe(s.pages.home.data.hero.memberLabel)
+  })
+})

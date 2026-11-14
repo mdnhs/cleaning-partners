@@ -6,7 +6,7 @@ import type { LocationMapProps } from "@/components/home/location-map"
 import type { ServicesProps } from "@/components/home/services"
 import type { TeamProps } from "@/components/home/team"
 import type { TestimonialsProps } from "@/components/home/testimonials"
-import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
+import type { IconCardsSectionProps } from "@/components/home/icon-cards-section"
 import type { SiteSources } from "@/templates/shared/sources"
 import {
   clientsView,
@@ -24,7 +24,7 @@ export type HomeView = {
   hero: HeroProps
   clients: ClientsProps
   services: ServicesProps
-  whyChooseUs: WhyChooseUsProps
+  whyChooseUs: IconCardsSectionProps
   testimonials: TestimonialsProps
   team: TeamProps
   blog: BlogProps

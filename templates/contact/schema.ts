@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { mediaRef, pageHeroText, text } from "@/lib/schemas/common"
+import { mediaRef, pageHero, step, text } from "@/lib/schemas/common"
 
 const field = z.object({
   label: text,
@@ -11,7 +11,7 @@ const field = z.object({
 
 /** Page "contact" (/contact): hero, the info-cards title and the quote form. The info cards and map are settings. */
 export const contactTemplate = z.object({
-  hero: pageHeroText,
+  hero: pageHero,
   /** Title of the shared contact section on this page. */
   contactTitle: text,
   quoteForm: z.object({
@@ -19,7 +19,7 @@ export const contactTemplate = z.object({
     title: text,
     intro: text,
     stepsHeading: text,
-    steps: z.array(z.object({ title: text, description: text })).min(1),
+    steps: z.array(step).min(1),
     urgentTitle: text,
     formTitle: text,
     fields: z.object({

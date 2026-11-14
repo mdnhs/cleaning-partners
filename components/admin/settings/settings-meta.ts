@@ -44,7 +44,13 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       timezone: { label: "Time zone", help: "IANA name, e.g. Europe/Dublin." },
       locale: {
         label: "Language",
-        help: "Language tag of the public site, e.g. en.",
+        help: "Language tag of the public site and its dates, e.g. en (12 Sep 2026). en-GB prints Sept. Dates always show day, month, year in that order.",
+      },
+      "membership.logo": { label: "Logo", aspect: "square" },
+      "membership.logoAlt": { label: "Logo description (alt text)" },
+      "membership.name": {
+        label: "Name",
+        help: "Shown under the logo in the contact section.",
       },
     },
     groups: {
@@ -78,6 +84,12 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
           description: "Used for dates, times and the page language.",
           fields: ["timezone", "locale"],
         },
+        {
+          title: "Membership",
+          description:
+            "The trade association badge in the home hero and the contact section.",
+          fields: ["membership"],
+        },
       ],
     },
   },
@@ -93,9 +105,21 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       officeExtension: { label: "Office extension" },
       mobile: { label: "Mobile number", icon: "phone" },
       email: { label: "Main email" },
+      recruitmentEmail: {
+        label: "Recruitment email",
+        help: "Shown on the careers pages.",
+      },
       hours: { label: "Office hours", icon: "clock", width: "full" },
       addressLine1: { label: "Address line 1", icon: "map" },
       addressLine2: { label: "Address line 2" },
+      quoteLabel: {
+        label: "Quote button text",
+        help: "Used by every button whose text is {quoteLabel}.",
+      },
+      quoteHref: {
+        label: "Quote page address",
+        help: "Where every {quoteHref} button goes, e.g. /contact#quote.",
+      },
     },
     groups: {
       "": [
@@ -114,7 +138,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Email",
           description: "Where people write to you.",
-          fields: ["email"],
+          fields: ["email", "recruitmentEmail"],
         },
         {
           title: "Address",
@@ -125,6 +149,12 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
           title: "Opening hours",
           description: "Shown next to the office number.",
           fields: ["hours"],
+        },
+        {
+          title: "Quote button",
+          description:
+            "The quote buttons across the site: header, home hero, service and article cards.",
+          fields: ["quoteLabel", "quoteHref"],
         },
       ],
     },
@@ -184,10 +214,6 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       },
       quickLinksTitle: { label: "Quick links heading" },
       contactTitle: { label: "Contact heading" },
-      addressLine2: {
-        label: "Address line 2 (footer wording)",
-        help: "The footer's own wording of the second address line.",
-      },
       contactOfficeLine: {
         label: "Office line",
         help: "{office} and {officeExtension} are filled from Contact details.",
@@ -195,6 +221,10 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       },
       groupTitle: { label: "Group heading" },
       copyright: { label: "Copyright line", width: "full" },
+      loginLink: {
+        label: "Staff sign-in link",
+        help: "Shown after the legal links. Remove it to hide the link.",
+      },
     },
     groups: {
       "": [
@@ -205,14 +235,14 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         },
         {
           title: "Contact column",
-          description: "How the address and office number read in the footer.",
-          fields: ["addressLine2", "contactOfficeLine"],
+          description: "The address and email come from Contact details.",
+          fields: ["contactOfficeLine"],
         },
         {
           title: "Legal",
           description:
             "The copyright line. Legal links come from Legal pages in the menu.",
-          fields: ["copyright"],
+          fields: ["copyright", "loginLink"],
         },
       ],
     },
@@ -238,11 +268,21 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         rows: 3,
         width: "full",
       },
-      "quoteCard.telLabel": {
+      "quoteCard.phoneLabel": {
         label: "Phone line",
         help: "{office} and {officeExtension} are filled from Contact details.",
       },
       "quoteCard.cta": { label: "Button" },
+      notFound: { label: "Page not found" },
+      "notFound.crumb": { label: "Breadcrumb" },
+      "notFound.title": { label: "Heading" },
+      "notFound.description": {
+        label: "Text",
+        widget: "textarea",
+        rows: 2,
+        width: "full",
+      },
+      "notFound.homeLabel": { label: "Home button" },
     },
     groups: {
       "": [
@@ -263,8 +303,15 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         },
         {
           title: "Quote card",
-          description: "The card that invites visitors to ask for a quote.",
+          description:
+            "The shared quote card: service and article sidebars, the contact section and the services help card.",
           fields: ["quoteCard"],
+        },
+        {
+          title: "Page not found",
+          description:
+            "Shown when an address does not exist or a post, job or service was removed.",
+          fields: ["notFound"],
         },
       ],
     },
@@ -295,9 +342,9 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         rows: 3,
         width: "full",
       },
-      features: { label: "Features", itemName: "Feature", itemLabel: "title" },
-      "features[].icon": { label: "Icon", aspect: "square" },
-      "features[].description": {
+      cards: { label: "Cards", itemName: "Card", itemLabel: "title" },
+      "cards[].icon": { label: "Icon", aspect: "square" },
+      "cards[].description": {
         label: "Description",
         widget: "textarea",
         rows: 2,
@@ -316,9 +363,9 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
           fields: ["background"],
         },
         {
-          title: "Features",
+          title: "Cards",
           description: "The reasons, each with an icon.",
-          fields: ["features"],
+          fields: ["cards"],
         },
       ],
     },
@@ -347,7 +394,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Heading",
           description:
-            "Above the testimonials (the quotes are under Collections).",
+            "Above the testimonials (the quotes are under Testimonials).",
           fields: ["eyebrow", "title"],
         },
         {
@@ -407,15 +454,24 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         itemLabel: "title",
         help: PLACEHOLDER_HELP,
       },
+      "infoCards[].kind": {
+        label: "Card type",
+        widget: "select",
+        options: [
+          { value: "phone", label: "Phone" },
+          { value: "email", label: "Email" },
+          { value: "address", label: "Address" },
+          { value: "hours", label: "Opening hours" },
+          { value: "other", label: "Other" },
+        ],
+        help: "Decides the phone layout's button: Call, Email or Map.",
+      },
       "infoCards[].icon": { label: "Icon", aspect: "square" },
       "infoCards[].lines": {
         label: "Lines",
         itemName: "Line",
       },
-      memberLogo: { label: "Membership logo", aspect: "square" },
-      memberLogoAlt: { label: "Membership logo description (alt text)" },
       memberTitle: { label: "Membership title" },
-      memberSubtitle: { label: "Membership subtitle" },
       socials: {
         label: "Social links",
         itemName: "Link",
@@ -423,14 +479,21 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       },
       "socials[].icon": { label: "Icon", aspect: "square" },
       quoteBox: { label: "Quote box" },
-      "quoteBox.title": { label: "Title" },
+      "quoteBox.title": {
+        label: "Title",
+        help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+      },
       "quoteBox.body": {
         label: "Text",
         widget: "textarea",
         rows: 3,
         width: "full",
+        help: "Leave empty to use the shared quote card (Settings › Microcopy).",
       },
-      "quoteBox.cta": { label: "Button" },
+      "quoteBox.cta": {
+        label: "Button",
+        help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+      },
     },
     groups: {
       "": [
@@ -447,12 +510,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Membership",
           description: "The trade association badge.",
-          fields: [
-            "memberLogo",
-            "memberLogoAlt",
-            "memberTitle",
-            "memberSubtitle",
-          ],
+          fields: ["memberTitle"],
         },
         {
           title: "Social links",
@@ -506,6 +564,10 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
     fields: {
       eyebrow: { label: "Small heading" },
       title: { label: "Heading" },
+      intro: {
+        label: "Introduction",
+        help: "Optional. Shown under the heading.",
+      },
       steps: { label: "Steps", itemName: "Step", itemLabel: "title" },
       "steps[].description": {
         label: "Description",
@@ -518,7 +580,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Heading",
           description: "Shown on every service page.",
-          fields: ["eyebrow", "title"],
+          fields: ["eyebrow", "title", "intro"],
         },
         {
           title: "Steps",

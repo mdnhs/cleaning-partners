@@ -18,6 +18,9 @@ const job: PublicJob = {
 const org = {
   name: "Cleaning Partners Ltd.",
   url: "https://cleaningpartners.ie",
+  addressCountry: "IE",
+  currency: "EUR",
+  timeZone: "Europe/Dublin",
 }
 
 describe("jobPostingJsonLd", () => {
@@ -94,6 +97,55 @@ describe("jobPostingJsonLd", () => {
       org
     ) as unknown as Record<string, unknown>
     expect(summer.validThrough).toBe("2026-07-10T23:59:59+01:00")
+  })
+
+  it("takes the country and time zone from the organization settings", () => {
+    const closing = {
+      ...job,
+      content: { ...job.content, closingDate: "2026-07-15" },
+    }
+    const uk = jobPostingJsonLd(closing, "https://cleaningpartners.ie", {
+      ...org,
+      addressCountry: "GB",
+      currency: "GBP",
+      timeZone: "Europe/London",
+    }) as unknown as {
+      jobLocation: { address: { addressCountry: string } }
+      validThrough: string
+    }
+    expect(uk.jobLocation.address.addressCountry).toBe("GB")
+    expect(uk.validThrough).toBe("2026-07-15T23:59:59+01:00")
+    const ny = jobPostingJsonLd(closing, "https://cleaningpartners.ie", {
+      ...org,
+      timeZone: "America/New_York",
+    }) as unknown as Record<string, unknown>
+    expect(ny.validThrough).toBe("2026-07-15T23:59:59-04:00")
+  })
+
+  it("gives a salary only when the currency is the euro the pay is written in", () => {
+    const eur = jobPostingJsonLd(
+      job,
+      "https://cleaningpartners.ie",
+      org
+    ) as unknown as {
+      baseSalary?: { currency: string; value: { minValue: number } }
+    }
+    expect(eur.baseSalary?.currency).toBe("EUR")
+    expect(eur.baseSalary?.value.minValue).toBe(14.5)
+    const gbp = jobPostingJsonLd(job, "https://cleaningpartners.ie", {
+      ...org,
+      currency: "GBP",
+    }) as unknown as Record<string, unknown>
+    expect(gbp.baseSalary).toBeUndefined()
+  })
+
+  it("falls back to Irish time when the zone is not a real one", () => {
+    const ld = jobPostingJsonLd(
+      { ...job, content: { ...job.content, closingDate: "2026-07-15" } },
+      "https://cleaningpartners.ie",
+      { ...org, timeZone: "Mars/Olympus_Mons" }
+    ) as unknown as Record<string, unknown>
+    expect(ld.validThrough).toBe("2026-07-15T23:59:59+01:00")
   })
 })
 

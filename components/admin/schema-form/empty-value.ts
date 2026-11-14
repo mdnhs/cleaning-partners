@@ -1,7 +1,13 @@
 import type { z } from "zod"
 
 import { randomId } from "@/lib/ids"
-import { link, mediaRef, paragraphsText, richText } from "@/lib/schemas/common"
+import {
+  blankDefaults,
+  link,
+  mediaRef,
+  paragraphsText,
+  richText,
+} from "@/lib/schemas/common"
 import { snippetId } from "@/lib/schemas/settings/custom-code"
 
 import { arrayBounds, unwrapSchema } from "./resolve-widget"
@@ -9,12 +15,15 @@ import { arrayBounds, unwrapSchema } from "./resolve-widget"
 /**
  * A blank value for a schema (new list items, new records). Required
  * fields start empty and fail validation until filled in; media start as
- * null ("Choose an image").
+ * null ("Choose an image"). A field registered in `blankDefaults` starts
+ * at its registered value instead.
  */
 export function emptyValue(schema: z.ZodType): unknown {
   const { inner, optional, nullable } = unwrapSchema(schema)
   if (optional) return undefined
   if (nullable) return null
+  const blank = blankDefaults.get(inner)
+  if (blank) return blank.value
   if (inner === mediaRef) return null
   if (inner === richText || inner === paragraphsText)
     return { type: "doc", content: [{ type: "paragraph" }] }

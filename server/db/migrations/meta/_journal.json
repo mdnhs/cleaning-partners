@@ -218,6 +218,111 @@
       "when": 1793817014188,
       "tag": "0030_job_applications",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793820000000,
+      "tag": "0031_careers_contact_placeholders",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793830000000,
+      "tag": "0032_services_office_hours_placeholder",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793840000000,
+      "tag": "0033_footer_login_link",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793850000000,
+      "tag": "0034_microcopy_not_found",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793860000000,
+      "tag": "0035_contact_info_card_kinds",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793870000000,
+      "tag": "0036_careers_invalid_answer_copy",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793880000000,
+      "tag": "0037_seo_organization_currency",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793890000000,
+      "tag": "0038_page_hero_image",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793900000000,
+      "tag": "0039_site_membership",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793910000000,
+      "tag": "0040_footer_address_from_contact",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793920000000,
+      "tag": "0041_steps_section_intro",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1793930000000,
+      "tag": "0042_icon_cards_section",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1793940000000,
+      "tag": "0043_quote_cta_placeholders",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1793950000000,
+      "tag": "0044_shared_quote_card",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1793960000000,
+      "tag": "0045_home_featured_services",
+      "breakpoints": true
     }
   ]
 }

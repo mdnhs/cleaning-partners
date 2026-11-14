@@ -1,6 +1,13 @@
 import { z } from "zod"
 
-import { iconCard, link, pageHeroText, text } from "@/lib/schemas/common"
+import {
+  iconCardsSection,
+  link,
+  pageHero,
+  step,
+  stepsSection,
+  text,
+} from "@/lib/schemas/common"
 
 /** Optional copy (help texts, placeholders): may be left empty. */
 const hint = z.string().max(500)
@@ -8,7 +15,6 @@ const hint = z.string().max(500)
 const field = z.object({ label: text, placeholder: hint, help: hint })
 /** An editable list of choices (select options, checkboxes). */
 const choices = z.array(text).min(1).max(20)
-const step = z.object({ title: text, description: text })
 
 /**
  * Page "careers" (/careers, every /careers/<slug> and its application form):
@@ -17,13 +23,8 @@ const step = z.object({ title: text, description: text })
  * {location} and {reference} are filled in at render.
  */
 export const careersTemplate = z.object({
-  hero: pageHeroText,
-  why: z.object({
-    eyebrow: text,
-    title: text,
-    description: text,
-    cards: z.array(iconCard).min(1).max(8),
-  }),
+  hero: pageHero,
+  why: iconCardsSection,
   open: z.object({
     eyebrow: text,
     title: text,
@@ -50,12 +51,7 @@ export const careersTemplate = z.object({
     closedOn: text,
     filled: text,
   }),
-  process: z.object({
-    eyebrow: text,
-    title: text,
-    intro: text,
-    steps: z.array(step).min(2).max(6),
-  }),
+  process: stepsSection,
   talentPool: z.object({
     eyebrow: text,
     title: text,
@@ -174,6 +170,7 @@ export const careersTemplate = z.object({
     errors: z.object({
       required: text,
       invalidEmail: text,
+      invalid: text,
       cvType: text,
       cvSize: text,
       closed: text,

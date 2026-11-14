@@ -1,6 +1,13 @@
 import { z } from "zod"
 
-import { href, link, mediaRef, pageHero, text } from "@/lib/schemas/common"
+import {
+  href,
+  link,
+  mediaRef,
+  pageHero,
+  quoteCardOverrides,
+  text,
+} from "@/lib/schemas/common"
 
 /** Page "services" (/services) and the copy around a service detail page. Cards come from the services collection. */
 export const servicesTemplate = z.object({
@@ -14,14 +21,8 @@ export const servicesTemplate = z.object({
     learnMoreAria: text,
     learnMore: text,
     quoteCta: link,
-    helpCard: z.object({
-      icon: mediaRef,
-      title: text,
-      body: text,
-      cta: link,
-      /** {office} and {officeExtension} come from Settings › Contact. */
-      callLabel: text,
-    }),
+    /** Overrides of the shared quote card (Settings › Microcopy); null = shared. */
+    helpCard: quoteCardOverrides.extend({ icon: mediaRef }),
   }),
   detail: z.object({
     breadcrumbHref: href,

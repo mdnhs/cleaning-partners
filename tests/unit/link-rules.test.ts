@@ -6,6 +6,7 @@ import {
   CONTACT_PLACEHOLDERS,
   CONTACT_TEMPLATE_FIELDS,
   linkPlaceholderProblems,
+  unknownPlaceholder,
 } from "@/lib/link-rules"
 import { link } from "@/lib/schemas/common"
 import { settingsSchemas, type SettingsKey } from "@/lib/schemas/settings"
@@ -32,6 +33,55 @@ describe("link placeholder rules (server and editor)", () => {
     expect([...CONTACT_PLACEHOLDERS].sort()).toEqual(
       Object.keys(contactPlaceholders(contact)).sort()
     )
+  })
+
+  it("fills {recruitmentEmail} from settings.contact", () => {
+    expect(unknownPlaceholder("mailto:{recruitmentEmail}")).toBeUndefined()
+    expect(unknownPlaceholder("{recruitmentEmail}")).toBeUndefined()
+  })
+
+  it("fills {quoteLabel} and {quoteHref} (a whole-value URL placeholder)", () => {
+    expect(CONTACT_FIELDS).toEqual(
+      expect.arrayContaining(["quoteLabel", "quoteHref"])
+    )
+    expect(
+      linkPlaceholderProblems({ label: "{quoteLabel}", href: "{quoteHref}" })
+    ).toEqual({})
+    expect(issues({ label: "Get a Quote", href: "{quoteHref}" })).toEqual([])
+    // {quoteLabel} is text, not an address.
+    expect(issues({ label: "x", href: "{quoteLabel}" })).toEqual([
+      { path: "href", message: expect.stringContaining("{quoteHref}") },
+    ])
+  })
+
+  it("rejects a placeholder or an unsafe URL as the quote address itself", () => {
+    const contact = settingsFixture(fixtureMediaLookup).contact
+    expect(contactSettings.safeParse(contact).success).toBe(true)
+    for (const quoteHref of [
+      "{quoteHref}",
+      "{officeHref}",
+      "/contact{x}",
+      "javascript:alert(1)",
+      "//evil.example",
+      "",
+    ])
+      expect(
+        contactSettings.safeParse({ ...contact, quoteHref }).success,
+        quoteHref
+      ).toBe(false)
+  })
+
+  it("rejects a placeholder as the quote button text itself", () => {
+    const contact = settingsFixture(fixtureMediaLookup).contact
+    expect(
+      contactSettings.safeParse({ ...contact, quoteLabel: "Get a Quote" })
+        .success
+    ).toBe(true)
+    for (const quoteLabel of ["{office}", "{quoteLabel}", "Call {x}", ""]) {
+      const result = contactSettings.safeParse({ ...contact, quoteLabel })
+      expect(result.success, quoteLabel).toBe(false)
+      expect(result.error?.issues[0].path).toEqual(["quoteLabel"])
+    }
   })
 
   it("accepts the shipped link shapes", () => {

@@ -13,8 +13,8 @@ import { PageHero } from "@/components/home/page-hero"
 import { Services } from "@/components/home/services"
 import { Team } from "@/components/home/team"
 import { Testimonials } from "@/components/home/testimonials"
-import { WhyChooseUs } from "@/components/home/why-choose-us"
-import { HowItWorks } from "@/components/services/how-it-works"
+import { IconCardsSection } from "@/components/home/icon-cards-section"
+import { StepsSection } from "@/components/home/steps-section"
 import { ServicesGrid } from "@/components/services/services-grid"
 import { BLOCK_TYPES } from "@/blocks/registry"
 import { fixtureSiteSources } from "@/server/db/seed/fixtures/sources"
@@ -104,7 +104,7 @@ describe("blockView props equal the fixed pages' props (R10-3 layer 1)", () => {
       "whyChooseUs",
       mk("whyChooseUs", shared),
       whyChooseUsView(s),
-      () => renderToStaticMarkup(<WhyChooseUs {...whyChooseUsView(s)} />),
+      () => renderToStaticMarkup(<IconCardsSection {...whyChooseUsView(s)} />),
     ],
     [
       "clients",
@@ -135,7 +135,7 @@ describe("blockView props equal the fixed pages' props (R10-3 layer 1)", () => {
       "howItWorks",
       mk("howItWorks", shared),
       howItWorksView(s),
-      () => renderToStaticMarkup(<HowItWorks {...howItWorksView(s)} />),
+      () => renderToStaticMarkup(<StepsSection {...howItWorksView(s)} />),
     ],
     [
       "contact",

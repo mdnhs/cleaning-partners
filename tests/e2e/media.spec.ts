@@ -57,7 +57,7 @@ async function signIn(page: Page, who: { email: string; name: string }) {
 }
 
 async function openHomeHero(page: Page) {
-  await page.goto("/admin/pages/home")
+  await page.goto("/admin/website/home")
   await expect(
     page.getByRole("heading", { level: 1, name: "Home" })
   ).toBeVisible()

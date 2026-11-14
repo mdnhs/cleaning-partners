@@ -118,9 +118,9 @@ test.describe("builder pages on the public site", () => {
         const response = await page.goto(path, { waitUntil: "load" })
         expect(response?.status(), path).toBe(404)
         await expect(
-          page.getByText("This page could not be found.")
+          page.getByRole("heading", { level: 1, name: "Page not found" })
         ).toBeVisible()
-        await expect(page.locator("[data-header]")).toHaveCount(0)
+        await expect(page.getByRole("banner")).toBeVisible()
       }
     } finally {
       await ed.context.close()
@@ -143,8 +143,9 @@ test.describe("builder pages on the public site", () => {
       const gone = await page.goto(`/p/${GONE}`, { waitUntil: "load" })
       expect(gone?.status()).toBe(404)
       await expect(
-        page.getByText("This page could not be found.")
+        page.getByRole("heading", { level: 1, name: "Page not found" })
       ).toBeVisible()
+      await expect(page.getByRole("banner")).toBeVisible()
     } finally {
       await ed.context.close()
     }

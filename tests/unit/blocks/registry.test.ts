@@ -15,6 +15,7 @@ import {
   RICH_TEXT_MAX_NODES,
 } from "@/blocks/registry"
 import { ArticleBlocks } from "@/lib/rich-text/render"
+import { pageHero } from "@/lib/schemas/common"
 
 const TYPES: BlockType[] = [
   "hero",
@@ -123,6 +124,7 @@ describe("block registry (R10-2)", () => {
     expect(heroPage({})).toBe(true)
     expect(heroPage({ image: null })).toBe(true)
     expect(heroPage({ title: "" })).toBe(false)
+    expect(BLOCK_BY_TYPE["hero.page"].schema).toBe(pageHero)
   })
 
   it("shared-only blocks take only useShared: true", () => {
@@ -162,7 +164,7 @@ describe("block registry (R10-2)", () => {
       eyebrow: "Services",
       title: "What we do",
       description: "Intro",
-      items: [{ title: "Office", description: "Cleaning" }],
+      items: [{ service: "office-cleaning", description: "Cleaning" }],
       itemIcon: { mediaId: MEDIA },
       moreText: "More",
       cta: link,
@@ -180,7 +182,7 @@ describe("block registry (R10-2)", () => {
         title: "Help",
         body: "Body",
         cta: link,
-        callLabel: "Call",
+        phoneLabel: "Call",
       },
     }
     const schema = BLOCK_BY_TYPE.services.schema

@@ -2,8 +2,8 @@ import type { ClientsProps } from "@/components/home/clients"
 import type { ContactProps } from "@/components/home/contact"
 import type { PageHeroProps } from "@/components/home/page-hero"
 import type { TestimonialsProps } from "@/components/home/testimonials"
-import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
-import type { HowItWorksProps } from "@/components/services/how-it-works"
+import type { IconCardsSectionProps } from "@/components/home/icon-cards-section"
+import type { StepsSectionProps } from "@/components/home/steps-section"
 import type { ServiceOverviewProps } from "@/components/services/service-overview"
 import type { ServicesGridProps } from "@/components/services/services-grid"
 import { interpolate } from "@/lib/interpolate"
@@ -27,7 +27,7 @@ export { servicePath }
 export type ServicesView = {
   hero: PageHeroProps
   grid: ServicesGridProps
-  whyChooseUs: WhyChooseUsProps
+  whyChooseUs: IconCardsSectionProps
   clients: ClientsProps
   testimonials: TestimonialsProps
   contact: ContactProps
@@ -49,8 +49,8 @@ export function servicesView(s: SiteSources): ServicesView {
 export type ServiceDetailView = {
   hero: PageHeroProps
   overview: ServiceOverviewProps
-  howItWorks: HowItWorksProps
-  whyChooseUs: WhyChooseUsProps
+  howItWorks: StepsSectionProps
+  whyChooseUs: IconCardsSectionProps
   testimonials: TestimonialsProps
   contact: ContactProps
 }
@@ -107,7 +107,7 @@ export function serviceDetailView(
       quoteCard: quoteCardView(s),
       officeHours: {
         title: detail.officeHours.title,
-        hours: detail.officeHours.hours,
+        hours: interpolate(detail.officeHours.hours, values),
         phone: interpolate(contact.phone24Label, values),
         phoneHref: String(values.phone24hHref),
       },

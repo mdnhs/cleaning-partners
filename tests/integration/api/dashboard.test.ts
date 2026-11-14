@@ -287,13 +287,13 @@ describe("dashboard (Phase 4)", () => {
       expect.objectContaining({
         rule: "placeholder-contact",
         label: "Contact details",
-        href: "/admin/settings/contact",
+        href: "/admin/website/contact/contact-details",
       })
     )
     const marketer = await dashboard((await signedInUser(["marketer"])).cookie)
     expect(marketer.qa).not.toBeNull()
     expect(marketer.qa!.map((f) => f.href)).not.toContain(
-      "/admin/settings/contact"
+      "/admin/website/contact/contact-details"
     )
   })
 

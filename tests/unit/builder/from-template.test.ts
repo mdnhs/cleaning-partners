@@ -88,6 +88,18 @@ describe("blocksFromTemplate (R10-11)", () => {
     expect(copy("home")[7].data).toEqual({ useShared: true, title: null })
   })
 
+  it("keeps an about, contact or careers banner on a copy", () => {
+    const image = { mediaId: "0b1c2d3e-4f50-4a61-8b72-9c83d4e5f607" }
+    for (const key of ["about", "contact", "careers"] as const) {
+      const data = stored[key].data
+      const [hero] = blocksFromTemplate(key, {
+        ...data,
+        hero: { ...data.hero, image },
+      } as never)
+      expect(hero.data, key).toEqual({ ...data.hero, image })
+    }
+  })
+
   it("keeps the services page image on a services copy", () => {
     expect(copy("services")[0].data).toEqual(stored.services.data.hero)
   })

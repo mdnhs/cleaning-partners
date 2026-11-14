@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { connection } from "next/server"
 
 import { SiteThemed } from "@/components/site-themed"
+import { siteTimeZone } from "@/lib/format"
 import { SLUG_PATTERN } from "@/lib/schemas/common"
 import { jobPostingJsonLd } from "@/lib/seo/job-posting"
 import { publicOrigin } from "@/server/lib/site-origin"
@@ -53,11 +54,15 @@ async function Content({
   if (!job) notFound()
   const now = new Date()
   const view = jobDetailView(sources, job, all, now)
+  const { organization } = sources.settings["seo.defaults"]
   const origin = publicOrigin(sources.settings.site.productionUrl)
   const jsonLd = view.open
     ? jobPostingJsonLd(job, origin, {
         name: sources.settings.site.name,
         url: origin,
+        addressCountry: organization.addressCountry,
+        currency: organization.currency,
+        timeZone: siteTimeZone(sources.settings.site.timezone),
       })
     : null
   return <JobDetailTemplate view={view} jsonLd={jsonLd} />

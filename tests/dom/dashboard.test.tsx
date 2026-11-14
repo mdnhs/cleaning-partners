@@ -43,13 +43,13 @@ const dto: DashboardDto = {
     {
       rule: "placeholder-contact",
       label: "Contact details",
-      href: "/admin/settings/contact",
+      href: "/admin/website/contact/contact-details",
       message: 'Placeholder contact details: "[phone]".',
     },
     {
       rule: "legal-unpublished",
       label: "Terms of use",
-      href: "/admin/pages/terms",
+      href: "/admin/website/legal",
       message: "Not published yet: the site links to it from every footer.",
     },
   ],
@@ -174,7 +174,7 @@ describe("dashboard (JW layout)", () => {
     expect(cards[2]).toHaveTextContent("8 pages · 6 services · 8 articles")
     expect(
       within(cards[2]).getByRole("link", { name: "Open Published content" })
-    ).toHaveAttribute("href", "/admin/pages")
+    ).toHaveAttribute("href", "/admin/website")
   })
 
   it("announces loading with the skeletons hidden from assistive tech", () => {
@@ -289,8 +289,8 @@ describe("dashboard (JW layout)", () => {
     const list = within(card).getByRole("list", { name: "Content QA findings" })
     const links = within(list).getAllByRole("link")
     expect(links.map((link) => link.getAttribute("href"))).toEqual([
-      "/admin/settings/contact",
-      "/admin/pages/terms",
+      "/admin/website/contact/contact-details",
+      "/admin/website/legal",
     ])
     expect(links[0]).toHaveTextContent("Contact details")
     expect(links[0]).toHaveTextContent('"[phone]"')
@@ -558,7 +558,7 @@ describe("dashboard (JW layout)", () => {
     ).toEqual([
       "/admin/leads",
       "/admin/leads",
-      "/admin/pages",
+      "/admin/website",
       "/admin/seo",
       "/admin/blog?status=in_review",
     ])

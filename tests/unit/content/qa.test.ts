@@ -46,11 +46,22 @@ describe("scanContent (content QA)", () => {
       expect.objectContaining({
         rule: "placeholder-contact",
         label: "Contact details",
-        href: "/admin/settings/contact",
+        href: "/admin/website/contact/contact-details",
       }),
     ])
     // [phone] is reported once, as a contact placeholder (not also as copy).
     expect(rules(findings)).not.toContain("placeholder-copy")
+  })
+
+  it("links a settings finding to where the key is edited", () => {
+    const findings = scanContent({
+      ...clean,
+      settings: { navigation: { cta: "Lorem ipsum" }, leads: { note: "TBC" } },
+    })
+    expect(findings.map((f) => f.href)).toEqual([
+      "/admin/website/header-footer/navigation",
+      "/admin/settings/leads",
+    ])
   })
 
   it("placeholder-contact: [email], example.com/.ie and runs of zeros in contact and footer", () => {
@@ -100,7 +111,7 @@ describe("scanContent (content QA)", () => {
     })
     expect(findings.map((f) => [f.rule, f.label, f.href])).toEqual([
       ["placeholder-copy", "Identity", "/admin/settings/site"],
-      ["placeholder-copy", "Home", "/admin/pages/home"],
+      ["placeholder-copy", "Home", "/admin/website/home"],
       ["placeholder-copy", "Office cleaning", "/admin/services/s1"],
       ["placeholder-copy", "Deep cleaning", "/admin/services/s2"],
     ])

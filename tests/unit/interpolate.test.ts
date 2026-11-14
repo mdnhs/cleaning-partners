@@ -22,9 +22,12 @@ const contact: ContactSettings = {
   officeExtension: "4",
   mobile: "085 806 2369",
   email: "info@cleaningpartners.ie",
+  recruitmentEmail: "jobs@cleaningpartners.ie",
   hours: "Mon–Fri: 9am – 6pm",
   addressLine1: "Derryguile, Mountmellick",
   addressLine2: "Co. Laois, Ireland. R32 YX49",
+  quoteLabel: "Get a Free Quote",
+  quoteHref: "/contact#quote",
 }
 
 describe("telHref", () => {
@@ -238,11 +241,19 @@ describe("seeded href templates all resolve", () => {
     pages: pagesFixture(fixtureMediaLookup),
   })
 
-  it("finds the templated hrefs (CP's contact links are derived, so only the share networks carry placeholders)", () => {
+  it("finds the templated hrefs (the quote buttons, the share networks and the careers phone/email links)", () => {
     expect(hrefs.map(([, href]) => href)).toEqual([
+      // Header, contact quote box, quote card; home hero, about story,
+      // services quote and help buttons.
+      ...Array(7).fill("{quoteHref}"),
       "https://www.facebook.com/sharer/sharer.php?u={url}",
       "https://www.linkedin.com/sharing/share-offsite/?url={url}",
       "https://x.com/intent/post?url={url}",
+      "{mobileHref}",
+      "{mobileHref}",
+      "mailto:{recruitmentEmail}",
+      "{mobileHref}",
+      "mailto:{recruitmentEmail}",
     ])
   })
 
@@ -259,7 +270,12 @@ describe("seeded href templates all resolve", () => {
       "Tel: 057 8697670 Ext 4"
     )
     expect(interpolate("{mobile}", values)).toBe("085 806 2369")
+    expect(interpolateHref("mailto:{recruitmentEmail}", values)).toBe(
+      "mailto:jobs@cleaningpartners.ie"
+    )
     expect(interpolate("{officeHref}", values)).toBe("tel:+353578697670")
     expect(interpolate("{mobileHref}", values)).toBe("tel:+353858062369")
+    expect(interpolate("{quoteLabel}", values)).toBe("Get a Free Quote")
+    expect(interpolateHref("{quoteHref}", values)).toBe("/contact#quote")
   })
 })

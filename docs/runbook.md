@@ -353,6 +353,11 @@ compose network, so the import is pulled by the container from R2.
   needs the old schema, restore the backup taken before the deploy ("Restore a
   backup"). The daily backup job runs 24 hours after its last success, not at
   every start, so take one by hand before a deploy that migrates.
+- Migrations `0031`–`0045` (dynamic content) rewrite stored content shapes
+  (e.g. `hero.memberLogo` and `features` move into Settings). Code older
+  than them reads the old shapes and answers 500, so rolling the app back
+  past them needs the database restored from the backup taken before that
+  deploy, not just the previous image.
 
 ## Running scripts in the container
 

@@ -21,6 +21,7 @@ import {
 } from "@/lib/schemas/api/applications"
 import { cn } from "@/lib/utils"
 
+import { serverFieldErrors } from "./application-errors"
 import { CvDropzone } from "./cv-dropzone"
 import type { ApplyView } from "./types"
 
@@ -72,19 +73,17 @@ const SHOWN_FIELDS = new Set<string>([
 ])
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-/** The 422 body's per-field messages (server/lib/errors). */
-async function readFieldErrors(res: Response): Promise<FieldErrors> {
+/** The fields a 422 body rejected (server/lib/errors); its text is not shown. */
+async function readFieldErrors(res: Response): Promise<string[]> {
   try {
     const body = (await res.json()) as {
       error?: { fieldErrors?: Record<string, unknown> }
     }
-    const out: FieldErrors = {}
-    for (const [key, value] of Object.entries(body.error?.fieldErrors ?? {}))
-      if (Array.isArray(value) && typeof value[0] === "string")
-        out[key] = value[0]
-    return out
+    return Object.entries(body.error?.fieldErrors ?? {})
+      .filter(([, value]) => Array.isArray(value) && value.length > 0)
+      .map(([key]) => key)
   } catch {
-    return {}
+    return []
   }
 }
 
@@ -279,10 +278,9 @@ export function ApplicationForm({ view }: { view: ApplyView }) {
       setState("idle")
       turnstile.reset()
       if (res.status === 422) {
-        const fieldErrors = await readFieldErrors(res)
-        setErrors(fieldErrors)
+        const keys = await readFieldErrors(res)
+        setErrors(serverFieldErrors(keys, form.errors, cv?.size ?? 0))
         // Turnstile, the job id or another key with no field here: say so.
-        const keys = Object.keys(fieldErrors)
         if (keys.length === 0 || keys.some((k) => !SHOWN_FIELDS.has(k)))
           setMessage(form.errors.generic)
         else

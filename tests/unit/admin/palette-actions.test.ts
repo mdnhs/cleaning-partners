@@ -92,7 +92,7 @@ describe("buildActions", () => {
     run("sign-out")
     expect(input.navigate.mock.calls).toEqual([
       ["/admin/blog/new"],
-      ["/admin/pages?new=1"],
+      ["/admin/website/custom-pages?new=1"],
       ["/admin/services/new"],
     ])
     expect(input.open).toHaveBeenCalledWith("/")

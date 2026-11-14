@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { href, link, mediaRef, text } from "../common"
+import { href, mediaRef, quoteCard, text } from "../common"
 
 /**
  * settings.microcopy — labels, icons and small cards shared by several
@@ -15,12 +15,14 @@ export const microcopySettings = z.object({
   searchLabel: text,
   searchPlaceholder: text,
   readArticle: text,
-  quoteCard: z.object({
+  /** The shared quote card; places may override it (quoteBox, helpCard). */
+  quoteCard,
+  /** The 404 page (unknown addresses and missing posts, jobs, services). */
+  notFound: z.object({
+    crumb: text,
     title: text,
-    body: text,
-    /** Template; {office} and {officeExtension} are filled in at render. */
-    telLabel: text,
-    cta: link,
+    description: text,
+    homeLabel: text,
   }),
 })
 export type MicrocopySettings = z.infer<typeof microcopySettings>

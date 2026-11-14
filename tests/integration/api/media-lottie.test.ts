@@ -228,6 +228,7 @@ describe("settings.site.logoAnimation", () => {
       productionUrl: null,
       timezone: "Europe/Dublin",
       locale: "en",
+      membership: { logo: { mediaId: png.id }, logoAlt: "a", name: "n" },
     })
     expect(parsed.logoAnimation).toBeNull()
   })

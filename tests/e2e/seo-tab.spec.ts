@@ -114,7 +114,7 @@ test("the SEO tab opens from ?tab=seo on a page and an article editor", async ({
 }) => {
   await signIn(page)
   const seoTab = page.getByRole("tab", { name: "SEO" })
-  await page.goto("/admin/pages/home?tab=seo")
+  await page.goto("/admin/website/home?tab=seo")
   await expect(seoTab).toHaveAttribute("aria-selected", "true")
   await expect(
     page.getByRole("figure", { name: "Social card preview" })

@@ -1,10 +1,10 @@
 import { Clients } from "@/components/home/clients"
 import { Contact } from "@/components/home/contact"
 import { PageHero } from "@/components/home/page-hero"
+import { StepsSection } from "@/components/home/steps-section"
 import { Testimonials } from "@/components/home/testimonials"
-import { WhyChooseUs } from "@/components/home/why-choose-us"
+import { IconCardsSection } from "@/components/home/icon-cards-section"
 import { HomeMotion } from "@/components/motion/home-motion"
-import { HowItWorks } from "@/components/services/how-it-works"
 import { ServiceOverview } from "@/components/services/service-overview"
 import { ServicesGrid } from "@/components/services/services-grid"
 
@@ -19,7 +19,7 @@ export function ServicesTemplate({ view }: { view: ServicesView }) {
           <main>
             <PageHero {...view.hero} />
             <ServicesGrid {...view.grid} />
-            <WhyChooseUs {...view.whyChooseUs} />
+            <IconCardsSection {...view.whyChooseUs} />
             <Clients {...view.clients} />
             <Testimonials {...view.testimonials} />
             <Contact {...view.contact} />
@@ -39,8 +39,8 @@ export function ServiceDetailTemplate({ view }: { view: ServiceDetailView }) {
           <main>
             <PageHero {...view.hero} />
             <ServiceOverview {...view.overview} />
-            <HowItWorks {...view.howItWorks} />
-            <WhyChooseUs {...view.whyChooseUs} />
+            <StepsSection {...view.howItWorks} />
+            <IconCardsSection {...view.whyChooseUs} />
             <Testimonials {...view.testimonials} />
             <Contact {...view.contact} />
           </main>

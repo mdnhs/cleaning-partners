@@ -106,11 +106,20 @@ describe("SectionRail", () => {
     ).toHaveAttribute("aria-current", "page")
   })
 
-  it("no rail for a role with a single child (marketer: Articles only)", () => {
-    renderAt("/admin/blog", ["marketer"])
+  it("no rail for a role with a single child (author: Website › Blog only)", () => {
+    renderAt("/admin/blog", ["author"])
     expect(screen.queryByRole("navigation")).toBeNull()
     expect(document.querySelector("[data-slot=section-content]")).toBeNull()
     expect(screen.getByText("Body")).toBeInTheDocument()
+  })
+
+  it("a marketer on the Blog gets the Website rail with Blog current", () => {
+    renderAt("/admin/blog", ["marketer"])
+    const rail = screen.getByRole("navigation", { name: "Website" })
+    expect(within(rail).getByRole("link", { name: "Blog" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    )
   })
 
   it("the same marketer gets the SEO rail (three children)", () => {
@@ -118,24 +127,33 @@ describe("SectionRail", () => {
     expect(links("SEO")).toEqual(["Overview", "Defaults", "Redirects"])
   })
 
-  it("no rail when only one child is visible (author: Articles only)", () => {
-    renderAt("/admin/blog", ["author"])
-    expect(screen.queryByRole("navigation", { name: "Blog" })).toBeNull()
+  it("no rail when only one child is visible (author: Blog only)", () => {
+    renderAt("/admin/blog/categories", ["author"])
+    expect(screen.queryByRole("navigation", { name: "Website" })).toBeNull()
     expect(screen.getByText("Body")).toBeInTheDocument()
   })
 
+  it("Job applications keeps the Enquiries rail (intake)", () => {
+    renderAt("/admin/careers/applications/0192", ["intake"])
+    const rail = screen.getByRole("navigation", { name: "Enquiries" })
+    expect(
+      within(rail).getByRole("link", { name: "Job applications" })
+    ).toHaveAttribute("aria-current", "page")
+  })
+
   it("no rail on a section without children", () => {
-    renderAt("/admin/pages", ["owner"])
+    renderAt("/admin/media", ["owner"])
     expect(screen.queryByRole("navigation")).toBeNull()
     expect(screen.getByText("Body")).toBeInTheDocument()
   })
 
-  it("an article (/admin/blog/<id>) keeps Articles current", () => {
+  it("an article (/admin/blog/<id>) keeps Website › Blog current", () => {
     renderAt("/admin/blog/0192abcd", ["editor"])
-    const rail = screen.getByRole("navigation", { name: "Blog" })
-    expect(
-      within(rail).getByRole("link", { name: "Articles" })
-    ).toHaveAttribute("aria-current", "page")
+    const rail = screen.getByRole("navigation", { name: "Website" })
+    expect(within(rail).getByRole("link", { name: "Blog" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    )
   })
 
   it("an integration page keeps Integrations current", () => {

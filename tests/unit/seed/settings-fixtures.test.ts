@@ -3,6 +3,7 @@ import { resolve } from "node:path"
 
 import { describe, expect, it } from "vitest"
 
+import { contactPlaceholders, interpolate } from "@/lib/interpolate"
 import { settingsSchemas, type SettingsKey } from "@/lib/schemas/settings"
 import {
   fixtureMediaId,
@@ -13,13 +14,18 @@ import {
 import { settingsFixture } from "@/server/db/seed/fixtures/settings"
 
 import {
+  CHANGED_SINCE_BASELINE,
+  currentTarget,
+  expectChangedSinceBaseline,
   DERIVED_SETTINGS_PATHS,
   inventory,
-  normalise,
 } from "../helpers/inventory"
 
 const fixture = settingsFixture(fixtureMediaLookup)
 const keys = Object.keys(settingsSchemas) as SettingsKey[]
+/** {placeholders} (phone24h …) as the site fills them in. */
+const fill = (text: string) =>
+  interpolate(text, contactPlaceholders(fixture.contact))
 
 /** Every { mediaId } in a value. */
 function mediaIds(value: unknown, out = new Set<string>()): Set<string> {
@@ -69,8 +75,11 @@ describe("settings fixtures are verbatim from the inventory (master 3.1)", () =>
   })
 
   const entries = inventory
-    .map((e) => ({ ...e, path: normalise(e.target) }))
-    .filter((e) => e.path.startsWith("settings."))
+    .map((e) => ({ ...e, path: currentTarget(e.target) }))
+    // Relocated fields are checked where they live now; removed ones (null) skipped.
+    .filter((e): e is typeof e & { path: string } =>
+      Boolean(e.path?.startsWith("settings."))
+    )
     .filter((e) => !e.derived && !DERIVED_SETTINGS_PATHS.has(e.path))
     .filter((e) => !/^[{]/.test(e.value))
 
@@ -83,7 +92,15 @@ describe("settings fixtures are verbatim from the inventory (master 3.1)", () =>
       .filter((k) => entry.path.startsWith(`settings.${k}.`))
       .sort((a, b) => b.length - a.length)[0]
     const path = entry.path.slice(`settings.${key}.`.length)
-    const found = valuesAt(fixture[key], path)
+    let found = valuesAt(fixture[key], path)
+    // Stored text keeps {placeholders}; the inventory has the filled value.
+    if (!entry.template)
+      found = found.map((v) => (typeof v === "string" ? fill(v) : v))
+    if (CHANGED_SINCE_BASELINE.has(entry.id)) {
+      // Changed on purpose after the baseline: still seeded, no longer verbatim.
+      expectChangedSinceBaseline(entry, found[0])
+      return
+    }
     if (entry.array) {
       // "5" = the number of items in the list.
       const list = found[0] as unknown[]
@@ -101,7 +118,7 @@ describe("settings fixtures are verbatim from the inventory (master 3.1)", () =>
   it("seeds the strings the brief singles out exactly", () => {
     expect(fixture.contact.hours).toBe("Mon–Fri: 9am – 6pm")
     expect(fixture.contact.addressLine2).toBe("Co. Laois, Ireland. R32 YX49")
-    expect(fixture.footer.addressLine2).toBe("Co. Laois, R32 YX49")
+    expect(fixture.footer).not.toHaveProperty("addressLine2")
     expect(fixture.footer.contactOfficeLine).toBe(
       "Tel: {office} Ext {officeExtension}"
     )

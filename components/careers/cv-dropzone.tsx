@@ -6,7 +6,7 @@ import { useId, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 
 const CV_EXTENSIONS = /\.(pdf|docx?)$/i
-const CV_MAX_BYTES = 5 * 1024 * 1024
+export const CV_MAX_BYTES = 5 * 1024 * 1024
 
 /**
  * The optional CV: drop a file or browse. PDF, DOC or DOCX up to 5 MB is

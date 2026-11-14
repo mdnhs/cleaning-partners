@@ -1,7 +1,9 @@
 // Props of the careers components, built by templates/careers/view.ts.
 // Every string is the careers page copy or a job's own content.
 
+import type { IconCardsSectionProps } from "@/components/home/icon-cards-section"
 import type { PageHeroProps } from "@/components/home/page-hero"
+import type { StepsSectionProps } from "@/components/home/steps-section"
 
 export type Link = { label: string; href: string }
 
@@ -28,13 +30,6 @@ export type ClosedJobView = {
   pay: string
   /** "Closed on 12 Sep 2026" */
   closed: string
-}
-
-export type WhyJoinProps = {
-  eyebrow: string
-  title: string
-  description: string
-  cards: { title: string; description: string; icon: string }[]
 }
 
 export type OpenPositionsProps = {
@@ -68,13 +63,6 @@ export type PreviousOpeningsProps = {
   jobs: ClosedJobView[]
 }
 
-export type HiringProcessProps = {
-  eyebrow: string
-  title: string
-  intro: string
-  steps: { number: string; title: string; description: string }[]
-}
-
 export type TalentPoolProps = {
   eyebrow: string
   title: string
@@ -85,10 +73,10 @@ export type TalentPoolProps = {
 
 export type CareersView = {
   hero: PageHeroProps
-  why: WhyJoinProps
+  why: IconCardsSectionProps
   open: OpenPositionsProps
   previous: PreviousOpeningsProps
-  process: HiringProcessProps
+  process: StepsSectionProps
   talentPool: TalentPoolProps
 }
 
@@ -239,6 +227,8 @@ export type ApplyView = {
     errors: {
       required: string
       invalidEmail: string
+      /** An answer the server refused, e.g. a choice no longer offered */
+      invalid: string
       cvType: string
       cvSize: string
       closed: string

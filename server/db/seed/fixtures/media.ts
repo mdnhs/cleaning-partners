@@ -21,7 +21,6 @@ export const MEDIA = [
   { key: "/images/home/meet-the-team.png", alt: "" },
   { key: "/images/home/team-temp.png", alt: "" },
   { key: "/images/home/icca.png", alt: "Irish Contract Cleaning Association" },
-  { key: "/images/home/icca-member.png", alt: "ICCA" },
   { key: "/images/home/client-hse.png", alt: "HSE" },
   {
     key: "/images/home/client-department-of-education.png",

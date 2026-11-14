@@ -3,14 +3,14 @@ import { z } from "zod"
 import {
   link,
   mediaRef,
-  pageHeroText,
+  pageHero,
   paragraphsText,
   text,
 } from "@/lib/schemas/common"
 
 /** Page "about" (/about): hero, Our Story and the stats band. Clients, why-choose-us, team etc. are settings. */
 export const aboutTemplate = z.object({
-  hero: pageHeroText,
+  hero: pageHero,
   story: z.object({
     imageA: mediaRef,
     imageAAlt: text,

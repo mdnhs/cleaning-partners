@@ -48,8 +48,6 @@ export function PageEditor({
   return (
     <VersionedEditor
       title={PAGE_LABELS[pageKey]}
-      backHref="/admin/pages"
-      backLabel="All pages"
       path={PAGE_PATHS[pageKey]}
       queryKey={["pages", pageKey]}
       load={() => unwrap(api.pages[":key"].$get({ param }))}

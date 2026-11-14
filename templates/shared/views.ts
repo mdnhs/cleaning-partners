@@ -1,5 +1,8 @@
 import { navigationMobileDefaults } from "@/lib/schemas/settings/navigation"
-import { contactMobileDefaults } from "@/lib/schemas/settings/sections-contact"
+import {
+  type ContactCardKind,
+  contactMobileDefaults,
+} from "@/lib/schemas/settings/sections-contact"
 import type { StatsProps } from "@/components/about/stats"
 import type { OurStoryProps } from "@/components/about/our-story"
 import type { ArticleBodyProps } from "@/components/blog/article"
@@ -17,19 +20,33 @@ import type { SiteFooterProps } from "@/components/home/site-footer"
 import type { SiteHeaderProps } from "@/components/home/site-header"
 import type { TeamProps } from "@/components/home/team"
 import type { TestimonialsProps } from "@/components/home/testimonials"
-import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
-import type { HowItWorksProps } from "@/components/services/how-it-works"
+import type { StepsSectionProps } from "@/components/home/steps-section"
+import type { IconCardsSectionProps } from "@/components/home/icon-cards-section"
 import type { ServicesGridProps } from "@/components/services/services-grid"
-import { formatPostDate, isoDate, siteTimeZone } from "@/lib/format"
+import { formatPostDate, isoDate, siteLocale, siteTimeZone } from "@/lib/format"
 import {
   contactPlaceholders,
   interpolate,
   interpolateHref,
 } from "@/lib/interpolate"
-import type { WithMedia } from "@/lib/media"
-import type { Link, PageHero, PageHeroText } from "@/lib/schemas/common"
+import type { MediaView, WithMedia } from "@/lib/media"
+import type {
+  IconCardsSectionData,
+  Link,
+  PageHero,
+  QuoteCardOverrides,
+  StepsSectionData,
+} from "@/lib/schemas/common"
 
-import type { ChromeSources, SiteArticle, SiteSources } from "./sources"
+import type {
+  ChromeSources,
+  NotFoundSources,
+  SiteArticle,
+  SiteSources,
+} from "./sources"
+
+/** Anything that carries settings.contact (the {placeholders} source). */
+type WithContact = { settings: Pick<SiteSources["settings"], "contact"> }
 
 type Pages = SiteSources["pages"]
 
@@ -39,14 +56,14 @@ type Pages = SiteSources["pages"]
 // pages render the same whatever dimensions the media rows carry.
 
 /** Settings.contact fields + derived tel: hrefs for {placeholders}. */
-export const placeholders = (s: Pick<ChromeSources, "settings">) =>
+export const placeholders = (s: WithContact) =>
   contactPlaceholders(s.settings.contact)
 
 /**
  * An admin-editable href: {placeholders} filled, then re-checked; an unsafe
  * or unresolved result renders "#".
  */
-export const hrefView = (s: Pick<ChromeSources, "settings">, href: string) =>
+export const hrefView = (s: WithContact, href: string) =>
   interpolateHref(href, placeholders(s))
 
 /** A stored { label, href } link with its label and href filled in. */
@@ -59,7 +76,7 @@ export const linkView = (
 })
 
 /** A stored text with {placeholders} filled in. */
-export const textView = (s: SiteSources, text: string) =>
+export const textView = (s: WithContact, text: string) =>
   interpolate(text, placeholders(s))
 
 export type ChromeView = {
@@ -92,9 +109,7 @@ export function chromeView(s: ChromeSources): ChromeView {
   const animation = site.logoAnimation
     ? { animation: site.logoAnimation.url }
     : {}
-  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${contact.addressLine1}, ${footer.addressLine2}`
-  )}`
+  const mapsHref = mapsSearchHref(contact)
   return {
     locale: site.locale,
     header: {
@@ -125,7 +140,7 @@ export function chromeView(s: ChromeSources): ChromeView {
         title: footer.contactTitle,
         lines: [
           contact.addressLine1,
-          footer.addressLine2,
+          contact.addressLine2,
           interpolate(footer.contactOfficeLine, values),
           contact.email,
         ],
@@ -151,24 +166,26 @@ export function chromeView(s: ChromeSources): ChromeView {
       copyright: footer.copyright,
       legal: {
         pages: s.legalLinks ?? [],
-        login: { label: "Login", href: "/admin/sign-in" },
+        ...(footer.loginLink ? { login: linkView(s, footer.loginLink) } : {}),
       },
     },
   }
 }
 
 /**
- * The inner-page hero. A hero without its own banner (about, contact) uses
- * the site's default hero image.
+ * The inner-page hero. A hero without its own banner (image null, or no
+ * image key as the 404 copy) uses the site's default hero image.
  */
 export function pageHeroView(
-  s: SiteSources,
-  hero: WithMedia<PageHero> | WithMedia<PageHeroText>,
+  s: NotFoundSources,
+  hero: Omit<WithMedia<PageHero>, "image"> & {
+    image?: WithMedia<PageHero>["image"]
+  },
   parents: PageHeroProps["parents"] = []
 ): PageHeroProps {
   const { navigation, microcopy, site } = s.settings
   return {
-    image: ("image" in hero ? hero.image : site.defaultHeroImage).url,
+    image: (hero.image ?? site.defaultHeroImage).url,
     crumb: textView(s, hero.crumb),
     parents,
     title: textView(s, hero.title),
@@ -181,6 +198,39 @@ export function pageHeroView(
   }
 }
 
+/** What the 404 page shows: a page hero plus a button back home. */
+type NotFoundViewSettings = NotFoundSources["settings"]["microcopy"]["notFound"]
+
+export type NotFoundViewProps = PageHeroProps & { homeLabel: string }
+
+/**
+ * The 404 page's copy when settings cannot be read (the database is down).
+ * Kept equal to the seeded settings.microcopy.notFound (a unit test checks).
+ */
+export const NOT_FOUND_FALLBACK: NotFoundViewProps = {
+  image: "/images/home/hero.png",
+  crumb: "Not found",
+  parents: [],
+  title: "Page not found",
+  description: "The page you are looking for has moved or no longer exists.",
+  home: { label: "Home", href: "/" },
+  ariaLabel: "Breadcrumb",
+  homeLabel: "Back to home",
+}
+
+/** The 404 page: settings.microcopy.notFound on the default banner. */
+export function notFoundView(s: NotFoundSources): NotFoundViewProps {
+  // Settings saved before migration 0034 have no notFound: the fixed copy
+  // (equal to the migration's backfill) is the right answer, not an error.
+  const notFound = s.settings.microcopy.notFound as
+    NotFoundViewSettings | undefined
+  if (!notFound) return NOT_FOUND_FALLBACK
+  return {
+    ...pageHeroView(s, notFound),
+    homeLabel: textView(s, notFound.homeLabel),
+  }
+}
+
 export function clientsView(s: SiteSources): ClientsProps {
   const { eyebrow, title } = s.settings["sections.clients"]
   return {
@@ -190,19 +240,25 @@ export function clientsView(s: SiteSources): ClientsProps {
   }
 }
 
-export function whyChooseUsView(s: SiteSources): WhyChooseUsProps {
-  const section = s.settings["sections.whyChooseUs"]
+/** Icon cards; the photo variant when the section has a background. */
+export function iconCardsView(
+  section: WithMedia<IconCardsSectionData> & { background?: MediaView }
+): IconCardsSectionProps {
   return {
-    background: section.background.url,
+    ...(section.background ? { background: section.background.url } : {}),
     eyebrow: section.eyebrow,
     title: section.title,
     description: section.description,
-    features: section.features.map((f) => ({
-      title: f.title,
-      description: f.description,
-      icon: f.icon.url,
+    cards: section.cards.map((card) => ({
+      title: card.title,
+      description: card.description,
+      icon: card.icon.url,
     })),
   }
+}
+
+export function whyChooseUsView(s: SiteSources): IconCardsSectionProps {
+  return iconCardsView(s.settings["sections.whyChooseUs"])
 }
 
 export function testimonialsView(s: SiteSources): TestimonialsProps {
@@ -252,38 +308,64 @@ export function teamView(s: SiteSources): TeamProps {
   }
 }
 
+/** A Google Maps search for the business address (blank lines left out). */
+export const mapsSearchHref = (contact: {
+  addressLine1: string
+  addressLine2: string
+}) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    [contact.addressLine1, contact.addressLine2]
+      .filter((part) => part !== "")
+      .join(", ")
+  )}`
+
+/** The href a contact card's action opens (none for hours / other). */
+function contactCardHref(s: SiteSources, kind: ContactCardKind) {
+  const contact = s.settings.contact
+  switch (kind) {
+    case "phone":
+      return String(placeholders(s).officeHref)
+    case "email":
+      return `mailto:${contact.email}`
+    case "address":
+      return mapsSearchHref(contact)
+    default:
+      return null
+  }
+}
+
 /** The shared Contact section; `title` overrides the section's own (the contact page). */
 export function contactSectionView(
   s: SiteSources,
   title?: string
 ): ContactProps {
   const section = s.settings["sections.contact"]
+  const { membership } = s.settings.site
+  const quote = quoteCardView(s, section.quoteBox)
   return {
     eyebrow: section.eyebrow,
     title: title ?? section.title,
     description: section.description,
     labels: section.mobile ?? contactMobileDefaults,
     cards: section.infoCards.map((card) => ({
+      kind: card.kind,
       title: card.title,
       icon: card.icon.url,
       lines: card.lines.map((line) => textView(s, line)),
+      href: contactCardHref(s, card.kind),
     })),
     member: {
-      logo: section.memberLogo.url,
-      logoAlt: section.memberLogoAlt,
+      logo: membership.logo.url,
+      logoAlt: membership.logoAlt,
       title: section.memberTitle,
-      subtitle: section.memberSubtitle,
+      subtitle: membership.name,
     },
     socials: section.socials.map((social) => ({
       label: social.label,
       icon: social.icon.url,
       href: hrefView(s, social.href),
     })),
-    quote: {
-      title: section.quoteBox.title,
-      body: section.quoteBox.body,
-      cta: linkView(s, section.quoteBox.cta),
-    },
+    quote: { title: quote.title, body: quote.body, cta: quote.cta },
   }
 }
 
@@ -301,18 +383,25 @@ export function locationMapView(s: SiteSources): LocationMapProps {
   }
 }
 
-/** The "Need a Quote?" card of the service and article sidebars. */
-export function quoteCardView(s: SiteSources): QuoteCardProps {
-  const card = s.settings.microcopy.quoteCard
+/**
+ * The shared "Need a Quote?" card (Settings › Microcopy) of the service and
+ * article sidebars, the contact section and the services help card. A place
+ * passes its overrides; each null or missing field is the shared card's.
+ */
+export function quoteCardView(
+  s: SiteSources,
+  overrides: Partial<WithMedia<QuoteCardOverrides>> = {}
+): QuoteCardProps {
+  const shared = s.settings.microcopy.quoteCard
   const values = placeholders(s)
   return {
-    title: card.title,
-    body: card.body,
+    title: overrides.title ?? shared.title,
+    body: overrides.body ?? shared.body,
     tel: {
-      label: interpolate(card.telLabel, values),
+      label: interpolate(overrides.phoneLabel ?? shared.phoneLabel, values),
       href: String(values.officeHref),
     },
-    cta: linkView(s, card.cta),
+    cta: linkView(s, overrides.cta ?? shared.cta),
   }
 }
 
@@ -326,7 +415,7 @@ export function viewAllPostsView(s: SiteSources): Link {
 
 export const articlePath = (slug: string) => `/blog/${slug}`
 
-/** Calendar date and the display form ("02 Sep 2026") in the site's time zone. */
+/** Calendar date and the display form ("02 Sep 2026") in the site's time zone and language. */
 export function articleDates(
   s: SiteSources,
   article: SiteArticle
@@ -335,7 +424,11 @@ export function articleDates(
   const zone = siteTimeZone(s.settings.site.timezone)
   return {
     date: isoDate(article.publishedAt, zone),
-    displayDate: formatPostDate(article.publishedAt, zone),
+    displayDate: formatPostDate(
+      article.publishedAt,
+      zone,
+      siteLocale(s.settings.site.locale)
+    ),
   }
 }
 
@@ -399,7 +492,7 @@ export function recentPosts(
 // One mapping per section, called by the fixed pages' views and by the page
 // builder (templates/builder/views.ts), so both render the same props.
 
-/** The home hero. The logo is the site's large logo. */
+/** The home hero. The logo is the site's large logo; the badge is Settings › Site › Membership. */
 export function heroView(
   s: SiteSources,
   hero: Pages["home"]["data"]["hero"]
@@ -418,8 +511,8 @@ export function heroView(
     secondaryCta: linkView(s, hero.secondaryCta),
     member: {
       label: hero.memberLabel,
-      logo: hero.memberLogo.url,
-      logoAlt: hero.memberLogoAlt,
+      logo: site.membership.logo.url,
+      logoAlt: site.membership.logoAlt,
     },
   }
 }
@@ -449,7 +542,11 @@ export function statsView(
   }
 }
 
-/** The home page's services intro (copy, photos and the short list). */
+/**
+ * The home page's services intro (copy, photos and the short list). Each
+ * item names a service by slug; one that is not published (unpublished or
+ * deleted) is skipped, so the list never links to a missing page.
+ */
 export function servicesIntroView(
   s: SiteSources,
   services: Pages["home"]["data"]["services"]
@@ -460,15 +557,17 @@ export function servicesIntroView(
     eyebrow: services.eyebrow,
     title: services.title,
     description: services.description,
-    // Each item links to the published service page with the same title;
-    // an item with no matching page stays plain text.
-    items: services.items.map((item) => {
-      const match = s.services.find(
-        (x) =>
-          x.content.title.trim().toLowerCase() ===
-          item.title.trim().toLowerCase()
-      )
-      return match ? { ...item, href: servicePath(match.slug) } : item
+    items: services.items.flatMap((item) => {
+      const service = s.services.find((x) => x.slug === item.service)
+      return service
+        ? [
+            {
+              title: service.content.title,
+              description: item.description,
+              href: servicePath(service.slug),
+            },
+          ]
+        : []
     }),
     itemIcon: services.itemIcon.url,
     moreText: services.moreText,
@@ -483,7 +582,7 @@ export function servicesGridView(
   s: SiteSources,
   grid: Pages["services"]["data"]["grid"]
 ): ServicesGridProps {
-  const values = placeholders(s)
+  const help = quoteCardView(s, grid.helpCard)
   return {
     eyebrow: grid.eyebrow,
     title: grid.title,
@@ -504,13 +603,10 @@ export function servicesGridView(
     quoteCta: linkView(s, grid.quoteCta),
     helpCard: {
       icon: grid.helpCard.icon.url,
-      title: grid.helpCard.title,
-      body: grid.helpCard.body,
-      cta: linkView(s, grid.helpCard.cta),
-      call: {
-        label: interpolate(grid.helpCard.callLabel, values),
-        href: String(values.officeHref),
-      },
+      title: help.title,
+      body: help.body,
+      cta: help.cta,
+      call: help.tel,
     },
   }
 }
@@ -535,13 +631,25 @@ export function homeBlogView(
   }
 }
 
-export function howItWorksView(s: SiteSources): HowItWorksProps {
-  const howItWorks = s.settings["sections.howItWorks"]
+/** A steps section's props (no `intro` key when the intro is unset). */
+export function stepsSectionView(
+  section: StepsSectionData,
+  variant: StepsSectionProps["variant"]
+): StepsSectionProps {
   return {
-    eyebrow: howItWorks.eyebrow,
-    title: howItWorks.title,
-    steps: howItWorks.steps,
+    eyebrow: section.eyebrow,
+    title: section.title,
+    ...(section.intro === null ? {} : { intro: section.intro }),
+    steps: section.steps.map((step) => ({
+      title: step.title,
+      description: step.description,
+    })),
+    variant,
   }
+}
+
+export function howItWorksView(s: SiteSources): StepsSectionProps {
+  return stepsSectionView(s.settings["sections.howItWorks"], "compact")
 }
 
 /** The quote form with the contact page's published copy. */

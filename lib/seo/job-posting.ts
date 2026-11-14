@@ -1,5 +1,6 @@
 import type { JobPosting, WithContext } from "schema-dts"
 
+import { SITE_TIME_ZONE, siteTimeZone } from "@/lib/format"
 import { jobPath } from "@/lib/schemas/api/job-postings"
 import type { JobContent } from "@/lib/schemas/content/job"
 
@@ -29,20 +30,39 @@ export function parseHourlyOrYearlyPay(
     : null
 }
 
-const OFFSET = new Intl.DateTimeFormat("en-IE", {
-  timeZone: "Europe/Dublin",
-  timeZoneName: "shortOffset",
-})
+const offsetFormats = new Map<string, Intl.DateTimeFormat>()
 
-/** "+01:00" in Irish summer time, "+00:00" in winter, for that day. */
-function irishOffset(day: string): string {
+function offsetIn(day: string, timeZone: string): string {
+  let format = offsetFormats.get(timeZone)
+  if (!format) {
+    format = new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      timeZoneName: "shortOffset",
+    })
+    offsetFormats.set(timeZone, format)
+  }
   const name =
-    OFFSET.formatToParts(new Date(`${day}T12:00:00Z`)).find(
-      (part) => part.type === "timeZoneName"
-    )?.value ?? "GMT"
+    format
+      .formatToParts(new Date(`${day}T12:00:00Z`))
+      .find((part) => part.type === "timeZoneName")?.value ?? "GMT"
   const match = /GMT([+-])(\d{1,2})(?::(\d\d))?/.exec(name)
   if (!match) return "+00:00"
   return `${match[1]}${match[2]!.padStart(2, "0")}:${match[3] ?? "00"}`
+}
+
+/**
+ * "+01:00" / "-04:00": the zone's UTC offset on that day, taken at 12:00 UTC.
+ * Assumes daylight-saving switches happen in the small hours (true for
+ * Europe and the Americas), so noon gives the offset in force at 23:59:59
+ * on the closing day. An unknown zone falls back to Irish time
+ * (siteTimeZone), so a direct caller with a bad value never throws.
+ */
+function zoneOffset(day: string, timeZone: string): string {
+  try {
+    return offsetIn(day, siteTimeZone(timeZone))
+  } catch {
+    return offsetIn(day, SITE_TIME_ZONE)
+  }
 }
 
 /** The plain text of the paragraphs, for the description. */
@@ -58,11 +78,22 @@ const textOf = (about: JobContent["about"]) =>
 export function jobPostingJsonLd(
   job: JobInput,
   origin: string,
-  org: { name: string; url: string }
+  org: {
+    name: string
+    url: string
+    /** ISO 3166-1 alpha-2, e.g. "IE" (settings seo.defaults.organization). */
+    addressCountry: string
+    /** ISO 4217, e.g. "EUR" (settings seo.defaults.organization). */
+    currency: string
+    /** A valid IANA zone (siteTimeZone(settings.site.timezone)). */
+    timeZone: string
+  }
 ): WithContext<JobPosting> {
   const c = job.content
   const [locality, ...rest] = c.location.split(",").map((part) => part.trim())
-  const salary = parseHourlyOrYearlyPay(c.pay)
+  // parseHourlyOrYearlyPay only reads "€" amounts, so the number is euros:
+  // stating it in another currency would be wrong structured data. Omit it.
+  const salary = org.currency === "EUR" ? parseHourlyOrYearlyPay(c.pay) : null
   return {
     "@context": "https://schema.org",
     "@type": "JobPosting",
@@ -78,7 +109,7 @@ export function jobPostingJsonLd(
       : {}),
     ...(c.closingDate
       ? {
-          validThrough: `${c.closingDate}T23:59:59${irishOffset(c.closingDate)}`,
+          validThrough: `${c.closingDate}T23:59:59${zoneOffset(c.closingDate, org.timeZone)}`,
         }
       : {}),
     employmentType: c.schemaEmploymentType,
@@ -93,14 +124,14 @@ export function jobPostingJsonLd(
         "@type": "PostalAddress",
         addressLocality: locality,
         ...(rest.length > 0 ? { addressRegion: rest.join(", ") } : {}),
-        addressCountry: "IE",
+        addressCountry: org.addressCountry,
       },
     },
     ...(salary
       ? {
           baseSalary: {
             "@type": "MonetaryAmount",
-            currency: "EUR",
+            currency: org.currency,
             value: {
               "@type": "QuantitativeValue",
               minValue: salary.min,

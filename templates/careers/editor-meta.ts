@@ -1,5 +1,7 @@
 import type { EditorMeta } from "@/components/admin/schema-form/editor-meta"
 
+import { PAGE_HERO_GROUPS } from "../shared/editor-groups"
+
 /**
  * Editor hints for page "careers": the words of /careers, of every job page
  * (shared labels and sidebar) and of the application form.
@@ -9,6 +11,10 @@ export const careersEditorMeta: EditorMeta = {
     hero: {
       label: "Banner",
       help: "The title and intro at the top of /careers.",
+    },
+    "hero.image": {
+      label: "Banner image",
+      help: "Leave empty to use the default banner (Settings › Site).",
     },
     why: {
       label: "Why work with us",
@@ -25,6 +31,7 @@ export const careersEditorMeta: EditorMeta = {
       help: "Closed roles. {date} is the closing date.",
     },
     process: { label: "Hiring process" },
+    "process.intro": { help: "Optional. Shown under the heading." },
     "process.steps": { label: "Steps", itemName: "Step", itemLabel: "title" },
     talentPool: {
       label: "Talent pool banner",
@@ -45,6 +52,10 @@ export const careersEditorMeta: EditorMeta = {
     "apply.crumb": {
       label: "Breadcrumb",
       help: "Last crumb on a job's application form, after the job title.",
+    },
+    "apply.errors.invalid": {
+      label: "Answer not accepted",
+      help: "Shown when the server refuses an answer, e.g. a choice that is no longer offered.",
     },
     "apply.options.rightToWork": {
       label: "Permission to work options",
@@ -77,4 +88,5 @@ export const careersEditorMeta: EditorMeta = {
       itemLabel: "title",
     },
   },
+  groups: { hero: PAGE_HERO_GROUPS },
 }

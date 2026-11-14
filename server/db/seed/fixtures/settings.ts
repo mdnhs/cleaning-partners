@@ -30,6 +30,11 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       productionUrl: null,
       timezone: "Europe/Dublin",
       locale: "en",
+      membership: {
+        logo: media("/images/home/icca.png"),
+        logoAlt: "Irish Contract Cleaning Association",
+        name: "Irish Contract Cleaning Association",
+      },
     },
     contact: {
       phone24h: "(085) 8062369",
@@ -38,9 +43,12 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       officeExtension: "4",
       mobile: "085 806 2369",
       email: "info@cleaningpartners.ie",
+      recruitmentEmail: "jobs@cleaningpartners.ie",
       hours: "Mon–Fri: 9am – 6pm",
       addressLine1: "Derryguile, Mountmellick",
       addressLine2: "Co. Laois, Ireland. R32 YX49",
+      quoteLabel: "Get a Free Quote",
+      quoteHref: "/contact#quote",
     },
     navigation: {
       links: [
@@ -51,7 +59,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         { label: "Careers", href: "/careers" },
         { label: "Contact", href: "/contact" },
       ],
-      cta: { label: "Get a Quote", href: "#contact" },
+      cta: { label: "Get a Quote", href: "{quoteHref}" },
       menuAria: "Open menu",
       closeMenuAria: "Close menu",
       mobile: {
@@ -68,10 +76,10 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         "The Clean Team. Medical, commercial and domestic cleaning from Mountmellick, Co. Laois.",
       quickLinksTitle: "QUICK LINKS",
       contactTitle: "CONTACT",
-      addressLine2: "Co. Laois, R32 YX49",
       contactOfficeLine: "Tel: {office} Ext {officeExtension}",
       groupTitle: "OTHER SERVICES IN THE GROUP",
       copyright: "© 2026 Cleaning Partners Ltd. All rights reserved.",
+      loginLink: { label: "Login", href: "/admin/sign-in" },
     },
     "sections.clients": {
       eyebrow: "TRUSTED PARTNERS",
@@ -83,7 +91,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       title: "Why Choose Us?",
       description:
         "We at Cleaning Partners Ltd strive to meet the high standards our clients expect.",
-      features: [
+      cards: [
         {
           title: "Skilled Cleaners",
           description: "Trained, vetted staff who take pride in their work.",
@@ -135,6 +143,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       },
       infoCards: [
         {
+          kind: "phone",
           title: "Phone",
           icon: media("/images/home/phone.svg"),
           lines: [
@@ -144,25 +153,25 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
           ],
         },
         {
+          kind: "email",
           title: "Email",
           icon: media("/images/home/mail.svg"),
           lines: ["{email}"],
         },
         {
+          kind: "address",
           title: "Location",
           icon: media("/images/home/pin.svg"),
           lines: ["{addressLine1},", "{addressLine2}"],
         },
         {
+          kind: "hours",
           title: "Office Hours",
           icon: media("/images/home/clock.svg"),
           lines: ["{hours}"],
         },
       ],
-      memberLogo: media("/images/home/icca-member.png"),
-      memberLogoAlt: "ICCA",
       memberTitle: "Member of the ICCA",
-      memberSubtitle: "Irish Contract Cleaning Association",
       socials: [
         {
           label: "Facebook",
@@ -176,9 +185,9 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         },
       ],
       quoteBox: {
-        title: "Need a Quote?",
-        body: "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
-        cta: { label: "Fill the Form", href: "/contact#quote" },
+        title: null,
+        body: null,
+        cta: { label: "Fill the Form", href: "{quoteHref}" },
       },
     },
     "sections.map": {
@@ -191,6 +200,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
     "sections.howItWorks": {
       eyebrow: "HOW IT WORKS",
       title: "Simple From Start to Finish",
+      intro: null,
       steps: [
         {
           title: "Get in touch",
@@ -222,6 +232,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         addressRegion: "Co. Laois",
         postalCode: "R32 YX49",
         addressCountry: "IE",
+        currency: "EUR",
         areaServed: "Ireland",
         sameAs: [],
       },
@@ -278,8 +289,15 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       quoteCard: {
         title: "Need a Quote?",
         body: "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
-        telLabel: "Tel: {office} Ext {officeExtension}",
-        cta: { label: "Get a Free Quote", href: "#contact" },
+        phoneLabel: "Tel: {office} Ext {officeExtension}",
+        cta: { label: "{quoteLabel}", href: "{quoteHref}" },
+      },
+      notFound: {
+        crumb: "Not found",
+        title: "Page not found",
+        description:
+          "The page you are looking for has moved or no longer exists.",
+        homeLabel: "Back to home",
       },
     },
     leads: {

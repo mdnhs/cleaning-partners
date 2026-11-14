@@ -69,6 +69,10 @@ export const growthEditorMeta: Record<GrowthSettingsKey, EditorMeta> = {
         label: "Country code",
         help: "Two capital letters, e.g. IE.",
       },
+      "organization.currency": {
+        label: "Currency code",
+        help: "ISO 4217, e.g. EUR. Used for job pay in Google for Jobs.",
+      },
       "organization.areaServed": {
         label: "Area served",
         help: "e.g. Ireland, or Leinster.",

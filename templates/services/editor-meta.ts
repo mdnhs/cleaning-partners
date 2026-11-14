@@ -6,7 +6,10 @@ import { PAGE_HERO_GROUPS } from "../shared/editor-groups"
 export const servicesEditorMeta: EditorMeta = {
   fields: {
     hero: { label: "Page hero", help: "Banner at the top of the page." },
-    "hero.image": { label: "Banner image" },
+    "hero.image": {
+      label: "Banner image",
+      help: "Leave empty to use the default banner (Settings › Site).",
+    },
     "hero.crumb": { label: "Breadcrumb label" },
     "hero.title": { label: "Title" },
     "hero.description": { label: "Introduction" },
@@ -29,10 +32,21 @@ export const servicesEditorMeta: EditorMeta = {
       help: "The last card in the grid.",
     },
     "grid.helpCard.icon": { label: "Icon", aspect: "square" },
-    "grid.helpCard.cta": { label: "Button" },
-    "grid.helpCard.callLabel": {
+    "grid.helpCard.title": {
+      label: "Title",
+      help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+    },
+    "grid.helpCard.body": {
+      label: "Text",
+      help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+    },
+    "grid.helpCard.cta": {
+      label: "Button",
+      help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+    },
+    "grid.helpCard.phoneLabel": {
       label: "Call line",
-      help: "{office} and {officeExtension} are filled from Settings › Contact.",
+      help: "{office} and {officeExtension} are filled from Settings › Contact. Leave empty to use the shared quote card (Settings › Microcopy).",
     },
     detail: {
       label: "Service page",
@@ -45,7 +59,10 @@ export const servicesEditorMeta: EditorMeta = {
     "detail.placesHeading": { label: "Places heading" },
     "detail.sidebarAria": { label: "Sidebar: screen reader label" },
     "detail.sidebarHeading": { label: "Sidebar heading" },
-    "detail.officeHours": { label: "Office hours box" },
+    "detail.officeHours": {
+      label: "Office hours box",
+      help: "{hours} is filled from Settings › Contact.",
+    },
   },
   groups: { hero: PAGE_HERO_GROUPS },
 }

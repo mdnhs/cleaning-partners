@@ -146,7 +146,7 @@ export const HERO_USAGES = [
     entityId: "home",
     field: "hero.backgroundImage",
     label: "Home page",
-    href: "/admin/pages/home",
+    href: "/admin/website/home",
   },
   {
     entityType: "service",

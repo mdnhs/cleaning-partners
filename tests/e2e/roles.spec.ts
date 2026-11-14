@@ -9,8 +9,9 @@ import { clientIpFor, E2E_PASSWORD } from "./fixtures"
 
 // R11-8 "sign-in per role": every role's account (seeded by tests/e2e/seed.ts)
 // sees exactly the menu, screens and API its role grants, derived from the
-// same nav + permission tables. CP's nav (Blog, Collections, Appearance,
-// AI assistant, custom pages) is covered by construction.
+// same nav + permission tables. CP's nav (Website, Enquiries › Job
+// applications, Appearance, AI assistant, custom pages) is covered by
+// construction.
 
 test.beforeEach(async ({ context }, testInfo) => {
   await context.setExtraHTTPHeaders({
@@ -33,7 +34,12 @@ async function signIn(page: Page, email: string) {
  * are spelled out, not read from the registry, so they check it.
  */
 const SCREENS: { path: string; permission: PermissionRequest }[] = [
-  { path: "/admin/pages", permission: { page: ["read"] } },
+  { path: "/admin/website/home", permission: { page: ["read"] } },
+  {
+    path: "/admin/website/header-footer/navigation",
+    permission: { settings: ["read"] },
+  },
+  { path: "/admin/careers/applications", permission: { lead: ["read"] } },
   { path: "/admin/blog", permission: { article: ["read"] } },
   { path: "/admin/services", permission: { service: ["read"] } },
   { path: "/admin/media", permission: { media: ["read"] } },
@@ -119,6 +125,24 @@ for (const role of ROLES) {
     else expect(create.status()).toBe(403)
   })
 }
+
+test("intake: no Website; Job applications sits under Enquiries", async ({
+  page,
+}) => {
+  await signIn(page, "intake@e2e.test")
+  const nav = page.getByRole("navigation", { name: "Admin", exact: true })
+  await expect(nav.getByRole("link", { name: /^Website/ })).toHaveCount(0)
+  await page.goto("/admin/careers/applications")
+  await expect(nav.getByRole("link", { name: /^Enquiries/ })).toHaveAttribute(
+    "aria-current",
+    "page"
+  )
+  await expect(
+    page
+      .getByRole("navigation", { name: "Enquiries", exact: true })
+      .getByRole("link", { name: "Job applications" })
+  ).toHaveAttribute("aria-current", "page")
+})
 
 test("author: the API refuses publishing and editing someone else's article", async ({
   page,

@@ -24,6 +24,21 @@ const jobs: PublicJob[] = jobsFixture().map((job, sortOrder) => ({
 describe("careersView", () => {
   const view = careersView(fixtureSiteSources(), jobs, now)
 
+  it("hiring process: the wide steps section, numbers drawn by the component", () => {
+    const process = fixtureSiteSources().pages.careers.data.process
+    expect(view.process).toEqual({
+      eyebrow: process.eyebrow,
+      title: process.title,
+      intro: process.intro,
+      steps: process.steps.map((step) => ({
+        title: step.title,
+        description: step.description,
+      })),
+      variant: "wide",
+    })
+    for (const step of view.process.steps)
+      expect(step).not.toHaveProperty("number")
+  })
   it("lists the open jobs in order with their row facts", () => {
     expect(view.open.jobs.map((j) => j.title)).toEqual([
       "Cleaning Operative – Healthcare",
@@ -109,5 +124,48 @@ describe("posted and closed wording", () => {
   it("closing dates read as 12 Sep 2026 in Irish time", () => {
     expect(closedOnDate(new Date("2026-09-12T23:30:00Z"))).toBe("13 Sep 2026")
     expect(closedOnDate("2026-11-28")).toBe("28 Nov 2026")
+  })
+
+  it("follows the site's language", () => {
+    expect(
+      postedAgo(new Date(now.getTime() - 3 * DAY), now, { locale: "fr" })
+    ).toBe("il y a 3 jours")
+    expect(postedAgo(new Date(now.getTime() - DAY), now, {})).toBe("yesterday")
+    expect(
+      postedAgo(new Date(now.getTime() - 3 * DAY), now, { locale: "english" })
+    ).toBe("3 days ago")
+    expect(
+      closedOnDate("2026-11-28", { locale: "en", timeZone: "Europe/Dublin" })
+    ).toBe("28 Nov 2026")
+  })
+
+  it("a YYYY-MM-DD closing date is a calendar day in any zone", () => {
+    for (const timeZone of [
+      "Europe/Dublin",
+      "America/New_York",
+      "Pacific/Auckland",
+      "Pacific/Kiritimati",
+      "Pacific/Pago_Pago",
+    ])
+      expect(closedOnDate("2026-11-28", { locale: "en", timeZone })).toBe(
+        "28 Nov 2026"
+      )
+    expect(
+      closedOnDate("2026-11-28", { locale: "fr", timeZone: "Pacific/Auckland" })
+    ).toBe("28 nov. 2026")
+  })
+
+  it("closing dates follow the site's time zone", () => {
+    expect(
+      closedOnDate(new Date("2026-09-12T23:30:00Z"), {
+        timeZone: "America/New_York",
+      })
+    ).toBe("12 Sep 2026")
+    expect(
+      closedOnDate(new Date("2026-09-12T23:30:00Z"), {
+        locale: "english",
+        timeZone: "Not/AZone",
+      })
+    ).toBe("13 Sep 2026")
   })
 })
