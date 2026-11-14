@@ -111,7 +111,7 @@ export function AdminShell({
                       ref={mainRef}
                       id="main"
                       tabIndex={-1}
-                      className="rounded-card relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-sidebar p-(--main-pad) outline-none [--main-pad:1rem] sm:[--main-pad:1.5rem] lg:[--main-pad:2rem]"
+                      className="rounded-card relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-sidebar p-(--main-pad) [scrollbar-gutter:stable] outline-none [--main-pad:1rem] sm:[--main-pad:1.5rem] lg:[--main-pad:2rem]"
                     >
                       <SiteInfoProvider value={site}>
                         {/* The active section's sub-pages (MK section rail). */}
