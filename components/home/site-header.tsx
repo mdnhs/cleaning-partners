@@ -301,7 +301,7 @@ export function SiteHeader({
             <a
               href={topBar.phoneHref}
               aria-label={topBar.phone}
-              className="inline-flex size-11 items-center justify-center rounded-full border border-line text-brand hover:bg-surface lg:hidden"
+              className="inline-flex size-11 items-center justify-center rounded-full border border-line bg-white text-brand hover:bg-surface lg:hidden"
             >
               <PhoneIcon aria-hidden className="size-5" />
             </a>
@@ -505,7 +505,7 @@ export function SiteHeader({
         aria-hidden={!stickyCta}
         inert={!stickyCta}
         className={cn(
-          "fixed inset-x-0 bottom-0 z-40 flex gap-2.5 bg-white px-4 pt-3 pb-6 shadow-[0px_-6px_12px_0px_rgba(13,38,64,0.12)] transition-transform duration-300 ease-out motion-reduce:transition-none md:hidden",
+          "fixed inset-x-0 bottom-0 z-40 flex gap-2.5 bg-white/55 px-4 pt-3 pb-[calc(--spacing(3)+env(safe-area-inset-bottom))] shadow-[0px_-4px_20px_0px_rgba(13,38,64,0.08)] backdrop-blur-lg backdrop-saturate-150 transition-transform duration-300 ease-out motion-reduce:transition-none md:hidden",
           stickyCta ? "translate-y-0" : "translate-y-full"
         )}
       >
@@ -513,7 +513,7 @@ export function SiteHeader({
           href={topBar.phoneHref}
           className={buttonClassName(
             { variant: "outline-navy", size: "pill" },
-            "min-w-0 flex-1 gap-2 px-4"
+            "min-w-0 flex-1 gap-2 bg-white px-4"
           )}
         >
           <PhoneIcon aria-hidden className="size-5" />
