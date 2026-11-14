@@ -110,4 +110,31 @@ describe("posted and closed wording", () => {
     expect(closedOnDate(new Date("2026-09-12T23:30:00Z"))).toBe("13 Sep 2026")
     expect(closedOnDate("2026-11-28")).toBe("28 Nov 2026")
   })
+
+  it("follows the site's language", () => {
+    expect(
+      postedAgo(new Date(now.getTime() - 3 * DAY), now, { locale: "fr" })
+    ).toBe("il y a 3 jours")
+    expect(postedAgo(new Date(now.getTime() - DAY), now, {})).toBe("yesterday")
+    expect(
+      postedAgo(new Date(now.getTime() - 3 * DAY), now, { locale: "english" })
+    ).toBe("3 days ago")
+    expect(
+      closedOnDate("2026-11-28", { locale: "en", timeZone: "Europe/Dublin" })
+    ).toBe("28 Nov 2026")
+  })
+
+  it("closing dates follow the site's time zone", () => {
+    expect(
+      closedOnDate(new Date("2026-09-12T23:30:00Z"), {
+        timeZone: "America/New_York",
+      })
+    ).toBe("12 Sep 2026")
+    expect(
+      closedOnDate(new Date("2026-09-12T23:30:00Z"), {
+        locale: "english",
+        timeZone: "Not/AZone",
+      })
+    ).toBe("13 Sep 2026")
+  })
 })

@@ -23,7 +23,7 @@ import type { TestimonialsProps } from "@/components/home/testimonials"
 import type { WhyChooseUsProps } from "@/components/home/why-choose-us"
 import type { HowItWorksProps } from "@/components/services/how-it-works"
 import type { ServicesGridProps } from "@/components/services/services-grid"
-import { formatPostDate, isoDate, siteTimeZone } from "@/lib/format"
+import { formatPostDate, isoDate, siteLocale, siteTimeZone } from "@/lib/format"
 import {
   contactPlaceholders,
   interpolate,
@@ -217,8 +217,7 @@ export function notFoundView(s: NotFoundSources): NotFoundViewProps {
   // Settings saved before migration 0034 have no notFound: the fixed copy
   // (equal to the migration's backfill) is the right answer, not an error.
   const notFound = s.settings.microcopy.notFound as
-    | NotFoundViewSettings
-    | undefined
+    NotFoundViewSettings | undefined
   if (!notFound) return NOT_FOUND_FALLBACK
   return {
     ...pageHeroView(s, notFound),
@@ -397,7 +396,7 @@ export function viewAllPostsView(s: SiteSources): Link {
 
 export const articlePath = (slug: string) => `/blog/${slug}`
 
-/** Calendar date and the display form ("02 Sep 2026") in the site's time zone. */
+/** Calendar date and the display form ("02 Sep 2026") in the site's time zone and language. */
 export function articleDates(
   s: SiteSources,
   article: SiteArticle
@@ -406,7 +405,11 @@ export function articleDates(
   const zone = siteTimeZone(s.settings.site.timezone)
   return {
     date: isoDate(article.publishedAt, zone),
-    displayDate: formatPostDate(article.publishedAt, zone),
+    displayDate: formatPostDate(
+      article.publishedAt,
+      zone,
+      siteLocale(s.settings.site.locale)
+    ),
   }
 }
 

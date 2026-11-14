@@ -44,7 +44,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       timezone: { label: "Time zone", help: "IANA name, e.g. Europe/Dublin." },
       locale: {
         label: "Language",
-        help: "Language tag of the public site, e.g. en.",
+        help: "Language tag of the public site and its dates, e.g. en (12 Sep 2026). en-GB prints Sept.",
       },
     },
     groups: {

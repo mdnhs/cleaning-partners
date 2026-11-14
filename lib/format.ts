@@ -42,22 +42,29 @@ export function describeUserAgent(
   return browser ?? os ?? "Unknown device"
 }
 
-// Article dates. Intl's en-IE short month for September is "Sept", but the
-// site prints "20 Sep 2026", so month names come from a fixed list.
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-]
+// Public dates. Article and job dates read "12 Sep 2026" in the site's
+// language (settings.site.locale) and time zone (settings.site.timezone).
+export const DEFAULT_SITE_LOCALE = "en"
+
+/** Locale and IANA zone for a public date; either falls back when blank or invalid. */
+export type DateOptions = { locale?: string; timeZone?: string }
+
+/**
+ * The public site's language: settings.site.locale when Intl supports it,
+ * else "en" (a blank or mistyped tag such as "english" never breaks a page).
+ */
+export function siteLocale(value: string | null | undefined): string {
+  const tag = value?.trim()
+  if (!tag) return DEFAULT_SITE_LOCALE
+  try {
+    return Intl.DateTimeFormat.supportedLocalesOf(tag).length > 0
+      ? tag
+      : DEFAULT_SITE_LOCALE
+  } catch {
+    // RangeError: not a well-formed language tag.
+    return DEFAULT_SITE_LOCALE
+  }
+}
 
 const calendarDates = new Map<string, Intl.DateTimeFormat>()
 
@@ -100,13 +107,36 @@ export function isoDate(
   return `${parts.year}-${parts.month}-${parts.day}`
 }
 
-/** "20 Sep 2026" in `timeZone`, default Irish time (article cards and headers). */
+/**
+ * "<day> <short month> <year>" in the site's language and zone, always in
+ * that order ("12 Sep 2026"; "12 sept. 2026" in fr).
+ */
+export function formatDay(
+  value: Date,
+  {
+    locale,
+    timeZone,
+    day = "numeric",
+  }: DateOptions & { day?: "2-digit" | "numeric" }
+): string {
+  const parts = new Intl.DateTimeFormat(siteLocale(locale), {
+    timeZone: siteTimeZone(timeZone),
+    day,
+    month: "short",
+    year: "numeric",
+  }).formatToParts(value)
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? ""
+  return `${part("day")} ${part("month")} ${part("year")}`
+}
+
+/** "20 Sep 2026" in `timeZone` and `locale`, default Irish time in en (article cards and headers). */
 export function formatPostDate(
   value: Date,
-  timeZone: string = SITE_TIME_ZONE
+  timeZone: string = SITE_TIME_ZONE,
+  locale: string = DEFAULT_SITE_LOCALE
 ): string {
-  const [year, month, day] = isoDate(value, timeZone).split("-")
-  return `${day} ${MONTHS[Number(month) - 1]} ${year}`
+  return formatDay(value, { locale, timeZone, day: "2-digit" })
 }
 
 // Schedule dialog: <input type="datetime-local"> holds Irish wall-clock time.

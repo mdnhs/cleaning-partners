@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest"
 
-import { formatPostDate, isoDate, siteTimeZone } from "@/lib/format"
+import {
+  DEFAULT_SITE_LOCALE,
+  formatDay,
+  formatPostDate,
+  isoDate,
+  siteLocale,
+  siteTimeZone,
+} from "@/lib/format"
 
 describe("article dates (Europe/Dublin)", () => {
   it.each([
@@ -42,5 +49,51 @@ describe("article dates follow settings.site.timezone", () => {
     expect(siteTimeZone("Not/AZone")).toBe("Europe/Dublin")
     expect(siteTimeZone(" Asia/Tokyo ")).toBe("Asia/Tokyo")
     expect(formatPostDate(lateUtc, "Not/AZone")).toBe("01 Apr 2026")
+  })
+})
+
+describe("article dates follow settings.site.locale", () => {
+  const sept = new Date("2026-09-12T09:00:00Z")
+
+  it("prints the short month of the site's language", () => {
+    expect(formatPostDate(sept, "Europe/Dublin", "en")).toBe("12 Sep 2026")
+    expect(formatPostDate(sept, "Europe/Dublin", "fr")).toBe("12 sept. 2026")
+  })
+
+  it("falls back to en for an invalid or blank locale, without throwing", () => {
+    expect(DEFAULT_SITE_LOCALE).toBe("en")
+    expect(siteLocale("english")).toBe("en")
+    expect(siteLocale("")).toBe("en")
+    expect(siteLocale(null)).toBe("en")
+    expect(siteLocale(undefined)).toBe("en")
+    expect(siteLocale(" fr ")).toBe("fr")
+    expect(formatPostDate(sept, "Europe/Dublin", "english")).toBe("12 Sep 2026")
+    expect(formatPostDate(sept, "Europe/Dublin", "")).toBe("12 Sep 2026")
+  })
+
+  it("an invalid locale and zone together fall back to en and Europe/Dublin", () => {
+    expect(() =>
+      formatDay(new Date("2026-03-31T23:30:00Z"), {
+        locale: "english",
+        timeZone: "Not/AZone",
+      })
+    ).not.toThrow()
+    expect(
+      formatDay(new Date("2026-03-31T23:30:00Z"), {
+        locale: "english",
+        timeZone: "Not/AZone",
+      })
+    ).toBe("1 Apr 2026")
+  })
+
+  it("formatDay keeps day, month, year order and the requested day style", () => {
+    expect(
+      formatDay(new Date("2026-06-04T09:00:00Z"), { day: "2-digit" })
+    ).toBe("04 Jun 2026")
+    expect(formatDay(new Date("2026-06-04T09:00:00Z"), {})).toBe("4 Jun 2026")
+    // en-US would print "Jun 4, 2026"; the site always reads day first.
+    expect(
+      formatDay(new Date("2026-06-04T09:00:00Z"), { locale: "en-US" })
+    ).toBe("4 Jun 2026")
   })
 })
