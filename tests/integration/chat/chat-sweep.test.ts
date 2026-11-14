@@ -16,6 +16,21 @@ vi.mock("@/server/modules/ai/providers", async (importOriginal) => {
   return { ...actual, createLanguageModel: vi.fn() }
 })
 
+const botMock = vi.hoisted(() => ({
+  fail: null as Error | null,
+}))
+vi.mock("@/server/modules/chat/bot", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/server/modules/chat/bot")>()
+  return {
+    ...actual,
+    maybeReply: async (id: string) => {
+      if (botMock.fail) throw botMock.fail
+      return actual.maybeReply(id)
+    },
+  }
+})
+
 import { CHAT_SETTINGS_DEFAULT } from "@/lib/chat/defaults"
 import { getDb } from "@/server/db/client"
 import { auditLog, chatMessages, settings } from "@/server/db/schema"
@@ -145,6 +160,7 @@ beforeEach(async () => {
   await resetDb()
   clearKnowledgeCache()
   calls = 0
+  botMock.fail = null
   await publishChat()
   await saveAi()
   await put("leads", {
@@ -272,6 +288,23 @@ describe("chat sweep", () => {
     )
     expect((await rows(human)).filter((m) => m.sender === "ai")).toHaveLength(0)
     expect(sendSpy).not.toHaveBeenCalled()
+  })
+
+  it("reports failed resumes as the run's warning", async () => {
+    const a = await start()
+    const b = await start()
+    await age(a, 120)
+    await age(b, 120)
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+    botMock.fail = new TypeError("Hello there from the visitor")
+
+    expect(await sweep()).toEqual({ warning: "2 chat resume(s) failed" })
+
+    expect(errorSpy.mock.calls.map(([line]) => line)).toEqual([
+      "[chat] resume failed (TypeError)",
+      "[chat] resume failed (TypeError)",
+    ])
+    expect(calls).toBe(0)
   })
 
   it("does nothing while chat is off", async () => {

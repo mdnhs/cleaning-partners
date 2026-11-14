@@ -1,6 +1,7 @@
 import "server-only"
 
 import { CHAT_SETTINGS_DEFAULT } from "@/lib/chat/defaults"
+import type { ChatSettings } from "@/lib/schemas/settings/chat"
 import { fillChatText } from "@/lib/chat/text"
 import { getDb } from "@/server/db/client"
 import { writeAudit } from "@/server/lib/audit"
@@ -16,13 +17,15 @@ import { readChatSettings } from "./settings"
  * One transaction: auto-closes chats idle for 24 h (with the "ended" notice),
  * stamps the 5 min no-reply alerts and lists bot-owned chats stalled for 90 s.
  * Emails (`alerted`) and bot runs (`resume`) are the caller's job, after the
- * commit. While the bot is off (`botActive: false`) no chat is bot-owned, so
- * a chat it left unanswered is alerted even with a lease still live.
+ * commit. `settings` are the published chat settings the caller has read.
+ * While the bot is off (`botActive: false`) no chat is bot-owned, so a chat
+ * it left unanswered is alerted even with a lease still live.
  */
-export async function sweepChats(
-  opts: { botActive?: boolean } = {}
-): Promise<{ closed: number; alerted: string[]; resume: string[] }> {
-  const s = (await readChatSettings()) ?? CHAT_SETTINGS_DEFAULT
+export async function sweepChats(opts: {
+  settings: ChatSettings
+  botActive: boolean
+}): Promise<{ closed: number; alerted: string[]; resume: string[] }> {
+  const s = opts.settings
   const ended = fillChatText(s.notices.ended, {
     team: s.teamName,
     botName: s.bot.name,
@@ -42,7 +45,7 @@ export async function sweepChats(
         tx
       )
     }
-    const alerted = await repo.claimNoReplyAlerts(opts.botActive ?? true, tx)
+    const alerted = await repo.claimNoReplyAlerts(opts.botActive, tx)
     const resume = await repo.stalledBotChats(tx)
     return { closed: closed.length, alerted, resume }
   })
