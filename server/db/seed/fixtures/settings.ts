@@ -47,6 +47,8 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       hours: "Mon–Fri: 9am – 6pm",
       addressLine1: "Derryguile, Mountmellick",
       addressLine2: "Co. Laois, Ireland. R32 YX49",
+      quoteLabel: "Get a Free Quote",
+      quoteHref: "/contact#quote",
     },
     navigation: {
       links: [
@@ -57,7 +59,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         { label: "Careers", href: "/careers" },
         { label: "Contact", href: "/contact" },
       ],
-      cta: { label: "Get a Quote", href: "#contact" },
+      cta: { label: "Get a Quote", href: "{quoteHref}" },
       menuAria: "Open menu",
       closeMenuAria: "Close menu",
       mobile: {
@@ -185,7 +187,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       quoteBox: {
         title: "Need a Quote?",
         body: "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
-        cta: { label: "Fill the Form", href: "/contact#quote" },
+        cta: { label: "Fill the Form", href: "{quoteHref}" },
       },
     },
     "sections.map": {
@@ -288,7 +290,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         title: "Need a Quote?",
         body: "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
         telLabel: "Tel: {office} Ext {officeExtension}",
-        cta: { label: "Get a Free Quote", href: "#contact" },
+        cta: { label: "{quoteLabel}", href: "{quoteHref}" },
       },
       notFound: {
         crumb: "Not found",

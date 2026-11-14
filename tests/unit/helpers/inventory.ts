@@ -95,6 +95,26 @@ export const CHANGED_SINCE_BASELINE: ReadonlyMap<string, string> = new Map([
     "footer.contactLines.address2",
     "The footer's second address line is Settings › Contact's, which includes \"Ireland.\".",
   ],
+  ...(
+    [
+      "navigation.cta.href",
+      "home.hero.primaryCta.href",
+      "about.story.cta.href",
+      "services.grid.quote.href",
+      "services.grid.help.cta.href",
+      "quoteCard.cta.href",
+    ] as const
+  ).map(
+    (id) =>
+      [
+        id,
+        "Quote buttons go to Settings › Contact's {quoteHref} (/contact#quote), which works on every page; #contact did not.",
+      ] as const
+  ),
+  [
+    "services.grid.quote.label",
+    'The services quote button reads Settings › Contact\'s {quoteLabel} ("Get a Free Quote"), like every other quote button.',
+  ],
 ])
 
 /** Where an inventory target lives now: normalised, then relocated (`null` = removed). */

@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { text } from "../common"
+import { href, text } from "../common"
 
 /**
  * settings.contact — numbers and addresses edited once. tel: hrefs are
@@ -20,5 +20,15 @@ export const contactSettings = z.object({
   hours: text,
   addressLine1: text,
   addressLine2: text,
+  /** Text of every {quoteLabel} button (header, hero, quote cards…). */
+  quoteLabel: text,
+  /**
+   * Where every {quoteHref} button goes. A real address: it is itself the
+   * value of {quoteHref}, so it can never be a placeholder.
+   */
+  quoteHref: href.refine(
+    (value) => !value.includes("{"),
+    "Use a real address such as /contact#quote"
+  ),
 })
 export type ContactSettings = z.infer<typeof contactSettings>

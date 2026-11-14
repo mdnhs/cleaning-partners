@@ -40,6 +40,37 @@ describe("link placeholder rules (server and editor)", () => {
     expect(unknownPlaceholder("{recruitmentEmail}")).toBeUndefined()
   })
 
+  it("fills {quoteLabel} and {quoteHref} (a whole-value URL placeholder)", () => {
+    expect(CONTACT_FIELDS).toEqual(
+      expect.arrayContaining(["quoteLabel", "quoteHref"])
+    )
+    expect(
+      linkPlaceholderProblems({ label: "{quoteLabel}", href: "{quoteHref}" })
+    ).toEqual({})
+    expect(issues({ label: "Get a Quote", href: "{quoteHref}" })).toEqual([])
+    // {quoteLabel} is text, not an address.
+    expect(issues({ label: "x", href: "{quoteLabel}" })).toEqual([
+      { path: "href", message: expect.stringContaining("{quoteHref}") },
+    ])
+  })
+
+  it("rejects a placeholder or an unsafe URL as the quote address itself", () => {
+    const contact = settingsFixture(fixtureMediaLookup).contact
+    expect(contactSettings.safeParse(contact).success).toBe(true)
+    for (const quoteHref of [
+      "{quoteHref}",
+      "{officeHref}",
+      "/contact{x}",
+      "javascript:alert(1)",
+      "//evil.example",
+      "",
+    ])
+      expect(
+        contactSettings.safeParse({ ...contact, quoteHref }).success,
+        quoteHref
+      ).toBe(false)
+  })
+
   it("accepts the shipped link shapes", () => {
     for (const value of [
       { label: "Call 24/7: {phone24h}", href: "{phone24hHref}" },

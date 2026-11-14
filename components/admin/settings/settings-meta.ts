@@ -112,6 +112,14 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       hours: { label: "Office hours", icon: "clock", width: "full" },
       addressLine1: { label: "Address line 1", icon: "map" },
       addressLine2: { label: "Address line 2" },
+      quoteLabel: {
+        label: "Quote button text",
+        help: "Used by every button whose text is {quoteLabel}.",
+      },
+      quoteHref: {
+        label: "Quote page address",
+        help: "Where every {quoteHref} button goes, e.g. /contact#quote.",
+      },
     },
     groups: {
       "": [
@@ -141,6 +149,12 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
           title: "Opening hours",
           description: "Shown next to the office number.",
           fields: ["hours"],
+        },
+        {
+          title: "Quote button",
+          description:
+            "The quote buttons across the site: header, home hero, service and article cards.",
+          fields: ["quoteLabel", "quoteHref"],
         },
       ],
     },

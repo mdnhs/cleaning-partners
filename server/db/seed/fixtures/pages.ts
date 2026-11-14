@@ -26,7 +26,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           title: "Cleaning Partners Ltd.",
           subtitle:
             "The Clean Team. Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond.",
-          primaryCta: { label: "Get a Free Quote", href: "#contact" },
+          primaryCta: { label: "{quoteLabel}", href: "{quoteHref}" },
           secondaryCta: { label: "Our Services", href: "#services" },
           memberLabel: "Proud member of",
         },
@@ -102,7 +102,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
             "Commercial",
             "Residential",
           ],
-          cta: { label: "Get a Free Quote", href: "#contact" },
+          cta: { label: "{quoteLabel}", href: "{quoteHref}" },
         },
         stats: [
           { value: "15+", label: "Years of combined experience" },
@@ -133,12 +133,12 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           priceBadge: "Prices Vary",
           learnMoreAria: "Learn more about {title}",
           learnMore: "Learn More  →",
-          quoteCta: { label: "Get A Quote", href: "#contact" },
+          quoteCta: { label: "{quoteLabel}", href: "{quoteHref}" },
           helpCard: {
             icon: media("/images/services/icon-help.svg"),
             title: "Not sure what you need?",
             body: "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
-            cta: { label: "Contact Us", href: "#contact" },
+            cta: { label: "Contact Us", href: "{quoteHref}" },
             callLabel: "Or call {office} Ext {officeExtension}",
           },
         },

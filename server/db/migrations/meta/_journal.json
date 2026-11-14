@@ -302,6 +302,13 @@
       "when": 1793930000000,
       "tag": "0042_icon_cards_section",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1793940000000,
+      "tag": "0043_quote_cta_placeholders",
+      "breakpoints": true
     }
   ]
 }

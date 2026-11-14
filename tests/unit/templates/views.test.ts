@@ -15,6 +15,7 @@ import {
   mapsSearchHref,
   NOT_FOUND_FALLBACK,
   notFoundView,
+  quoteCardView,
   whyChooseUsView,
 } from "@/templates/shared/views"
 import { serviceDetailView, servicesView } from "@/templates/services/view"
@@ -77,7 +78,7 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     })
     expect(chrome.header.cta).toEqual({
       label: "Get a Quote",
-      href: "#contact",
+      href: "/contact#quote",
     })
     expect(chrome.header.menuAria).toBe("Open menu")
     // Services carries its hover list (tests/unit/header-services-menu.test.ts).
@@ -268,6 +269,43 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
       },
     })
     expect(view.hero.image).toBe("/own.png")
+  })
+
+  it("every quote button reads Settings › Contact's quote text and address", () => {
+    const quote = { label: "Get a Free Quote", href: "/contact#quote" }
+    expect(homeView(s).hero.primaryCta).toEqual(quote)
+    expect(aboutView(s).story.cta).toEqual(quote)
+    expect(servicesView(s).grid.quoteCta).toEqual(quote)
+    expect(servicesView(s).grid.helpCard.cta).toEqual({
+      label: "Contact Us",
+      href: "/contact#quote",
+    })
+    expect(quoteCardView(s).cta).toEqual(quote)
+    expect(contactSectionView(s).quote.cta).toEqual({
+      label: "Fill the Form",
+      href: "/contact#quote",
+    })
+    // One edit in Settings › Contact moves every button.
+    const moved = {
+      ...s,
+      settings: {
+        ...s.settings,
+        contact: {
+          ...s.settings.contact,
+          quoteLabel: "Request a quote",
+          quoteHref: "/quote",
+        },
+      },
+    }
+    expect(chromeView(moved).header.cta).toEqual({
+      label: "Get a Quote",
+      href: "/quote",
+    })
+    expect(homeView(moved).hero.primaryCta).toEqual({
+      label: "Request a quote",
+      href: "/quote",
+    })
+    expect(quoteCardView(moved).cta.href).toBe("/quote")
   })
 
   it("about: story paragraphs, sectors and stats", () => {
