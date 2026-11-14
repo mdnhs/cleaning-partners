@@ -1,3 +1,5 @@
+import type { ChatSettings } from "@/lib/schemas/settings/chat"
+
 /** The placeholders a chat text may hold (settings.chat copy and notices). */
 export type ChatTextValues = Partial<
   Record<"team" | "botName" | "agent" | "name", string>
@@ -14,4 +16,30 @@ export function fillChatText(template: string, values: ChatTextValues): string {
     PLACEHOLDER,
     (match, key: keyof ChatTextValues) => values[key] ?? match
   )
+}
+
+/** What the launcher, hint and panel get: copy stays templated, names are set. */
+export type ChatWidgetProps = {
+  copy: ChatSettings["copy"]
+  hint: ChatSettings["hint"]
+  team: string
+  botName: string
+  quoteHref: string
+}
+
+/**
+ * The widget props from the published settings, worked out once on the
+ * server: the team and bot names travel beside the templates they fill.
+ */
+export function chatLauncherProps(
+  chat: ChatSettings,
+  contact: { quoteHref: string }
+): ChatWidgetProps {
+  return {
+    copy: chat.copy,
+    hint: chat.hint,
+    team: chat.teamName,
+    botName: chat.bot.name,
+    quoteHref: contact.quoteHref,
+  }
 }
