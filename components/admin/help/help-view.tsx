@@ -58,9 +58,9 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     group: "content",
     title: "Change the words or pictures on a page",
     summary:
-      "Pages lists every page of the site. Open one, change what you need, then publish.",
+      "Website lists every page of the site. Open one, change what you need, then publish.",
     steps: [
-      "Open Pages in the left menu and choose the page, for example Home or About.",
+      "Open Website and choose the page, for example Home or About. Each page's tabs hold the sections and lists it shows.",
       "Edit a section's text, button or image. Changes save to a draft by themselves, so the live site does not change yet.",
       "Use the preview to see the page as visitors will, on a phone or a computer.",
       "Press Publish and check the list of changes. The site updates within a few seconds.",
@@ -74,7 +74,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       "Pages you add yourself are put together from ready-made blocks and live under /p/ on the site.",
     steps: [
-      "Open Pages and choose New page. You can also find it with the search (Ctrl or ⌘ K).",
+      "Open Website, Custom pages and choose New page. You can also find it with the search (Ctrl or ⌘ K).",
       "Add blocks one by one and fill in each. Changes save to a draft by themselves.",
       "Press Publish. The page appears at /p/ followed by its address (slug).",
       "If you change the address of a published page, the old link is sent to the new one.",
@@ -86,14 +86,14 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     group: "content",
     title: "Post a job and handle applications",
     summary:
-      "Careers holds the jobs shown on /careers and the applications people send, with their CVs.",
+      "Website, Careers holds the jobs shown on /careers. The applications people send, with their CVs, arrive under Enquiries.",
     steps: [
-      "Open Careers, then Jobs, and choose New job. Fill in the title, location, hours, pay and the role's details.",
+      "Open Website, Careers, Jobs and choose New job. Fill in the title, location, hours, pay and the role's details.",
       "Press Publish. The job appears under Open Positions on /careers with its own page and application form.",
       "When the role is filled, press Close. It moves to Previous Openings and its form stops taking applications. A closing date closes it by itself.",
-      "Applications arrive under Careers, then Applications, and by email to the Careers recipients in Site settings. Open one to read the answers and download the CV.",
+      "Applications arrive under Enquiries, Job applications, and by email to the Careers recipients in Site settings. Open one to read the answers and download the CV.",
       "Set each application's status and add notes as you go. Applications and their CVs are deleted automatically after the retention period in Site settings, Job applications.",
-      "The words on the careers pages and the form's questions and options are edited in Pages, Careers.",
+      "The words on the careers pages and the form's questions and options are edited in Website, Careers.",
     ],
   },
   {
@@ -103,7 +103,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       "Each service has its own page, plus a card on the Services page and the home page.",
     steps: [
-      "Open Services and choose New service, or open one to edit it.",
+      "Open Website, Services, All services and choose New service, or open one to edit it.",
       "Fill in the name, the card text, the banner text and picture, and what is included.",
       "List the places you clean (offices, homes, clinics and so on) so visitors see them on the page.",
       "A new service starts as a draft and stays hidden until you publish it.",
@@ -115,9 +115,9 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     group: "content",
     title: "Add a customer testimonial",
     summary:
-      "Testimonials live under Collections and appear in the reviews section of the site.",
+      "Testimonials live in Website, Home and appear in the reviews section of the site.",
     steps: [
-      "Open Collections, then Testimonials, and choose Add testimonial.",
+      "Open Website, Home, Testimonials and choose Add testimonial.",
       "Enter the customer's name, their initials and the quote, then pick a rating from 1 to 5 stars.",
       "Save. Testimonials go live straight away: there is no separate publish step.",
       "Choose Change order, then drag rows to change the order, or delete a testimonial you no longer want to show.",
@@ -128,9 +128,9 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     group: "content",
     title: "Update the team, clients and group companies",
     summary:
-      "These short lists sit together under Collections and work the same way as testimonials.",
+      "These short lists sit in Website, on the page that shows them, and work the same way as testimonials.",
     steps: [
-      "Open Collections and choose Team, Clients or Group companies.",
+      "Open Website, About, Team members; Website, Home, Client logos; or Website, Header & footer, Group companies.",
       "Add a person or company, edit a row, or choose Change order and drag to reorder.",
       "Changes show on the live site as soon as you save.",
     ],
@@ -142,10 +142,10 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     summary:
       "Blog holds your news and cleaning tips. Authors write, editors publish.",
     steps: [
-      "Open Blog and choose New article.",
+      "Open Website, Blog and choose New article.",
       "Write the title and the article, add a cover picture and choose a category.",
       "Authors can send an article for review. An editor then publishes it, or schedules it for a later date.",
-      "Categories are managed under Blog, then Categories.",
+      "Categories are managed under Website, Blog, Categories.",
     ],
   },
   {
@@ -179,11 +179,11 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     group: "content",
     title: "Change phone, email, address and menus",
     summary:
-      "Site settings holds the details that repeat across the whole site.",
+      "Website holds the details and sections that repeat across the site; Site settings keeps the business identity and inbox setup.",
     steps: [
-      "Open Site settings and choose Contact details to change the phone number, email, address or opening hours.",
-      "Use Navigation for the header and footer menus, and Footer for the closing text and links.",
-      "The other tabs edit the shared sections, such as Why choose us, Testimonials section and How it works.",
+      "Open Website, Contact, Contact details to change the phone number, email, address or opening hours.",
+      "Use Website, Header & footer: Navigation for the header and footer menus, and Footer for the closing text and links.",
+      "Shared sections sit on the page that features them: Why choose us and Testimonials section on Home, How it works on Services. A page lists the ones it shows under Shared on this page.",
       "Settings save to a draft first: press Publish to put them on the live site.",
     ],
   },
@@ -293,7 +293,7 @@ export const HELP_GUIDES: readonly HelpGuide[] = [
     summary:
       "Pages you add yourself are built from 15 blocks and live at /p/ followed by their address.",
     steps: [
-      "Open Pages and choose New page. Changes save to a draft by themselves, and Publish checks the whole page.",
+      "Open Website, Custom pages and choose New page. Changes save to a draft by themselves, and Publish checks the whole page.",
       "If a save is refused because the page changed meanwhile, reload it and make your change again.",
       "Two pages cannot share an address. Renaming the address of a published page keeps the old link working.",
       "Deleting a page can send its address to the home page. Without that option the old address shows a not-found page.",

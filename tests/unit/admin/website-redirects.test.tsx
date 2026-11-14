@@ -98,9 +98,9 @@ describe("old Pages URLs", () => {
     expect(session.requirePage).not.toHaveBeenCalled()
   })
 
-  it("/admin/pages?new=1 keeps the query", async () => {
+  it("/admin/pages?new=1 opens New page on Custom pages", async () => {
     await expect(inner(PagesPage(props({}, { new: "1" })))).rejects.toThrow(
-      "REDIRECT /admin/website?new=1"
+      "REDIRECT /admin/website/custom-pages?new=1"
     )
   })
 

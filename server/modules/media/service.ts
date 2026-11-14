@@ -13,6 +13,12 @@ import {
   isEditableSettingsKey,
   SETTINGS_ENTRIES,
 } from "@/lib/admin/settings-keys"
+import {
+  adminHrefForCollection,
+  adminHrefForSettings,
+  isWebsiteKey,
+  websiteHref,
+} from "@/lib/admin/website"
 import { hasPermission, type PermissionRequest } from "@/lib/auth/permissions"
 import { stripHiddenChars } from "@/lib/hidden-chars"
 import type { Paginated } from "@/lib/schemas/api/list"
@@ -463,13 +469,13 @@ function describeUsage(
     case "page":
       return with_(
         `${PAGE_LABELS[id as keyof typeof PAGE_LABELS] ?? id} page`,
-        `/admin/pages/${id}`
+        isWebsiteKey(id) ? websiteHref(id) : null
       )
     case "settings":
       return isEditableSettingsKey(id)
         ? with_(
             `Settings › ${SETTINGS_ENTRIES[id].label}`,
-            `/admin/settings/${id}`
+            adminHrefForSettings(id)
           )
         : isGrowthSettingsKey(id)
           ? with_(GROWTH_SETTINGS[id].label, GROWTH_SETTINGS[id].href)
@@ -479,13 +485,19 @@ function describeUsage(
     case "article":
       return with_(`Article: ${name}`, `/admin/blog/${id}`)
     case "team":
-      return with_(`Team: ${name}`, `/admin/collections/team?edit=${id}`)
+      return with_(
+        `Team: ${name}`,
+        `${adminHrefForCollection("team")}?edit=${id}`
+      )
     case "client":
-      return with_(`Client: ${name}`, `/admin/collections/clients?edit=${id}`)
+      return with_(
+        `Client: ${name}`,
+        `${adminHrefForCollection("clients")}?edit=${id}`
+      )
     case "groupCompany":
       return with_(
         `Group company: ${name}`,
-        `/admin/collections/group-companies?edit=${id}`
+        `${adminHrefForCollection("group-companies")}?edit=${id}`
       )
     case "builder-page":
       return with_(`Custom page: ${name}`, `/admin/pages/custom/${id}`)

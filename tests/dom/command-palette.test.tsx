@@ -302,7 +302,7 @@ describe("⌘K command palette (master 4.1)", () => {
     })
     await user.type(within(dialog).getByRole("combobox"), "landing")
     await user.click(within(dialog).getByRole("option", { name: "New page" }))
-    expect(push).toHaveBeenCalledWith("/admin/pages?new=1")
+    expect(push).toHaveBeenCalledWith("/admin/website/custom-pages?new=1")
   })
 
   it("a role without page:create is not offered New page", async () => {

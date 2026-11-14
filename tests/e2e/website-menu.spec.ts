@@ -95,6 +95,14 @@ test("/admin/collections/team?edit=<id> lands on its Website screen", async ({
   await expect(page.getByRole("dialog", { name: "Team member" })).toBeVisible()
 })
 
+// The old "New page" link: the dialog opens on Custom pages.
+test("/admin/pages?new=1 opens New page on Custom pages", async ({ page }) => {
+  await signIn(page)
+  await page.goto("/admin/pages?new=1")
+  await expect(page).toHaveURL(/\/admin\/website\/custom-pages\?new=1$/)
+  await expect(page.getByRole("dialog", { name: "New page" })).toBeVisible()
+})
+
 test("Services keeps Website highlighted", async ({ page }) => {
   await signIn(page)
   await page.goto("/admin/services")

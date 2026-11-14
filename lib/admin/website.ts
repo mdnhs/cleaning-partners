@@ -319,8 +319,9 @@ export function adminHrefForCollection(name: CollectionName): string {
   const part = WEBSITE_PARTS.find(
     (p) => p.source.kind === "collection" && p.source.name === name
   )
-  // Every other collection has a part (pinned by the unit test).
-  return part ? partHref(part) : `/admin/collections/${name}`
+  // Every other collection has a part (pinned by the unit test); the
+  // Website index is the fallback, never the old /admin/collections stub.
+  return part ? partHref(part) : "/admin/website"
 }
 
 /** The screen a builder page returns to: legal pages or custom pages. */

@@ -166,7 +166,7 @@ const titleKey = (title: string) =>
   title.trim().replace(/\s+/g, " ").toLowerCase()
 
 const FIX_BASE: Record<SeoKind, string> = {
-  page: "/admin/pages",
+  page: "/admin/website",
   service: "/admin/services",
   article: "/admin/blog",
   builder: "/admin/pages/custom",

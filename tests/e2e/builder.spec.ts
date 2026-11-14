@@ -221,7 +221,7 @@ test("⌘K New page opens the new page dialog", async ({ browser }) => {
     const palette = page.getByRole("dialog", { name: "Search the admin" })
     await expect(palette.getByRole("combobox")).toBeVisible()
     await palette.getByRole("option", { name: /^New page/ }).click()
-    await expect(page).toHaveURL(/\/admin\/pages\?new=1$/)
+    await expect(page).toHaveURL(/\/admin\/website\/custom-pages\?new=1$/)
     await expect(page.getByRole("dialog", { name: "New page" })).toBeVisible()
   } finally {
     await context.close()

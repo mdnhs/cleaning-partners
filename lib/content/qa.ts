@@ -7,6 +7,11 @@ import {
   isEditableSettingsKey,
   SETTINGS_ENTRIES,
 } from "@/lib/admin/settings-keys"
+import {
+  adminHrefForSettings,
+  isWebsiteKey,
+  websiteHref,
+} from "@/lib/admin/website"
 
 export type QaRuleId =
   "placeholder-contact" | "placeholder-copy" | "legal-unpublished"
@@ -119,14 +124,19 @@ export function scanContent(input: {
     add(
       {
         label: isEditableSettingsKey(key) ? SETTINGS_ENTRIES[key].label : key,
-        href: `/admin/settings/${key}`,
+        href: isEditableSettingsKey(key)
+          ? adminHrefForSettings(key)
+          : `/admin/settings/${key}`,
       },
       scan(value, CONTACT_KEYS.has(key))
     )
   }
   for (const page of input.pages)
     add(
-      { label: pageLabel(page.key), href: `/admin/pages/${page.key}` },
+      {
+        label: pageLabel(page.key),
+        href: isWebsiteKey(page.key) ? websiteHref(page.key) : "/admin/website",
+      },
       scan(page.data, false)
     )
   for (const page of input.builderPages ?? [])

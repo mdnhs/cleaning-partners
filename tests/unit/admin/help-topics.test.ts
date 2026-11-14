@@ -71,23 +71,27 @@ describe("Help topics", () => {
  * build them.
  */
 const UI_LABELS: Record<string, string[]> = {
-  Pages: ["Pages"],
+  Website: ["Website"],
+  "Custom pages": ["Custom pages"],
+  "New page": ["New page"],
   Home: ["Home"],
   About: ["About"],
   Publish: ["Publish"],
   History: ["History"],
   Services: ["Services"],
+  "All services": ["All services"],
   "New service": ["New service"],
-  Collections: ["Collections"],
   Testimonials: ["Testimonials"],
   "Change order": ["Change order"],
-  Team: ["Team"],
-  Clients: ["Clients"],
+  "Team members": ["Team members"],
+  "Client logos": ["Client logos"],
+  "Header & footer": ["Header & footer"],
   "Group companies": ["Group companies"],
   Blog: ["Blog"],
   "New article": ["New article"],
   Categories: ["Categories"],
   Enquiries: ["Enquiries"],
+  "Job applications": ["Job applications"],
   Media: ["Media"],
   "Site settings": ["Site settings"],
   "Contact details": ["Contact details"],
@@ -134,7 +138,17 @@ describe("Help names real UI labels", () => {
   })
 
   it("does not use the labels that no longer exist", () => {
-    for (const stale of ["About us", "Revisions", "Choose Add,", "Users and"])
+    for (const stale of [
+      "About us",
+      "Revisions",
+      "Choose Add,",
+      "Users and",
+      // Moved under Website (Phase 3): no sidebar item of these names.
+      "Collections",
+      "Open Pages",
+      "Pages, Careers",
+      "Careers, then Applications",
+    ])
       expect(helpText).not.toContain(stale)
     expect(helpText).not.toMatch(/\bUsers\b(?! &)/)
     expect(helpText).not.toMatch(/choose Add\b(?! testimonial)/)

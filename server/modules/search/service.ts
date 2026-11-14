@@ -1,6 +1,7 @@
 import "server-only"
 
 import { PAGE_LABELS } from "@/lib/admin/page-labels"
+import { adminHrefForCollection, websiteHref } from "@/lib/admin/website"
 import { hasPermission } from "@/lib/auth/permissions"
 import {
   type OptionCollection,
@@ -41,7 +42,7 @@ export async function search(
           id: key,
           title: PAGE_LABELS[key],
           subtitle: PAGE_PATHS[key],
-          href: `/admin/pages/${key}`,
+          href: websiteHref(key),
         }))
     )
 
@@ -92,7 +93,7 @@ export async function search(
         id: row.id,
         title: row.name,
         subtitle: row.role,
-        href: `/admin/collections/team?edit=${row.id}`,
+        href: `${adminHrefForCollection("team")}?edit=${row.id}`,
       })
     for (const row of clientRows)
       items.push({
@@ -100,7 +101,7 @@ export async function search(
         id: row.id,
         title: row.name,
         subtitle: null,
-        href: `/admin/collections/clients?edit=${row.id}`,
+        href: `${adminHrefForCollection("clients")}?edit=${row.id}`,
       })
     for (const row of reviews)
       items.push({
@@ -108,7 +109,7 @@ export async function search(
         id: row.id,
         title: row.name,
         subtitle: row.quote,
-        href: `/admin/collections/testimonials?edit=${row.id}`,
+        href: `${adminHrefForCollection("testimonials")}?edit=${row.id}`,
       })
     for (const row of companies)
       items.push({
@@ -116,7 +117,7 @@ export async function search(
         id: row.id,
         title: row.name,
         subtitle: row.site,
-        href: `/admin/collections/group-companies?edit=${row.id}`,
+        href: `${adminHrefForCollection("group-companies")}?edit=${row.id}`,
       })
     for (const row of categories)
       items.push({

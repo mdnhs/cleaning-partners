@@ -439,7 +439,7 @@ export function visibleNav(
 
 /**
  * Where a section index without a page of its own (/admin/settings,
- * /admin/collections) lands: its first child `roles` may open; undefined
+ * /admin/website) lands: its first child `roles` may open; undefined
  * when the section is hidden from them or has no children.
  */
 export function firstVisibleChild(

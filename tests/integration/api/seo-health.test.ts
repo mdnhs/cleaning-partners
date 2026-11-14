@@ -191,7 +191,7 @@ describe("GET /seo/health (D1.2)", () => {
       title: "About",
       path: "/about",
       message: "Hidden from search engines",
-      fixHref: "/admin/pages/about?tab=seo",
+      fixHref: "/admin/website/about?tab=seo",
     })
     expect(fix("service", service.id)?.fixHref).toBe(
       `/admin/services/${service.id}?tab=seo`

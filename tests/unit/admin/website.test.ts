@@ -1,3 +1,5 @@
+import { globSync, readFileSync } from "node:fs"
+
 import { describe, expect, it } from "vitest"
 
 import { PAGE_LABELS } from "@/lib/admin/page-labels"
@@ -161,5 +163,25 @@ describe("website registry", () => {
       withSearch("/a", { edit: "x", tag: ["1", "2"], none: undefined })
     ).toBe("/a?edit=x&tag=1&tag=2")
     expect(withSearch("/a", {})).toBe("/a")
+  })
+})
+
+describe("deep links", () => {
+  // /admin/pages, /admin/pages/<key> and /admin/collections/* are redirect
+  // stubs now: an admin link must name the Website screen directly.
+  // (/admin/pages/custom/<id> is the builder editor and stays.)
+  const MOVED = /["'`]\/admin\/(pages(["'`?]|\/\$\{)|collections\/)/
+
+  it("no source builds a moved admin URL", () => {
+    const offenders = globSync(
+      "{app,components,lib,server}/**/*.{ts,tsx}"
+    ).flatMap((file) =>
+      readFileSync(file, "utf8")
+        .split("\n")
+        // A stub's own route type (PageProps<"/admin/pages">) is not a link.
+        .map((line) => line.replace(/\b(PageProps|RouteContext)<"[^"]*"/g, ""))
+        .flatMap((line, i) => (MOVED.test(line) ? [`${file}:${i + 1}`] : []))
+    )
+    expect(offenders).toEqual([])
   })
 })

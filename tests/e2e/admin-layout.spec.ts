@@ -129,7 +129,7 @@ test("⌘K opens, searches CP records and navigates", async ({ page }) => {
     dialog.getByRole("option", { name: /Thomas Murray/ })
   ).toBeVisible()
   await dialog.getByRole("option", { name: /Thomas Murray/ }).click()
-  await expect(page).toHaveURL(/\/admin\/collections\/testimonials\?edit=/)
+  await expect(page).toHaveURL(/\/admin\/website\/home\/testimonials\?edit=/)
 })
 
 test("impersonating shows the banner with a stop control", async ({ page }) => {

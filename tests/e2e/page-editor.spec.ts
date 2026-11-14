@@ -223,14 +223,22 @@ test("a field focused with Shift+Tab is scrolled clear of the sticky header (WCA
   }
   // Scroll the panel until the Heading input sits just under the stuck bar
   // (inside the panel, so the browser alone would not scroll it into view).
+  // On a Website screen the tabs and "Shared on this page" sit above the
+  // bar, so at the top it is not stuck yet and moves up as the panel
+  // scrolls: measure again once it sticks (the second pass is then exact).
   await page.locator("main#main").evaluate((main, offset) => {
     main.scrollTop = offset
   }, 0)
-  const headingTop = (await heading.boundingBox())!.y
-  const barBottom = await bottomOf()
-  await page
-    .locator("main#main")
-    .evaluate((main, by) => (main.scrollTop += by), headingTop - barBottom + 10)
+  for (let pass = 0; pass < 2; pass++) {
+    const headingTop = (await heading.boundingBox())!.y
+    const barBottom = await bottomOf()
+    await page
+      .locator("main#main")
+      .evaluate(
+        (main, by) => (main.scrollTop += by),
+        headingTop - barBottom + 10
+      )
+  }
   expect((await heading.boundingBox())!.y).toBeLessThan(await bottomOf())
   await intro.focus()
   await page.keyboard.press("Shift+Tab")

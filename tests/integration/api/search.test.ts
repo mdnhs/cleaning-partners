@@ -48,12 +48,18 @@ describe("GET /api/v1/admin/search (⌘K, master 4.1)", () => {
       id: "home",
       title: "Home",
       subtitle: "/",
-      href: "/admin/pages/home",
+      href: "/admin/website/home",
     })
 
     const team = await search(editor, "moran")
     expect(team).toEqual([
-      expect.objectContaining({ type: "team", title: "Sarah Moran" }),
+      expect.objectContaining({
+        type: "team",
+        title: "Sarah Moran",
+        href: expect.stringMatching(
+          /^\/admin\/website\/about\/team\?edit=[0-9a-f-]{36}$/
+        ),
+      }),
     ])
 
     const review = await search(editor, "murray")
@@ -62,7 +68,7 @@ describe("GET /api/v1/admin/search (⌘K, master 4.1)", () => {
         type: "testimonial",
         title: "Thomas Murray",
         href: expect.stringMatching(
-          /^\/admin\/collections\/testimonials\?edit=[0-9a-f-]{36}$/
+          /^\/admin\/website\/home\/testimonials\?edit=[0-9a-f-]{36}$/
         ),
       }),
     ])
