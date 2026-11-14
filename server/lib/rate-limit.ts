@@ -46,6 +46,11 @@ export const CHAT_SEND_CHAT_RATE_LIMIT = {
   max: 60,
   windowMs: 60 * 60_000,
 } as const
+/** Bot replies site-wide, key "chat:bot:site". */
+export const CHAT_BOT_SITE_RATE_LIMIT = {
+  max: 300,
+  windowMs: 60 * 60_000,
+} as const
 /** Visitor polls per IP, key rateLimitKey("chat-poll", ip). */
 export const CHAT_POLL_RATE_LIMIT = {
   bucket: "chat-poll",
