@@ -30,7 +30,7 @@ import { usePermission } from "@/hooks/use-permission"
 import { api, errorMessage, unwrap } from "@/lib/api-client"
 import { builderPath } from "@/lib/schemas/api/builder-pages"
 
-/** One row of either list. */
+/** One row of the list. */
 type PageRow = {
   key: string
   label: string
@@ -59,10 +59,10 @@ function Updated({ page, now }: { page: PageRow; now: number }) {
 }
 
 /**
- * The site's seven fixed pages, then the custom (builder) pages; "New page"
+ * The custom (builder) pages, each at /p/<address>; "New page"
  * (page:create) or `?new=1` opens the dialog.
  */
-export function PagesList() {
+export function CustomPagesScreen() {
   const canCreate = usePermission({ page: ["create"] })
   const router = useRouter()
   const pathname = usePathname()
@@ -70,9 +70,6 @@ export function PagesList() {
   const [opened, setOpened] = useState(false)
   return (
     <div className="flex flex-col gap-10">
-      <Section title="Site pages">
-        <SitePagesList />
-      </Section>
       <Section
         title="Custom pages"
         action={
@@ -124,36 +121,6 @@ function Section({
       </div>
       {children}
     </section>
-  )
-}
-
-const fixedRow = (page: Omit<PageRow, "href"> & { key: string }): PageRow => ({
-  ...page,
-  href: `/admin/pages/${page.key}`,
-})
-
-/** The seven fixed pages (JW pages list). */
-function SitePagesList() {
-  const pages = useQuery({
-    queryKey: ["pages"],
-    queryFn: () => unwrap(api.pages.$get()),
-  })
-  if (pages.isPending) return <Loading what="pages" />
-  if (pages.isError) return <LoadError what="pages" query={pages} />
-  if (pages.data.items.length === 0)
-    return (
-      <EmptyState
-        icon={FileText}
-        title="No pages yet"
-        description="The site's pages appear here once the content is seeded."
-      />
-    )
-  return (
-    <PageRows
-      label="Site pages"
-      rows={pages.data.items.map(fixedRow)}
-      now={pages.dataUpdatedAt}
-    />
   )
 }
 

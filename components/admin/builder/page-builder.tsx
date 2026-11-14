@@ -48,6 +48,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { usePermission } from "@/hooks/use-permission"
+import { backLinkForBuilderPage } from "@/lib/admin/website"
 import { api, ApiError, errorMessage, unwrap } from "@/lib/api-client"
 import { isDeepEqual } from "@/lib/json"
 import {
@@ -461,10 +462,7 @@ function Builder({ initial }: { initial: BuilderPageDto }) {
         when={canEdit && broken === null && autosave.state !== "saved"}
       />
       <PageHeader
-        breadcrumbs={[
-          { label: "Pages", href: "/admin/pages" },
-          { label: record.title },
-        ]}
+        breadcrumbs={[backLinkForBuilderPage(record), { label: record.title }]}
         title={record.title}
         description={
           <span className="flex flex-wrap items-center gap-2">

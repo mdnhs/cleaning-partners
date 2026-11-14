@@ -22,10 +22,12 @@ vi.mock("next/navigation", () => nav)
 
 const session = vi.hoisted(() => ({
   roles: ["owner"] as string[],
+  requireActor: vi.fn(),
   requirePermission: vi.fn(),
   requirePage: vi.fn(),
 }))
 vi.mock("@/server/auth/session", () => ({
+  requireActor: session.requireActor,
   requirePermission: session.requirePermission,
   requirePage: session.requirePage,
 }))
@@ -81,11 +83,19 @@ import {
   EDITABLE_SETTINGS_KEYS,
   SETTINGS_ENTRIES,
 } from "@/lib/admin/settings-keys"
+import {
+  adminHrefForSettings,
+  isWebsiteSettingsKey,
+  SITE_SETTINGS_KEYS,
+} from "@/lib/admin/website"
 import { hasPermission, type PermissionRequest } from "@/lib/auth/permissions"
 
 beforeEach(() => {
   vi.clearAllMocks()
   session.roles = ["owner"]
+  session.requireActor.mockImplementation(async () => ({
+    roles: session.roles,
+  }))
   session.requirePermission.mockImplementation(
     async (req: PermissionRequest) => {
       if (!hasPermission(session.roles, req)) nav.forbidden()
@@ -98,7 +108,7 @@ beforeEach(() => {
   session.requirePage.mockImplementation(async (href: string) => {
     const permission = permissionFor(href)
     if (permission === undefined) nav.notFound()
-    if (permission === null) return { roles: session.roles }
+    if (permission === null) return session.requireActor()
     return session.requirePermission(permission)
   })
 })
@@ -126,14 +136,13 @@ describe("/admin/settings opens its first readable child (registry)", () => {
   })
 })
 
-describe("/admin/collections opens its first readable child (registry)", () => {
-  it("→ Team for collection readers; forbidden without collection:read", async () => {
-    session.roles = ["editor"]
-    await expect(inner(CollectionsPage())).rejects.toThrow(
-      "REDIRECT /admin/collections/team"
-    )
+describe("/admin/collections moved to Website (Phase 3)", () => {
+  it("→ /admin/website for any signed-in user (each screen guards itself)", async () => {
     session.roles = ["author"]
-    await expect(inner(CollectionsPage())).rejects.toThrow("FORBIDDEN")
+    await expect(
+      inner(CollectionsPage({ searchParams: params({}) } as never))
+    ).rejects.toThrow("REDIRECT /admin/website")
+    expect(session.requireActor).toHaveBeenCalled()
   })
 })
 
@@ -157,17 +166,38 @@ describe("/admin/settings/[key]", () => {
     }
   )
 
-  it.each(EDITABLE_SETTINGS_KEYS)(
+  it.each(SITE_SETTINGS_KEYS)(
     "%s renders its editor behind the key's read permission",
     async (key) => {
       const out = await inner(
-        SettingsKeyPage({ params: params({ key }) } as never)
+        SettingsKeyPage({
+          params: params({ key }),
+          searchParams: params({}),
+        } as never)
       )
       expect(session.requirePermission).toHaveBeenCalledWith(
         SETTINGS_ENTRIES[key].read
       )
       expect(out!.type).toBe(SettingsEditor)
       expect(out!.props).toMatchObject({ settingsKey: key })
+    }
+  )
+
+  it.each(EDITABLE_SETTINGS_KEYS.filter((key) => isWebsiteSettingsKey(key)))(
+    "%s moved to Website: redirects behind the key's read permission",
+    async (key) => {
+      await expect(
+        inner(
+          SettingsKeyPage({
+            params: params({ key }),
+            searchParams: params({}),
+          } as never)
+        )
+      ).rejects.toThrow(`REDIRECT ${adminHrefForSettings(key)}`)
+      expect(session.requirePermission).toHaveBeenCalledWith(
+        SETTINGS_ENTRIES[key].read
+      )
+      expect(adminHrefForSettings(key)).toMatch(/^\/admin\/website\//)
     }
   )
 })

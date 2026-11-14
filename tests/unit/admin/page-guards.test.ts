@@ -68,9 +68,6 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "help/page.tsx": null,
   "users/page.tsx": { user: ["read"] },
   "users/[id]/page.tsx": { user: ["read"] },
-  "pages/page.tsx": { page: ["read"] },
-  "pages/[key]/page.tsx": { page: ["read"] },
-  "pages/legal/page.tsx": { page: ["read"] },
   "careers/page.tsx": { job: ["read"] },
   "careers/new/page.tsx": { job: ["read"] },
   "careers/[id]/page.tsx": { job: ["read"] },
@@ -81,11 +78,6 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "blog/[id]/page.tsx": { article: ["read"] },
   "blog/categories/page.tsx": { collection: ["read"] },
   "blog/new/page.tsx": { article: ["read"] },
-  "collections/page.tsx": { collection: ["read"] },
-  "collections/clients/page.tsx": { collection: ["read"] },
-  "collections/group-companies/page.tsx": { collection: ["read"] },
-  "collections/team/page.tsx": { collection: ["read"] },
-  "collections/testimonials/page.tsx": { collection: ["read"] },
   "leads/page.tsx": { lead: ["read"] },
   "leads/[id]/page.tsx": { lead: ["read"] },
   "media/page.tsx": { media: ["read"] },
@@ -109,6 +101,23 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   // website-pages test (e.g. /admin/website/blog → article:read).
   "website/[key]/page.tsx": null,
   "website/[key]/[part]/page.tsx": null,
+  "website/custom-pages/page.tsx": { page: ["read"] },
+  "website/legal/page.tsx": { page: ["read"] },
+}
+
+/**
+ * Old URLs that only 307 to a Website screen (Phase 3 Task 3). They are on
+ * their way out of the registry, so they do not use requirePage: each signs
+ * in first (`await requireActor()`, before any notFound, so a stranger never
+ * learns which paths exist), then checks the pinned permission (null = any
+ * signed-in user), then redirects keeping the query. Nothing else is exempt.
+ */
+const REDIRECT_STUBS: Record<string, string | null> = {
+  "pages/page.tsx": null,
+  "pages/[key]/page.tsx": `requirePermission({ page: ["read"] })`,
+  "pages/legal/page.tsx": `requirePermission({ page: ["read"] })`,
+  "collections/page.tsx": null,
+  "collections/[name]/page.tsx": `requirePermission({ collection: ["read"] })`,
 }
 
 /**
@@ -130,7 +139,7 @@ describe("panel page guards", () => {
     expect(pages.length).toBeGreaterThan(1)
   })
 
-  it.each(pages)(
+  it.each(pages.filter((file) => !(rel(file) in REDIRECT_STUBS)))(
     "%s guards with requirePage on its registered href",
     (file) => {
       const src = source(file)
@@ -171,13 +180,48 @@ describe("panel page guards", () => {
     }
   )
 
+  it.each(Object.entries(REDIRECT_STUBS))(
+    "%s is a redirect stub: requireActor first, then its permission, query kept",
+    (file, check) => {
+      const src = source(`${ROOT}/${file}`)
+      expect(src).not.toMatch(/requirePage\(/)
+      const actor = src.search(/^\s*await requireActor\(\)$/m)
+      expect(actor, "awaits requireActor() as a statement").toBeGreaterThan(-1)
+      const notFound = src.indexOf("notFound()")
+      if (notFound !== -1) expect(actor).toBeLessThan(notFound)
+      const permission = src.indexOf("requirePermission(")
+      if (check === null) expect(permission).toBe(-1)
+      else {
+        expect(src).toMatch(
+          new RegExp(
+            `^\\s*await ${check.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+            "m"
+          )
+        )
+        expect(actor).toBeLessThan(permission)
+        if (notFound !== -1) expect(notFound).toBeLessThan(permission)
+      }
+      const go = src.search(
+        /^\s*redirect\(withSearch\(.*await searchParams\)\)$/m
+      )
+      expect(go, "redirects with the query kept").toBeGreaterThan(actor)
+    }
+  )
+
   it("pins a permission for every panel page", () => {
-    expect(Object.keys(EXPECTED).sort()).toEqual(pages.map(rel).sort())
+    expect(
+      [...Object.keys(EXPECTED), ...Object.keys(REDIRECT_STUBS)].sort()
+    ).toEqual(pages.map(rel).sort())
   })
 
-  it.each(pages.map(rel))("%s resolves to its pinned permission", (file) => {
-    expect(permissionFor(guardHref(`${ROOT}/${file}`))).toEqual(EXPECTED[file])
-  })
+  it.each(Object.keys(EXPECTED))(
+    "%s resolves to its pinned permission",
+    (file) => {
+      expect(permissionFor(guardHref(`${ROOT}/${file}`))).toEqual(
+        EXPECTED[file]
+      )
+    }
+  )
 
   it("maps page files to guard hrefs", () => {
     expect(guardHref(`${ROOT}/page.tsx`)).toBe("/admin")
