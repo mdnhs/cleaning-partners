@@ -30,7 +30,7 @@ import {
   interpolateHref,
 } from "@/lib/interpolate"
 import type { WithMedia } from "@/lib/media"
-import type { Link, PageHero, PageHeroText } from "@/lib/schemas/common"
+import type { Link, PageHero } from "@/lib/schemas/common"
 
 import type {
   ChromeSources,
@@ -169,17 +169,19 @@ export function chromeView(s: ChromeSources): ChromeView {
 }
 
 /**
- * The inner-page hero. A hero without its own banner (about, contact) uses
- * the site's default hero image.
+ * The inner-page hero. A hero without its own banner (image null, or no
+ * image key as the 404 copy) uses the site's default hero image.
  */
 export function pageHeroView(
   s: NotFoundSources,
-  hero: WithMedia<PageHero> | WithMedia<PageHeroText>,
+  hero: Omit<WithMedia<PageHero>, "image"> & {
+    image?: WithMedia<PageHero>["image"]
+  },
   parents: PageHeroProps["parents"] = []
 ): PageHeroProps {
   const { navigation, microcopy, site } = s.settings
   return {
-    image: ("image" in hero ? hero.image : site.defaultHeroImage).url,
+    image: (hero.image ?? site.defaultHeroImage).url,
     crumb: textView(s, hero.crumb),
     parents,
     title: textView(s, hero.title),

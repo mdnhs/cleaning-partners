@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { iconCard, link, pageHeroText, text } from "@/lib/schemas/common"
+import { iconCard, link, pageHero, text } from "@/lib/schemas/common"
 
 /** Optional copy (help texts, placeholders): may be left empty. */
 const hint = z.string().max(500)
@@ -17,7 +17,7 @@ const step = z.object({ title: text, description: text })
  * {location} and {reference} are filled in at render.
  */
 export const careersTemplate = z.object({
-  hero: pageHeroText,
+  hero: pageHero,
   why: z.object({
     eyebrow: text,
     title: text,

@@ -24,6 +24,7 @@ export function careersPageFixture(media: MediaLookup): PageFixture<"careers"> {
     seo: {},
     data: {
       hero: {
+        image: null,
         crumb: "Careers",
         title: "Careers",
         description:

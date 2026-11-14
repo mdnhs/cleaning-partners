@@ -1,12 +1,12 @@
 import { z } from "zod"
 
-import { pageHeroText, text as copyText } from "@/lib/schemas/common"
+import { pageHero, text as copyText } from "@/lib/schemas/common"
 import { aboutTemplate } from "@/templates/about/schema"
 import { homeTemplate } from "@/templates/home/schema"
 import { servicesTemplate } from "@/templates/services/schema"
 
 import { defineBlock } from "./define-block"
-import { mediaRef, richText, sharedOnly } from "./fields"
+import { richText, sharedOnly } from "./fields"
 
 // One block per existing public section (R10-2). The renderer maps each to
 // its component through templates/shared/views.ts; API validation, the admin
@@ -36,8 +36,8 @@ const heroPage = defineBlock({
   label: "Page hero",
   icon: "PanelTop",
   description: "Banner image with breadcrumb, title and intro.",
-  // No image = the site's default hero image, as the about and contact pages.
-  schema: pageHeroText.extend({ image: mediaRef.nullable() }),
+  // No image = the site's default hero image, as on the fixed pages.
+  schema: pageHero,
   defaults: { image: null, crumb: "", title: "", description: "" },
   first: true,
   max: 1,

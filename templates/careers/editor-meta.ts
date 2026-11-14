@@ -1,5 +1,7 @@
 import type { EditorMeta } from "@/components/admin/schema-form/editor-meta"
 
+import { PAGE_HERO_GROUPS } from "../shared/editor-groups"
+
 /**
  * Editor hints for page "careers": the words of /careers, of every job page
  * (shared labels and sidebar) and of the application form.
@@ -9,6 +11,10 @@ export const careersEditorMeta: EditorMeta = {
     hero: {
       label: "Banner",
       help: "The title and intro at the top of /careers.",
+    },
+    "hero.image": {
+      label: "Banner image",
+      help: "Leave empty to use the default banner (Settings › Site).",
     },
     why: {
       label: "Why work with us",
@@ -81,4 +87,5 @@ export const careersEditorMeta: EditorMeta = {
       itemLabel: "title",
     },
   },
+  groups: { hero: PAGE_HERO_GROUPS },
 }

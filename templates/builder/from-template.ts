@@ -58,7 +58,7 @@ const home = (d: HomeTemplate): Spec[] => [
 ]
 
 const about = (d: AboutTemplate): Spec[] => [
-  ["hero.page", { ...d.hero, image: null }],
+  ["hero.page", d.hero],
   ["ourStory", d.story],
   ["stats", { items: d.stats }],
   sharedBlock("clients"),
@@ -78,7 +78,7 @@ const services = (d: ServicesTemplate): Spec[] => [
 ]
 
 const contactPage = (d: ContactTemplate): Spec[] => [
-  ["hero.page", { ...d.hero, image: null }],
+  ["hero.page", d.hero],
   contact(d.contactTitle),
   ["quoteForm", shared],
   sharedBlock("map"),
@@ -111,7 +111,7 @@ export function blocksFromTemplate<K extends PageKey>(
       // The job list and forms are page features, not sections: a copy
       // keeps the banner, and the editor adds sections themselves.
       return toBlocks([
-        ["hero.page", { ...(data as CareersTemplate).hero, image: null }],
+        ["hero.page", (data as CareersTemplate).hero],
         contact(),
       ])
   }

@@ -80,6 +80,9 @@ const POST_BASELINE_PAGE_LEAVES = new Set([
   ...["name", "phone", "email", "service", "address", "message", "consent"].map(
     (f) => `contact:quoteForm.fields.${f}.error`
   ),
+  // Optional own banner on every page hero (null = the site default).
+  "about:hero.image",
+  "contact:hero.image",
 ])
 
 function expectInventoryCovered(

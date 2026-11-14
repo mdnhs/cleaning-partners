@@ -6,7 +6,10 @@ import { PAGE_HERO_GROUPS } from "../shared/editor-groups"
 export const blogEditorMeta: EditorMeta = {
   fields: {
     hero: { label: "Page hero", help: "Banner at the top of the page." },
-    "hero.image": { label: "Banner image" },
+    "hero.image": {
+      label: "Banner image",
+      help: "Leave empty to use the default banner (Settings › Site).",
+    },
     "hero.crumb": { label: "Breadcrumb label" },
     "hero.title": { label: "Title" },
     "hero.description": { label: "Introduction" },

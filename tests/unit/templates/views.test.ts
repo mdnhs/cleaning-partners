@@ -207,6 +207,37 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     )
   })
 
+  it("a page hero without a banner uses the site's default banner", () => {
+    const blog = s.pages.blog
+    const view = blogView({
+      ...s,
+      pages: {
+        ...s.pages,
+        blog: {
+          ...blog,
+          data: { ...blog.data, hero: { ...blog.data.hero, image: null } },
+        },
+      },
+    })
+    expect(view.hero.image).toBe(s.settings.site.defaultHeroImage.url)
+  })
+
+  it("a page hero with its own banner uses it", () => {
+    const about = s.pages.about
+    const image = { ...s.settings.site.defaultHeroImage, url: "/own.png" }
+    const view = aboutView({
+      ...s,
+      pages: {
+        ...s.pages,
+        about: {
+          ...about,
+          data: { ...about.data, hero: { ...about.data.hero, image } },
+        },
+      },
+    })
+    expect(view.hero.image).toBe("/own.png")
+  })
+
   it("about: story paragraphs, sectors and stats", () => {
     const view = aboutView(s)
     expect(view.hero.title).toBe("About Us")

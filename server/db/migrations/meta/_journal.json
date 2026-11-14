@@ -267,6 +267,13 @@
       "when": 1793880000000,
       "tag": "0037_seo_organization_currency",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793890000000,
+      "tag": "0038_page_hero_image",
+      "breakpoints": true
     }
   ]
 }

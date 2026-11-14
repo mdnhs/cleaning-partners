@@ -281,8 +281,8 @@ describe("page fixtures (master 3.2)", () => {
   })
 
   it("about and contact heroes have no own image; services and blog do", () => {
-    expect("image" in fixture.about.data.hero).toBe(false)
-    expect("image" in fixture.contact.data.hero).toBe(false)
+    expect(fixture.about.data.hero.image).toBeNull()
+    expect(fixture.contact.data.hero.image).toBeNull()
     expect(fixture.services.data.hero.image).toBeDefined()
     expect(fixture.blog.data.hero.image).toBeDefined()
   })

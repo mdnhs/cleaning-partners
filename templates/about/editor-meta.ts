@@ -1,11 +1,14 @@
 import type { EditorMeta } from "@/components/admin/schema-form/editor-meta"
 
+import { PAGE_HERO_GROUPS } from "../shared/editor-groups"
+
 /** Editor labels for the About page (template "about"). Clients, why-choose-us and the rest are in Settings › Shared sections. */
 export const aboutEditorMeta: EditorMeta = {
   fields: {
-    hero: {
-      label: "Page hero",
-      help: "Banner at the top of the page. It uses the site's default banner image (Settings › Site).",
+    hero: { label: "Page hero", help: "Banner at the top of the page." },
+    "hero.image": {
+      label: "Banner image",
+      help: "Leave empty to use the default banner (Settings › Site).",
     },
     "hero.crumb": { label: "Breadcrumb label" },
     "hero.title": { label: "Title" },
@@ -28,13 +31,5 @@ export const aboutEditorMeta: EditorMeta = {
       help: "The figures in the band under the story.",
     },
   },
-  groups: {
-    hero: [
-      {
-        title: "Text",
-        description: "The breadcrumb, title and introduction over the banner.",
-        fields: ["crumb", "title", "description"],
-      },
-    ],
-  },
+  groups: { hero: PAGE_HERO_GROUPS },
 }

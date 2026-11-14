@@ -78,6 +78,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
       },
       data: {
         hero: {
+          image: null,
           crumb: "About",
           title: "About Us",
           description:
@@ -224,6 +225,7 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
       },
       data: {
         hero: {
+          image: null,
           crumb: "Contact",
           title: "Contact Us",
           description:

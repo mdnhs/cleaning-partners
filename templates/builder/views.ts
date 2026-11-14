@@ -77,13 +77,8 @@ export function blockView(block: ResolvedBlock, s: SiteSources): BlockView {
   switch (block.type) {
     case "hero":
       return { type: "hero", props: heroView(s, block.data) }
-    case "hero.page": {
-      const { image, ...text } = block.data
-      return {
-        type: "hero.page",
-        props: pageHeroView(s, image ? { ...text, image } : text),
-      }
-    }
+    case "hero.page":
+      return { type: "hero.page", props: pageHeroView(s, block.data) }
     case "ourStory":
       return { type: "ourStory", props: ourStoryView(s, block.data) }
     case "stats":
