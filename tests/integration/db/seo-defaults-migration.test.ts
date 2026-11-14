@@ -4,7 +4,10 @@ import { join } from "node:path"
 import { eq, sql } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { seoDefaultsSettings } from "@/lib/schemas/settings/seo-defaults"
+import {
+  organizationSettings,
+  seoDefaultsSettings,
+} from "@/lib/schemas/settings/seo-defaults"
 import { getDb } from "@/server/db/client"
 import { settings } from "@/server/db/schema"
 
@@ -19,11 +22,11 @@ const statements = readFileSync(join(DIR, file), "utf8")
   .map((s) => s.trim())
   .filter(Boolean)
 
-// The schema as of 0008: robots/verification arrive with 0013 (D1.6).
-const before0013 = seoDefaultsSettings.omit({
-  robots: true,
-  verification: true,
-})
+// The schema as of 0008: robots/verification arrive with 0013 (D1.6),
+// organization.currency with 0037.
+const before0013 = seoDefaultsSettings
+  .omit({ robots: true, verification: true })
+  .extend({ organization: organizationSettings.omit({ currency: true }) })
 
 const legacy = {
   title: "T",

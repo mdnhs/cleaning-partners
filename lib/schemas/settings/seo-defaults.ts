@@ -18,6 +18,8 @@ export const organizationSettings = z.object({
   addressCountry: z
     .string()
     .regex(/^[A-Z]{2}$/, "Two capital letters, e.g. IE"),
+  /** ISO 4217; job pay in Google for Jobs (lib/seo/job-posting.ts). */
+  currency: z.string().regex(/^[A-Z]{3}$/, "Three capital letters, e.g. EUR"),
   areaServed: text,
   /** Official profiles (LinkedIn, Facebook …). */
   sameAs: z.array(httpUrl).max(10),

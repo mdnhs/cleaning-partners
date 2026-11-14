@@ -228,6 +228,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         addressRegion: "Co. Laois",
         postalCode: "R32 YX49",
         addressCountry: "IE",
+        currency: "EUR",
         areaServed: "Ireland",
         sameAs: [],
       },

@@ -260,6 +260,13 @@
       "when": 1793870000000,
       "tag": "0036_careers_invalid_answer_copy",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793880000000,
+      "tag": "0037_seo_organization_currency",
+      "breakpoints": true
     }
   ]
 }
