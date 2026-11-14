@@ -5,8 +5,8 @@ import { useEffect, useLayoutEffect, useRef, type RefObject } from "react"
 
 import { reducedMotion } from "./use-widget-motion"
 
-// Port of JW features/chat/use-chat-moments.ts:1-117 (live chat plan §3.4,
-// §3.5). The unread moment joins in Task 10.
+// Port of JW features/chat/use-chat-moments.ts (live chat plan §3.2, §3.4,
+// §3.5).
 
 // A history restored in one go is part of the panel's opening, not news.
 const MAX_ANIMATED = 3
@@ -120,4 +120,31 @@ export function usePanelMoments({
   }, [online])
 
   return { avatar, statusLine, onlineDot }
+}
+
+// A new reply while the panel is closed: the launcher wiggles and the badge
+// pops in.
+export function useUnreadMoment(
+  unread: boolean,
+  launcher: RefObject<HTMLButtonElement | null>
+) {
+  const badge = useRef<HTMLSpanElement>(null)
+  const previous = useRef(false)
+  useLayoutEffect(() => {
+    const rose = unread && !previous.current
+    previous.current = unread
+    if (!rose || !launcher.current || reducedMotion()) return
+    gsap.to(launcher.current, {
+      keyframes: { rotate: [0, -14, 11, -7, 4, 0] },
+      duration: 0.6,
+      ease: "power1.inOut",
+    })
+    if (badge.current)
+      gsap.fromTo(
+        badge.current,
+        { scale: 0 },
+        { scale: 1, duration: 0.5, ease: "back.out(3)" }
+      )
+  }, [unread, launcher])
+  return badge
 }

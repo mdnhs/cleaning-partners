@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import "../globals.css"
 import { barlow, fontMono, roboto } from "@/app/fonts"
 import { AttributionCapture } from "@/components/attribution-capture"
+import { ChatSlot } from "@/components/chat/chat-slot"
 import { PreviewBar } from "@/components/preview-bar"
 import { SiteFooterSlot, SiteHeaderSlot } from "@/components/site-chrome"
 import { SiteExtras } from "@/components/site-extras"
@@ -68,11 +69,13 @@ export default function RootLayout({
           <div className="min-h-svh">{children}</div>
           <SiteFooterSlot />
         </ThemeProvider>
-        {/* The consent banner uses the brand colours: the overrides share
-            its boundary (each page's content has its own, SiteThemed). */}
+        {/* The consent banner and the chat launcher use the brand colours:
+            the overrides share their boundary (each page's content has its
+            own, SiteThemed). The launcher renders nothing while chat is off. */}
         <Suspense fallback={null}>
           <SiteThemeStyle id="site-theme-extras" />
           <SiteExtras />
+          <ChatSlot />
         </Suspense>
         <AttributionCapture />
         {/* Draft-mode only (admins); renders nothing for visitors. */}

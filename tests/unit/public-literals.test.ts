@@ -47,6 +47,7 @@ const PUBLIC_DIRS = [
   "components/site-extras.tsx",
   "components/attribution-capture.tsx",
   "lib/rich-text",
+  "components/chat",
 ]
 const CHECKED_PROPS = new Set([
   "alt",
@@ -79,6 +80,10 @@ const TECHNICAL_CONSTS: Record<string, string[]> = {
   // Consent category keys (never shown), a state sentinel and a Tailwind class.
   "components/consent/consent-banner-view.tsx": ["OPTIONAL", "ON_LIGHT"],
   "components/consent/consent-provider.tsx": ["PENDING"],
+  // A focusable-element selector and the Turnstile config endpoint.
+  "components/chat/chat-panel.tsx": ["FOCUSABLE", "TURNSTILE_CONFIG"],
+  // CSS clip-path values for the hint's entrance.
+  "components/chat/chat-hint.tsx": ["CLIPPED", "REVEALED"],
 }
 /** Separators and glyphs with no words (after removing &nbsp;). */
 const GLYPHS = /^[\s\u00a0·/*“”—→×]*$/

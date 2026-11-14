@@ -220,6 +220,27 @@ export function SiteHeader({
     window.addEventListener("scroll", update, { passive: true })
     return () => window.removeEventListener("scroll", update)
   }, [pathname])
+  // Publish the bar's visible height so fixed widgets (the chat launcher) can
+  // ride above it: 0px while it is tucked away, hidden (md and up, where its
+  // height is 0) or unmounted.
+  const stickyBar = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const root = document.documentElement
+    const bar = stickyBar.current
+    if (!stickyCta || !bar) {
+      root.style.setProperty("--sticky-cta-h", "0px")
+      return
+    }
+    const write = () =>
+      root.style.setProperty("--sticky-cta-h", `${bar.offsetHeight}px`)
+    write()
+    const observer = new ResizeObserver(write)
+    observer.observe(bar)
+    return () => {
+      observer.disconnect()
+      root.style.setProperty("--sticky-cta-h", "0px")
+    }
+  }, [stickyCta])
 
   return (
     <>
@@ -501,6 +522,7 @@ export function SiteHeader({
         </Container>
       </header>
       <div
+        ref={stickyBar}
         data-sticky-cta
         aria-hidden={!stickyCta}
         inert={!stickyCta}
