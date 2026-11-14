@@ -41,14 +41,22 @@ export function postedAgo(
   return relative.format(-Math.floor(days / 30), "month")
 }
 
-/** "12 Sep 2026" for a moment (date in the site's zone) or a "YYYY-MM-DD" day. */
+/**
+ * "12 Sep 2026" for a moment (its date in the site's zone) or a "YYYY-MM-DD"
+ * closing day. The day is a zoneless calendar date: it is read at 12:00Z and
+ * shown in UTC, so no site zone (e.g. Pacific/Auckland) can shift it.
+ */
 export function closedOnDate(
   value: Date | string,
   options: DateOptions = {}
 ): string {
-  const date =
-    typeof value === "string" ? new Date(`${value}T12:00:00Z`) : value
-  return formatDay(date, { ...options, day: "numeric" })
+  if (typeof value === "string")
+    return formatDay(new Date(`${value}T12:00:00Z`), {
+      locale: options.locale,
+      timeZone: "UTC",
+      day: "numeric",
+    })
+  return formatDay(value, { ...options, day: "numeric" })
 }
 
 /** The site's language and zone (settings.site) for public dates. */

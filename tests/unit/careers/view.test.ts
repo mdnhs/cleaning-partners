@@ -124,6 +124,22 @@ describe("posted and closed wording", () => {
     ).toBe("28 Nov 2026")
   })
 
+  it("a YYYY-MM-DD closing date is a calendar day in any zone", () => {
+    for (const timeZone of [
+      "Europe/Dublin",
+      "America/New_York",
+      "Pacific/Auckland",
+      "Pacific/Kiritimati",
+      "Pacific/Pago_Pago",
+    ])
+      expect(closedOnDate("2026-11-28", { locale: "en", timeZone })).toBe(
+        "28 Nov 2026"
+      )
+    expect(
+      closedOnDate("2026-11-28", { locale: "fr", timeZone: "Pacific/Auckland" })
+    ).toBe("28 nov. 2026")
+  })
+
   it("closing dates follow the site's time zone", () => {
     expect(
       closedOnDate(new Date("2026-09-12T23:30:00Z"), {
