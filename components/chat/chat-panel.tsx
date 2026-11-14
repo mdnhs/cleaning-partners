@@ -360,8 +360,9 @@ export function ChatPanel({
     })
     inFlight.current = false
     setSending(false)
-    // Tokens are single-use: a failed start needs a fresh one.
-    if (!result.ok) turnstile.reset()
+    // Tokens are single-use: reset after every start, so a retry or the next
+    // chat (after Start a new chat) gets a fresh one.
+    turnstile.reset()
     if (result.ok) setDraft("")
     else if (result.kind === "invalid")
       setError(result.fieldErrors.message ? copy.errorTooLong : copy.errorStart)

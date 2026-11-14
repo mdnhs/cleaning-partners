@@ -78,8 +78,8 @@ beforeEach(() => {
   posts = []
   onClose.mockClear()
   onClosed.mockClear()
-  turnstile.getToken.mockClear()
-  turnstile.reset.mockClear()
+  turnstile.getToken.mockReset().mockResolvedValue("tok")
+  turnstile.reset.mockReset()
   vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
     const url = String(input)
     if (url === `${BASE}/status`)
@@ -322,6 +322,43 @@ describe("ChatPanel", () => {
     expect(
       container.querySelector('[data-sender="system"]')!.querySelector("a")
     ).toBeNull()
+  })
+
+  // Tokens are single-use: the widget that solved the first start must be
+  // reset before the next chat asks it for another token.
+  it("resets Turnstile after a successful start, before the next chat's token", async () => {
+    const calls: string[] = []
+    turnstile.getToken.mockImplementation(async () => {
+      calls.push("getToken")
+      return "tok"
+    })
+    turnstile.reset.mockImplementation(() => calls.push("reset"))
+    queue = [
+      { status: 404, body: {} },
+      { status: 201, body: view([msg(1, "visitor")]) },
+      { status: 409, body: { error: { code: "CONFLICT" } } },
+      { status: 201, body: view([msg(5, "visitor")], { id: "c2" }) },
+    ]
+    render(<Harness />)
+    await flush()
+    type("First")
+    fireEvent.click(sendButton())
+    await flush()
+    type("Again")
+    fireEvent.click(sendButton())
+    await flush()
+    fireEvent.click(screen.getByRole("button", { name: copy.startNew }))
+    await flush()
+    type("Second chat")
+    fireEvent.click(sendButton())
+    await flush()
+    expect(posts.map((p) => p.url)).toEqual([
+      `${BASE}/start`,
+      `${BASE}/messages`,
+      `${BASE}/start`,
+    ])
+    expect(calls).toEqual(["getToken", "reset", "getToken", "reset"])
+    expect(screen.getByText("body5")).toBeTruthy()
   })
 
   it("ended chat shows Start a new chat and focuses it", async () => {
