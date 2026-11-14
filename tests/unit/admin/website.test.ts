@@ -167,10 +167,53 @@ describe("website registry", () => {
 })
 
 describe("deep links", () => {
-  // /admin/pages, /admin/pages/<key> and /admin/collections/* are redirect
-  // stubs now: an admin link must name the Website screen directly.
-  // (/admin/pages/custom/<id> is the builder editor and stays.)
-  const MOVED = /["'`]\/admin\/(pages(["'`?]|\/\$\{)|collections\/)/
+  // /admin/pages, /admin/pages/<key>, /admin/collections(/*) and
+  // /admin/settings/<website key> are redirect stubs now: an admin link must
+  // name the Website screen directly. (/admin/pages/custom/<id> is the
+  // builder editor and stays; /admin/settings/<site key> stays too.)
+  const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  const movedSettingsKeys = WEBSITE_PARTS.flatMap((part) =>
+    part.source.kind === "settings" ? [escape(part.source.key)] : []
+  )
+  const MOVED = new RegExp(
+    [
+      // /admin/pages, /admin/pages?…, /admin/pages/${…}
+      String.raw`["'\`]\/admin\/pages(["'\`?]|\/\$\{)`,
+      // /admin/pages/<key> (literal), except the builder's /admin/pages/custom
+      String.raw`["'\`]\/admin\/pages\/(?!custom(["'\`/?]))[\w-]`,
+      // /admin/collections, /admin/collections?…, /admin/collections/…
+      String.raw`["'\`]\/admin\/collections(["'\`?/])`,
+      // /admin/settings/<a key that is now a Website part>
+      String.raw`["'\`]\/admin\/settings\/(${movedSettingsKeys.join("|")})(["'\`?/#]|$)`,
+    ].join("|")
+  )
+
+  it("the guard pattern catches each moved URL shape", () => {
+    for (const bad of [
+      `"/admin/pages"`,
+      `"/admin/pages?tab=seo"`,
+      "`/admin/pages/${key}`",
+      `"/admin/pages/home"`,
+      `"/admin/pages/legal"`,
+      `"/admin/collections"`,
+      `"/admin/collections/team"`,
+      `"/admin/settings/navigation"`,
+      `"/admin/settings/footer?x=1"`,
+      `"/admin/settings/sections.clients"`,
+      `"/admin/settings/contact"`,
+      `"/admin/settings/microcopy"`,
+    ])
+      expect(bad, bad).toMatch(MOVED)
+    for (const ok of [
+      "`/admin/pages/custom/${id}`",
+      `"/admin/pages/custom"`,
+      `"/admin/settings/site"`,
+      `"/admin/settings/leads"`,
+      `"/admin/settings/integrations"`,
+      `"/admin/website/home"`,
+    ])
+      expect(ok, ok).not.toMatch(MOVED)
+  })
 
   it("no source builds a moved admin URL", () => {
     const offenders = globSync(
