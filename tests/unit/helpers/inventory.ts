@@ -30,7 +30,7 @@ export const normalise = (target: string) =>
 /**
  * Settings paths the site derives at render instead of storing: the footer's
  * four contact lines are composed from contact.addressLine1,
- * footer.addressLine2, footer.contactOfficeLine and contact.email.
+ * contact.addressLine2, footer.contactOfficeLine and contact.email.
  */
 export const DERIVED_SETTINGS_PATHS = new Set(["settings.footer.contactLines"])
 
@@ -53,6 +53,9 @@ export const RELOCATED_SINCE_BASELINE: Readonly<Record<string, string | null>> =
     "settings.sections.contact.memberLogoAlt":
       "settings.site.membership.logoAlt",
     "settings.sections.contact.memberSubtitle": "settings.site.membership.name",
+    // The footer prints the address from Settings › Contact instead of its
+    // own copy of the second line (phase 2, task 8; migration 0040).
+    "settings.footer.addressLine2": "settings.contact.addressLine2",
   }
 
 /**
@@ -77,6 +80,10 @@ export const CHANGED_SINCE_BASELINE: ReadonlyMap<string, string> = new Map([
   [
     "contact.member.logoAlt",
     "The one membership logo's alt text is the association's full name.",
+  ],
+  [
+    "footer.contactLines.address2",
+    "The footer's second address line is Settings › Contact's, which includes \"Ireland.\".",
   ],
 ])
 

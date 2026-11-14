@@ -74,7 +74,6 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         "The Clean Team. Medical, commercial and domestic cleaning from Mountmellick, Co. Laois.",
       quickLinksTitle: "QUICK LINKS",
       contactTitle: "CONTACT",
-      addressLine2: "Co. Laois, R32 YX49",
       contactOfficeLine: "Tel: {office} Ext {officeExtension}",
       groupTitle: "OTHER SERVICES IN THE GROUP",
       copyright: "© 2026 Cleaning Partners Ltd. All rights reserved.",

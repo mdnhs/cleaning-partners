@@ -93,7 +93,7 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     )
     expect(chrome.footer.contact.lines).toEqual([
       "Derryguile, Mountmellick",
-      "Co. Laois, R32 YX49",
+      "Co. Laois, Ireland. R32 YX49",
       "Tel: 057 8697670 Ext 4",
       "info@cleaningpartners.ie",
     ])
@@ -119,6 +119,14 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     expect(chrome.footer.copyright).toBe(
       "© 2026 Cleaning Partners Ltd. All rights reserved."
     )
+  })
+
+  it("footer: both address lines come from Settings › Contact and open the map", () => {
+    const { contact } = chromeView(s).footer
+    expect(contact.lines[0]).toBe(s.settings.contact.addressLine1)
+    expect(contact.lines[1]).toBe(s.settings.contact.addressLine2)
+    expect(contact.hrefs?.[0]).toBe(mapsSearchHref(s.settings.contact))
+    expect(contact.hrefs?.[1]).toBe(mapsSearchHref(s.settings.contact))
   })
 
   it("footer: the sign-in link is editable and null hides it", () => {

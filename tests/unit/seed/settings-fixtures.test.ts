@@ -118,7 +118,7 @@ describe("settings fixtures are verbatim from the inventory (master 3.1)", () =>
   it("seeds the strings the brief singles out exactly", () => {
     expect(fixture.contact.hours).toBe("Mon–Fri: 9am – 6pm")
     expect(fixture.contact.addressLine2).toBe("Co. Laois, Ireland. R32 YX49")
-    expect(fixture.footer.addressLine2).toBe("Co. Laois, R32 YX49")
+    expect(fixture.footer).not.toHaveProperty("addressLine2")
     expect(fixture.footer.contactOfficeLine).toBe(
       "Tel: {office} Ext {officeExtension}"
     )

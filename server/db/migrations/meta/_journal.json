@@ -281,6 +281,13 @@
       "when": 1793900000000,
       "tag": "0039_site_membership",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793910000000,
+      "tag": "0040_footer_address_from_contact",
+      "breakpoints": true
     }
   ]
 }

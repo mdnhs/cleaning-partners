@@ -200,10 +200,6 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       },
       quickLinksTitle: { label: "Quick links heading" },
       contactTitle: { label: "Contact heading" },
-      addressLine2: {
-        label: "Address line 2 (footer wording)",
-        help: "The footer's own wording of the second address line.",
-      },
       contactOfficeLine: {
         label: "Office line",
         help: "{office} and {officeExtension} are filled from Contact details.",
@@ -225,8 +221,8 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         },
         {
           title: "Contact column",
-          description: "How the address and office number read in the footer.",
-          fields: ["addressLine2", "contactOfficeLine"],
+          description: "The address and email come from Contact details.",
+          fields: ["contactOfficeLine"],
         },
         {
           title: "Legal",

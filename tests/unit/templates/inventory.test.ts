@@ -35,7 +35,7 @@ function inventoryPaths(prefix: string): Set<string> {
  * column instead of storing in the schema.
  */
 const DERIVED: Record<string, string[]> = {
-  // Four lines composed from contact.addressLine1, footer.addressLine2,
+  // Four lines composed from contact.addressLine1, contact.addressLine2,
   // footer.contactOfficeLine and contact.email (Task 1).
   "settings.footer.": ["contactLines"],
   // publishedAt / readTimeMinutes / categoryId are columns; the byline

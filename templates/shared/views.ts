@@ -103,9 +103,7 @@ export function chromeView(s: ChromeSources): ChromeView {
   const animation = site.logoAnimation
     ? { animation: site.logoAnimation.url }
     : {}
-  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${contact.addressLine1}, ${footer.addressLine2}`
-  )}`
+  const mapsHref = mapsSearchHref(contact)
   return {
     locale: site.locale,
     header: {
@@ -136,7 +134,7 @@ export function chromeView(s: ChromeSources): ChromeView {
         title: footer.contactTitle,
         lines: [
           contact.addressLine1,
-          footer.addressLine2,
+          contact.addressLine2,
           interpolate(footer.contactOfficeLine, values),
           contact.email,
         ],
