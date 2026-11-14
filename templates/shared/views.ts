@@ -1,5 +1,8 @@
 import { navigationMobileDefaults } from "@/lib/schemas/settings/navigation"
-import { contactMobileDefaults } from "@/lib/schemas/settings/sections-contact"
+import {
+  type ContactCardKind,
+  contactMobileDefaults,
+} from "@/lib/schemas/settings/sections-contact"
 import type { StatsProps } from "@/components/about/stats"
 import type { OurStoryProps } from "@/components/about/our-story"
 import type { ArticleBodyProps } from "@/components/blog/article"
@@ -294,6 +297,30 @@ export function teamView(s: SiteSources): TeamProps {
   }
 }
 
+/** A Google Maps search for the business address. */
+export const mapsSearchHref = (contact: {
+  addressLine1: string
+  addressLine2: string
+}) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    `${contact.addressLine1}, ${contact.addressLine2}`
+  )}`
+
+/** The href a contact card's action opens (none for hours / other). */
+function contactCardHref(s: SiteSources, kind: ContactCardKind) {
+  const contact = s.settings.contact
+  switch (kind) {
+    case "phone":
+      return String(placeholders(s).officeHref)
+    case "email":
+      return `mailto:${contact.email}`
+    case "address":
+      return mapsSearchHref(contact)
+    default:
+      return null
+  }
+}
+
 /** The shared Contact section; `title` overrides the section's own (the contact page). */
 export function contactSectionView(
   s: SiteSources,
@@ -306,9 +333,11 @@ export function contactSectionView(
     description: section.description,
     labels: section.mobile ?? contactMobileDefaults,
     cards: section.infoCards.map((card) => ({
+      kind: card.kind,
       title: card.title,
       icon: card.icon.url,
       lines: card.lines.map((line) => textView(s, line)),
+      href: contactCardHref(s, card.kind),
     })),
     member: {
       logo: section.memberLogo.url,

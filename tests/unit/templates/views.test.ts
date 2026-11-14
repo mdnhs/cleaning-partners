@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 
+import { contactPlaceholders } from "@/lib/interpolate"
 import type { WithMedia } from "@/lib/media"
 import { fixtureSiteSources } from "@/server/db/seed/fixtures/sources"
 import { aboutView } from "@/templates/about/view"
@@ -8,6 +9,8 @@ import { contactView } from "@/templates/contact/view"
 import { homeView } from "@/templates/home/view"
 import {
   chromeView,
+  contactSectionView,
+  mapsSearchHref,
   NOT_FOUND_FALLBACK,
   notFoundView,
 } from "@/templates/shared/views"
@@ -178,6 +181,30 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     expect(view.contact.title).toBe("Contact Us")
     expect(view.map.tilePattern).toBe("/images/home/tiles/tile-{index}.png")
     expect(view.map.logo).toBe("/images/home/logo.png")
+  })
+
+  it("contact cards carry their kind and the action href", () => {
+    const cards = contactSectionView(s).cards
+    expect(cards.map((card) => card.kind)).toEqual([
+      "phone",
+      "email",
+      "address",
+      "hours",
+    ])
+    const phoneHref = contactPlaceholders(s.settings.contact).officeHref
+    expect(cards[0].href).toBe(phoneHref)
+    expect(phoneHref).toBe("tel:+353578697670") // no extension digits
+    expect(cards[1].href).toBe(`mailto:${s.settings.contact.email}`)
+    expect(cards[2].href).toBe(mapsSearchHref(s.settings.contact))
+    expect(cards[3].href).toBeNull()
+  })
+
+  it("mapsSearchHref: a Google Maps search for both address lines", () => {
+    expect(
+      mapsSearchHref({ addressLine1: "1 Main St", addressLine2: "Tullamore" })
+    ).toBe(
+      "https://www.google.com/maps/search/?api=1&query=1%20Main%20St%2C%20Tullamore"
+    )
   })
 
   it("about: story paragraphs, sectors and stats", () => {

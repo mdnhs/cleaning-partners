@@ -431,6 +431,18 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         itemLabel: "title",
         help: PLACEHOLDER_HELP,
       },
+      "infoCards[].kind": {
+        label: "Card type",
+        widget: "select",
+        options: [
+          { value: "phone", label: "Phone" },
+          { value: "email", label: "Email" },
+          { value: "address", label: "Address" },
+          { value: "hours", label: "Opening hours" },
+          { value: "other", label: "Other" },
+        ],
+        help: "Decides the phone layout's button: Call, Email or Map.",
+      },
       "infoCards[].icon": { label: "Icon", aspect: "square" },
       "infoCards[].lines": {
         label: "Lines",

@@ -16,6 +16,16 @@ export const contactMobileDefaults = {
   followLabel: "Follow us",
 }
 
+/** What a contact card is: picks its phone-layout action (Call, Email, Map). */
+export const CONTACT_CARD_KINDS = [
+  "phone",
+  "email",
+  "address",
+  "hours",
+  "other",
+] as const
+export type ContactCardKind = (typeof CONTACT_CARD_KINDS)[number]
+
 export const contactSectionSettings = z.object({
   eyebrow: text,
   title: text,
@@ -34,6 +44,7 @@ export const contactSectionSettings = z.object({
   infoCards: z
     .array(
       z.object({
+        kind: z.enum(CONTACT_CARD_KINDS),
         title: text,
         icon: mediaRef,
         lines: z.array(text).min(1),

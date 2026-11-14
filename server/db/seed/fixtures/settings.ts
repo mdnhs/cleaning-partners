@@ -137,6 +137,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       },
       infoCards: [
         {
+          kind: "phone",
           title: "Phone",
           icon: media("/images/home/phone.svg"),
           lines: [
@@ -146,16 +147,19 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
           ],
         },
         {
+          kind: "email",
           title: "Email",
           icon: media("/images/home/mail.svg"),
           lines: ["{email}"],
         },
         {
+          kind: "address",
           title: "Location",
           icon: media("/images/home/pin.svg"),
           lines: ["{addressLine1},", "{addressLine2}"],
         },
         {
+          kind: "hours",
           title: "Office Hours",
           icon: media("/images/home/clock.svg"),
           lines: ["{hours}"],
