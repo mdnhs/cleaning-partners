@@ -1,6 +1,7 @@
 "use client"
 
 import type { LucideIcon } from "lucide-react"
+import { MotionConfig } from "motion/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -16,6 +17,12 @@ import {
   useSyncExternalStore,
 } from "react"
 
+import {
+  ActiveBar,
+  ActivePill,
+  PANEL_ENTER,
+  useClickedCurrent,
+} from "@/components/admin/shell/active-indicator"
 import { cn } from "@/lib/utils"
 
 export type SectionTabItem = {
@@ -191,7 +198,8 @@ const LAYOUT = {
 } as const
 
 const TAB = SECTION_TAB
-const TAB_ACTIVE = SECTION_TAB_ACTIVE
+// The sliding pill (TabContent) carries the active background.
+const TAB_ACTIVE_MOVING = cn(SECTION_TAB_ACTIVE, "bg-transparent")
 
 /**
  * aria-orientation follows the layout: a row below the breakpoint, a column
@@ -233,27 +241,33 @@ function TabContent({
   item,
   active,
   marker,
+  group,
 }: {
   item: SectionTabItem
   active: boolean
   marker: string
+  /** The set's id: its pill and bar slide only within the set. */
+  group: string
 }) {
   const Icon = item.icon
   return (
     <>
       {active ? (
-        <span
-          aria-hidden
-          className={cn(
-            "absolute top-1/2 left-0 hidden h-6 w-1 -translate-y-1/2 rounded-r-full bg-primary",
-            marker
-          )}
-        />
+        <>
+          <ActivePill layoutId={`${group}-pill`} />
+          <ActiveBar
+            layoutId={`${group}-bar`}
+            className={cn(
+              "absolute top-1/2 left-0 hidden h-6 w-1 -translate-y-1/2",
+              marker
+            )}
+          />
+        </>
       ) : null}
-      {Icon ? <Icon aria-hidden className="size-4 shrink-0" /> : null}
-      <span className="truncate">{item.label}</span>
+      {Icon ? <Icon aria-hidden className="relative size-4 shrink-0" /> : null}
+      <span className="relative truncate">{item.label}</span>
       {item.badge || item.error ? (
-        <span className="ml-auto flex items-center gap-1.5 pl-1">
+        <span className="relative ml-auto flex items-center gap-1.5 pl-1">
           {item.badge}
           {item.error ? (
             <>
@@ -308,46 +322,54 @@ function RouteTabs({
 }: SectionTabsProps & { layout: Layout }) {
   const pathname = usePathname()
   // The deepest item whose href covers the path.
-  const current =
+  const routed =
     value ??
     items
       .filter(
         (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
       )
       .sort((a, b) => b.href!.length - a.href!.length)[0]?.id
+  const [current, mark] = useClickedCurrent(routed, pathname)
+  const group = useId()
   const listRef = useRef<HTMLUListElement>(null)
   useCurrentInView(listRef, current)
   return (
-    <div className={layout.root}>
-      <nav aria-label={ariaLabel} className={cn("min-w-0", layout.column)}>
-        <Caption text={heading} marker={layout.marker} />
-        <ul ref={listRef} className={cn(LIST, layout.list)}>
-          {items.map((item) => {
-            const active = item.id === current
-            return (
-              <li key={item.id} className="flex shrink-0">
-                <Link
-                  href={item.href!}
-                  aria-current={active ? "page" : undefined}
-                  data-current={active || undefined}
-                  data-error={item.error || undefined}
-                  className={cn(TAB, layout.tab, active && TAB_ACTIVE)}
-                >
-                  <TabContent
-                    item={item}
-                    active={active}
-                    marker={layout.marker}
-                  />
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
-      <div data-slot="section-tabs-content" className={layout.content}>
-        {children}
+    <MotionConfig reducedMotion="user">
+      <div className={layout.root}>
+        <nav aria-label={ariaLabel} className={cn("min-w-0", layout.column)}>
+          <Caption text={heading} marker={layout.marker} />
+          <ul ref={listRef} className={cn(LIST, layout.list)}>
+            {items.map((item) => {
+              const active = item.id === current
+              return (
+                <li key={item.id} className="flex shrink-0">
+                  <Link
+                    href={item.href!}
+                    aria-current={active ? "page" : undefined}
+                    data-current={active || undefined}
+                    data-error={item.error || undefined}
+                    onClick={mark(item.id)}
+                    className={cn(TAB, layout.tab, active && TAB_ACTIVE_MOVING)}
+                  >
+                    <TabContent
+                      item={item}
+                      active={active}
+                      marker={layout.marker}
+                      group={group}
+                    />
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+        <div data-slot="section-tabs-content" className={layout.content}>
+          <div key={routed} className={PANEL_ENTER}>
+            {children}
+          </div>
+        </div>
       </div>
-    </div>
+    </MotionConfig>
   )
 }
 
@@ -377,6 +399,7 @@ function InPageTabs({
   const listRef = useRef<HTMLDivElement>(null)
   useCurrentInView(listRef, selected)
   const isColumn = useIsColumn(layout.columnFrom)
+  const group = useId()
 
   const select = (id: string, options?: TabChangeOptions) => {
     if (id === selected) return
@@ -402,53 +425,56 @@ function InPageTabs({
   }
 
   return (
-    <div className={layout.root}>
-      <div className={cn("min-w-0", layout.column)}>
-        <Caption text={heading} marker={layout.marker} />
-        <div
-          ref={listRef}
-          role="tablist"
-          aria-label={ariaLabel}
-          aria-orientation={isColumn ? "vertical" : "horizontal"}
-          onKeyDown={onKeyDown}
-          className={cn(LIST, layout.list)}
-        >
-          {items.map((item) => {
-            const active = item.id === selected
-            return (
-              <button
-                key={item.id}
-                ref={(node) => {
-                  if (node) refs.current.set(item.id, node)
-                  else refs.current.delete(item.id)
-                }}
-                type="button"
-                role="tab"
-                id={tabId(item.id)}
-                aria-selected={active}
-                data-current={active || undefined}
-                aria-controls={panelId(item.id)}
-                tabIndex={active ? 0 : -1}
-                data-error={item.error || undefined}
-                onClick={() => select(item.id)}
-                className={cn(TAB, layout.tab, active && TAB_ACTIVE)}
-              >
-                <TabContent
-                  item={item}
-                  active={active}
-                  marker={layout.marker}
-                />
-              </button>
-            )
-          })}
+    <MotionConfig reducedMotion="user">
+      <div className={layout.root}>
+        <div className={cn("min-w-0", layout.column)}>
+          <Caption text={heading} marker={layout.marker} />
+          <div
+            ref={listRef}
+            role="tablist"
+            aria-label={ariaLabel}
+            aria-orientation={isColumn ? "vertical" : "horizontal"}
+            onKeyDown={onKeyDown}
+            className={cn(LIST, layout.list)}
+          >
+            {items.map((item) => {
+              const active = item.id === selected
+              return (
+                <button
+                  key={item.id}
+                  ref={(node) => {
+                    if (node) refs.current.set(item.id, node)
+                    else refs.current.delete(item.id)
+                  }}
+                  type="button"
+                  role="tab"
+                  id={tabId(item.id)}
+                  aria-selected={active}
+                  data-current={active || undefined}
+                  aria-controls={panelId(item.id)}
+                  tabIndex={active ? 0 : -1}
+                  data-error={item.error || undefined}
+                  onClick={() => select(item.id)}
+                  className={cn(TAB, layout.tab, active && TAB_ACTIVE_MOVING)}
+                >
+                  <TabContent
+                    item={item}
+                    active={active}
+                    marker={layout.marker}
+                    group={group}
+                  />
+                </button>
+              )
+            })}
+          </div>
+        </div>
+        <div data-slot="section-tabs-content" className={layout.content}>
+          <PanelContext.Provider value={{ selected, tabId, panelId }}>
+            {children}
+          </PanelContext.Provider>
         </div>
       </div>
-      <div data-slot="section-tabs-content" className={layout.content}>
-        <PanelContext.Provider value={{ selected, tabId, panelId }}>
-          {children}
-        </PanelContext.Provider>
-      </div>
-    </div>
+    </MotionConfig>
   )
 }
 
@@ -470,6 +496,8 @@ export function SectionTabsPanel({
       id={context.panelId(id)}
       aria-labelledby={context.tabId(id)}
       hidden={!active}
+      // The enter animation replays each time the panel is unhidden.
+      className={PANEL_ENTER}
     >
       {children}
     </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { MotionConfig } from "motion/react"
 import { usePathname } from "next/navigation"
 import { useId } from "react"
 
@@ -12,6 +13,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
+import { useClickedCurrent } from "@/components/admin/shell/active-indicator"
 import { activeItem, type NavBadges, visibleNav } from "@/lib/admin/nav"
 
 import { NavEntry } from "./nav-entry"
@@ -26,40 +28,47 @@ export function NavMain({ badges = {} }: { badges?: NavBadges }) {
   const { roles } = useAdminSession()
   const { isMobile, setOpenMobile } = useSidebar()
   const idPrefix = useId()
-  // The mobile sheet stays open on navigation otherwise.
-  const onNavigate = isMobile ? () => setOpenMobile(false) : undefined
-  const current = activeItem(pathname, roles)?.id
+  const [current, mark] = useClickedCurrent(
+    activeItem(pathname, roles)?.id,
+    pathname
+  )
   return (
-    <nav aria-label="Admin">
-      {visibleNav(roles).map((section, index) => {
-        const labelId = `${idPrefix}-section-${index}`
-        return (
-          <SidebarGroup key={section.group} className="py-1">
-            <SidebarGroupLabel
-              id={labelId}
-              className="h-7 px-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase"
-            >
-              {section.label}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu aria-labelledby={labelId} className="gap-0.5">
-                {section.items.map((item) => (
-                  <NavEntry
-                    key={item.id}
-                    item={{
-                      ...item,
-                      href: item.children?.[0]?.href ?? item.href,
-                    }}
-                    active={item.id === current}
-                    badge={item.badge ? badges[item.badge] : undefined}
-                    onNavigate={onNavigate}
-                  />
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )
-      })}
-    </nav>
+    <MotionConfig reducedMotion="user">
+      <nav aria-label="Admin">
+        {visibleNav(roles).map((section, index) => {
+          const labelId = `${idPrefix}-section-${index}`
+          return (
+            <SidebarGroup key={section.group} className="py-1">
+              <SidebarGroupLabel
+                id={labelId}
+                className="h-7 px-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase"
+              >
+                {section.label}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu aria-labelledby={labelId} className="gap-0.5">
+                  {section.items.map((item) => (
+                    <NavEntry
+                      key={item.id}
+                      item={{
+                        ...item,
+                        href: item.children?.[0]?.href ?? item.href,
+                      }}
+                      active={item.id === current}
+                      badge={item.badge ? badges[item.badge] : undefined}
+                      onNavigate={(event) => {
+                        mark(item.id)(event)
+                        // The mobile sheet stays open on navigation otherwise.
+                        if (isMobile) setOpenMobile(false)
+                      }}
+                    />
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )
+        })}
+      </nav>
+    </MotionConfig>
   )
 }

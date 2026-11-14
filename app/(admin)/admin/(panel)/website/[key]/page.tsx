@@ -3,10 +3,7 @@ import { forbidden, notFound, redirect } from "next/navigation"
 import { Suspense } from "react"
 
 import { PageEditor } from "@/components/admin/pages/page-editor"
-import {
-  SharedOnPage,
-  WebsiteTabs,
-} from "@/components/admin/website/website-tabs"
+import { SharedOnPage } from "@/components/admin/website/website-tabs"
 import { isWebsiteKey, WEBSITE_SCREENS, websiteTabs } from "@/lib/admin/website"
 import { requirePage } from "@/server/auth/session"
 import { getSiteOrigin } from "@/server/modules/seo/queries"
@@ -46,7 +43,6 @@ async function Screen({
   if (tabs[0].id !== "page" || !screen.page) redirect(tabs[0].href)
   return (
     <>
-      <WebsiteTabs screen={screen.key} />
       <SharedOnPage page={screen.page} />
       <PageEditor pageKey={screen.page} origin={await getSiteOrigin()} />
     </>

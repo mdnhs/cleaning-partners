@@ -4,7 +4,6 @@ import { Suspense } from "react"
 
 import { CollectionScreen } from "@/components/admin/collections/collection-screen"
 import { SettingsEditor } from "@/components/admin/settings/settings-editor"
-import { WebsiteTabs } from "@/components/admin/website/website-tabs"
 import { isWebsiteKey, WEBSITE_SCREENS, websitePart } from "@/lib/admin/website"
 import { requirePage, requirePermission } from "@/server/auth/session"
 
@@ -38,14 +37,9 @@ async function Part({
   // A route part (Articles, Jobs…) lives at its own URL, not here.
   if (!part || part.source.kind === "route") notFound()
   await requirePermission(part.permission)
-  return (
-    <>
-      <WebsiteTabs screen={screen.key} />
-      {part.source.kind === "settings" ? (
-        <SettingsEditor settingsKey={part.source.key} />
-      ) : (
-        <CollectionScreen name={part.source.name} />
-      )}
-    </>
+  return part.source.kind === "settings" ? (
+    <SettingsEditor settingsKey={part.source.key} />
+  ) : (
+    <CollectionScreen name={part.source.name} />
   )
 }

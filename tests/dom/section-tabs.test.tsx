@@ -241,11 +241,15 @@ describe("SectionTabs (JW look)", () => {
         <SectionTabsPanel id="security">Security body</SectionTabsPanel>
       </SectionTabs>
     )
+    // The accent fill is the sliding pill inside the active tab.
     const active = screen.getByRole("tab", { name: "Security" })
-    expect(active).toHaveClass("bg-sidebar-accent", "font-semibold")
-    expect(screen.getByRole("tab", { name: "Profile" })).not.toHaveClass(
-      "bg-sidebar-accent"
-    )
+    expect(active).toHaveClass("font-semibold")
+    expect(active.querySelector(".bg-sidebar-accent")).not.toBeNull()
+    expect(
+      screen
+        .getByRole("tab", { name: "Profile" })
+        .querySelector(".bg-sidebar-accent")
+    ).toBeNull()
   })
 
   it("shows the section caption above the list, hidden from assistive tech", () => {
