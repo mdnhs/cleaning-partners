@@ -14,9 +14,12 @@ export type ChatSender = (typeof CHAT_SENDERS)[number]
 /** The widget asks for no name; the server stores this instead. */
 export const VISITOR_NAME = "Visitor"
 
+/** The widget trims the page path to this before sending it. */
+export const SOURCE_PATH_MAX = 200
+
 export const StartChatInput = z.object({
   message: s(1, 2000),
-  sourcePath: z.string().max(200).startsWith("/").optional(),
+  sourcePath: z.string().max(SOURCE_PATH_MAX).startsWith("/").optional(),
   turnstileToken: z.string().max(4096).optional(),
   website: z.string().optional(),
 })

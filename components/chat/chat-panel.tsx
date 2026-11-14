@@ -8,6 +8,7 @@ import { useTurnstile } from "@/components/contact/use-turnstile"
 import { fillChatText, type ChatWidgetProps } from "@/lib/chat/text"
 import {
   CHAT_PUBLIC_ENDPOINT,
+  SOURCE_PATH_MAX,
   type VisitorMessage,
 } from "@/lib/schemas/api/chat"
 import { cn } from "@/lib/utils"
@@ -354,7 +355,8 @@ export function ChatPanel({
     setVerifying(false)
     const result = await chat.start({
       message: body,
-      sourcePath: window.location.pathname,
+      // Capped like the schema: a longer path would make /start fail (422).
+      sourcePath: window.location.pathname.slice(0, SOURCE_PATH_MAX),
       website: honeypot,
       ...(token ? { turnstileToken: token } : {}),
     })

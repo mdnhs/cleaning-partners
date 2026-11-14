@@ -6,10 +6,11 @@ import ChatPanel from "@/components/chat/chat-panel"
 import { useChat } from "@/components/chat/use-chat"
 import { CHAT_SETTINGS_DEFAULT } from "@/lib/chat/defaults"
 import { chatLauncherProps, type ChatWidgetProps } from "@/lib/chat/text"
-import type {
-  ChatSender,
-  ChatStatus,
-  VisitorView,
+import {
+  type ChatSender,
+  type ChatStatus,
+  StartChatInput,
+  type VisitorView,
 } from "@/lib/schemas/api/chat"
 
 import { stubMedia } from "./test-media"
@@ -171,6 +172,28 @@ describe("ChatPanel", () => {
     })
     expect(screen.getByText("body1")).toBeTruthy()
     expect(composer().value).toBe("")
+  })
+
+  it("caps a long page path at 200 characters so the start is not rejected", async () => {
+    queue = [
+      { status: 404, body: {} },
+      { status: 201, body: view([msg(1, "visitor")]) },
+    ]
+    const long = `/${"a".repeat(300)}`
+    window.history.pushState({}, "", long)
+    try {
+      render(<Harness />)
+      await flush()
+      type("Hi there")
+      fireEvent.click(sendButton())
+      await flush()
+    } finally {
+      window.history.pushState({}, "", "/")
+    }
+    const sent = String(posts[0]!.body.sourcePath)
+    expect(sent).toBe(long.slice(0, 200))
+    expect(sent.startsWith("/")).toBe(true)
+    expect(StartChatInput.safeParse(posts[0]!.body).success).toBe(true)
   })
 
   it("Enter sends, Shift+Enter does not", async () => {
