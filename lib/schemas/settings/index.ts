@@ -3,6 +3,7 @@ import { z } from "zod"
 import { ThemeConfig } from "@/lib/theme/schema"
 
 import { careersSettings } from "./careers"
+import { chatSettings } from "./chat"
 import { clientsSectionSettings } from "./sections-clients"
 import { consentSettings } from "./consent"
 import { contactSettings } from "./contact"
@@ -41,6 +42,7 @@ export const settingsSchemas = {
   microcopy: microcopySettings,
   leads: leadsSettings,
   careers: careersSettings,
+  chat: chatSettings,
   // Appearance (lib/theme): edited only through /api/v1/admin/appearance,
   // never public/editable here.
   theme: ThemeConfig,

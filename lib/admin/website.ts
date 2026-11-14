@@ -241,6 +241,7 @@ export const SITE_SETTINGS_KEYS = [
   "site",
   "leads",
   "careers",
+  "chat",
 ] as const satisfies readonly EditableSettingsKey[]
 
 export function isWebsiteKey(value: string): value is WebsiteKey {

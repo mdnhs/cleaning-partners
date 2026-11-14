@@ -1,6 +1,7 @@
 import "server-only"
 
 import type { SettingsKey, SettingsValue } from "@/lib/schemas/settings"
+import { CHAT_SETTINGS_DEFAULT } from "@/lib/chat/defaults"
 import { DEFAULT_THEME } from "@/lib/theme/schema"
 
 import type { MediaLookup } from "./media"
@@ -310,6 +311,8 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       retentionMonths: 12,
       acknowledgement: true,
     },
+    // Same value migration 0046_live_chat inserts (off by default).
+    chat: CHAT_SETTINGS_DEFAULT,
     // Same value the *_theme migration inserts (no <style> by default).
     theme: DEFAULT_THEME,
   }

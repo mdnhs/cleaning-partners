@@ -42,6 +42,15 @@ describe("website registry", () => {
     expect(isWebsiteKey("toString")).toBe(false)
   })
 
+  it("keeps identity and operations under Site settings", () => {
+    expect([...SITE_SETTINGS_KEYS]).toEqual([
+      "site",
+      "leads",
+      "careers",
+      "chat",
+    ])
+  })
+
   it("places every editable settings key exactly once", () => {
     for (const key of EDITABLE_SETTINGS_KEYS)
       expect(

@@ -12,6 +12,8 @@ describe("job registry (Phases 5 and 7)", () => {
       ["purge-leads", 24 * 60 * 60_000],
       ["purge-applications", 24 * 60 * 60_000],
       ["backup", 24 * 60 * 60_000],
+      ["chat-sweep", 60_000],
+      ["purge-chats", 24 * 60 * 60_000],
     ])
     expect(ALL_JOBS.map((j) => j.name)).toEqual([
       "publish-scheduled",
@@ -19,6 +21,8 @@ describe("job registry (Phases 5 and 7)", () => {
       "purge-leads",
       "purge-applications",
       "backup",
+      "chat-sweep",
+      "purge-chats",
       "migrate-media",
       "delete-retired-media",
     ])

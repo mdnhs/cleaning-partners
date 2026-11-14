@@ -75,6 +75,9 @@ const EXPECTED: Record<Role, string[]> = {
     "appearance:read",
     "appearance:update",
     "appearance:publish",
+    "chat:read",
+    "chat:reply",
+    "chat:manage",
   ],
   admin: [
     "page:read",
@@ -136,6 +139,9 @@ const EXPECTED: Record<Role, string[]> = {
     "appearance:read",
     "appearance:update",
     "appearance:publish",
+    "chat:read",
+    "chat:reply",
+    "chat:manage",
   ],
   editor: [
     "page:read",
@@ -204,7 +210,14 @@ const EXPECTED: Record<Role, string[]> = {
     "ai:use",
     "appearance:read",
   ],
-  intake: ["lead:read", "lead:update", "lead:export", "ai:use"],
+  intake: [
+    "lead:read",
+    "lead:update",
+    "lead:export",
+    "ai:use",
+    "chat:read",
+    "chat:reply",
+  ],
   viewer: [
     "page:read",
     "service:read",
@@ -228,9 +241,9 @@ const req = (resource: Resource, action: string) =>
   ({ [resource]: [action] }) as PermissionRequest
 
 describe("permission matrix (spec §6.1): every role × resource × action", () => {
-  it("covers 18 resources and 62 actions", () => {
-    expect(Object.keys(statements)).toHaveLength(18)
-    expect(ALL_PAIRS).toHaveLength(62)
+  it("covers 19 resources and 65 actions", () => {
+    expect(Object.keys(statements)).toHaveLength(19)
+    expect(ALL_PAIRS).toHaveLength(65)
   })
 
   it("page:create/delete (builder pages) go to owner, admin, editor only", () => {
@@ -245,6 +258,15 @@ describe("permission matrix (spec §6.1): every role × resource × action", () 
       "marketer",
       "viewer",
     ])
+  })
+
+  it("chat: intake reads and replies, admins manage, content roles get nothing", () => {
+    expect(hasPermission(["intake"], { chat: ["reply"] })).toBe(true)
+    expect(hasPermission(["intake"], { chat: ["manage"] })).toBe(false)
+    expect(hasPermission(["admin"], { chat: ["manage"] })).toBe(true)
+    for (const role of ["marketer", "editor", "author", "viewer"] as const)
+      for (const action of ["read", "reply", "manage"] as const)
+        expect(hasPermission([role], { chat: [action] })).toBe(false)
   })
 
   for (const role of ROLES) {

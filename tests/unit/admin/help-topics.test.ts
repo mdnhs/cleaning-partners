@@ -40,6 +40,12 @@ describe("Help topics", () => {
       expect(HELP_TOPICS.map((topic) => topic.id)).toContain(id)
   })
 
+  it("covers the live chat inbox", () => {
+    const topic = HELP_TOPICS.find((t) => t.id === "live-chat")
+    expect(topic).toMatchObject({ title: "Live chat" })
+    expect(topic!.steps).toHaveLength(5)
+  })
+
   it("names only Cleaning Partners' world, never another business's", () => {
     for (const word of [
       "security",
@@ -91,6 +97,8 @@ const UI_LABELS: Record<string, string[]> = {
   "New article": ["New article"],
   Categories: ["Categories"],
   Enquiries: ["Enquiries"],
+  "Live chat": ["Live chat"],
+  "Privacy request": ["Privacy request"],
   "Job applications": ["Job applications"],
   Media: ["Media"],
   "Site settings": ["Site settings"],

@@ -324,7 +324,7 @@ describe("AdminShell (master 4.1)", () => {
       within(nav)
         .getAllByRole("link")
         .map((a) => a.textContent)
-    ).toEqual(["Dashboard", "Enquiries"])
+    ).toEqual(["Dashboard", "Enquiries", "Live chat"])
     expect(screen.getByRole("main")).toHaveTextContent("Body")
   })
 

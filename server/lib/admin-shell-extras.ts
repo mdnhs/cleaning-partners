@@ -6,6 +6,7 @@ import type { AiStatusDto } from "@/lib/schemas/api/ai"
 import type { ShellNotification } from "@/lib/schemas/api/dashboard"
 import type { Actor } from "@/server/lib/actor"
 import { getAiStatus } from "@/server/modules/ai/service"
+import { unreadCount } from "@/server/modules/chat/repo"
 import { getShellNotifications } from "@/server/modules/dashboard/service"
 import { leadBadge } from "@/server/modules/leads/service"
 
@@ -18,7 +19,7 @@ export type ShellExtras = {
 
 /**
  * The admin frame's optional parts (panel layout): the sidebar's new-leads
- * badge, the AI assistant status and the bell's items. Each degrades on its
+ * and unread-chats badges, the AI assistant status and the bell's items. Each degrades on its
  * own: a failing query is logged and leaves no badge, the AI button hidden
  * or an empty bell, instead of failing the whole frame.
  */
@@ -31,8 +32,18 @@ export async function loadShellExtras(actor: Actor): Promise<ShellExtras> {
         .then((badge): NavBadges => ({ "new-leads": badge.newLeads }))
         .catch(degraded("lead badge", {}))
     : Promise.resolve({})
-  const [badges, assistant, notifications] = await Promise.all([
+  // Open chats with a visitor message nobody has read (live chat C12); the
+  // sidebar polls it afterwards (useChatUnread).
+  const chatLoad: Promise<NavBadges> = hasPermission(actor.roles, {
+    chat: ["read"],
+  })
+    ? unreadCount()
+        .then((count): NavBadges => ({ "chat-unread": count }))
+        .catch(degraded("chat badge", {}))
+    : Promise.resolve({})
+  const [leadBadges, chatBadges, assistant, notifications] = await Promise.all([
     badgesLoad,
+    chatLoad,
     getAiStatus(actor).catch(degraded("AI status", undefined)),
     badgesLoad
       .then((loaded) =>
@@ -40,7 +51,11 @@ export async function loadShellExtras(actor: Actor): Promise<ShellExtras> {
       )
       .catch(degraded("notifications", [] as ShellNotification[])),
   ])
-  return { badges, assistant, notifications }
+  return {
+    badges: { ...leadBadges, ...chatBadges },
+    assistant,
+    notifications,
+  }
 }
 
 /** A failed optional part: logged, then replaced by `fallback`. */

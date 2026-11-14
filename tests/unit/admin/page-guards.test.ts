@@ -68,6 +68,7 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "help/page.tsx": null,
   "users/page.tsx": { user: ["read"] },
   "users/[id]/page.tsx": { user: ["read"] },
+  "chat/page.tsx": { chat: ["read"] },
   "careers/page.tsx": { job: ["read"] },
   "careers/new/page.tsx": { job: ["read"] },
   "careers/[id]/page.tsx": { job: ["read"] },

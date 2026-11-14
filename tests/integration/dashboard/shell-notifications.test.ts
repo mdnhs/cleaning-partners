@@ -98,7 +98,7 @@ describe("topbar bell (final review I6)", () => {
       lastError: "pg_dump exited with code 1",
     })
     const forOwner = await loadShellExtras(actorOf(owner.id, ["owner"]))
-    expect(forOwner.badges).toEqual({ "new-leads": 1 })
+    expect(forOwner.badges).toEqual({ "new-leads": 1, "chat-unread": 0 })
     expect(forOwner.notifications.map((item) => item.id)).toEqual([
       "new-leads",
       "failed-jobs",

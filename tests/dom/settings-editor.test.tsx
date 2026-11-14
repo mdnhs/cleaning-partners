@@ -101,12 +101,13 @@ describe("settings editor (master 4.5)", () => {
     // No overview tab: /admin/settings redirects to the first key.
     expect(links[0]).toHaveTextContent("Identity")
     expect(links[0]).toHaveAttribute("href", "/admin/settings/site")
-    // The 3 non-page keys (page content is under Website), then AI
+    // The 4 non-page keys (page content is under Website), then AI
     // assistant and Integrations (owner/admin).
     expect(links.map((link) => link.textContent)).toEqual([
       "Identity",
       "Enquiries",
       "Job applications",
+      "Live chat",
       "AI assistant",
       "Integrations",
     ])

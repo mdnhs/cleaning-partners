@@ -162,6 +162,20 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     ],
   },
   {
+    id: "live-chat",
+    group: "inbox",
+    title: "Live chat",
+    summary:
+      "Visitors can chat with the team from the bubble on the site. Their chats arrive under Live chat.",
+    steps: [
+      "Turn it on under Site settings › Live chat, then publish.",
+      "The AI assistant needs Site settings › AI assistant set up.",
+      'Before turning it on, add a short "Live chat" paragraph to the Privacy page (what is stored, for how long, that an AI provider reads messages).',
+      "Reply to take over; Hand back to let the assistant answer again.",
+      "Use Privacy request to export or erase a person's chats.",
+    ],
+  },
+  {
     id: "media",
     group: "content",
     title: "Upload and reuse pictures",

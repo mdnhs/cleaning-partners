@@ -28,6 +28,8 @@ import {
   teamRoutes,
   testimonialsRoutes,
 } from "@/server/modules/collections/routes"
+import { chatPublicRoutes } from "@/server/modules/chat/public-routes"
+import { chatRoutes } from "@/server/modules/chat/routes"
 import { dashboardRoutes } from "@/server/modules/dashboard/routes"
 import { healthRoutes } from "@/server/modules/health/routes"
 import { internalRoutes } from "@/server/modules/internal/routes"
@@ -80,6 +82,7 @@ export const adminRoutes = new Hono<AppEnv>()
   .route("/media", mediaRoutes)
   .route("/integrations", integrationsRoutes)
   .route("/leads", leadsRoutes)
+  .route("/chat", chatRoutes)
   .route("/applications", applicationsRoutes)
   .route("/seo", seoRoutes)
   .route("/redirects", redirectsRoutes)
@@ -115,6 +118,7 @@ export function createApp() {
   api.use("/v1/public/*", limitPublicBody)
   api.route("/v1/public/leads", publicLeadsRoutes)
   api.route("/v1/public/applications", publicApplicationsRoutes)
+  api.route("/v1/public/chat", chatPublicRoutes)
 
   // 4. Admin endpoints: session → signed in → same origin → body limit (1 MB; uploads 20 MB)
   api.use(

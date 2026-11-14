@@ -36,6 +36,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     const badged = NAV_ITEMS.filter((item) => item.badge)
     expect(badged.map((item) => [item.id, item.badgeLabel])).toEqual([
       ["leads", "new enquiries"],
+      ["chat", "unread chats"],
     ])
   })
 
@@ -53,7 +54,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     expect(
       visibleNav(["owner"]).map((g) => g.items.map((i) => i.label))
     ).toEqual([
-      ["Dashboard", "Website", "Media", "Enquiries"],
+      ["Dashboard", "Website", "Media", "Enquiries", "Live chat"],
       ["SEO", "Marketing"],
       ["Appearance", "Site settings"],
     ])
@@ -118,7 +119,11 @@ describe("nav registry (MK IA, spec §5.1)", () => {
 
   it("intake sees Enquiries with Job applications and no Website", () => {
     const items = visibleNav(["intake"]).flatMap((g) => g.items)
-    expect(items.map((i) => i.label)).toEqual(["Dashboard", "Enquiries"])
+    expect(items.map((i) => i.label)).toEqual([
+      "Dashboard",
+      "Enquiries",
+      "Live chat",
+    ])
     expect(
       items
         .find((i) => i.id === "leads")!
@@ -136,6 +141,25 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       parent: "Enquiries",
       href: "/admin/careers/applications",
     })
+  })
+
+  it("Live chat needs chat:read", () => {
+    const chat = NAV_ITEMS.find((i) => i.id === "chat")!
+    expect(chat).toMatchObject({
+      group: "menu",
+      label: "Live chat",
+      href: "/admin/chat",
+      permission: { chat: ["read"] },
+      match: "prefix",
+      badge: "chat-unread",
+    })
+    expect(chat.children).toBeUndefined()
+    expect(permissionFor("/admin/chat")).toEqual({ chat: ["read"] })
+    expect(
+      visibleNav(["editor"])
+        .flatMap((g) => g.items)
+        .map((i) => i.label)
+    ).not.toContain("Live chat")
   })
 
   it("groups are Menu, Growth, General in order", () => {
@@ -157,6 +181,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       "website",
       "media",
       "leads",
+      "chat",
       "seo",
       "marketing",
       "appearance",
@@ -360,7 +385,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     )
   })
 
-  it("Site settings lists Identity, Enquiries, Job applications, AI assistant, Integrations", () => {
+  it("Site settings lists Identity, Enquiries, Job applications, Live chat, AI assistant, Integrations", () => {
     const settings = NAV_ITEMS.find((i) => i.id === "settings")!
     expect(settings).toMatchObject({
       label: "Site settings",
@@ -382,6 +407,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       "Identity",
       "Enquiries",
       "Job applications",
+      "Live chat",
       "AI assistant",
       "Integrations",
     ])
