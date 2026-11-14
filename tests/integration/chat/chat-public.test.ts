@@ -21,6 +21,7 @@ import {
   chatConversations,
   chatMessages,
   chatPresence,
+  publicRateLimits,
   rateLimits,
   settings,
 } from "@/server/db/schema"
@@ -282,6 +283,31 @@ describe("public chat API", () => {
     })
     expect(res.status).toBe(403)
     expect(await conversations()).toHaveLength(0)
+  })
+
+  it("a start that fails Turnstile does not spend the site-wide start quota", async () => {
+    await saveTurnstile(
+      encryptSecret("turnstile-secret", "integrations.turnstile.secretKey")
+    )
+    turnstile.verify.mockResolvedValue(false)
+    const bad = await chatRequest("/start", {
+      method: "POST",
+      body: startBody({ turnstileToken: "bad" }),
+    })
+    expect(bad.status).toBe(422)
+    const site = await getDb()
+      .select()
+      .from(publicRateLimits)
+      .where(eq(publicRateLimits.key, "chat:start:site"))
+    expect(site).toHaveLength(0)
+
+    turnstile.verify.mockResolvedValue(true)
+    await begin()
+    const [row] = await getDb()
+      .select()
+      .from(publicRateLimits)
+      .where(eq(publicRateLimits.key, "chat:start:site"))
+    expect(row?.count).toBe(1)
   })
 
   it("turnstile on: a bad token → 422 with fieldErrors.turnstileToken; unreadable settings → allowed", async () => {

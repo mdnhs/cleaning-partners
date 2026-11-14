@@ -157,15 +157,19 @@ export async function pollLimit(ip: string | null) {
   if (!r.allowed) throw rateLimited("Too many requests. Try again later.", r)
 }
 
-/** A new chat: site-wide limit, Turnstile, then the conversation. */
+/**
+ * A new chat: Turnstile, site-wide limit, then the conversation. Turnstile
+ * goes first so failed checks cannot spend the site-wide quota (the per-IP
+ * limit already caps Turnstile calls).
+ */
 export async function start(input: StartChatInput, ip: string | null) {
+  await assertHuman(input.turnstileToken, ip)
   const site = await consumeRateLimit(
     "chat:start:site",
     CHAT_START_SITE_RATE_LIMIT
   )
   if (!site.allowed)
     throw rateLimited("Too many chats right now. Try again later.", site)
-  await assertHuman(input.turnstileToken, ip)
   const token = newToken()
   const { chat } = await repo.createConversation({
     tokenHash: hashToken(token),
