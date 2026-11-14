@@ -3,16 +3,19 @@ import { describe, expect, it } from "vitest"
 import { settingsSchemas, type SettingsKey } from "@/lib/schemas/settings"
 
 import {
+  currentTarget,
   DERIVED_SETTINGS_PATHS,
   inventory,
-  normalise,
 } from "../helpers/inventory"
 import { schemaPaths } from "../helpers/schema-paths"
 
 const keys = Object.keys(settingsSchemas) as SettingsKey[]
 const targets = inventory
-  .map((e) => ({ ...e, path: normalise(e.target) }))
-  .filter((e) => e.path.startsWith("settings."))
+  .map((e) => ({ ...e, path: currentTarget(e.target) }))
+  // Relocated fields are checked where they live now; removed ones (null) skipped.
+  .filter((e): e is typeof e & { path: string } =>
+    Boolean(e.path?.startsWith("settings."))
+  )
   .filter((e) => !DERIVED_SETTINGS_PATHS.has(e.path))
   // Derived values (tel: hrefs, ...) are computed from stored fields.
   .filter((e) => !e.derived)

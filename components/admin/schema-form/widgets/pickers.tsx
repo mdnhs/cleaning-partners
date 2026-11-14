@@ -102,6 +102,9 @@ export function LinkWidget({ field, path }: WidgetProps) {
             className="h-9 rounded-lg px-3 pointer-coarse:h-11"
             disabled={disabled}
             aria-label={`Add link: ${field.label}`}
+            aria-describedby={
+              field.meta.help ? `${fieldId(idPrefix, path)}-help` : undefined
+            }
             onClick={() => onWholeChange({ label: "", href: "" })}
           >
             Add link

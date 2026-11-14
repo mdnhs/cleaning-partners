@@ -3,6 +3,7 @@ import { resolve } from "node:path"
 
 import { describe, expect, it } from "vitest"
 
+import { contactPlaceholders, interpolate } from "@/lib/interpolate"
 import { settingsSchemas, type SettingsKey } from "@/lib/schemas/settings"
 import {
   fixtureMediaId,
@@ -13,13 +14,17 @@ import {
 import { settingsFixture } from "@/server/db/seed/fixtures/settings"
 
 import {
+  CHANGED_SINCE_BASELINE,
+  currentTarget,
   DERIVED_SETTINGS_PATHS,
   inventory,
-  normalise,
 } from "../helpers/inventory"
 
 const fixture = settingsFixture(fixtureMediaLookup)
 const keys = Object.keys(settingsSchemas) as SettingsKey[]
+/** {placeholders} (phone24h …) as the site fills them in. */
+const fill = (text: string) =>
+  interpolate(text, contactPlaceholders(fixture.contact))
 
 /** Every { mediaId } in a value. */
 function mediaIds(value: unknown, out = new Set<string>()): Set<string> {
@@ -69,8 +74,11 @@ describe("settings fixtures are verbatim from the inventory (master 3.1)", () =>
   })
 
   const entries = inventory
-    .map((e) => ({ ...e, path: normalise(e.target) }))
-    .filter((e) => e.path.startsWith("settings."))
+    .map((e) => ({ ...e, path: currentTarget(e.target) }))
+    // Relocated fields are checked where they live now; removed ones (null) skipped.
+    .filter((e): e is typeof e & { path: string } =>
+      Boolean(e.path?.startsWith("settings."))
+    )
     .filter((e) => !e.derived && !DERIVED_SETTINGS_PATHS.has(e.path))
     .filter((e) => !/^[{]/.test(e.value))
 
@@ -83,7 +91,18 @@ describe("settings fixtures are verbatim from the inventory (master 3.1)", () =>
       .filter((k) => entry.path.startsWith(`settings.${k}.`))
       .sort((a, b) => b.length - a.length)[0]
     const path = entry.path.slice(`settings.${key}.`.length)
-    const found = valuesAt(fixture[key], path)
+    let found = valuesAt(fixture[key], path)
+    // Stored text keeps {placeholders}; the inventory has the filled value.
+    if (!entry.template)
+      found = found.map((v) => (typeof v === "string" ? fill(v) : v))
+    if (CHANGED_SINCE_BASELINE.has(entry.id)) {
+      // Changed on purpose after the baseline: still seeded, no longer verbatim.
+      expect(found[0], entry.id).not.toBeUndefined()
+      expect(found[0], entry.id).not.toBe(
+        entry.template ? entry.seed : entry.value
+      )
+      return
+    }
     if (entry.array) {
       // "5" = the number of items in the list.
       const list = found[0] as unknown[]

@@ -18,17 +18,19 @@ function Harness({
   schema,
   initial,
   spy,
+  meta = { fields: {} },
 }: {
   schema: z.ZodType
   initial: unknown
   spy: (v: unknown) => void
+  meta?: unknown
 }) {
   const [value, setValue] = useState(initial)
   return (
     <QueryClientProvider client={makeQueryClient()}>
       <SchemaForm
         schema={schema as never}
-        meta={{ fields: {} } as never}
+        meta={meta as never}
         value={value as never}
         onChange={(v: unknown) => {
           setValue(v)
@@ -78,6 +80,22 @@ describe("nullable link field", () => {
         loginLink: { label: "Staff", href: "/staff" },
       })
     )
+  })
+
+  it("Add link is described by the field's help", () => {
+    render(
+      <Harness
+        schema={nullableSchema}
+        initial={{ loginLink: null }}
+        meta={{
+          fields: { loginLink: { help: "Shown after the legal links." } },
+        }}
+        spy={vi.fn()}
+      />
+    )
+    expect(
+      screen.getByRole("button", { name: /Add link/ })
+    ).toHaveAccessibleDescription("Shown after the legal links.")
   })
 
   it("a required link has no Remove button", () => {
