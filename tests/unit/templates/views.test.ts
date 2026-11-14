@@ -259,6 +259,15 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     )
   })
 
+  it("mapsSearchHref: an empty address line adds no stray comma", () => {
+    expect(
+      mapsSearchHref({ addressLine1: "1 Main St", addressLine2: "" })
+    ).toBe("https://www.google.com/maps/search/?api=1&query=1%20Main%20St")
+    expect(
+      mapsSearchHref({ addressLine1: "", addressLine2: "Tullamore" })
+    ).toBe("https://www.google.com/maps/search/?api=1&query=Tullamore")
+  })
+
   it("a page hero without a banner uses the site's default banner", () => {
     const blog = s.pages.blog
     const view = blogView({

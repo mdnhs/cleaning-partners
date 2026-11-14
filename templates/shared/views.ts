@@ -308,13 +308,15 @@ export function teamView(s: SiteSources): TeamProps {
   }
 }
 
-/** A Google Maps search for the business address. */
+/** A Google Maps search for the business address (blank lines left out). */
 export const mapsSearchHref = (contact: {
   addressLine1: string
   addressLine2: string
 }) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    `${contact.addressLine1}, ${contact.addressLine2}`
+    [contact.addressLine1, contact.addressLine2]
+      .filter((part) => part !== "")
+      .join(", ")
   )}`
 
 /** The href a contact card's action opens (none for hours / other). */
