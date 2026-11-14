@@ -460,7 +460,16 @@ export function servicesIntroView(
     eyebrow: services.eyebrow,
     title: services.title,
     description: services.description,
-    items: services.items,
+    // Each item links to the published service page with the same title;
+    // an item with no matching page stays plain text.
+    items: services.items.map((item) => {
+      const match = s.services.find(
+        (x) =>
+          x.content.title.trim().toLowerCase() ===
+          item.title.trim().toLowerCase()
+      )
+      return match ? { ...item, href: servicePath(match.slug) } : item
+    }),
     itemIcon: services.itemIcon.url,
     moreText: services.moreText,
     cta: linkView(s, services.cta),
