@@ -74,6 +74,7 @@ export const RESOURCE_LABELS: Record<Resource, string> = {
   audit: "Audit log",
   ai: "AI assistant",
   appearance: "Appearance",
+  chat: "Live chat",
 }
 
 export const ACTION_LABELS: Record<Action, string> = {
@@ -93,6 +94,7 @@ export const ACTION_LABELS: Record<Action, string> = {
   revokeSessions: "Sign out everywhere",
   manage: "Manage",
   use: "Use",
+  reply: "Reply",
 }
 
 export const resourceLabel = (resource: Resource): string =>

@@ -46,6 +46,7 @@ describe("settings key registry (R3-1)", () => {
       "sections.howItWorks",
       "leads",
       "careers",
+      "chat",
     ])
   })
 
@@ -65,12 +66,25 @@ describe("settings key registry (R3-1)", () => {
     }
   })
 
-  it("only leads and careers need more than settings:update", () => {
+  it("only leads, careers and chat need more than settings:update", () => {
     for (const key of EDITABLE_SETTINGS_KEYS)
       expect(SETTINGS_ENTRIES[key].update).toEqual(
         key === "leads" || key === "careers"
           ? { settings: ["update"], lead: ["update"] }
-          : { settings: ["update"] }
+          : key === "chat"
+            ? { settings: ["update"], chat: ["manage"] }
+            : { settings: ["update"] }
       )
+  })
+
+  it("chat is Site settings › Live chat, in the Leads group", () => {
+    expect(SETTINGS_ENTRIES.chat).toEqual({
+      label: "Live chat",
+      description:
+        "Turns the chat bubble and its AI assistant on, and holds every text visitors see in it.",
+      group: "Leads",
+      read: { settings: ["read"] },
+      update: { settings: ["update"], chat: ["manage"] },
+    })
   })
 })

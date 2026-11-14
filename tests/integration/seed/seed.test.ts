@@ -62,7 +62,7 @@ describe("seedContent (master Task 3.4)", () => {
     expect(first).toEqual({
       media: 44,
       articleCategories: 6,
-      settings: 19,
+      settings: 20,
       pages: 6,
       legalPages: 2,
       jobPostings: 8,

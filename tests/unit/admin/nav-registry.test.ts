@@ -360,7 +360,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     )
   })
 
-  it("Site settings lists Identity, Enquiries, Job applications, AI assistant, Integrations", () => {
+  it("Site settings lists Identity, Enquiries, Job applications, Live chat, AI assistant, Integrations", () => {
     const settings = NAV_ITEMS.find((i) => i.id === "settings")!
     expect(settings).toMatchObject({
       label: "Site settings",
@@ -382,6 +382,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       "Identity",
       "Enquiries",
       "Job applications",
+      "Live chat",
       "AI assistant",
       "Integrations",
     ])
