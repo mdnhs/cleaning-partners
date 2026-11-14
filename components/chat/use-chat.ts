@@ -1,6 +1,12 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react"
 
 import type {
   ChatStatus,
@@ -63,19 +69,26 @@ export function useChat({ open }: { open: boolean }) {
   const [sending, setSending] = useState(false)
   const [status, setStatus] = useState<ChatStatus | null>(null)
 
-  // Opening the panel reads everything: adjust during render, not in an effect.
-  const [prevOpen, setPrevOpen] = useState(open)
-  if (open !== prevOpen) {
-    setPrevOpen(open)
-    if (open) setUnread(false)
-  }
-
   const lastId = useRef(0)
   const known = useRef(new Set<number>())
   const existsRef = useRef(false)
   const loadedRef = useRef(false)
   const closedRef = useRef(false)
   const openRef = useRef(open)
+
+  // Opening the panel reads everything: adjust during render, not in an
+  // effect.
+  const [prevOpen, setPrevOpen] = useState(open)
+  if (open !== prevOpen) {
+    setPrevOpen(open)
+    if (open) setUnread(false)
+  }
+  // openRef follows in the commit, not in a passive effect: a poll landing
+  // between the opening render and its effects would otherwise see the panel
+  // closed and mark it unread again.
+  useLayoutEffect(() => {
+    openRef.current = open
+  }, [open])
   const firstLoad = useRef(true)
   const engine = useRef({
     poll: async () => {},
@@ -206,7 +219,6 @@ export function useChat({ open }: { open: boolean }) {
   }, [refreshStatus])
 
   useEffect(() => {
-    openRef.current = open
     if (open) {
       if (existsRef.current && !closedRef.current) void engine.current.poll()
     } else {

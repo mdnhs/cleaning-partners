@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react"
+import { useState } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { getConversation, sendMessage, startChat } from "@/components/chat/api"
@@ -204,6 +205,57 @@ describe("useChat polling", () => {
     expect(result.current.unread).toBe(false)
   })
 
+  // Task 8 review: unread was cleared during the opening render but openRef
+  // only followed in a passive effect, so a poll landing in between marked
+  // the open panel unread. Runs outside act so React schedules the render and
+  // its effects as separate tasks, the way a browser does.
+  it("a poll landing between the opening render and its effects is not unread", async () => {
+    const realImmediate = (await import("node:timers")).setImmediate
+    const macrotask = () => new Promise<void>((r) => realImmediate(r))
+    let release!: () => void
+    const gate = new Promise<void>((r) => (release = r))
+    let n = 0
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input)
+      if (url.endsWith("/status")) return json(200, STATUS)()
+      n += 1
+      if (n === 1) return json(200, view([1]))()
+      await gate
+      return json(200, {
+        ...view([]),
+        messages: [msg(2, "staff")],
+        lastId: 2,
+      })()
+    })
+    let setOpen!: (open: boolean) => void
+    let renders = 0
+    const { result } = renderHook(() => {
+      const [open, set] = useState(false)
+      setOpen = set
+      renders++
+      return useChat({ open })
+    })
+    await flush()
+    await tick(20_000) // the second poll now waits on the gate
+    const actEnv = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    actEnv.IS_REACT_ACT_ENVIRONMENT = false
+    try {
+      setOpen(true) // a default-lane update: render, then effects later
+      // Step one task at a time until the opening render has run: its
+      // passive effects come in a later task.
+      const before = renders
+      for (let i = 0; renders === before && i < 50; i++) await macrotask()
+      expect(renders).toBeGreaterThan(before)
+      release()
+      for (let i = 0; i < 5; i++) await Promise.resolve()
+      for (let i = 0; i < 5; i++) await macrotask()
+    } finally {
+      actEnv.IS_REACT_ACT_ENVIRONMENT = true
+    }
+    expect(result.current.messages.map((m) => m.id)).toEqual([1, 2])
+    expect(result.current.unread).toBe(false)
+  })
+
   it("stops polling once the chat is closed", async () => {
     responses = [json(200, view([1], { status: "closed" }))]
     const { result } = renderHook(() => useChat({ open: true }))
@@ -377,6 +429,30 @@ describe("chat api", () => {
       kind: "invalid",
       fieldErrors: {},
     })
+  })
+
+  // Task 8 review: a hung request must not stall polling. Every call gets a
+  // 10 s timeout signal, and an abort reads as a network failure.
+  it("gives every request a 10 s timeout and maps the abort to network", async () => {
+    const controller = new AbortController()
+    const timeout = vi
+      .spyOn(AbortSignal, "timeout")
+      .mockReturnValue(controller.signal)
+    vi.mocked(fetch).mockImplementationOnce(
+      (_input, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(new DOMException("timed out", "TimeoutError"))
+          )
+        })
+    )
+    const pending = getConversation(0)
+    expect(timeout).toHaveBeenCalledWith(10_000)
+    expect(vi.mocked(fetch).mock.calls.at(-1)?.[1]?.signal).toBe(
+      controller.signal
+    )
+    controller.abort()
+    expect(await pending).toEqual({ ok: false, kind: "network" })
   })
 
   it("posts JSON to the public endpoint", async () => {

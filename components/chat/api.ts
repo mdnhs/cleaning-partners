@@ -20,6 +20,9 @@ export type ApiResult<T> = { ok: true; data: T } | ApiFailure
 
 type ErrorBody = { error?: { fieldErrors?: Record<string, string[]> } }
 
+/** A hung request must not stall polling: it fails as `network` instead. */
+const TIMEOUT_MS = 10_000
+
 async function call<T>(
   path: string,
   init?: { method: "POST"; body: unknown }
@@ -32,8 +35,10 @@ async function call<T>(
       body: init ? JSON.stringify(init.body) : undefined,
       credentials: "same-origin",
       cache: "no-store",
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     })
   } catch {
+    // Offline, or the timeout aborted it.
     return { ok: false, kind: "network" }
   }
   if (res.ok) {
