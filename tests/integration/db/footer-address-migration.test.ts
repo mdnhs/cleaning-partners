@@ -47,13 +47,17 @@ describe("footer_address_from_contact (custom data migration)", () => {
     expect(footerSettings.parse(after.published)).toEqual(seeded)
   })
 
-  it("keeps the admin's edits to the other footer fields", async () => {
+  it("keeps the admin's edits, including an edited address line", async () => {
     const edited = { ...before, tagline: "Edited", addressLine2: "Custom" }
     await insert("footer", edited, edited)
     await migrate()
     const after = await row()
-    expect(after.draft).toEqual({ ...seeded, tagline: "Edited" })
-    expect(after.published).toEqual({ ...seeded, tagline: "Edited" })
+    // The edited wording stays in the row (recoverable); reads strip it.
+    expect(after.draft).toEqual(edited)
+    expect(after.published).toEqual(edited)
+    const parsed = { ...seeded, tagline: "Edited" }
+    expect(footerSettings.parse(after.draft)).toEqual(parsed)
+    expect(footerSettings.parse(after.published)).toEqual(parsed)
   })
 
   it("keeps a NULL published and is safe to re-run", async () => {
