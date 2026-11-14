@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useId } from "react"
+import { useEffect, useId, useRef } from "react"
 
 import {
   SECTION_TAB,
@@ -29,15 +29,33 @@ export function WebsiteTabs({ screen }: { screen: WebsiteKey }) {
   const { roles } = useAdminSession()
   const pathname = usePathname()
   const tabs = websiteTabs(screen, roles)
-  if (tabs.length < 2) return null
-  const label = WEBSITE_SCREENS.find((s) => s.key === screen)!.label
+  const listRef = useRef<HTMLUListElement>(null)
   // The deepest tab whose href covers the path (Page covers its parts).
   const current = tabs
     .filter((tab) => covers(tab.href, pathname))
     .sort((a, b) => b.href.length - a.href.length)[0]?.id
+  // On a narrow screen the row scrolls: keep the current tab in view (a
+  // deep link to the last part), as SectionTabs does. Only the row scrolls.
+  useEffect(() => {
+    const row = listRef.current
+    const active = row?.querySelector<HTMLElement>("[aria-current=page]")
+    if (!row || !active || row.scrollWidth <= row.clientWidth) return
+    const left = active.offsetLeft
+    const right = left + active.offsetWidth
+    if (left < row.scrollLeft || right > row.scrollLeft + row.clientWidth)
+      row.scrollTo({ left: left - 16 })
+  }, [current])
+  if (tabs.length < 2) return null
+  const label = WEBSITE_SCREENS.find((s) => s.key === screen)!.label
   return (
-    <nav aria-label={`${label} sections`} className="mb-4 min-w-0">
-      <ul className="-mx-1 flex scrollbar-thin gap-1 overflow-x-auto px-1 pb-1">
+    <nav
+      aria-label={`${label} sections`}
+      className="mb-4 min-w-0 lg:mb-(--main-pad)"
+    >
+      <ul
+        ref={listRef}
+        className="relative -mx-1 flex scrollbar-thin gap-1 overflow-x-auto px-1 pb-1"
+      >
         {tabs.map((tab) => {
           const active = tab.id === current
           return (
@@ -66,7 +84,7 @@ export function SharedOnPage({ page }: { page: PageKey }) {
   return (
     <section
       aria-labelledby={headingId}
-      className="rounded-card mb-4 border border-border p-4"
+      className="rounded-card mb-4 border border-border p-4 lg:mb-(--main-pad)"
     >
       <h2 id={headingId} className="text-sm font-semibold">
         Shared on this page
