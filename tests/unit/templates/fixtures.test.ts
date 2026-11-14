@@ -19,6 +19,7 @@ import { frozenArray } from "../helpers/frozen"
 import {
   CHANGED_SINCE_BASELINE,
   currentTarget,
+  expectChangedSinceBaseline,
   inventory,
   normalise,
   RELOCATED_SINCE_BASELINE,
@@ -95,6 +96,8 @@ function seededValue(path: string): unknown[] {
 /** The schema paths a "pages.…" or "settings.…" target lives under. */
 function livePaths(target: string): { rest: string; paths: Set<string> } {
   const [root, key, ...rest] = target.split(".")
+  if (root === "pages" && !Object.hasOwn(PAGES, key))
+    throw new Error(`${target}: "${key}" is not a registry page`)
   if (root === "pages" && rest[0] === "seo") {
     const p = schemaPaths(seo)
     return {
@@ -146,19 +149,22 @@ describe("page fixtures (master 3.2)", () => {
   }
 
   it("every baseline-change exemption is a real inventory entry (no stale entries)", () => {
-    const ids = new Set(inventory.map((e) => e.id))
-    for (const id of CHANGED_SINCE_BASELINE.keys())
-      expect(ids, id).toContain(id)
+    for (const id of CHANGED_SINCE_BASELINE.keys()) {
+      const entry = inventory.find((e) => e.id === id)
+      expect(entry, id).toBeDefined()
+      // A removed field (relocated to null) cannot have a changed value.
+      const target = currentTarget(entry!.target)
+      expect(target, `${id}: relocated to null`).not.toBeNull()
+      expect(target, id).toMatch(/^(pages|settings)\./)
+    }
   })
 
   it("every baseline-change exemption still has a seeded value at its (possibly relocated) path", () => {
     const changed = entries.filter((e) => CHANGED_SINCE_BASELINE.has(e.id))
+    // Guards against a vacuous pass: both seeded exemptions target pages.*,
+    // so an empty list means the filter (or currentTarget) broke.
     expect(changed.length).toBeGreaterThan(0)
-    for (const e of changed) {
-      const actual = changedValue(e)
-      expect(actual, e.id).not.toBeUndefined()
-      expect(actual, e.id).not.toBe(e.template ? e.seed : e.value)
-    }
+    for (const e of changed) expectChangedSinceBaseline(e, changedValue(e))
   })
 
   it("every relocation names a real inventory target and a live schema path", () => {
@@ -166,6 +172,11 @@ describe("page fixtures (master 3.2)", () => {
     for (const [from, to] of Object.entries(RELOCATED_SINCE_BASELINE)) {
       expect(targets, from).toContain(from)
       if (to === null) continue
+      // One hop only: currentTarget does not follow chains.
+      expect(
+        Object.hasOwn(RELOCATED_SINCE_BASELINE, to),
+        `${to}: chained`
+      ).toBe(false)
       const { rest, paths } = livePaths(to)
       expect(paths, to).toContain(rest)
     }
@@ -175,9 +186,7 @@ describe("page fixtures (master 3.2)", () => {
     "%s is verbatim",
     (_id, e) => {
       if (CHANGED_SINCE_BASELINE.has(e.id)) {
-        const actual = changedValue(e)
-        expect(actual).not.toBeUndefined()
-        expect(actual).not.toBe(e.template ? e.seed : e.value)
+        expectChangedSinceBaseline(e, changedValue(e))
         return
       }
       const pageKey = e.path.split(".")[1] as keyof typeof fixture

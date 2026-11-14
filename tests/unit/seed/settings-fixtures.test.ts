@@ -16,6 +16,7 @@ import { settingsFixture } from "@/server/db/seed/fixtures/settings"
 import {
   CHANGED_SINCE_BASELINE,
   currentTarget,
+  expectChangedSinceBaseline,
   DERIVED_SETTINGS_PATHS,
   inventory,
 } from "../helpers/inventory"
@@ -97,10 +98,7 @@ describe("settings fixtures are verbatim from the inventory (master 3.1)", () =>
       found = found.map((v) => (typeof v === "string" ? fill(v) : v))
     if (CHANGED_SINCE_BASELINE.has(entry.id)) {
       // Changed on purpose after the baseline: still seeded, no longer verbatim.
-      expect(found[0], entry.id).not.toBeUndefined()
-      expect(found[0], entry.id).not.toBe(
-        entry.template ? entry.seed : entry.value
-      )
+      expectChangedSinceBaseline(entry, found[0])
       return
     }
     if (entry.array) {

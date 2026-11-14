@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs"
 
+import { expect } from "vitest"
+
 export type InventoryEntry = {
   id: string
   source: string
@@ -67,4 +69,23 @@ export function currentTarget(target: string): string | null {
   return Object.hasOwn(RELOCATED_SINCE_BASELINE, path)
     ? RELOCATED_SINCE_BASELINE[path]
     : path
+}
+
+/**
+ * A `CHANGED_SINCE_BASELINE` entry's seeded value (placeholders filled unless
+ * it is a template) is still there and no longer the baseline's: a list
+ * entry's item count differs; any other entry is a string other than the
+ * baseline value.
+ */
+export function expectChangedSinceBaseline(
+  entry: InventoryEntry,
+  actual: unknown
+) {
+  if (entry.array) {
+    expect(Array.isArray(actual), `${entry.id}: a list`).toBe(true)
+    expect((actual as unknown[]).length, entry.id).not.toBe(Number(entry.value))
+    return
+  }
+  expect(typeof actual, `${entry.id}: a seeded string`).toBe("string")
+  expect(actual, entry.id).not.toBe(entry.template ? entry.seed : entry.value)
 }
