@@ -394,7 +394,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         {
           title: "Heading",
           description:
-            "Above the testimonials (the quotes are under Collections).",
+            "Above the testimonials (the quotes are under Testimonials).",
           fields: ["eyebrow", "title"],
         },
         {

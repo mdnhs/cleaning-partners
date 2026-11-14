@@ -81,7 +81,8 @@ export const SETTINGS_ENTRIES: Record<
   },
   "sections.clients": {
     label: "Clients strip",
-    description: "Heading above the client logos (logos are under Clients).",
+    description:
+      "Heading above the client logos (logos are under Client logos).",
     group: "Shared sections",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,
@@ -97,7 +98,7 @@ export const SETTINGS_ENTRIES: Record<
   "sections.testimonials": {
     label: "Testimonials section",
     description:
-      "Heading and labels above the testimonials (the quotes are under Collections).",
+      "Heading and labels above the testimonials (the quotes are under Testimonials).",
     group: "Shared sections",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,
@@ -105,7 +106,7 @@ export const SETTINGS_ENTRIES: Record<
   "sections.team": {
     label: "Team section",
     description:
-      "Background and heading of “Meet the team” (members are under Collections).",
+      "Background and heading of “Meet the team” (members are under Team members).",
     group: "Shared sections",
     read: { settings: ["read"] },
     update: CONTENT_UPDATE,

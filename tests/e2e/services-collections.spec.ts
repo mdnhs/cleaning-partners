@@ -141,7 +141,7 @@ test("edit a testimonial → home shows the new quote", async ({
     await page.request.get("/api/v1/admin/testimonials?pageSize=100")
   ).json()) as { items: { name: string; quote: string }[] }
   originalQuote = seeded.items.find((i) => i.name === TESTIMONIAL)!.quote
-  await page.goto("/admin/collections/testimonials")
+  await page.goto("/admin/website/home/testimonials")
   await expect(
     page.getByRole("heading", { level: 1, name: "Testimonials" })
   ).toBeVisible()

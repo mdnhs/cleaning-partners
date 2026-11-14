@@ -24,21 +24,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
     [
       "owner",
       [
-        [
-          "Menu",
-          [
-            "Dashboard",
-            "Website",
-            "Pages",
-            "Legal pages",
-            "Blog",
-            "Services",
-            "Careers",
-            "Collections",
-            "Media",
-            "Enquiries",
-          ],
-        ],
+        ["Menu", ["Dashboard", "Website", "Media", "Enquiries"]],
         ["Growth", ["SEO", "Marketing"]],
         ["General", ["Appearance", "Site settings"]],
       ],
@@ -46,20 +32,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
     [
       "editor",
       [
-        [
-          "Menu",
-          [
-            "Dashboard",
-            "Website",
-            "Pages",
-            "Legal pages",
-            "Blog",
-            "Services",
-            "Careers",
-            "Collections",
-            "Media",
-          ],
-        ],
+        ["Menu", ["Dashboard", "Website", "Media"]],
         ["Growth", ["SEO"]],
         ["General", ["Appearance", "Site settings"]],
       ],
@@ -67,20 +40,7 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
     [
       "viewer",
       [
-        [
-          "Menu",
-          [
-            "Dashboard",
-            "Website",
-            "Pages",
-            "Legal pages",
-            "Blog",
-            "Services",
-            "Careers",
-            "Collections",
-            "Media",
-          ],
-        ],
+        ["Menu", ["Dashboard", "Website", "Media"]],
         ["Growth", ["SEO", "Marketing"]],
         ["General", ["Appearance", "Site settings"]],
       ],
@@ -88,25 +48,13 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
     [
       "marketer",
       [
-        [
-          "Menu",
-          [
-            "Dashboard",
-            "Website",
-            "Pages",
-            "Legal pages",
-            "Blog",
-            "Services",
-            "Careers",
-            "Media",
-          ],
-        ],
+        ["Menu", ["Dashboard", "Website", "Media"]],
         ["Growth", ["SEO", "Marketing"]],
         ["General", ["Appearance"]],
       ],
     ],
-    ["author", [["Menu", ["Dashboard", "Website", "Blog", "Media"]]]],
-    ["intake", [["Menu", ["Dashboard", "Careers", "Enquiries"]]]],
+    ["author", [["Menu", ["Dashboard", "Website", "Media"]]]],
+    ["intake", [["Menu", ["Dashboard", "Enquiries"]]]],
   ])("%s sees %j", (role, expected) => {
     expect(menu([role])).toEqual(expected)
   })
@@ -135,13 +83,24 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
       "Defaults",
       "Redirects",
     ])
-    expect(children(["marketer"], "blog")).toEqual(["Articles"])
-    expect(children(["viewer"], "blog")).toEqual(["Articles", "Categories"])
-    expect(children(["owner"], "collections")).toEqual([
-      "Team",
-      "Clients",
-      "Testimonials",
-      "Group companies",
+    // Header & footer needs settings:read, which marketers lack.
+    expect(children(["marketer"], "website")).toEqual([
+      "Home",
+      "About",
+      "Services",
+      "Blog",
+      "Contact",
+      "Careers",
+      "Custom pages",
+      "Legal pages",
+    ])
+    expect(children(["owner"], "leads")).toEqual([
+      "Enquiries",
+      "Job applications",
+    ])
+    expect(children(["intake"], "leads")).toEqual([
+      "Enquiries",
+      "Job applications",
     ])
     const settings = children(["editor"], "settings")!
     expect(settings).not.toContain("AI assistant")
@@ -185,12 +144,17 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
       href: "/admin/seo/redirects",
     })
     expect(item("seo").keywords?.length).toBeGreaterThan(0)
-    expect(owner.find((l) => l.id === "leads")).toMatchObject({
+    expect(owner.find((l) => l.id === "media")).toMatchObject({
       parent: null,
       parentKeywords: [],
-      label: "Enquiries",
+      label: "Media",
+    })
+    expect(owner.find((l) => l.id === "leads-enquiries")).toMatchObject({
+      parent: "Enquiries",
+      href: "/admin/leads",
     })
     expect(owner.some((l) => l.id === "seo")).toBe(false)
+    expect(owner.some((l) => l.id === "leads")).toBe(false)
     for (const link of owner) expect(link.icon).toBeTruthy()
   })
 })
@@ -217,17 +181,20 @@ describe("registry items (ported from the JW nav tests)", () => {
   })
 
   it("drops a section whose children are all hidden", () => {
-    expect(menu(["author"]).flat(2)).not.toContain("Collections")
+    expect(menu(["author"]).flat(2)).not.toContain("Site settings")
     expect(menu(["intake"]).flat(2)).not.toContain("Site settings")
+    expect(menu(["intake"]).flat(2)).not.toContain("Website")
   })
 
   it("activeItem: /admin is exact; sub-pages and ids select their section", () => {
-    expect(activeItem("/admin/pages", ["owner"])!.id).toBe("pages")
-    expect(activeItem("/admin/collections/clients", ["owner"])!.id).toBe(
-      "collections"
+    expect(activeItem("/admin/website/home/clients", ["owner"])!.id).toBe(
+      "website"
     )
+    // Old URLs are redirect stubs, no longer registered.
+    expect(activeItem("/admin/pages", ["owner"])).toBeNull()
+    expect(activeItem("/admin/collections/clients", ["owner"])).toBeNull()
     expect(activeItem("/admin/users-archive", ["owner"])).toBeNull()
-    expect(activeItem("/admin/blog/0192", ["author"])!.id).toBe("blog")
+    expect(activeItem("/admin/blog/0192", ["author"])!.id).toBe("website")
   })
 })
 
@@ -246,9 +213,10 @@ describe("firstVisibleChild (section index pages)", () => {
     expect(firstVisibleChild("settings", ["viewer"])?.href).toBe(
       "/admin/settings/site"
     )
-    expect(firstVisibleChild("collections", ["editor"])?.href).toBe(
-      "/admin/collections/team"
+    expect(firstVisibleChild("website", ["editor"])?.href).toBe(
+      "/admin/website/home"
     )
+    expect(firstVisibleChild("leads", ["intake"])?.href).toBe("/admin/leads")
     expect(firstVisibleChild("marketing", ["marketer"])?.href).toBe(
       "/admin/marketing"
     )
@@ -256,8 +224,8 @@ describe("firstVisibleChild (section index pages)", () => {
 
   it("is undefined when the section is hidden or has no children", () => {
     expect(firstVisibleChild("settings", ["author"])).toBeUndefined()
-    expect(firstVisibleChild("collections", ["author"])).toBeUndefined()
-    expect(firstVisibleChild("pages", ["owner"])).toBeUndefined()
+    expect(firstVisibleChild("website", ["intake"])).toBeUndefined()
+    expect(firstVisibleChild("media", ["owner"])).toBeUndefined()
     expect(firstVisibleChild("nope", ["owner"])).toBeUndefined()
   })
 })

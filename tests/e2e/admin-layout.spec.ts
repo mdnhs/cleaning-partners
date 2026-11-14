@@ -45,33 +45,25 @@ async function expectTopbarFits(page: Page) {
   ).toBe(true)
 }
 
-test("sidebar: the owner sees every group; Blog and Testimonials are listed", async ({
+test("sidebar: the owner sees every group; Testimonials is listed under Home", async ({
   page,
 }) => {
   const { owner } = readFixtures()
   await page.setViewportSize({ width: 1440, height: 900 })
   await signIn(page, owner)
   const sidebar = page.locator("[data-slot=sidebar]")
-  for (const label of [
-    "Dashboard",
-    "Pages",
-    "Blog",
-    "Services",
-    "Collections",
-    "Media",
-    "Enquiries",
-  ])
+  for (const label of ["Dashboard", "Website", "Media", "Enquiries"])
     await expect(
       sidebar.getByRole("link", { name: new RegExp(`^${label}`) }).first()
     ).toBeVisible()
-  // Testimonials is a Collections sub-page: ⌘K lists it from the registry.
+  // Testimonials is a Website › Home part: ⌘K lists it from the registry.
   await page.keyboard.press("ControlOrMeta+k")
   await expect(page.getByRole("dialog").getByRole("combobox")).toBeVisible()
   await page.getByRole("dialog").getByRole("combobox").fill("testimonials")
   await expect(
     page
       .getByRole("dialog")
-      .getByRole("option", { name: "Testimonials, in Collections" })
+      .getByRole("option", { name: "Testimonials, in Home" })
   ).toBeVisible()
 })
 
@@ -80,8 +72,8 @@ test("sidebar: an editor sees content sections only", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await signIn(page, editor)
   const sidebar = page.locator("[data-slot=sidebar]")
-  await expect(sidebar.getByRole("link", { name: /^Pages/ })).toBeVisible()
-  await expect(sidebar.getByRole("link", { name: /^Blog/ })).toBeVisible()
+  await expect(sidebar.getByRole("link", { name: /^Website/ })).toBeVisible()
+  await expect(sidebar.getByRole("link", { name: /^Media/ })).toBeVisible()
   // No settings or users sections for an editor.
   await expect(sidebar.getByRole("link", { name: /^Settings/ })).toHaveCount(0)
 })
@@ -115,9 +107,9 @@ test("below 1024 px the nav is a sheet opened from the topbar", async ({
   await expect(page.locator("[data-slot=sidebar-container]")).toBeHidden()
   await page.getByRole("button", { name: "Toggle navigation" }).click()
   const sheet = page.getByRole("dialog")
-  await expect(sheet.getByRole("link", { name: /^Services/ })).toBeVisible()
-  await sheet.getByRole("link", { name: /^Services/ }).click()
-  await expect(page).toHaveURL(/\/admin\/services/)
+  await expect(sheet.getByRole("link", { name: /^Website/ })).toBeVisible()
+  await sheet.getByRole("link", { name: /^Website/ }).click()
+  await expect(page).toHaveURL(/\/admin\/website\/home$/)
 })
 
 test("⌘K opens, searches CP records and navigates", async ({ page }) => {

@@ -215,7 +215,7 @@ describe("page editor (master 4.4)", () => {
     await user.click(
       within(screen.getByRole("navigation", { name: "Admin" })).getByRole(
         "link",
-        { name: "Services" }
+        { name: "Media" }
       )
     )
     // The shell's styled dialog, not the native confirm().

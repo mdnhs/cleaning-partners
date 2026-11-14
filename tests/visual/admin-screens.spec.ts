@@ -756,9 +756,9 @@ for (const colorScheme of ["light", "dark"] as const) {
 
     test(`admin pages list ${colorScheme}`, async ({ page }) => {
       await signIn(page)
-      await page.goto("/admin/pages")
+      await page.goto("/admin/website/custom-pages")
       await expect(
-        page.getByRole("heading", { level: 1, name: "Pages" })
+        page.getByRole("heading", { level: 1, name: "Custom pages" })
       ).toBeVisible()
       // The seed's custom (builder) rows are listed beside the fixed pages.
       await expect(
@@ -774,7 +774,7 @@ for (const colorScheme of ["light", "dark"] as const) {
 
     test(`admin page editor ${colorScheme}`, async ({ page }) => {
       await signIn(page)
-      await page.goto("/admin/pages/home")
+      await page.goto("/admin/website/home")
       await editorReady(page, "Home")
       await expect(page).toHaveScreenshot(shot("page-editor"), {
         mask: await masks(page),
@@ -785,7 +785,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     // live iframe of the public page) is masked.
     test(`admin page builder ${colorScheme}`, async ({ page }) => {
       await signIn(page)
-      await page.goto("/admin/pages")
+      await page.goto("/admin/website/custom-pages")
       await page
         .getByRole("main")
         .getByRole("link", { name: "Visual fixture", exact: true })
@@ -986,9 +986,9 @@ for (const colorScheme of ["light", "dark"] as const) {
 
     test(`admin team collection ${colorScheme}`, async ({ page }) => {
       await signIn(page)
-      await page.goto("/admin/collections/team")
+      await page.goto("/admin/website/about/team")
       await expect(
-        page.getByRole("navigation", { name: "Collections" })
+        page.getByRole("navigation", { name: "About sections" })
       ).toBeVisible()
       await expect(
         page.getByRole("button", { name: "Edit Michael McDonald" }).first()
@@ -1013,9 +1013,9 @@ for (const colorScheme of ["light", "dark"] as const) {
 
     test(`admin testimonials collection ${colorScheme}`, async ({ page }) => {
       await signIn(page)
-      await page.goto("/admin/collections/testimonials")
+      await page.goto("/admin/website/home/testimonials")
       await expect(
-        page.getByRole("navigation", { name: "Collections" })
+        page.getByRole("navigation", { name: "Home sections" })
       ).toBeVisible()
       const edit = page.getByRole("button", { name: /^Edit / }).first()
       await expect(edit).toBeVisible()
@@ -1052,7 +1052,7 @@ for (const colorScheme of ["light", "dark"] as const) {
       )
       await page.setViewportSize({ width: 1600, height: 900 })
       await signIn(page)
-      await page.goto("/admin/settings/contact")
+      await page.goto("/admin/website/contact/contact-details")
       await editorReady(page, "Contact details")
       await page.getByRole("switch", { name: "Live preview" }).click()
       const pane = page.getByRole("region", { name: "Live preview" })
@@ -1458,7 +1458,7 @@ for (const colorScheme of ["light", "dark"] as const) {
       await freezeUploads(page)
       await pinMedia(page)
       await signIn(page)
-      await page.goto("/admin/pages/home")
+      await page.goto("/admin/website/home")
       await editorReady(page, "Home")
       // The editor page shows through the picker's backdrop: open it from
       // a settled scroll position so the backdrop is the same every run.

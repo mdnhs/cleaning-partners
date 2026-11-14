@@ -25,7 +25,7 @@ async function signIn(page: Page, email: string, name: string) {
 }
 
 async function openHomeEditor(page: Page) {
-  await page.goto("/admin/pages/home")
+  await page.goto("/admin/website/home")
   await expect(
     page.getByRole("heading", { level: 1, name: "Home" })
   ).toBeVisible()
@@ -159,18 +159,18 @@ test("⌘S saves immediately; leaving with unsaved changes asks first", async ({
   // too; the browser Back button asks the same.
   await page
     .getByRole("navigation", { name: "Admin" })
-    .getByRole("link", { name: "Services" })
+    .getByRole("link", { name: /^Media/ })
     .click()
   const leave = page.getByRole("alertdialog", {
     name: "Leave without saving?",
   })
   await expect(leave).toBeVisible()
   await leave.getByRole("button", { name: "Keep editing" }).click()
-  await expect(page).toHaveURL(/\/admin\/pages\/home$/)
+  await expect(page).toHaveURL(/\/admin\/website\/home$/)
   await page.goBack()
   await expect(leave).toBeVisible()
   await leave.getByRole("button", { name: "Keep editing" }).click()
-  await expect(page).toHaveURL(/\/admin\/pages\/home$/)
+  await expect(page).toHaveURL(/\/admin\/website\/home$/)
 })
 
 test("two editors: the stale one gets the conflict dialog and reloads theirs", async ({

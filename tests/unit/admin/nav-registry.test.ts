@@ -17,8 +17,12 @@ import {
   reachableLinks,
   visibleNav,
 } from "@/lib/admin/nav"
-import { WEBSITE_SCREENS } from "@/lib/admin/website"
-import { statements } from "@/lib/auth/permissions"
+import {
+  isWebsiteSettingsKey,
+  SITE_SETTINGS_KEYS,
+  WEBSITE_SCREENS,
+} from "@/lib/admin/website"
+import { hasPermission, statements } from "@/lib/auth/permissions"
 import { ROLES } from "@/lib/auth/roles"
 
 const allLinks = (): NavLink[] => [
@@ -35,21 +39,102 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     ])
   })
 
-  it("Blog holds Articles and Categories; Collections the rest", () => {
-    const hrefs = (id: string) =>
-      NAV_ITEMS.find((item) => item.id === id)!.children!.map((c) => c.href)
-    expect(hrefs("blog")).toEqual(["/admin/blog", "/admin/blog/categories"])
-    expect(hrefs("collections")).toEqual([
-      "/admin/collections/team",
-      "/admin/collections/clients",
-      "/admin/collections/testimonials",
-      "/admin/collections/group-companies",
+  it("no Pages, Legal pages, Blog, Services, Careers or Collections item", () => {
+    const ids = NAV_ITEMS.map((item) => item.id)
+    for (const id of [
+      "pages",
+      "legal-pages",
+      "blog",
+      "services",
+      "careers",
+      "collections",
+    ])
+      expect(ids).not.toContain(id)
+    expect(
+      visibleNav(["owner"]).map((g) => g.items.map((i) => i.label))
+    ).toEqual([
+      ["Dashboard", "Website", "Media", "Enquiries"],
+      ["SEO", "Marketing"],
+      ["Appearance", "Site settings"],
+    ])
+    expect(dockLinks(["owner"]).map((l) => l.label)).toEqual([
+      "Users & roles",
+      "Activity log",
+      "Help",
     ])
   })
 
-  it("Testimonials is a Collections child gated by collection:read", () => {
-    expect(permissionFor("/admin/collections/testimonials")).toEqual({
+  it("owned paths resolve to the owner's permission", () => {
+    expect(permissionFor("/admin/services")).toEqual({ service: ["read"] })
+    expect(permissionFor("/admin/services/x")).toEqual({ service: ["read"] })
+    expect(permissionFor("/admin/blog")).toEqual({ article: ["read"] })
+    expect(permissionFor("/admin/blog/categories")).toEqual({
       collection: ["read"],
+    })
+    expect(permissionFor("/admin/careers")).toEqual({ job: ["read"] })
+    expect(permissionFor("/admin/careers/new")).toEqual({ job: ["read"] })
+    expect(permissionFor("/admin/careers/applications/x")).toEqual({
+      lead: ["read"],
+    })
+    expect(permissionFor("/admin/pages/custom/x")).toEqual({ page: ["read"] })
+    expect(permissionFor("/admin/pages")).toBeUndefined()
+    expect(permissionFor("/admin/pages/legal")).toBeUndefined()
+    expect(permissionFor("/admin/collections")).toBeUndefined()
+    expect(permissionFor("/admin/collections/team")).toBeUndefined()
+  })
+
+  it("the page builder opens for page:read roles only", () => {
+    const builder = permissionFor(
+      "/admin/pages/custom/0199a000-0000-7000-8000-000000000000"
+    )
+    expect(builder).toEqual({ page: ["read"] })
+    for (const role of ROLES)
+      expect(hasPermission([role], builder!)).toBe(
+        ["owner", "admin", "editor", "viewer", "marketer"].includes(role)
+      )
+  })
+
+  it("activeItem: owned paths select Website and the owning child", () => {
+    const cases: [string, string, string][] = [
+      ["/admin/services", "website", "website-services"],
+      ["/admin/services/x", "website", "website-services"],
+      ["/admin/blog", "website", "website-blog"],
+      ["/admin/blog/categories", "website", "website-blog"],
+      ["/admin/careers", "website", "website-careers"],
+      ["/admin/careers/new", "website", "website-careers"],
+      ["/admin/pages/custom/x", "website", "website-custom-pages"],
+      ["/admin/careers/applications", "leads", "leads-applications"],
+      ["/admin/careers/applications/x", "leads", "leads-applications"],
+      ["/admin/leads/0192", "leads", "leads-enquiries"],
+    ]
+    for (const [path, itemId, childId] of cases) {
+      const item = activeItem(path, ["owner"])!
+      expect(item.id, path).toBe(itemId)
+      expect(activeChild(item, path)!.id, path).toBe(childId)
+    }
+    // An author holds article:read only: Blog still selects Website.
+    expect(activeItem("/admin/blog/0192", ["author"])!.id).toBe("website")
+  })
+
+  it("intake sees Enquiries with Job applications and no Website", () => {
+    const items = visibleNav(["intake"]).flatMap((g) => g.items)
+    expect(items.map((i) => i.label)).toEqual(["Dashboard", "Enquiries"])
+    expect(
+      items
+        .find((i) => i.id === "leads")!
+        .children!.map((c) => [c.label, c.href])
+    ).toEqual([
+      ["Enquiries", "/admin/leads"],
+      ["Job applications", "/admin/careers/applications"],
+    ])
+    expect(permissionFor("/admin/careers/applications")).toEqual({
+      lead: ["read"],
+    })
+    expect(
+      reachableLinks(["intake"]).find((l) => l.id === "leads-applications")
+    ).toMatchObject({
+      parent: "Enquiries",
+      href: "/admin/careers/applications",
     })
   })
 
@@ -70,12 +155,6 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     expect(NAV_ITEMS.map((i) => i.id)).toEqual([
       "dashboard",
       "website",
-      "pages",
-      "legal-pages",
-      "blog",
-      "services",
-      "careers",
-      "collections",
       "media",
       "leads",
       "seo",
@@ -122,21 +201,6 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       expect(item.match).toBe(item.href === "/admin" ? "exact" : "prefix")
   })
 
-  it("the Pages item carries the builder keywords and covers custom pages", () => {
-    const pages = NAV_ITEMS.find((item) => item.id === "pages")!
-    expect(pages.keywords).toEqual([
-      "home page",
-      "about",
-      "contact",
-      "builder",
-      "custom pages",
-    ])
-    expect(permissionFor("/admin/pages/custom/x")).toEqual({ page: ["read"] })
-    expect(permissionFor("/admin/pages/custom/x")).toEqual(
-      permissionFor("/admin/pages")
-    )
-  })
-
   it("permissionFor resolves exact, nested and unknown paths", () => {
     expect(permissionFor("/admin")).toBeNull()
     expect(permissionFor("/admin/blog/new")).toEqual({ article: ["read"] })
@@ -159,7 +223,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       integration: ["read"],
     })
     expect(permissionFor("/admin/design")).toEqual({ customCode: ["update"] })
-    // The page builder sits under the "pages" item.
+    // The page builder is owned by Website › Custom pages.
     expect(permissionFor("/admin/pages/custom/x")).toEqual({ page: ["read"] })
     expect(
       permissionFor("/admin/pages/custom/0199a000-0000-7000-8000-000000000000")
@@ -179,9 +243,6 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     expect(permissionFor("/admin/activity")).toEqual({ audit: ["read"] })
     expect(permissionFor("/admin/help")).toBeNull()
     expect(permissionFor("/admin/account")).toBeNull()
-    expect(permissionFor("/admin/collections/team")).toEqual({
-      collection: ["read"],
-    })
     expect(permissionFor("/")).toBeUndefined()
     expect(permissionFor("/administrator")).toBeUndefined()
   })
@@ -209,7 +270,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     expect(activeChild(item, "/admin/seo/redirects")!.id).toBe("seo-redirects")
     expect(activeChild(item, "/admin/seo")!.id).toBe("seo-overview")
     expect(activeItem("/admin", ["author"])!.id).toBe("dashboard")
-    expect(activeItem("/admin/blog/categories", ["owner"])!.id).toBe("blog")
+    expect(activeItem("/admin/blog/categories", ["owner"])!.id).toBe("website")
     const settings = activeItem("/admin/settings/integrations/smtp", ["owner"])!
     expect(activeChild(settings, "/admin/settings/integrations/smtp")!.id).toBe(
       "settings-integrations"
@@ -299,15 +360,17 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     )
   })
 
-  it("Site settings has one child per editable key, then AI assistant and Integrations", () => {
+  it("Site settings lists Identity, Enquiries, Job applications, AI assistant, Integrations", () => {
     const settings = NAV_ITEMS.find((i) => i.id === "settings")!
     expect(settings).toMatchObject({
       label: "Site settings",
       href: "/admin/settings",
       group: "general",
     })
+    for (const word of ["contact", "footer", "navigation"])
+      expect(settings.keywords).not.toContain(word)
     expect(settings.children!.map((c) => [c.id, c.label, c.href])).toEqual([
-      ...EDITABLE_SETTINGS_KEYS.map((key) => [
+      ...SITE_SETTINGS_KEYS.map((key) => [
         `settings-${key}`,
         SETTINGS_ENTRIES[key].label,
         `/admin/settings/${key}`,
@@ -315,26 +378,19 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       ["settings-ai-assistant", "AI assistant", "/admin/settings/ai-assistant"],
       ["settings-integrations", "Integrations", "/admin/settings/integrations"],
     ])
+    expect(settings.children!.map((c) => c.label)).toEqual([
+      "Identity",
+      "Enquiries",
+      "Job applications",
+      "AI assistant",
+      "Integrations",
+    ])
+    expect(
+      EDITABLE_SETTINGS_KEYS.filter((key) => !isWebsiteSettingsKey(key))
+    ).toEqual([...SITE_SETTINGS_KEYS])
     for (const key of EDITABLE_SETTINGS_KEYS)
       expect(permissionFor(`/admin/settings/${key}`)).toEqual(
         SETTINGS_ENTRIES[key].read
       )
-  })
-
-  it("Site settings lists the CP shared sections and none of the old ones (R3-1)", () => {
-    const hrefs = NAV_ITEMS.find((i) => i.id === "settings")!.children!.map(
-      (c) => c.href
-    )
-    for (const key of [
-      "sections.testimonials",
-      "sections.team",
-      "sections.map",
-      "sections.howItWorks",
-    ])
-      expect(hrefs).toContain(`/admin/settings/${key}`)
-    expect(hrefs.join()).not.toMatch(/enquire|about/i)
-    expect(permissionFor("/admin/settings/sections.map")).toEqual({
-      settings: ["read"],
-    })
   })
 })
