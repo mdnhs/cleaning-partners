@@ -24,7 +24,7 @@ LANGUAGE sql IMMUTABLE AS $$
     ELSE card END
 $$;
 --> statement-breakpoint
-CREATE OR REPLACE FUNCTION pg_temp.quote_box(box jsonb, shared jsonb) RETURNS jsonb
+CREATE OR REPLACE FUNCTION pg_temp.quote_box_card(box jsonb, shared jsonb) RETURNS jsonb
 LANGUAGE sql IMMUTABLE AS $$
   SELECT CASE WHEN jsonb_typeof(box) = 'object' THEN
     pg_temp.use_shared(pg_temp.use_shared(box, 'title', 'Need a Quote?', shared),
@@ -53,7 +53,7 @@ $$;
 CREATE OR REPLACE FUNCTION pg_temp.quote_box_at(doc jsonb, shared jsonb) RETURNS jsonb
 LANGUAGE sql IMMUTABLE AS $$
   SELECT CASE WHEN jsonb_typeof(doc -> 'quoteBox') = 'object'
-    THEN jsonb_set(doc, '{quoteBox}', pg_temp.quote_box(doc -> 'quoteBox', shared))
+    THEN jsonb_set(doc, '{quoteBox}', pg_temp.quote_box_card(doc -> 'quoteBox', shared))
     ELSE doc END
 $$;
 --> statement-breakpoint
