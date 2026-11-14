@@ -208,7 +208,15 @@ describe("⌘K command palette (master 4.1)", () => {
     expect(
       await within(dialog).findByRole("option", { name: /Office Cleaning/ })
     ).toBeInTheDocument()
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+    // The two searches (records, people); the sidebar's unread-chats poll
+    // is not one of them.
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.filter(
+          ([input]) => !String(input).includes("/chat/unread")
+        )
+      ).toHaveLength(2)
+    )
     expect(within(dialog).queryByRole("group", { name: "People" })).toBeNull()
     expect(within(dialog).queryByRole("alert")).toBeNull()
   })
@@ -248,6 +256,7 @@ describe("⌘K command palette (master 4.1)", () => {
       // Enquiries › Job applications: the inbox is on the enquiry permissions.
       "EnquiriesEnquiries",
       "Job applicationsEnquiries",
+      "Live chat",
       "Help",
       "Account",
       "Open the live site",

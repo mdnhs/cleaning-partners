@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   type LucideIcon,
   Megaphone,
+  MessagesSquare,
   Newspaper,
   Palette,
   ScrollText,
@@ -45,7 +46,7 @@ import type { Role } from "@/lib/auth/roles"
 export type NavGroupId = "menu" | "growth" | "general"
 
 /** Live counts shown beside nav items. */
-export type NavBadgeKey = "new-leads"
+export type NavBadgeKey = "new-leads" | "chat-unread"
 export type NavBadges = Partial<Record<NavBadgeKey, number>>
 
 export type NavLink = {
@@ -228,6 +229,18 @@ export const NAV_ITEMS: readonly NavItem[] = [
         keywords: ["applicants", "cv", "candidates"],
       },
     ],
+  },
+  {
+    id: "chat",
+    group: "menu",
+    label: "Live chat",
+    href: "/admin/chat",
+    icon: MessagesSquare,
+    permission: { chat: ["read"] },
+    match: "prefix",
+    badge: "chat-unread",
+    badgeLabel: "unread chats",
+    keywords: ["chat", "support", "live chat", "conversations"],
   },
   {
     id: "seo",

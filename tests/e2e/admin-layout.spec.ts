@@ -52,7 +52,13 @@ test("sidebar: the owner sees every group; Testimonials is listed under Home", a
   await page.setViewportSize({ width: 1440, height: 900 })
   await signIn(page, owner)
   const sidebar = page.locator("[data-slot=sidebar]")
-  for (const label of ["Dashboard", "Website", "Media", "Enquiries"])
+  for (const label of [
+    "Dashboard",
+    "Website",
+    "Media",
+    "Enquiries",
+    "Live chat",
+  ])
     await expect(
       sidebar.getByRole("link", { name: new RegExp(`^${label}`) }).first()
     ).toBeVisible()

@@ -4,6 +4,7 @@ import { MotionConfig } from "motion/react"
 import { usePathname } from "next/navigation"
 import { useId } from "react"
 
+import { useChatUnread } from "@/components/admin/chat/use-chat-unread"
 import { useAdminSession } from "@/components/admin/session-provider"
 import {
   SidebarGroup,
@@ -15,17 +16,27 @@ import {
 
 import { useClickedCurrent } from "@/components/admin/shell/active-indicator"
 import { activeItem, type NavBadges, visibleNav } from "@/lib/admin/nav"
+import { hasPermission } from "@/lib/auth/permissions"
 
 import { NavEntry } from "./nav-entry"
 
 /**
  * The permission-filtered groups (Menu / Growth / General), one labelled
  * group each (JW sidebar). A section links to its first sub-page the user
- * may open and stays current on all of them.
+ * may open and stays current on all of them. The unread-chats count is
+ * polled here, over the panel layout's first count.
  */
-export function NavMain({ badges = {} }: { badges?: NavBadges }) {
+export function NavMain({ badges: initial = {} }: { badges?: NavBadges }) {
   const pathname = usePathname()
   const { roles } = useAdminSession()
+  const chatUnread = useChatUnread(
+    initial["chat-unread"],
+    hasPermission(roles, { chat: ["read"] })
+  )
+  const badges: NavBadges =
+    chatUnread === undefined
+      ? initial
+      : { ...initial, "chat-unread": chatUnread }
   const { isMobile, setOpenMobile } = useSidebar()
   const idPrefix = useId()
   const [current, mark] = useClickedCurrent(
