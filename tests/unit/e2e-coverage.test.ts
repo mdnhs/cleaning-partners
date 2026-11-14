@@ -89,6 +89,11 @@ const LAUNCH_FLOWS = [
     file: "lottie-logo.spec.ts",
     title: "animated logo plays in the public header and footer",
   },
+  {
+    item: "live chat visitor ↔ staff",
+    file: "chat.spec.ts",
+    title: "visitor chats, staff replies and takes over, visitor sees it",
+  },
 ] as const
 
 describe("launch-critical e2e coverage", () => {

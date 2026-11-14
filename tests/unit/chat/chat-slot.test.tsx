@@ -27,11 +27,11 @@ vi.mock("@/server/modules/settings/queries", () => ({
     return value
   },
 }))
-vi.mock("@/components/chat/chat-launcher", () => ({
-  ChatLauncher: () => null,
+vi.mock("@/components/chat/chat-launcher-lazy", () => ({
+  ChatLauncherLazy: () => null,
 }))
 
-import { ChatLauncher } from "@/components/chat/chat-launcher"
+import { ChatLauncherLazy } from "@/components/chat/chat-launcher-lazy"
 import { ChatSlot } from "@/components/chat/chat-slot"
 
 const CONTACT = { quoteHref: "/contact#quote" }
@@ -62,7 +62,7 @@ describe("ChatSlot", () => {
   it("renders the launcher with the filled team and bot names when enabled", async () => {
     const el = (await ChatSlot()) as ReactElement<ChatWidgetProps>
     expect(isValidElement(el)).toBe(true)
-    expect(el.type).toBe(ChatLauncher)
+    expect(el.type).toBe(ChatLauncherLazy)
     expect(el.props.team).toBe("the Cleaning Partners team")
     expect(el.props.botName).toBe("Assistant")
     expect(el.props.quoteHref).toBe("/contact#quote")
