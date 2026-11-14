@@ -50,7 +50,7 @@ export function Hero({
         <div
           data-intro
           data-hero-badge
-          className="flex size-28 items-center justify-center rounded-full bg-white/92 sm:size-[180px] md:size-[220px]"
+          className="flex size-28 items-center justify-center sm:size-[180px] md:size-[220px]"
         >
           <div className="relative h-[82px] w-[92px] sm:h-[130px] sm:w-[146px] md:h-40 md:w-[180px]">
             <Image
