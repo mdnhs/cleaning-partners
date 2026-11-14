@@ -13,6 +13,7 @@ import {
   resolveWidget,
 } from "@/components/admin/schema-form/resolve-widget"
 import { SEO_FIELDS_META } from "@/components/admin/seo/seo-meta"
+import { contactSectionSettings } from "@/lib/schemas/settings/sections-contact"
 import {
   link,
   mediaRef,
@@ -230,6 +231,15 @@ describe("editor meta helpers", () => {
       type: "doc",
       content: [{ type: "paragraph" }],
     })
+  })
+})
+
+describe("blank values with a field-level default", () => {
+  it('a new contact card starts as kind "other" (no Call action)', () => {
+    const card = contactSectionSettings.shape.infoCards.element
+    expect(emptyValue(card)).toMatchObject({ kind: "other" })
+    // Other enums still start at their first option.
+    expect(emptyValue(z.enum(["a", "b"]))).toBe("a")
   })
 })
 

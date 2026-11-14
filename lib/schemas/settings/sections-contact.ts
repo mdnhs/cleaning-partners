@@ -1,6 +1,12 @@
 import { z } from "zod"
 
-import { href, mediaRef, quoteCardOverrides, text } from "../common"
+import {
+  blankDefaults,
+  href,
+  mediaRef,
+  quoteCardOverrides,
+  text,
+} from "../common"
 
 /**
  * settings.sections.contact — the Contact section shared by / and /contact:
@@ -44,7 +50,11 @@ export const contactSectionSettings = z.object({
   infoCards: z
     .array(
       z.object({
-        kind: z.enum(CONTACT_CARD_KINDS),
+        // A new card is "other" until the admin picks a type: "phone"
+        // (the first option) would give it a Call button.
+        kind: z
+          .enum(CONTACT_CARD_KINDS)
+          .register(blankDefaults, { value: "other" }),
         title: text,
         icon: mediaRef,
         lines: z.array(text).min(1),

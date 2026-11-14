@@ -7,6 +7,13 @@ import { linkPlaceholderProblems } from "../link-rules"
 // Strings are never trimmed or normalised: seeded copy must render
 // byte-identical (en-dashes, double spaces, "→", apostrophes).
 
+/**
+ * What the admin form puts in a field of a new item/record when the generic
+ * blank (first enum option, "", 0, ...) is wrong, e.g. a new contact card's
+ * kind. Register with `schema.register(blankDefaults, { value })`.
+ */
+export const blankDefaults = z.registry<{ value: unknown }>()
+
 /** Global constraint: slugs match ^[a-z0-9]+(-[a-z0-9]+)*$. */
 export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
 
