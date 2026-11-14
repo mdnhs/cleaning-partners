@@ -182,7 +182,7 @@ describe("block registry (R10-2)", () => {
         title: "Help",
         body: "Body",
         cta: link,
-        callLabel: "Call",
+        phoneLabel: "Call",
       },
     }
     const schema = BLOCK_BY_TYPE.services.schema

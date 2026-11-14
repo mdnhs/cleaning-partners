@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { href, link, mediaRef, text } from "../common"
+import { href, mediaRef, quoteCardOverrides, text } from "../common"
 
 /**
  * settings.sections.contact — the Contact section shared by / and /contact:
@@ -54,6 +54,7 @@ export const contactSectionSettings = z.object({
   /** The member card's heading; its logo and name are Settings › Site › Membership. */
   memberTitle: text,
   socials: z.array(z.object({ label: text, icon: mediaRef, href })),
-  quoteBox: z.object({ title: text, body: text, cta: link }),
+  /** Overrides of the shared quote card (Settings › Microcopy); null = shared. */
+  quoteBox: quoteCardOverrides.omit({ phoneLabel: true }),
 })
 export type ContactSectionSettings = z.infer<typeof contactSectionSettings>

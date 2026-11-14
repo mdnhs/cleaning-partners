@@ -34,6 +34,7 @@ import type {
   IconCardsSectionData,
   Link,
   PageHero,
+  QuoteCardOverrides,
   StepsSectionData,
 } from "@/lib/schemas/common"
 
@@ -338,6 +339,7 @@ export function contactSectionView(
 ): ContactProps {
   const section = s.settings["sections.contact"]
   const { membership } = s.settings.site
+  const quote = quoteCardView(s, section.quoteBox)
   return {
     eyebrow: section.eyebrow,
     title: title ?? section.title,
@@ -361,11 +363,7 @@ export function contactSectionView(
       icon: social.icon.url,
       href: hrefView(s, social.href),
     })),
-    quote: {
-      title: section.quoteBox.title,
-      body: section.quoteBox.body,
-      cta: linkView(s, section.quoteBox.cta),
-    },
+    quote: { title: quote.title, body: quote.body, cta: quote.cta },
   }
 }
 
@@ -383,18 +381,25 @@ export function locationMapView(s: SiteSources): LocationMapProps {
   }
 }
 
-/** The "Need a Quote?" card of the service and article sidebars. */
-export function quoteCardView(s: SiteSources): QuoteCardProps {
-  const card = s.settings.microcopy.quoteCard
+/**
+ * The shared "Need a Quote?" card (Settings › Microcopy) of the service and
+ * article sidebars, the contact section and the services help card. A place
+ * passes its overrides; each null or missing field is the shared card's.
+ */
+export function quoteCardView(
+  s: SiteSources,
+  overrides: Partial<WithMedia<QuoteCardOverrides>> = {}
+): QuoteCardProps {
+  const shared = s.settings.microcopy.quoteCard
   const values = placeholders(s)
   return {
-    title: card.title,
-    body: card.body,
+    title: overrides.title ?? shared.title,
+    body: overrides.body ?? shared.body,
     tel: {
-      label: interpolate(card.telLabel, values),
+      label: interpolate(overrides.phoneLabel ?? shared.phoneLabel, values),
       href: String(values.officeHref),
     },
-    cta: linkView(s, card.cta),
+    cta: linkView(s, overrides.cta ?? shared.cta),
   }
 }
 
@@ -560,7 +565,7 @@ export function servicesGridView(
   s: SiteSources,
   grid: Pages["services"]["data"]["grid"]
 ): ServicesGridProps {
-  const values = placeholders(s)
+  const help = quoteCardView(s, grid.helpCard)
   return {
     eyebrow: grid.eyebrow,
     title: grid.title,
@@ -581,13 +586,10 @@ export function servicesGridView(
     quoteCta: linkView(s, grid.quoteCta),
     helpCard: {
       icon: grid.helpCard.icon.url,
-      title: grid.helpCard.title,
-      body: grid.helpCard.body,
-      cta: linkView(s, grid.helpCard.cta),
-      call: {
-        label: interpolate(grid.helpCard.callLabel, values),
-        href: String(values.officeHref),
-      },
+      title: help.title,
+      body: help.body,
+      cta: help.cta,
+      call: help.tel,
     },
   }
 }

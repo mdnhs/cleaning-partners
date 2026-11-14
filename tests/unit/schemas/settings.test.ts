@@ -171,7 +171,7 @@ describe("strings round-trip unchanged (no trimming or normalising)", () => {
   it("keeps apostrophes, ampersands and the no-break spaces before an arrow", () => {
     expect(fixture.microcopy.readArticle).toBe("Read Article\u00a0\u00a0→")
     expect(fixture.microcopy.viewAllPosts).toBe("View All Posts\u00a0\u00a0→")
-    expect(fixture["sections.contact"].quoteBox.body).toBe(
+    expect(fixture.microcopy.quoteCard.body).toBe(
       "Tell us about your space and we'll put together a cleaning plan and price that suits you."
     )
     expect(fixture["sections.howItWorks"].steps[2].title).toBe(

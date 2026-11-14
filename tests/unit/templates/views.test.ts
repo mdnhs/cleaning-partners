@@ -308,6 +308,61 @@ describe("view builders reproduce the static site's data (fixture sources)", () 
     expect(quoteCardView(moved).cta.href).toBe("/quote")
   })
 
+  it("one quote card: the contact quote box and the services help card override it per place", () => {
+    const shared = s.settings.microcopy.quoteCard
+    expect(contactSectionView(s).quote).toEqual({
+      title: shared.title,
+      body: shared.body,
+      cta: { label: "Fill the Form", href: "/contact#quote" },
+    })
+    const help = servicesView(s).grid.helpCard
+    expect(help.title).toBe("Not sure what you need?")
+    expect(help.body).toBe(shared.body)
+    expect(help.call.label).toBe("Or call 057 8697670 Ext 4")
+    expect(help.cta).toEqual({ label: "Contact Us", href: "/contact#quote" })
+
+    // With every override empty, the help card is the shared card.
+    const services = s.pages.services
+    const emptied = {
+      ...s,
+      pages: {
+        ...s.pages,
+        services: {
+          ...services,
+          data: {
+            ...services.data,
+            grid: {
+              ...services.data.grid,
+              helpCard: {
+                ...services.data.grid.helpCard,
+                title: null,
+                body: null,
+                phoneLabel: null,
+                cta: null,
+              },
+            },
+          },
+        },
+      },
+    }
+    const card = quoteCardView(s)
+    const fallback = servicesView(emptied).grid.helpCard
+    expect({
+      title: fallback.title,
+      body: fallback.body,
+      tel: fallback.call,
+      cta: fallback.cta,
+    }).toEqual(card)
+    // An override wins over the shared value.
+    expect(
+      quoteCardView(s, { title: "Ask us", phoneLabel: "Ring {office}" })
+    ).toEqual({
+      ...card,
+      title: "Ask us",
+      tel: { ...card.tel, label: "Ring 057 8697670" },
+    })
+  })
+
   it("about: story paragraphs, sectors and stats", () => {
     const view = aboutView(s)
     expect(view.hero.title).toBe("About Us")

@@ -309,6 +309,13 @@
       "when": 1793940000000,
       "tag": "0043_quote_cta_placeholders",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1793950000000,
+      "tag": "0044_shared_quote_card",
+      "breakpoints": true
     }
   ]
 }

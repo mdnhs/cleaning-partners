@@ -137,9 +137,9 @@ export function pagesFixture(media: MediaLookup): PagesFixture {
           helpCard: {
             icon: media("/images/services/icon-help.svg"),
             title: "Not sure what you need?",
-            body: "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
+            body: null,
+            phoneLabel: "Or call {office} Ext {officeExtension}",
             cta: { label: "Contact Us", href: "{quoteHref}" },
-            callLabel: "Or call {office} Ext {officeExtension}",
           },
         },
         detail: {

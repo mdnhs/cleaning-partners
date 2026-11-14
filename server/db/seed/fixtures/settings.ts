@@ -185,8 +185,8 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         },
       ],
       quoteBox: {
-        title: "Need a Quote?",
-        body: "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
+        title: null,
+        body: null,
         cta: { label: "Fill the Form", href: "{quoteHref}" },
       },
     },
@@ -289,7 +289,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       quoteCard: {
         title: "Need a Quote?",
         body: "Tell us about your space and we'll put together a cleaning plan and price that suits you.",
-        telLabel: "Tel: {office} Ext {officeExtension}",
+        phoneLabel: "Tel: {office} Ext {officeExtension}",
         cta: { label: "{quoteLabel}", href: "{quoteHref}" },
       },
       notFound: {

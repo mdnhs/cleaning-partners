@@ -268,7 +268,7 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         rows: 3,
         width: "full",
       },
-      "quoteCard.telLabel": {
+      "quoteCard.phoneLabel": {
         label: "Phone line",
         help: "{office} and {officeExtension} are filled from Contact details.",
       },
@@ -303,7 +303,8 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         },
         {
           title: "Quote card",
-          description: "The card that invites visitors to ask for a quote.",
+          description:
+            "The shared quote card: service and article sidebars, the contact section and the services help card.",
           fields: ["quoteCard"],
         },
         {
@@ -478,14 +479,21 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       },
       "socials[].icon": { label: "Icon", aspect: "square" },
       quoteBox: { label: "Quote box" },
-      "quoteBox.title": { label: "Title" },
+      "quoteBox.title": {
+        label: "Title",
+        help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+      },
       "quoteBox.body": {
         label: "Text",
         widget: "textarea",
         rows: 3,
         width: "full",
+        help: "Leave empty to use the shared quote card (Settings › Microcopy).",
       },
-      "quoteBox.cta": { label: "Button" },
+      "quoteBox.cta": {
+        label: "Button",
+        help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+      },
     },
     groups: {
       "": [

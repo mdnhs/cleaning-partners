@@ -66,6 +66,13 @@ export const RELOCATED_SINCE_BASELINE: Readonly<Record<string, string | null>> =
       "settings.sections.whyChooseUs.cards[].description",
     "settings.sections.whyChooseUs.features[].icon":
       "settings.sections.whyChooseUs.cards[].icon",
+    // One quote card shape for the sidebars, the contact quote box and the
+    // services help card: the phone line is `phoneLabel` everywhere
+    // (phase 2, task 12; migration 0044).
+    "settings.microcopy.quoteCard.telLabel":
+      "settings.microcopy.quoteCard.phoneLabel",
+    "pages.services.grid.helpCard.callLabel":
+      "pages.services.grid.helpCard.phoneLabel",
   }
 
 /**
@@ -111,6 +118,19 @@ export const CHANGED_SINCE_BASELINE: ReadonlyMap<string, string> = new Map([
         "Quote buttons go to Settings › Contact's {quoteHref} (/contact#quote), which works on every page; #contact did not.",
       ] as const
   ),
+  ...(
+    [
+      "contact.quoteBox.title",
+      "contact.quoteBox.body",
+      "services.grid.help.body",
+    ] as const
+  ).map(
+    (id) =>
+      [
+        id,
+        "Left empty (null): the place shows the shared quote card's text (Settings › Microcopy), which is the same words.",
+      ] as const
+  ),
   [
     "services.grid.quote.label",
     'The services quote button reads Settings › Contact\'s {quoteLabel} ("Get a Free Quote"), like every other quote button.',
@@ -128,13 +148,15 @@ export function currentTarget(target: string): string | null {
 /**
  * A `CHANGED_SINCE_BASELINE` entry's seeded value (placeholders filled unless
  * it is a template) is still there and no longer the baseline's: a list
- * entry's item count differs; any other entry is a string other than the
+ * entry's item count differs; an override left empty is null (the place
+ * shows the shared value); any other entry is a string other than the
  * baseline value.
  */
 export function expectChangedSinceBaseline(
   entry: InventoryEntry,
   actual: unknown
 ) {
+  if (actual === null) return
   if (entry.array) {
     expect(Array.isArray(actual), `${entry.id}: a list`).toBe(true)
     expect((actual as unknown[]).length, entry.id).not.toBe(Number(entry.value))

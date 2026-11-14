@@ -32,10 +32,21 @@ export const servicesEditorMeta: EditorMeta = {
       help: "The last card in the grid.",
     },
     "grid.helpCard.icon": { label: "Icon", aspect: "square" },
-    "grid.helpCard.cta": { label: "Button" },
-    "grid.helpCard.callLabel": {
+    "grid.helpCard.title": {
+      label: "Title",
+      help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+    },
+    "grid.helpCard.body": {
+      label: "Text",
+      help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+    },
+    "grid.helpCard.cta": {
+      label: "Button",
+      help: "Leave empty to use the shared quote card (Settings › Microcopy).",
+    },
+    "grid.helpCard.phoneLabel": {
       label: "Call line",
-      help: "{office} and {officeExtension} are filled from Settings › Contact.",
+      help: "{office} and {officeExtension} are filled from Settings › Contact. Leave empty to use the shared quote card (Settings › Microcopy).",
     },
     detail: {
       label: "Service page",

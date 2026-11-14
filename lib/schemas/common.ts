@@ -168,6 +168,26 @@ export const iconCardsSection = z.object({
   cards: z.array(iconCard).min(1).max(8),
 })
 
+/**
+ * The "Need a Quote?" card (Settings › Microcopy): the service and article
+ * sidebars, the contact section and the services help card. phoneLabel is a
+ * template; {office} and {officeExtension} are filled in at render.
+ */
+export const quoteCard = z.object({
+  title: text,
+  body: text,
+  phoneLabel: text,
+  cta: link,
+})
+
+/** One place's own words for the quote card; null = the shared card's. */
+export const quoteCardOverrides = z.object({
+  title: text.nullable(),
+  body: text.nullable(),
+  phoneLabel: text.nullable(),
+  cta: link.nullable(),
+})
+
 /** One numbered step: a title and a line under it. */
 export const step = z.object({ title: text, description: text })
 
@@ -216,5 +236,7 @@ export type Seo = z.infer<typeof seo>
 export type PageHero = z.infer<typeof pageHero>
 export type IconCard = z.infer<typeof iconCard>
 export type IconCardsSectionData = z.infer<typeof iconCardsSection>
+export type QuoteCard = z.infer<typeof quoteCard>
+export type QuoteCardOverrides = z.infer<typeof quoteCardOverrides>
 export type Step = z.infer<typeof step>
 export type StepsSectionData = z.infer<typeof stepsSection>
