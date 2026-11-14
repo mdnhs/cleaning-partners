@@ -171,7 +171,14 @@ export const WEBSITE_PARTS: readonly WebsitePart[] = [
   ),
 ]
 
-/** Parts each fixed page shows (checked against templates/*\/view.ts). */
+/**
+ * Every part a fixed page renders, except the every-page chrome (navigation,
+ * footer, group companies). Checked against templates/<page>/view.ts and
+ * templates/shared/views.ts: the contact section's cards and quote box read
+ * settings.contact and microcopy.quoteCard; page heroes read
+ * microcopy.breadcrumbAria; textView/linkView/hrefView fill {placeholders}
+ * from settings.contact; the contact page's quote form lists the services.
+ */
 export const PAGE_SHOWS: Record<PageKey, readonly string[]> = {
   home: [
     "clients-section",
@@ -184,7 +191,9 @@ export const PAGE_SHOWS: Record<PageKey, readonly string[]> = {
     "team",
     "articles",
     "contact-section",
+    "contact-details",
     "map",
+    "microcopy",
   ],
   about: [
     "clients-section",
@@ -195,6 +204,8 @@ export const PAGE_SHOWS: Record<PageKey, readonly string[]> = {
     "testimonials-section",
     "testimonials",
     "contact-section",
+    "contact-details",
+    "microcopy",
   ],
   services: [
     "all-services",
@@ -205,15 +216,32 @@ export const PAGE_SHOWS: Record<PageKey, readonly string[]> = {
     "testimonials-section",
     "testimonials",
     "contact-section",
+    "contact-details",
     "microcopy",
   ],
-  blog: ["articles", "categories", "contact-section", "microcopy"],
-  contact: ["contact-details", "contact-section", "map"],
-  careers: ["jobs", "microcopy"],
+  blog: [
+    "articles",
+    "categories",
+    "contact-section",
+    "contact-details",
+    "microcopy",
+  ],
+  contact: [
+    "contact-details",
+    "contact-section",
+    "map",
+    "all-services",
+    "microcopy",
+  ],
+  careers: ["jobs", "contact-details", "microcopy"],
 }
 
 /** Identity and operations: stay under Site settings, not Website. */
-export const SITE_SETTINGS_KEYS = ["site", "leads", "careers"] as const
+export const SITE_SETTINGS_KEYS = [
+  "site",
+  "leads",
+  "careers",
+] as const satisfies readonly EditableSettingsKey[]
 
 export function isWebsiteKey(value: string): value is WebsiteKey {
   return WEBSITE_SCREENS.some((screen) => screen.key === value)

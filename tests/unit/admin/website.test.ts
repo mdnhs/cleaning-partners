@@ -77,6 +77,25 @@ describe("website registry", () => {
     }
   })
 
+  it("PAGE_SHOWS lists every shared part a page renders, not the chrome", () => {
+    for (const page of PAGE_KEYS) {
+      const shows = PAGE_SHOWS[page]
+      // Every-page chrome is never listed.
+      for (const chrome of ["navigation", "footer", "group-companies"])
+        expect(shows).not.toContain(chrome)
+      // The contact section's cards and quote box read settings.contact and
+      // microcopy.quoteCard.
+      if (shows.includes("contact-section")) {
+        expect(shows, page).toContain("contact-details")
+        expect(shows, page).toContain("microcopy")
+      }
+    }
+    // The contact page's quote form lists the services.
+    expect(PAGE_SHOWS.contact).toContain("all-services")
+    // Careers fills {placeholders} from settings.contact and uses the check icon.
+    expect(PAGE_SHOWS.careers).toEqual(["jobs", "contact-details", "microcopy"])
+  })
+
   it("hrefs", () => {
     expect(websiteHref("home")).toBe("/admin/website/home")
     expect(partHref(websitePart("home", "testimonials")!)).toBe(
