@@ -86,7 +86,8 @@ export function endWithUnanswered<T extends HistoryRow>(
  * Chat rows (as repo.recentMessages returns them, oldest first) as model
  * messages: system notices dropped, the last 20 turns, visitor → user and
  * ai/staff → assistant. With `handled` (a later bot round), visitor turns
- * after it move to the end.
+ * after it move to the end. Leading ai/staff turns are dropped so the
+ * window always opens with the visitor.
  */
 export function toModelMessages(
   rows: readonly HistoryRow[],
@@ -94,7 +95,10 @@ export function toModelMessages(
 ): { role: "user" | "assistant"; content: string }[] {
   const turns = rows.filter((m) => m.sender !== "system").slice(-MODEL_HISTORY)
   const ordered = handled > 0 ? endWithUnanswered(turns, handled) : turns
-  return ordered.map((m) => ({
+  // Some providers reject a conversation that does not open with the user:
+  // drop leading ai/staff turns (an even window starts with a reply).
+  const first = ordered.findIndex((m) => m.sender === "visitor")
+  return ordered.slice(first === -1 ? ordered.length : first).map((m) => ({
     role: m.sender === "visitor" ? "user" : "assistant",
     content: m.body,
   }))

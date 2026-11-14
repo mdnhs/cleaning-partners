@@ -153,4 +153,42 @@ describe("toModelMessages", () => {
       { role: "user", content: "late" },
     ])
   })
+
+  it("drops leading assistant turns so the window always starts with the visitor", () => {
+    // 15 alternating exchanges and an unanswered visitor turn: the last 20
+    // turns would start with an AI reply.
+    const rows: Row[] = []
+    let id = 0
+    for (let i = 1; i <= 15; i++) {
+      rows.push({ id: ++id, sender: "visitor", body: `q${i}` })
+      rows.push({ id: ++id, sender: "ai", body: `a${i}` })
+    }
+    rows.push({ id: ++id, sender: "visitor", body: "last" })
+    const out = toModelMessages(rows)
+    expect(out).toHaveLength(19)
+    expect(out[0]).toEqual({ role: "user", content: "q7" })
+    expect(out.at(-1)).toEqual({ role: "user", content: "last" })
+
+    // A window opening on staff turns drops all of them.
+    const staff: Row[] = [
+      { id: 1, sender: "staff", body: "s1" },
+      { id: 2, sender: "ai", body: "s2" },
+      { id: 3, sender: "visitor", body: "v" },
+    ]
+    expect(toModelMessages(staff)).toEqual([{ role: "user", content: "v" }])
+  })
+
+  it("keeps the handled reorder when trimming the leading turns", () => {
+    const rows: Row[] = [
+      { id: 1, sender: "ai", body: "old" },
+      { id: 2, sender: "visitor", body: "hi" },
+      { id: 3, sender: "visitor", body: "late" },
+      { id: 4, sender: "ai", body: "hello" },
+    ]
+    expect(toModelMessages(rows, 2)).toEqual([
+      { role: "user", content: "hi" },
+      { role: "assistant", content: "hello" },
+      { role: "user", content: "late" },
+    ])
+  })
 })
