@@ -339,6 +339,7 @@ export function careersPageFixture(media: MediaLookup): PageFixture<"careers"> {
         errors: {
           required: "Please fill in this field.",
           invalidEmail: "Enter a valid email address.",
+          invalid: "Please check this answer.",
           cvType: "Upload a PDF, DOC or DOCX file.",
           cvSize: "Your CV can be up to 5 MB.",
           closed:

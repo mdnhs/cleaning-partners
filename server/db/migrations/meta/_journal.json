@@ -253,6 +253,13 @@
       "when": 1793860000000,
       "tag": "0035_contact_info_card_kinds",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793870000000,
+      "tag": "0036_careers_invalid_answer_copy",
+      "breakpoints": true
     }
   ]
 }

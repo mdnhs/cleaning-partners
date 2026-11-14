@@ -46,6 +46,10 @@ export const careersEditorMeta: EditorMeta = {
       label: "Breadcrumb",
       help: "Last crumb on a job's application form, after the job title.",
     },
+    "apply.errors.invalid": {
+      label: "Answer not accepted",
+      help: "Shown when the server refuses an answer, e.g. a choice that is no longer offered.",
+    },
     "apply.options.rightToWork": {
       label: "Permission to work options",
       itemName: "Option",

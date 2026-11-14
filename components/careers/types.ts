@@ -239,6 +239,8 @@ export type ApplyView = {
     errors: {
       required: string
       invalidEmail: string
+      /** An answer the server refused, e.g. a choice no longer offered */
+      invalid: string
       cvType: string
       cvSize: string
       closed: string

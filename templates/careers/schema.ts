@@ -174,6 +174,7 @@ export const careersTemplate = z.object({
     errors: z.object({
       required: text,
       invalidEmail: text,
+      invalid: text,
       cvType: text,
       cvSize: text,
       closed: text,
