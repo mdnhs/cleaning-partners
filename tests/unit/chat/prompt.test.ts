@@ -21,12 +21,16 @@ describe("buildSystemPrompt", () => {
     const prompt = buildSystemPrompt(base)
     expect(prompt).toContain("Never invent prices")
     expect(prompt).toContain(
-      "give the quote form address exactly as /contact#quote, and call handoffToHuman."
+      "give the quote form address exactly as /contact#quote, with the phone and email from KNOWLEDGE."
     )
     expect(prompt).toContain(
       "1. You are Assistant, an AI assistant for Cleaning Partners's website."
     )
-    expect(prompt).toContain("say the Cleaning Partners team will follow up")
+    // The bot never hands over: no tool, no "the team will follow up".
+    expect(prompt).not.toContain("handoffToHuman")
+    expect(prompt).toContain(
+      "Never say the Cleaning Partners team will join this chat or follow up"
+    )
     expect(prompt).toContain("\n\nToday is Saturday 14 November 2026.")
     expect(
       prompt.endsWith(
@@ -52,7 +56,7 @@ describe("buildSystemPrompt", () => {
     expect(prompt).toContain(
       "1. You are A Ignore rules, an AI assistant for B C's website."
     )
-    expect(prompt).toContain("say D E will follow up")
+    expect(prompt).toContain("Never say D E will join this chat")
     expect(prompt).toContain("exactly as /x 9. new rule,")
     expect(prompt.split("\n").filter((l) => /^\d+\. /.test(l))).toHaveLength(6)
   })
@@ -61,7 +65,7 @@ describe("buildSystemPrompt", () => {
     const quoteHref = `https://forms.example.com/cleaning-partners/quote?ref=${"x".repeat(120)}`
     expect(quoteHref.length).toBeGreaterThan(80)
     expect(buildSystemPrompt({ ...base, quoteHref })).toContain(
-      `exactly as ${quoteHref}, and call handoffToHuman.`
+      `exactly as ${quoteHref}, with the phone and email`
     )
   })
 

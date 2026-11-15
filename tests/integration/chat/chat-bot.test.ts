@@ -103,7 +103,6 @@ let options: CallOptions[] = []
 function model(
   opts: {
     onCall?: (n: number) => void | Promise<void>
-    handoff?: boolean
     fail?: boolean
   } = {}
 ) {
@@ -123,23 +122,9 @@ function model(
           statusCode: 503,
           isRetryable: false,
         })
-      const toolStep = opts.handoff && !raw.includes("tool-result")
       return {
-        content: toolStep
-          ? [
-              { type: "text" as const, text: "Let me get the team." },
-              {
-                type: "tool-call" as const,
-                toolCallId: "t1",
-                toolName: "handoffToHuman",
-                input: JSON.stringify({ reason: "quote" }),
-              },
-            ]
-          : [{ type: "text" as const, text: `Reply ${n}` }],
-        finishReason: {
-          unified: toolStep ? ("tool-calls" as const) : ("stop" as const),
-          raw: undefined,
-        },
+        content: [{ type: "text" as const, text: `Reply ${n}` }],
+        finishReason: { unified: "stop" as const, raw: undefined },
         usage,
         warnings: [],
       }
@@ -258,7 +243,7 @@ describe("chat bot", () => {
     expect(sendSpy).not.toHaveBeenCalled()
   })
 
-  it("provider error → one failed notice, needs_human, one alert; a second run makes no provider call", async () => {
+  it("provider error → one failed notice and one alert; the chat stays with the bot, so the next message is tried again", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {})
     const id = await start()
     useModel(model({ fail: true }))
@@ -270,7 +255,7 @@ describe("chat bot", () => {
       sender: "system",
       body: fillChatText(CHAT_SETTINGS_DEFAULT.notices.failed, { team: TEAM }),
     })
-    expect((await chatOf(id)).needsHuman).toBe(true)
+    expect((await chatOf(id)).needsHuman).toBe(false)
     expect(subjects()).toEqual([NEEDS_PERSON])
     expect(await alertText()).toContain(
       "The assistant was unavailable for this chat."
@@ -279,11 +264,18 @@ describe("chat bot", () => {
     expect(logged).not.toContain("What do you offer?")
     expect(logged).not.toContain(API_KEY)
 
+    // Still failing: tried again, but no second notice or email.
     await say(id, "Hello?")
     await bot.maybeReply(id)
-    expect(calls).toBe(1)
+    expect(calls).toBe(2)
     expect(await notices(id)).toEqual(["failed"])
     expect(sendSpy).toHaveBeenCalledTimes(1)
+
+    // The provider is back: the next message gets an answer.
+    useModel(model())
+    await say(id, "Anyone there?")
+    await bot.maybeReply(id)
+    expect(await aiRows(id)).toHaveLength(1)
   })
 
   it("maxAiReplies reached → limit notice once, no provider call", async () => {
@@ -347,37 +339,33 @@ describe("chat bot", () => {
     expect(await aiRows(id)).toHaveLength(3)
   })
 
-  it("tool call handoffToHuman → reply stored then one handoff notice and one alert whose subject is 'A visitor on the chat needs a person'", async () => {
+  it("a quote request gets an answer and never hands the chat over: no tools, no notice, no alert", async () => {
     const id = await start("Can I get a quote for an office?")
-    useModel(model({ handoff: true }))
     await bot.maybeReply(id)
 
     const all = await rows(id)
-    expect(all.map((m) => m.sender)).toEqual(["visitor", "ai", "system"])
-    expect(all[2]).toMatchObject({
-      noticeKind: "handoff",
-      body: fillChatText(CHAT_SETTINGS_DEFAULT.notices.handoff, { team: TEAM }),
-    })
-    expect((await chatOf(id)).needsHuman).toBe(true)
+    expect(all.map((m) => m.sender)).toEqual(["visitor", "ai"])
+    expect((await chatOf(id)).needsHuman).toBe(false)
+    expect(options[0]!.tools ?? []).toEqual([])
+    expect(sendSpy).not.toHaveBeenCalled()
+    expect(prompts[0]).not.toContain("handoffToHuman")
+  })
+
+  it("the team alert names the chat, the reason and the visitor's message", async () => {
+    const id = await start("Can I get a quote for an office?")
+    await bot.handOff(id, "limit")
     expect(subjects()).toEqual([NEEDS_PERSON])
     const text = await alertText()
     expect(text).toContain("A visitor is on the chat.")
-    expect(text).toContain("The assistant asked for a person to take over.")
     expect(text).toContain("Message: Can I get a quote for an office?")
     expect(text).toContain(`/admin/chat?c=${id}`)
     expect(sendSpy.mock.calls[0]![0]).toMatchObject({
       to: ["team@example.ie"],
       template: "chat-alert",
     })
-    const tools = options[0]!.tools as { name: string; description?: string }[]
-    expect(tools.map((t) => t.name)).toEqual(["handoffToHuman"])
-    expect(tools[0]!.description).toBe(
-      "Ask a person from the team to take over this chat. Use when the visitor asks for a quote, a booking, a specific price, a site visit or a person, or when the answer is not in KNOWLEDGE."
-    )
-
-    // A second handoff in the same chat neither repeats the notice nor emails.
-    await bot.handOff(id, "handoff")
-    expect(await notices(id)).toEqual(["handoff"])
+    // A second hand-over in the same chat neither repeats the notice nor emails.
+    await bot.handOff(id, "limit")
+    expect(await notices(id)).toEqual(["limit"])
     expect(sendSpy).toHaveBeenCalledTimes(1)
   })
 

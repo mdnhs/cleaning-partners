@@ -1,7 +1,6 @@
 import "server-only"
 
-import { generateText, isStepCount, tool } from "ai"
-import { z } from "zod"
+import { generateText } from "ai"
 
 import { CHAT_SETTINGS_DEFAULT } from "@/lib/chat/defaults"
 import { fillChatText } from "@/lib/chat/text"
@@ -31,6 +30,10 @@ import { readChatSettings } from "./settings"
 // was generating are answered in the same run instead of being dropped.
 
 type BotOutcome = "replied" | "skipped" | "handoff" | "failed"
+// The bot never hands a chat over on its own: it answers every message
+// until staff take the chat over in the admin. Only the reply cap and the
+// site-wide limit hand over; a failed answer tells the team but leaves the
+// chat with the bot, so the next message is tried again.
 type Result = { outcome: BotOutcome; handled: number }
 type Row = repo.ChatMessageRow
 
@@ -64,8 +67,9 @@ const botOwns = (c: repo.ChatConversationRow) =>
   c.status === "open" && c.aiEnabled && !c.needsHuman && !c.assignedTo
 
 /**
- * Hands the chat to the team: stores the reason's notice (once per chat),
- * flags it for a person and alerts the team (once per episode).
+ * Tells the team: stores the reason's notice (once per chat) and alerts the
+ * team (once per episode). Except for "failed", it also flags the chat for
+ * a person, which stops the bot until staff hand it back.
  */
 export async function handOff(id: string, reason: ChatNoticeKind) {
   const settings = (await readChatSettings()) ?? CHAT_SETTINGS_DEFAULT
@@ -78,7 +82,7 @@ export async function handOff(id: string, reason: ChatNoticeKind) {
   })
   // A refused notice on a closed chat means: no flag, no alert.
   if (!stored && (await repo.findById(id))?.status !== "open") return
-  await repo.flagNeedsHuman(id)
+  if (reason !== "failed") await repo.flagNeedsHuman(id)
   await notifyNeedsHuman(id, reason)
 }
 
@@ -148,7 +152,6 @@ async function run(id: string, since: number): Promise<Result> {
     }
     handled = newest.id
 
-    let handoffCalled = false
     let text = ""
     try {
       const [siteSettings, contact, knowledge] = await Promise.all([
@@ -176,33 +179,14 @@ async function run(id: string, since: number): Promise<Result> {
           config.maxOutputTokens ?? MAX_OUTPUT_TOKENS
         ),
         abortSignal: AbortSignal.timeout(GENERATION_MS),
-        stopWhen: isStepCount(2),
-        tools: {
-          handoffToHuman: tool({
-            description:
-              "Ask a person from the team to take over this chat. Use when the visitor asks for a quote, a booking, a specific price, a site visit or a person, or when the answer is not in KNOWLEDGE.",
-            inputSchema: z.object({ reason: z.string().max(200) }),
-            execute: async () => {
-              handoffCalled = true
-              return "The team has been asked to join."
-            },
-          }),
-        },
       })
-      text = (
-        result.text ||
-        result.steps
-          .map((s) => s.text)
-          .filter(Boolean)
-          .join(" ")
-      ).trim()
+      text = result.text.trim()
     } catch (error) {
       logAiError(error)
       return handOffWith("failed")
     }
 
     if (!text) {
-      if (handoffCalled) return handOffWith("handoff")
       console.error("[chat] bot failed: EmptyReply")
       return handOffWith("failed")
     }
@@ -217,7 +201,6 @@ async function run(id: string, since: number): Promise<Result> {
     })
     if (!stored) return stop()
     replied = true
-    if (handoffCalled) return handOffWith("handoff")
   }
   return done("replied")
 }

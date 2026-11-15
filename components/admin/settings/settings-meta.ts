@@ -758,7 +758,11 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
       "copy.errorStart": { label: "Chat could not start" },
       "copy.errorGeneric": { label: "Other error" },
       notices: { label: "Messages in the chat" },
-      "notices.handoff": chatNotice("Assistant asks for a person"),
+      // The assistant no longer hands a chat over on its own (2026-11-15).
+      "notices.handoff": {
+        ...chatNotice("Assistant asks for a person"),
+        hidden: true,
+      },
       "notices.limit": chatNotice("Assistant reply limit reached"),
       "notices.failed": chatNotice("Assistant unavailable"),
       "notices.joined": chatNotice(
