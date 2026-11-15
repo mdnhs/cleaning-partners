@@ -5,6 +5,7 @@ import Link from "next/link"
 import { type RefObject, useEffect, useId, useRef, useState } from "react"
 
 import { useTurnstile } from "@/components/contact/use-turnstile"
+import { emailAskHidden, hideEmailAsk } from "@/lib/chat/email-ask"
 import { fillChatText, type ChatWidgetProps } from "@/lib/chat/text"
 import {
   CHAT_PUBLIC_ENDPOINT,
@@ -129,10 +130,13 @@ function EmailAsk({
   chat,
   note,
   copy,
+  onHide,
 }: {
   chat: ChatApi
   note: string
   copy: Copy
+  /** "No thanks": hides the request for this chat. */
+  onHide(): void
 }) {
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
@@ -167,6 +171,13 @@ function EmailAsk({
       />
       <button type="submit" disabled={pending} className={pillClass}>
         {copy.emailSave}
+      </button>
+      <button
+        type="button"
+        onClick={onHide}
+        className="self-center rounded-full px-3 py-1 text-sm text-white/70 underline-offset-4 hover:text-white hover:underline focus-visible:outline-2 focus-visible:outline-white/70"
+      >
+        {copy.emailDismiss}
       </button>
       {error ? <p className="text-sm text-star">{error}</p> : null}
     </form>
@@ -398,8 +409,24 @@ export function ChatPanel({
   const consent = fill(botAnswers ? copy.consentBot : copy.consentTeam)
 
   // VANTAGE's rule: ask only when no one can answer here and now.
+  // Once per chat: "No thanks" hides it for good (remembered in this
+  // browser), so it does not come back under every new message.
+  const [hiddenFor, setHiddenFor] = useState<string | null>(null)
+  const askHidden =
+    !!view.id && (hiddenFor === view.id || emailAskHidden(view.id))
   const askEmail =
-    exists && !ended && !agentName && !hasEmail && !botActive && !online
+    exists &&
+    !ended &&
+    !agentName &&
+    !hasEmail &&
+    !botActive &&
+    !online &&
+    !askHidden
+  const hideAsk = () => {
+    hideEmailAsk(view.id)
+    setHiddenFor(view.id)
+    composer.current?.focus({ preventScroll: true })
+  }
 
   return (
     <div
@@ -482,7 +509,12 @@ export function ChatPanel({
         </ul>
         {typing ? <TypingIndicator label={fill(copy.typing)} /> : null}
         {askEmail ? (
-          <EmailAsk chat={chat} note={fill(copy.offlineNote)} copy={copy} />
+          <EmailAsk
+            chat={chat}
+            note={fill(copy.offlineNote)}
+            copy={copy}
+            onHide={hideAsk}
+          />
         ) : null}
       </div>
       <div className="sr-only" aria-live="polite" aria-atomic="true">

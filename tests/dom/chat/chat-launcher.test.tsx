@@ -175,6 +175,21 @@ describe("ChatLauncher", () => {
     expect(screen.getByTestId("preset").textContent).toBe(preset.message)
   })
 
+  it("the launcher reopens the panel without the last preset", async () => {
+    render(<ChatLauncher {...PROPS} />)
+    await settle()
+    fireEvent.click(screen.getByRole("button", { name: HINT.title }))
+    const preset = HINT.presets[1]!
+    fireEvent.click(screen.getByRole("button", { name: preset.label }))
+    expect(await screen.findByRole("dialog")).toBeInTheDocument()
+    closeStub()
+    await settle()
+    expect(screen.queryByRole("dialog")).toBeNull()
+    fireEvent.click(launcher())
+    expect(await screen.findByRole("dialog")).toBeInTheDocument()
+    expect(screen.getByTestId("preset").textContent).toBe("")
+  })
+
   it("shows the online dot when the team is online", async () => {
     online = true
     render(<ChatLauncher {...PROPS} />)

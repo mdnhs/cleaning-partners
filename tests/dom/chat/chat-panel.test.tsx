@@ -305,6 +305,25 @@ describe("ChatPanel", () => {
     expect(screen.getByText(copy.statusOffline)).toBeTruthy()
   })
 
+  it("No thanks hides the email ask for this chat, also after a reload", async () => {
+    window.localStorage.clear()
+    status = { ...STATUS, botActive: false }
+    const asks = () => screen.queryByRole("button", { name: copy.emailSave })
+    queue = [{ status: 200, body: view([msg(1, "ai")], { botActive: false }) }]
+    const first = render(<Harness />)
+    await flush()
+    expect(asks()).not.toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: copy.emailDismiss }))
+    expect(asks()).toBeNull()
+    expect(document.activeElement).toBe(composer())
+    first.unmount()
+    queue = [{ status: 200, body: view([msg(1, "ai")], { botActive: false }) }]
+    render(<Harness />)
+    await flush()
+    expect(asks()).toBeNull()
+    window.localStorage.clear()
+  })
+
   it("the email ask appears only when nobody can answer", async () => {
     const asks = () => screen.queryByRole("button", { name: copy.emailSave })
     const cases: [Partial<VisitorView>, Partial<ChatStatus>, boolean][] = [

@@ -57,7 +57,9 @@ export function ChatLauncher(props: ChatWidgetProps) {
   const openPanel = (message?: string) => {
     setOpen(true)
     chat.refreshStatus()
-    if (message) setPreset({ id: ++presetId.current, text: message })
+    // The launcher itself sends nothing: clear the last preset, or the panel
+    // (remounted after a close) would take it for a new one and send it.
+    setPreset(message ? { id: ++presetId.current, text: message } : null)
   }
   const close = () => setOpen(false)
   const online = chat.status?.online ?? false

@@ -30,7 +30,7 @@ export type ChatNotice = "offline" | "rate" | "ended" | null
 /** The conversation state the panel reads (everything but the messages). */
 export type ChatViewState = Pick<
   VisitorView,
-  "status" | "botActive" | "needsHuman" | "hasEmail" | "agentName"
+  "id" | "status" | "botActive" | "needsHuman" | "hasEmail" | "agentName"
 >
 
 // Live chat plan C1: 3 s open, 20 s closed (only once a chat exists), and on
@@ -40,6 +40,7 @@ const CLOSED_MS = 20_000
 const BACKOFF_MS = [3000, 6000, 12_000, 24_000, 30_000]
 
 const NO_VIEW: ChatViewState = {
+  id: "",
   status: "open",
   botActive: false,
   needsHuman: false,
@@ -116,6 +117,7 @@ export function useChat({ open }: { open: boolean }) {
     setMessages((prev) => merge(prev, data.messages))
     closedRef.current = data.status === "closed"
     setView({
+      id: data.id,
       status: data.status,
       botActive: data.botActive,
       needsHuman: data.needsHuman,

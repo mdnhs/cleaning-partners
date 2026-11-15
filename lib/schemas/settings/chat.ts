@@ -55,6 +55,8 @@ export const chatSettings = z.object({
     offlineNote: copyText,
     emailPlaceholder: copyText,
     emailSave: copyText,
+    // Added after 0046: stored settings without it get the default.
+    emailDismiss: copyText.default("No thanks"),
     emailError: copyText,
     noticeOffline: copyText,
     noticeRate: copyText,

@@ -54,7 +54,16 @@ describe("chat settings", () => {
       (match) => JSON.parse(match[1].replaceAll("''", "'"))
     )
     expect(literals).toHaveLength(2)
-    for (const value of literals) expect(value).toEqual(CHAT_SETTINGS_DEFAULT)
+    // Read through the schema, as the app reads the row: fields added after
+    // 0046 (copy.emailDismiss) come from their schema defaults.
+    for (const value of literals)
+      expect(chatSettings.parse(value)).toEqual(CHAT_SETTINGS_DEFAULT)
+  })
+
+  it("settings stored before copy.emailDismiss still parse, with its default", () => {
+    const { emailDismiss, ...copy } = CHAT_SETTINGS_DEFAULT.copy
+    const parsed = chatSettings.parse({ ...CHAT_SETTINGS_DEFAULT, copy })
+    expect(parsed.copy.emailDismiss).toBe(emailDismiss)
   })
 
   it("no therapy wording", () => {

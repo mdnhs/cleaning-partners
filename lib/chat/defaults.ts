@@ -56,6 +56,7 @@ export const CHAT_SETTINGS_DEFAULT: ChatSettings = {
       "No one is online right now. Leave your email and {team} will reply.",
     emailPlaceholder: "name@example.com",
     emailSave: "Save email",
+    emailDismiss: "No thanks",
     emailError: "Please check that email address and try again.",
     noticeOffline: "You seem to be offline. We'll keep trying.",
     noticeRate: "You're sending messages quickly. Please wait a moment.",
