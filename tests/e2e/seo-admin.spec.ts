@@ -328,20 +328,21 @@ test("SEO › Defaults: hiding the site from search is published and restored", 
   await expect(
     page.getByRole("heading", { name: "What crawlers see" })
   ).toBeVisible()
-  const hide = page.getByRole("radio", {
-    name: "Hide the whole site from search",
-  })
-  const show = page.getByRole("radio", {
-    name: "Show the site in search results",
-  })
-  await expect(show).toBeChecked()
+  // A shadcn Select (VANTAGE layout): open the combobox, pick the option.
+  const engines = page.getByRole("combobox", { name: "Search engines" })
+  const choose = async (name: string) => {
+    await engines.click()
+    await page.getByRole("option", { name }).click()
+    await expect(engines).toHaveText(name)
+  }
+  await expect(engines).toHaveText("Show the site in search results")
   const noindex = async () =>
     (await (await page.request.get("/contact")).text()).includes(
       'name="robots" content="noindex'
     )
   let hidden = false
   try {
-    await hide.check()
+    await choose("Hide the whole site from search")
     hidden = true
     await publishDraft(page)
     await expect.poll(noindex).toBe(true)
@@ -349,9 +350,7 @@ test("SEO › Defaults: hiding the site from search is published and restored", 
     // Only undo what this test did: an earlier failure stays visible.
     if (hidden) {
       await page.goto("/admin/seo/defaults")
-      await page
-        .getByRole("radio", { name: "Show the site in search results" })
-        .check()
+      await choose("Show the site in search results")
       await publishDraft(page)
       await expect.poll(noindex).toBe(false)
     }
