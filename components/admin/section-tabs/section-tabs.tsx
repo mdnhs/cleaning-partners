@@ -54,8 +54,8 @@ export type SectionTabsProps = {
 }
 
 // How deep we are in tab columns: a nested set (an editor's groups beside
-// the shell's section rail) only becomes a column from xl, so two columns
-// of tabs never squeeze the content at lg.
+// the shell's section rail) stays a row, so two columns of tabs never
+// squeeze the content.
 const DepthContext = createContext(0)
 // True on the white card a top-level SectionTabs puts its content on.
 const CardContext = createContext(false)
@@ -175,7 +175,7 @@ const LAYOUT = {
     tab: "lg:w-full",
     marker: "lg:block",
     /** px where the list becomes a column (Tailwind lg / xl). */
-    columnFrom: 1024,
+    columnFrom: 1024 as number | null,
     /**
      * The selected content on a white card beside the grey rail; its padding
      * is --card-pad (an editor's bar spans the card's full width with it).
@@ -183,16 +183,18 @@ const LAYOUT = {
     content:
       "min-w-0 flex-1 rounded-card bg-card p-(--card-pad) [--card-pad:1rem] sm:[--card-pad:1.5rem]",
   },
-  xl: {
-    root: "flex flex-col gap-4 xl:flex-row xl:items-start xl:gap-8",
-    column:
-      "xl:w-52 xl:shrink-0 xl:sticky xl:top-[var(--section-tabs-top,0px)] xl:-m-1 xl:max-h-[calc(var(--main-h,var(--content-h,100svh))-2*var(--main-pad,0px)-var(--section-tabs-top,0px))] xl:self-start xl:overflow-y-auto xl:p-1",
-    list: "xl:flex-col xl:overflow-visible xl:px-0 xl:pb-0",
-    tab: "xl:w-full",
-    marker: "xl:block",
-    columnFrom: 1280,
-    // A nested set: on its parent's card, or beside the shell's section
-    // rail on the panel; either way no card of its own.
+  row: {
+    // A nested set (an editor's groups beside the shell's section rail, or
+    // on its parent's card) stays a row of tabs above its content at every
+    // width, so no second column of tabs squeezes the content.
+    root: "flex flex-col gap-4",
+    column: "",
+    list: "",
+    tab: "",
+    marker: "",
+    columnFrom: null,
+    // On its parent's card, or beside the shell's section rail on the
+    // panel; either way no card of its own.
     content: "min-w-0 flex-1",
   },
 } as const
@@ -205,20 +207,22 @@ const TAB_ACTIVE_MOVING = cn(SECTION_TAB_ACTIVE, "bg-transparent")
  * aria-orientation follows the layout: a row below the breakpoint, a column
  * from it (server and first hydration render assume the desktop column).
  */
-function useIsColumn(minWidth: number): boolean {
-  const query = `(min-width: ${minWidth}px)`
+function useIsColumn(minWidth: number | null): boolean {
+  const query = minWidth === null ? null : `(min-width: ${minWidth}px)`
   const subscribe = useCallback(
     (onChange: () => void) => {
+      if (query === null) return () => {}
       const mql = window.matchMedia(query)
       mql.addEventListener("change", onChange)
       return () => mql.removeEventListener("change", onChange)
     },
     [query]
   )
+  // A row-only set (null) is never a column, on the server too.
   return useSyncExternalStore(
     subscribe,
-    () => window.matchMedia(query).matches,
-    () => true
+    () => query !== null && window.matchMedia(query).matches,
+    () => query !== null
   )
 }
 
@@ -293,7 +297,7 @@ function TabContent({
 export function SectionTabs(props: SectionTabsProps) {
   const depth = useContext(DepthContext)
   const onCard = useContext(CardContext)
-  const layout = depth > 0 ? LAYOUT.xl : LAYOUT.lg
+  const layout = depth > 0 ? LAYOUT.row : LAYOUT.lg
   const routeMode =
     props.items.length > 0 && props.items.every((item) => item.href)
   return (
