@@ -24,7 +24,7 @@ export function ErrorText({
   )
 }
 
-/** The hint under a label (`${id}-help`). */
+/** A field's hint (`${id}-help`). */
 export function HelpText({
   id,
   children,
@@ -40,9 +40,11 @@ export function HelpText({
 }
 
 /**
- * Label, hint and error around one input (JW field look): label and hint
- * above the control, `extra` (e.g. a counter) and the error below. Ids
- * follow `${id}-help` / `${id}-error`; widgets pass `describedBy(id, …)`.
+ * Label, hint and error around one input: the label above the control, the
+ * hint below it with `extra` (e.g. a counter) at its right, then the error.
+ * With the hint below, fields side by side keep their inputs on one line
+ * whether or not each has a hint. Ids follow `${id}-help` / `${id}-error`;
+ * widgets pass `describedBy(id, …)`.
  */
 export function FieldShell({
   id,
@@ -64,21 +66,25 @@ export function FieldShell({
 }) {
   return (
     <Field data-invalid={error ? true : undefined} className="gap-2">
-      <div className="flex flex-col gap-0.5">
-        {/* JW: required is the default (the form says so once and the
-            input has aria-required); only optional fields are marked. */}
-        <FieldLabel htmlFor={id} className={LABEL_CLASS}>
-          {label}
-          {optional ? (
-            <span className="font-normal text-muted-foreground">
-              (optional)
-            </span>
-          ) : null}
-        </FieldLabel>
-        {help ? <HelpText id={`${id}-help`}>{help}</HelpText> : null}
-      </div>
+      {/* JW: required is the default (the form says so once and the input
+          has aria-required); only optional fields are marked. */}
+      <FieldLabel htmlFor={id} className={LABEL_CLASS}>
+        {label}
+        {optional ? (
+          <span className="font-normal text-muted-foreground">(optional)</span>
+        ) : null}
+      </FieldLabel>
       {children}
-      {extra}
+      {help || extra ? (
+        <div className="flex items-start gap-3">
+          {help ? (
+            <div className="min-w-0 flex-1">
+              <HelpText id={`${id}-help`}>{help}</HelpText>
+            </div>
+          ) : null}
+          {extra ? <div className="ml-auto shrink-0">{extra}</div> : null}
+        </div>
+      ) : null}
       {error ? <ErrorText id={`${id}-error`}>{error}</ErrorText> : null}
     </Field>
   )

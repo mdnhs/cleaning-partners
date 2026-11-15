@@ -116,8 +116,9 @@ function ChoiceFieldset({
           </span>
         ) : null}
       </legend>
-      {help ? <HelpText id={`${id}-help`}>{help}</HelpText> : null}
       {children}
+      {/* Below the options, like a text field's hint (FieldShell). */}
+      {help ? <HelpText id={`${id}-help`}>{help}</HelpText> : null}
       {error ? <ErrorText id={`${id}-error`}>{error}</ErrorText> : null}
     </fieldset>
   )

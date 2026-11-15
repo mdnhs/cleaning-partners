@@ -118,7 +118,7 @@ export const growthEditorMeta: Record<GrowthSettingsKey, EditorMeta> = {
       },
       robots: {
         label: "Search engines",
-        widget: "radio",
+        widget: "select",
         options: [
           { value: "index", label: "Show the site in search results" },
           { value: "noindex", label: "Hide the whole site from search" },
@@ -127,7 +127,9 @@ export const growthEditorMeta: Record<GrowthSettingsKey, EditorMeta> = {
       },
       preferredHost: {
         label: "Preferred address",
-        widget: "radio",
+        widget: "select",
+        // Has a default ("off" is its own option): no extra "None".
+        required: true,
         options: [
           { value: "off", label: "Leave all addresses as they are" },
           { value: "apex", label: "Without www (example.ie)" },

@@ -10,13 +10,15 @@ import { fixtureSiteSources } from "@/server/db/seed/fixtures/sources"
 
 import { resetDb } from "../db"
 
-const statements = readFileSync(
+const statements = [
   "server/db/migrations/0048_seo_defaults_local_search.sql",
-  "utf8"
+  "server/db/migrations/0049_seo_defaults_preferred_host.sql",
+].flatMap((file) =>
+  readFileSync(file, "utf8")
+    .split("--> statement-breakpoint")
+    .map((s) => s.trim())
+    .filter(Boolean)
 )
-  .split("--> statement-breakpoint")
-  .map((s) => s.trim())
-  .filter(Boolean)
 
 async function migrate() {
   for (const statement of statements) await getDb().execute(sql.raw(statement))
@@ -29,6 +31,7 @@ function legacy() {
   ) as Record<string, unknown>
   delete value.twitterHandle
   delete value.llms
+  delete value.preferredHost
   const org = value.organization as Record<string, unknown>
   for (const key of [
     "priceRange",
@@ -44,7 +47,7 @@ function legacy() {
 
 beforeEach(resetDb)
 
-describe("0048_seo_defaults_local_search", () => {
+describe("0048_seo_defaults_local_search + 0049_seo_defaults_preferred_host", () => {
   it("adds the new keys to both copies, keeps what is there, and re-runs safely", async () => {
     const draft = legacy()
     draft.twitterHandle = "@cp_ie"
@@ -63,6 +66,7 @@ describe("0048_seo_defaults_local_search", () => {
       .from(settings)
       .where(eq(settings.key, "seo.defaults"))
     const published = row.published as Record<string, unknown>
+    expect(published.preferredHost).toBe("off")
     expect(published.twitterHandle).toBe("")
     expect(published.llms).toEqual({ enabled: true, summary: "" })
     expect(published.organization).toMatchObject({
