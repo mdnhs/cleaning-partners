@@ -97,6 +97,7 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "seo/page.tsx": { seo: ["read"] },
   "seo/defaults/page.tsx": { seo: ["read"] },
   "seo/redirects/page.tsx": { redirect: ["read"] },
+  "seo/canonical/page.tsx": { seo: ["read"] },
   "website/page.tsx": null,
   // Static parent's; each screen's own is pinned by KEYED_GUARDS + the
   // website-pages test (e.g. /admin/website/blog → article:read).
