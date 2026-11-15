@@ -190,14 +190,9 @@ test.describe.serial("live chat", () => {
     }
   })
 
-  test("hint presets fill the composer", async ({ page }, testInfo) => {
+  test("a hint preset is sent at once", async ({ page }, testInfo) => {
     await page.context().setExtraHTTPHeaders({
       "x-forwarded-for": clientIpFor(testInfo.title),
-    })
-    const sent: string[] = []
-    page.on("request", (req) => {
-      if (req.method() === "POST" && req.url().includes(CHAT_PUBLIC_ENDPOINT))
-        sent.push(req.url())
     })
     await page.goto("/")
     await waitForHydration(page)
@@ -205,13 +200,27 @@ test.describe.serial("live chat", () => {
     await expect(tray).toBeVisible()
     await tray.hover()
     const preset = hint.presets[0]!
+    const started = page.waitForResponse(
+      (res) =>
+        res.url().endsWith(`${CHAT_PUBLIC_ENDPOINT}/start`) &&
+        res.request().method() === "POST"
+    )
     await tray.getByRole("button", { name: preset.label }).click()
+    const start = await started
+    expect(start.status()).toBe(201)
+    chatIds.push(((await start.json()) as { id: string }).id)
+    expect(start.request().postDataJSON()).toMatchObject({
+      message: preset.message,
+    })
     const panel = page.getByRole("dialog", { name: copy.title })
     await expect(
+      panel
+        .getByRole("log", { name: copy.conversation })
+        .getByText(preset.message)
+    ).toBeVisible()
+    await expect(
       panel.getByRole("textbox", { name: copy.messageLabel })
-    ).toHaveValue(preset.message)
-    await page.waitForTimeout(500)
-    expect(sent).toEqual([])
+    ).toHaveValue("")
   })
 
   test("mobile: launcher clears the sticky CTA bar", async ({
@@ -265,9 +274,9 @@ test.describe.serial("live chat", () => {
     await expect(
       page.getByRole("button", { name: copy.launcherOpen })
     ).toHaveCount(0)
-    await expect(
-      page.getByRole("group", { name: copy.hintGroup })
-    ).toHaveCount(0)
+    await expect(page.getByRole("group", { name: copy.hintGroup })).toHaveCount(
+      0
+    )
     // No widget code is fetched: the launcher and panel chunks stay away.
     expect(await chatScripts(scripts)).toEqual([])
     const status = await page.request.get(`${CHAT_PUBLIC_ENDPOINT}/status`)

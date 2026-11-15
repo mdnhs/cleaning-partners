@@ -231,22 +231,19 @@ export function ChatPanel({
     log: scroller,
   })
 
-  // A new preset only fills the composer, so the visitor can edit it and send
-  // it themselves: adjust during render, not in an effect. An ended chat has
-  // no composer, so it only opens.
+  // A new preset is sent at once, as if typed and sent (picking it is the
+  // visitor's ask): it fills the composer and queues, so it waits for the
+  // cookie lookup and Turnstile like any first message. Adjusted during
+  // render, not in an effect. An ended chat has no composer, so it only
+  // opens; a send already in flight keeps its own text.
   const [presetSeen, setPresetSeen] = useState(0)
   if (preset && preset.id !== presetSeen) {
     setPresetSeen(preset.id)
-    if (preset.text && !ended) setDraft(preset.text)
+    if (preset.text && !ended && !sending) {
+      setDraft(preset.text)
+      setQueued(true)
+    }
   }
-
-  // Put the caret after a preset, ready to edit or add to it.
-  useEffect(() => {
-    const el = composer.current
-    if (!open || !presetSeen || !el) return
-    el.focus({ preventScroll: true })
-    el.setSelectionRange(el.value.length, el.value.length)
-  }, [presetSeen, open])
 
   // Focus the composer on open (or Start a new chat once a chat ended), and
   // again when the view swaps between the two.

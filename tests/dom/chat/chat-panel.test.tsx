@@ -214,17 +214,42 @@ describe("ChatPanel", () => {
     expect(posts).toEqual([{ url: `${BASE}/messages`, body: { body: "More" } }])
   })
 
-  it("a preset fills the composer without sending", async () => {
+  it("a preset is sent straight away and starts the chat", async () => {
+    queue = [
+      { status: 404, body: {} },
+      {
+        status: 201,
+        body: view([msg(1, "visitor", null, "Can I get a quote?")]),
+      },
+    ]
     render(<Harness preset={{ id: 1, text: "Can I get a quote?" }} />)
     await flush()
     await flush()
-    expect(posts).toHaveLength(0)
-    expect(composer().value).toBe("Can I get a quote?")
-    expect(document.activeElement).toBe(composer())
-    expect(composer().selectionStart).toBe("Can I get a quote?".length)
+    expect(posts).toHaveLength(1)
+    expect(posts[0]!.url).toBe(`${BASE}/start`)
+    expect(posts[0]!.body.message).toBe("Can I get a quote?")
+    expect(screen.getByText("Can I get a quote?")).toBeTruthy()
+    expect(composer().value).toBe("")
   })
 
-  it("never sends a preset on its own when the panel mounts under StrictMode", async () => {
+  it("a preset in an open chat goes as a message", async () => {
+    queue = [{ status: 200, body: view([msg(1, "ai")]) }]
+    const { rerender } = render(<Harness />)
+    await flush()
+    queue = [{ status: 201, body: { ok: true, id: 2 } }]
+    rerender(<Harness preset={{ id: 1, text: "Are you insured?" }} />)
+    await flush()
+    await flush()
+    expect(posts).toEqual([
+      { url: `${BASE}/messages`, body: { body: "Are you insured?" } },
+    ])
+  })
+
+  it("sends a preset once when the panel mounts under StrictMode", async () => {
+    queue = [
+      { status: 404, body: {} },
+      { status: 201, body: view([msg(1, "visitor")]) },
+    ]
     render(
       <StrictMode>
         <Harness preset={{ id: 1, text: "Are you insured?" }} />
@@ -232,7 +257,7 @@ describe("ChatPanel", () => {
     )
     await flush()
     await flush()
-    expect(posts).toHaveLength(0)
+    expect(posts).toHaveLength(1)
   })
 
   it("status shows statusBot with the team name while the bot answers", async () => {
