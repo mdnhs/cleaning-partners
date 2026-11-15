@@ -174,6 +174,7 @@ const LAYOUT = {
     list: "lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0",
     tab: "lg:w-full",
     marker: "lg:block",
+    pill: "",
     /** px where the list becomes a column (Tailwind lg / xl). */
     columnFrom: 1024 as number | null,
     /**
@@ -189,9 +190,12 @@ const LAYOUT = {
     // width, so no second column of tabs squeezes the content.
     root: "flex flex-col gap-4",
     column: "",
-    list: "",
+    // A segmented control: the tabs on a grey tray, the chosen one a
+    // raised white chip, so the row reads as tabs on any surface.
+    list: "mx-0 w-fit max-w-full rounded-xl bg-muted p-1 ring-1 ring-border",
     tab: "",
     marker: "",
+    pill: "rounded-lg bg-background shadow-sm ring-1 ring-border dark:bg-sidebar-accent dark:ring-primary/40",
     columnFrom: null,
     // On its parent's card, or beside the shell's section rail on the
     // panel; either way no card of its own.
@@ -245,11 +249,14 @@ function TabContent({
   item,
   active,
   marker,
+  pill,
   group,
 }: {
   item: SectionTabItem
   active: boolean
   marker: string
+  /** Extra classes for the sliding active chip (the row's raised chip). */
+  pill?: string
   /** The set's id: its pill and bar slide only within the set. */
   group: string
 }) {
@@ -258,7 +265,7 @@ function TabContent({
     <>
       {active ? (
         <>
-          <ActivePill layoutId={`${group}-pill`} />
+          <ActivePill layoutId={`${group}-pill`} className={pill} />
           <ActiveBar
             layoutId={`${group}-bar`}
             className={cn(
@@ -359,6 +366,7 @@ function RouteTabs({
                       item={item}
                       active={active}
                       marker={layout.marker}
+                      pill={layout.pill}
                       group={group}
                     />
                   </Link>
@@ -465,6 +473,7 @@ function InPageTabs({
                     item={item}
                     active={active}
                     marker={layout.marker}
+                    pill={layout.pill}
                     group={group}
                   />
                 </button>
