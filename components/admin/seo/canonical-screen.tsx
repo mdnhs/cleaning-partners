@@ -29,6 +29,7 @@ import type { SeoEntry, SeoKind } from "@/lib/schemas/api/seo"
 import { cn } from "@/lib/utils"
 
 import { SEO_OVERVIEW_KEY } from "./keys"
+import { PreferredAddressCard } from "./preferred-address-card"
 import { useSaveSeo } from "./use-save-seo"
 
 const KIND_LABEL: Record<SeoKind, string> = {
@@ -83,8 +84,9 @@ export function CanonicalScreen({ origin }: { origin: string }) {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Canonical URLs"
-        description="The address each page tells search engines to index. Every page points at itself unless its main copy lives at another address; set that here."
+        description="The site's main address, and the address each page tells search engines to index. Every page points at itself unless its main copy lives at another address; set that here."
       />
+      <PreferredAddressCard />
       {overview.isPending ? (
         <CardSkeleton />
       ) : overview.isError ? (
