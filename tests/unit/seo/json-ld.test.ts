@@ -23,9 +23,12 @@ const org: OrganizationInput = {
     postalCode: "R32 YX49",
     addressCountry: "IE",
   },
-  areaServed: "Ireland",
+  areaServed: ["Ireland"],
   sameAs: [],
   services: [{ name: "Medical Cleaning", url: "https://x.ie/services/a" }],
+  priceRange: "",
+  geo: null,
+  rating: null,
 }
 
 describe("JSON-LD builders", () => {
@@ -55,6 +58,39 @@ describe("JSON-LD builders", () => {
     ).toMatchObject({
       "@type": "ProfessionalService",
       sameAs: ["https://linkedin.com/company/x"],
+    })
+  })
+
+  it("organisation: blank local-search details are left out", () => {
+    const data = organizationJsonLd({ ...org, areaServed: ["Ireland", " "] })
+    expect(data).toMatchObject({ areaServed: "Ireland" })
+    for (const key of ["priceRange", "geo", "aggregateRating"])
+      expect(data).not.toHaveProperty(key)
+    expect(organizationJsonLd({ ...org, areaServed: [] })).not.toHaveProperty(
+      "areaServed"
+    )
+  })
+
+  it("organisation: price range, map pin, rating and several areas", () => {
+    expect(
+      organizationJsonLd({
+        ...org,
+        areaServed: ["Ireland", "Co. Laois"],
+        priceRange: "€€",
+        geo: { latitude: 53.0349, longitude: -7.3238 },
+        rating: { value: 4.9, count: 120 },
+      })
+    ).toMatchObject({
+      areaServed: ["Ireland", "Co. Laois"],
+      priceRange: "€€",
+      geo: { "@type": "GeoCoordinates", latitude: 53.0349, longitude: -7.3238 },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: 4.9,
+        reviewCount: 120,
+        bestRating: 5,
+        worstRating: 1,
+      },
     })
   })
 

@@ -27,9 +27,23 @@ export type OrganizationInput = {
     postalCode: string
     addressCountry: string
   }
-  areaServed: string
+  /** Places served, main one first; blanks dropped. */
+  areaServed: string[]
   sameAs: string[]
   services: { name: string; url: string }[]
+  /** e.g. €€; blank leaves it out. */
+  priceRange: string
+  /** The map pin; null leaves it out. */
+  geo: { latitude: number; longitude: number } | null
+  /** The Google rating and its review count; null leaves it out. */
+  rating: { value: number; count: number } | null
+}
+
+/** One place stays a plain string (as before); several become a list. */
+function areaServedOf(areas: string[]): { areaServed?: string | string[] } {
+  const places = areas.map((a) => a.trim()).filter(Boolean)
+  if (places.length === 0) return {}
+  return { areaServed: places.length === 1 ? places[0] : places }
 }
 
 export const organizationId = (origin: string) => `${origin}/#organization`
@@ -48,8 +62,29 @@ export function organizationJsonLd(
     telephone: i.telephone,
     email: i.email,
     address: { "@type": "PostalAddress" as const, ...i.address },
-    areaServed: i.areaServed,
+    ...areaServedOf(i.areaServed),
     ...(i.sameAs.length > 0 ? { sameAs: i.sameAs } : {}),
+    ...(i.priceRange ? { priceRange: i.priceRange } : {}),
+    ...(i.geo
+      ? {
+          geo: {
+            "@type": "GeoCoordinates" as const,
+            latitude: i.geo.latitude,
+            longitude: i.geo.longitude,
+          },
+        }
+      : {}),
+    ...(i.rating
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating" as const,
+            ratingValue: i.rating.value,
+            reviewCount: i.rating.count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
     makesOffer: i.services.map((service) => ({
       "@type": "Offer" as const,
       itemOffered: {

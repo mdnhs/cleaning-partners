@@ -60,6 +60,12 @@ function shareImage(s: SiteSources, subject: Subject): ShareImage {
   return { url: ogImagePath(subject.kind, subject.id), ...OG_IMAGE_SIZE }
 }
 
+/** "cleaningpartners" or "@cleaningpartners" → "@cleaningpartners"; blank → null. */
+export function twitterSite(handle: string): string | null {
+  const name = handle.trim().replace(/^@/, "")
+  return name ? `@${name}` : null
+}
+
 function metadataFor(s: SiteSources, subject: Subject): Metadata {
   const defaults = s.settings["seo.defaults"]
   const values = placeholders(s)
@@ -112,6 +118,10 @@ function metadataFor(s: SiteSources, subject: Subject): Metadata {
       : { ...shared, type: "website" },
     twitter: {
       card: subject.seo.twitterCard ?? "summary_large_image",
+      // The site's X account (SEO defaults); left out while blank.
+      ...(twitterSite(defaults.twitterHandle)
+        ? { site: twitterSite(defaults.twitterHandle)! }
+        : {}),
       // The social title, like og:title (X does not fall back once set).
       title: socialTitle,
       description: socialDescription,

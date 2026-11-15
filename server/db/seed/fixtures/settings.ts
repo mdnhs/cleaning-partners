@@ -226,6 +226,7 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
       description:
         "Medical, commercial and domestic cleaning you can rely on, across the midlands and beyond.",
       ogImage: null,
+      twitterHandle: "",
       organization: {
         type: "LocalBusiness",
         streetAddress: "Derryguile",
@@ -236,10 +237,17 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
         currency: "EUR",
         areaServed: "Ireland",
         sameAs: [],
+        priceRange: "",
+        otherAreas: [],
+        latitude: "",
+        longitude: "",
+        ratingValue: "",
+        reviewCount: "",
       },
       robots: "index",
       preferredHost: "off",
       verification: { google: "", bing: "" },
+      llms: { enabled: true, summary: "" },
     },
     consent: {
       title: "We use cookies",

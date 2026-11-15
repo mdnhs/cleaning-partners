@@ -36,8 +36,17 @@ export function siteJsonLd(s: SiteSources, origin: string) {
       postalCode: org.postalCode,
       addressCountry: org.addressCountry,
     },
-    areaServed: org.areaServed,
+    areaServed: [org.areaServed, ...org.otherAreas],
     sameAs: org.sameAs,
+    priceRange: org.priceRange,
+    geo:
+      org.latitude && org.longitude
+        ? { latitude: Number(org.latitude), longitude: Number(org.longitude) }
+        : null,
+    rating:
+      org.ratingValue && org.reviewCount
+        ? { value: Number(org.ratingValue), count: Number(org.reviewCount) }
+        : null,
     services: s.services.map((service) => ({
       name: interpolate(service.content.title, values),
       url: absoluteUrl(origin, `/services/${service.slug}`),

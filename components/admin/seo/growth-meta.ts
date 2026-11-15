@@ -49,8 +49,13 @@ export const growthEditorMeta: Record<GrowthSettingsKey, EditorMeta> = {
         label: "Default share image",
         help: "Used when a page has no share image. Leave empty to generate a card with each page's title. Best at 1200 × 630.",
       },
+      twitterHandle: {
+        label: "X / Twitter handle",
+        placeholder: "@cleaningpartners",
+        help: "The company's X account, added to every page's share card. Leave empty if there is none.",
+      },
       organization: {
-        label: "Business details for search engines",
+        label: "Business details",
         section: true,
       },
       "organization.type": {
@@ -82,6 +87,35 @@ export const growthEditorMeta: Record<GrowthSettingsKey, EditorMeta> = {
         itemName: "Profile link",
         help: "Full links to the company's own LinkedIn, Facebook … pages.",
       },
+      "organization.priceRange": {
+        label: "Price range",
+        placeholder: "€€",
+        help: "Optional, e.g. €€. Leave empty to leave it out.",
+      },
+      "organization.otherAreas": {
+        label: "Other areas served",
+        itemName: "Area",
+        help: "More counties or towns you cover, after the main area. Up to 10.",
+      },
+      "organization.otherAreas[]": { label: "Area", placeholder: "Co. Offaly" },
+      "organization.latitude": {
+        label: "Latitude",
+        placeholder: "53.1150",
+        help: "Right-click your pin in Google Maps and click the numbers to copy them.",
+      },
+      "organization.longitude": {
+        label: "Longitude",
+        placeholder: "-7.3196",
+      },
+      "organization.ratingValue": {
+        label: "Google rating",
+        placeholder: "4.9",
+        help: "Only the rating shown on your Google Business profile: it must match real reviews. Leave both empty to leave the rating out.",
+      },
+      "organization.reviewCount": {
+        label: "Number of reviews",
+        placeholder: "120",
+      },
       robots: {
         label: "Search engines",
         widget: "radio",
@@ -102,7 +136,7 @@ export const growthEditorMeta: Record<GrowthSettingsKey, EditorMeta> = {
         help: "The site answers on http and https, with and without www. Search engines count each as a separate site, so pick one and the others redirect to it (301, always to https). Only the host in Settings › Site › Production URL is redirected: staging, previews and IP addresses are left alone. Takes effect within a minute.",
       },
       verification: {
-        label: "Search console verification",
+        label: "Verification",
         section: true,
       },
       "verification.google": {
@@ -115,6 +149,64 @@ export const growthEditorMeta: Record<GrowthSettingsKey, EditorMeta> = {
         placeholder: "ABC123…",
         help: "Only the content value of the msvalidate.01 meta tag. Leave empty if not used.",
       },
+      llms: {
+        label: "AI assistants",
+        section: true,
+      },
+      "llms.enabled": {
+        label: "Publish /llms.txt",
+        help: "A plain-text summary of the site at /llms.txt that AI search tools (ChatGPT, Perplexity, Claude …) read. Off, or while the whole site is hidden from search, the address answers “not found”.",
+      },
+      "llms.summary": {
+        label: "Summary",
+        widget: "textarea",
+        rows: 4,
+        help: "Who you are and what you do, in a few sentences. Leave empty to use the default description.",
+      },
+    },
+    groups: {
+      "": [
+        {
+          title: "Titles & descriptions",
+          description: "Used for any page that leaves its own empty.",
+          fields: ["title", "titleTemplate", "description"],
+        },
+        {
+          title: "Social sharing",
+          description:
+            "The card used when a page has no share image of its own.",
+          fields: ["ogImage", "twitterHandle"],
+        },
+        {
+          title: "Indexing",
+          description:
+            "Whether search engines list the site, and its main address.",
+          fields: ["robots", "preferredHost"],
+        },
+      ],
+      organization: [
+        {
+          title: "Business",
+          fields: ["type", "areaServed", "otherAreas", "priceRange", "sameAs"],
+        },
+        {
+          title: "Address",
+          fields: [
+            "streetAddress",
+            "addressLocality",
+            "addressRegion",
+            "postalCode",
+            "addressCountry",
+            "currency",
+          ],
+        },
+        {
+          title: "Map pin and rating",
+          description:
+            "Optional. Empty fields are left out of the structured data.",
+          fields: ["latitude", "longitude", "ratingValue", "reviewCount"],
+        },
+      ],
     },
   },
   tracking: {

@@ -5,7 +5,7 @@ import { eq, sql } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import {
-  organizationSettings,
+  organizationFields,
   seoDefaultsSettings,
 } from "@/lib/schemas/settings/seo-defaults"
 import { getDb } from "@/server/db/client"
@@ -23,10 +23,21 @@ const statements = readFileSync(join(DIR, file), "utf8")
   .filter(Boolean)
 
 // The schema as of 0008: robots/verification arrive with 0013 (D1.6),
-// organization.currency with 0037.
+// organization.currency with 0037, the X handle, llms and local-search
+// fields with 0048.
 const before0013 = seoDefaultsSettings
-  .omit({ robots: true, verification: true })
-  .extend({ organization: organizationSettings.omit({ currency: true }) })
+  .omit({ robots: true, verification: true, twitterHandle: true, llms: true })
+  .extend({
+    organization: organizationFields.omit({
+      currency: true,
+      priceRange: true,
+      otherAreas: true,
+      latitude: true,
+      longitude: true,
+      ratingValue: true,
+      reviewCount: true,
+    }),
+  })
 
 const legacy = {
   title: "T",
