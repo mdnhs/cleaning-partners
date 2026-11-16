@@ -34,4 +34,56 @@ describe("chromeView Services menu", () => {
     const services = header.links.find((l) => l.href === "/services")!
     expect(Object.keys(services)).not.toContain("children")
   })
+
+  it("a link with its own dropdown keeps it, on any link", () => {
+    const s = fixtureSiteSources()
+    const links = s.settings.navigation.links.map((l) =>
+      l.href === "/about"
+        ? { ...l, children: [{ label: "Our team", href: "/about#team" }] }
+        : l
+    )
+    const { header } = chromeView({
+      ...s,
+      settings: {
+        ...s.settings,
+        navigation: { ...s.settings.navigation, links },
+      },
+    })
+    const about = header.links.find((l) => l.href === "/about")!
+    expect(about.children).toEqual([{ label: "Our team", href: "/about#team" }])
+  })
+
+  it("its own dropdown on Services replaces the automatic list", () => {
+    const s = fixtureSiteSources()
+    const links = s.settings.navigation.links.map((l) =>
+      l.href === "/services"
+        ? { ...l, children: [{ label: "Pricing", href: "/contact" }] }
+        : l
+    )
+    const { header } = chromeView({
+      ...s,
+      settings: {
+        ...s.settings,
+        navigation: { ...s.settings.navigation, links },
+      },
+    })
+    const services = header.links.find((l) => l.href === "/services")!
+    expect(services.children).toEqual([{ label: "Pricing", href: "/contact" }])
+  })
+
+  it("inFooter off keeps a link out of the footer's Quick links only", () => {
+    const s = fixtureSiteSources()
+    const links = s.settings.navigation.links.map((l) =>
+      l.href === "/blog" ? { ...l, inFooter: false } : l
+    )
+    const { header, footer } = chromeView({
+      ...s,
+      settings: {
+        ...s.settings,
+        navigation: { ...s.settings.navigation, links },
+      },
+    })
+    expect(header.links.map((l) => l.href)).toContain("/blog")
+    expect(footer.quickLinks.links.map((l) => l.href)).not.toContain("/blog")
+  })
 })

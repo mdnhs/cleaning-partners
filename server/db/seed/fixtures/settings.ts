@@ -53,12 +53,12 @@ export function settingsFixture(media: MediaLookup): SettingsFixture {
     },
     navigation: {
       links: [
-        { label: "Home", href: "/" },
-        { label: "About", href: "/about" },
-        { label: "Services", href: "/services" },
-        { label: "Blog", href: "/blog" },
-        { label: "Careers", href: "/careers" },
-        { label: "Contact", href: "/contact" },
+        { label: "Home", href: "/", children: [], inFooter: true },
+        { label: "About", href: "/about", children: [], inFooter: true },
+        { label: "Services", href: "/services", children: [], inFooter: true },
+        { label: "Blog", href: "/blog", children: [], inFooter: true },
+        { label: "Careers", href: "/careers", children: [], inFooter: true },
+        { label: "Contact", href: "/contact", children: [], inFooter: true },
       ],
       cta: { label: "Get a Quote", href: "{quoteHref}" },
       menuAria: "Open menu",

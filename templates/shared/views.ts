@@ -89,11 +89,15 @@ export type ChromeView = {
 export function chromeView(s: ChromeSources): ChromeView {
   const { site, contact, navigation, footer } = s.settings
   const values = placeholders(s)
-  const links = navigation.links.map((l) => linkView(s, l))
+  // A link with its own dropdown (settings.navigation) keeps it; otherwise
   // Services gets a hover list of the published services (one link per
-  // service page); every other link, and the footer, stays plain.
-  const headerLinks = links.map((link) =>
-    link.href === "/services" && s.services.length > 0
+  // service page). The footer's Quick links are the plain links that are
+  // not switched off there.
+  const headerLinks = navigation.links.map((stored) => {
+    const link = linkView(s, stored)
+    if (stored.children.length > 0)
+      return { ...link, children: stored.children.map((c) => linkView(s, c)) }
+    return link.href === "/services" && s.services.length > 0
       ? {
           ...link,
           children: s.services.map((x) => ({
@@ -103,7 +107,10 @@ export function chromeView(s: ChromeSources): ChromeView {
           })),
         }
       : link
-  )
+  })
+  const links = navigation.links
+    .filter((l) => l.inFooter)
+    .map((l) => linkView(s, l))
   // `animation` only when set: without one the props are exactly what they
   // were before the field existed.
   const animation = site.logoAnimation

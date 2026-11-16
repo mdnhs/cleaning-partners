@@ -175,7 +175,17 @@ export const settingsEditorMeta: Record<EditableSettingsKey, EditorMeta> = {
         label: "Header links",
         itemName: "Link",
         itemLabel: "label",
-        help: "Also listed as Quick links in the footer.",
+        help: "Also listed as Quick links in the footer unless switched off per link.",
+      },
+      "links[].children": {
+        label: "Dropdown links",
+        itemName: "Dropdown link",
+        itemLabel: "label",
+        help: "Shown under this link. Leave empty for a plain link (Services then lists the published services by itself).",
+      },
+      "links[].inFooter": {
+        label: "Show in the footer",
+        help: "Off keeps this link out of the footer's Quick links.",
       },
       cta: { label: "Header button" },
       menuAria: {

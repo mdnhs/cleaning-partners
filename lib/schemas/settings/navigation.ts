@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { href, link, text } from "../common"
+import { linkPlaceholderProblems } from "../../link-rules"
 
 /**
  * settings.navigation — header links (also the footer Quick Links), the
@@ -15,8 +16,26 @@ export const navigationMobileDefaults = {
   directionsLabel: "Get Directions",
 }
 
+/**
+ * A header link. `children` is an optional dropdown (empty = plain link; the
+ * Services link then lists the published services by itself). `inFooter` off
+ * keeps it out of the footer's Quick links. Rows saved before these fields
+ * read as plain links shown in the footer (no migration needed).
+ */
+export const navLink = z
+  .object({
+    label: text,
+    href,
+    children: z.array(link).default([]),
+    inFooter: z.boolean().default(true),
+  })
+  .superRefine((value, ctx) => {
+    for (const [key, message] of Object.entries(linkPlaceholderProblems(value)))
+      ctx.addIssue({ code: "custom", path: [key], message })
+  })
+
 export const navigationSettings = z.object({
-  links: z.array(link).min(1),
+  links: z.array(navLink).min(1),
   cta: link,
   menuAria: text,
   /** Rows saved before this field read as the default (no migration needed). */
