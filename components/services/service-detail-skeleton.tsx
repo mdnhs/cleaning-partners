@@ -11,7 +11,6 @@ export function ServiceDetailSkeleton() {
     <div
       role="status"
       aria-busy="true"
-      aria-label="Loading"
       className="bg-white text-ink"
     >
       <section className="bg-linear-to-b from-[#28648f] to-[#0f2f47]">
