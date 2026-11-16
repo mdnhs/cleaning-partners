@@ -95,8 +95,11 @@ export function chromeView(s: ChromeSources): ChromeView {
   // not switched off there.
   const headerLinks = navigation.links.map((stored) => {
     const link = linkView(s, stored)
-    if (stored.children.length > 0)
-      return { ...link, children: stored.children.map((c) => linkView(s, c)) }
+    // Rows saved before `children` / `inFooter` existed lack them (the stored
+    // JSON is read as is, not re-parsed): no dropdown, shown in the footer.
+    const own = stored.children ?? []
+    if (own.length > 0)
+      return { ...link, children: own.map((c) => linkView(s, c)) }
     return link.href === "/services" && s.services.length > 0
       ? {
           ...link,
@@ -109,7 +112,7 @@ export function chromeView(s: ChromeSources): ChromeView {
       : link
   })
   const links = navigation.links
-    .filter((l) => l.inFooter)
+    .filter((l) => l.inFooter !== false)
     .map((l) => linkView(s, l))
   // `animation` only when set: without one the props are exactly what they
   // were before the field existed.

@@ -86,4 +86,27 @@ describe("chromeView Services menu", () => {
     expect(header.links.map((l) => l.href)).toContain("/blog")
     expect(footer.quickLinks.links.map((l) => l.href)).not.toContain("/blog")
   })
+
+  it("rows saved before children/inFooter existed still render (header and footer)", () => {
+    const s = fixtureSiteSources()
+    // The stored JSON of an older row: the two new fields are absent.
+    const links = s.settings.navigation.links.map(({ label, href }) => ({
+      label,
+      href,
+    })) as unknown as typeof s.settings.navigation.links
+    const { header, footer } = chromeView({
+      ...s,
+      settings: {
+        ...s.settings,
+        navigation: { ...s.settings.navigation, links },
+      },
+    })
+    expect(header.links.map((l) => l.href)).toEqual(links.map((l) => l.href))
+    expect(footer.quickLinks.links.map((l) => l.href)).toEqual(
+      links.map((l) => l.href)
+    )
+    expect(
+      header.links.find((l) => l.href === "/services")!.children?.length
+    ).toBeGreaterThan(0)
+  })
 })

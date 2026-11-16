@@ -13,6 +13,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
+// One-off ops script that works on whole tables: it queries directly instead
+// of going through a server/modules repo.
+// eslint-disable-next-line no-restricted-imports
 import { eq, inArray, notInArray } from "drizzle-orm"
 
 import { getDb } from "@/server/db/client"
