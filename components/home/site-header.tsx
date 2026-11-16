@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { AnimatePresence, MotionConfig, motion } from "motion/react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -124,11 +125,19 @@ function NavMenu({
         href={link.href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "transition-colors hover:text-brand",
+          "inline-flex items-center gap-1 transition-colors hover:text-brand",
           active ? "font-bold text-brand" : "font-semibold text-ink"
         )}
       >
         {link.label}
+        {/* Only a link with a list has an arrow; it turns up while open. */}
+        <ChevronDownIcon
+          aria-hidden
+          className={cn(
+            "size-4 transition-transform duration-300 ease-out motion-reduce:transition-none",
+            open && "rotate-180"
+          )}
+        />
       </Link>
       {/* Unrolls downward from the pointer (a clip that grows from the top),
           then the entries follow one after another; closing rolls it back up
@@ -203,7 +212,12 @@ export function SiteHeader({
 }: SiteHeaderProps) {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [servicesOpen, setServicesOpen] = useState(true)
+  // The phone menu's lists start closed; the hrefs of the ones opened.
+  const [openMenus, setOpenMenus] = useState<string[]>([])
+  const toggleMenu = (href: string) =>
+    setOpenMenus((open) =>
+      open.includes(href) ? open.filter((h) => h !== href) : [...open, href]
+    )
   // Past the very top the bar turns to blurred glass, so the page shows
   // through it as it scrolls underneath.
   const [scrolled, setScrolled] = useState(false)
@@ -366,105 +380,134 @@ export function SiteHeader({
                     <XIcon className="size-[22px]" />
                   </SheetClose>
                 </SheetHeader>
-                <nav
-                  aria-label={menuAria}
-                  className="flex flex-1 flex-col overflow-y-auto px-5 py-2 font-heading text-xl"
-                >
-                  {links.map((link) => {
-                    const active = isActiveHref(pathname, link.href)
-                    const rowClass = cn(
-                      "flex items-center justify-between py-4 text-left leading-[normal]",
-                      active ? "font-bold text-brand" : "font-semibold text-ink"
-                    )
-                    if (link.children?.length) {
+                <MotionConfig reducedMotion="user">
+                  <nav
+                    aria-label={menuAria}
+                    className="flex flex-1 flex-col overflow-y-auto px-5 py-2 font-heading text-xl"
+                  >
+                    {links.map((link, index) => {
+                      const active = isActiveHref(pathname, link.href)
+                      const rowClass = cn(
+                        "flex items-center justify-between py-4 text-left leading-[normal]",
+                        active
+                          ? "font-bold text-brand"
+                          : "font-semibold text-ink"
+                      )
+                      // Every row eases in from the right, one after another,
+                      // each time the drawer opens (its content mounts then).
+                      const enter = {
+                        initial: { opacity: 0, x: 18 },
+                        animate: { opacity: 1, x: 0 },
+                        transition: {
+                          duration: 0.32,
+                          delay: 0.08 + index * 0.05,
+                          ease: [0.22, 1, 0.36, 1] as const,
+                        },
+                      }
+                      if (link.children?.length) {
+                        const open = openMenus.includes(link.href)
+                        return (
+                          <motion.div key={link.href} {...enter}>
+                            <button
+                              type="button"
+                              aria-expanded={open}
+                              onClick={() => toggleMenu(link.href)}
+                              className={cn(rowClass, "w-full")}
+                            >
+                              {link.label}
+                              {/* One arrow that turns down as the list opens. */}
+                              <motion.span
+                                aria-hidden
+                                animate={{ rotate: open ? 90 : 0 }}
+                                transition={{ duration: 0.25, ease: "easeOut" }}
+                                className="flex"
+                              >
+                                <ChevronRightIcon className="size-5 text-body" />
+                              </motion.span>
+                            </button>
+                            <AnimatePresence initial={false}>
+                              {open ? (
+                                <motion.ul
+                                  key="list"
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{
+                                    duration: 0.3,
+                                    ease: [0.22, 1, 0.36, 1],
+                                  }}
+                                  className="flex flex-col gap-0.5 overflow-hidden border-b border-line pb-3 pl-3.5 font-sans text-[15px]"
+                                >
+                                  {[
+                                    ...link.children,
+                                    {
+                                      label: mobile.allServicesLabel,
+                                      href: link.href,
+                                      all: true,
+                                    },
+                                  ].map((child, childIndex) => (
+                                    <motion.li
+                                      key={child.href + child.label}
+                                      initial={{ opacity: 0, x: -8 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{
+                                        duration: 0.25,
+                                        delay: 0.05 + childIndex * 0.04,
+                                      }}
+                                    >
+                                      <SheetClose
+                                        nativeButton={false}
+                                        render={
+                                          <Link
+                                            href={child.href}
+                                            className={cn(
+                                              "flex items-center gap-2.5 py-2 hover:text-brand",
+                                              "all" in child
+                                                ? "leading-[1.45] font-medium text-navy"
+                                                : "leading-[1.6] text-body"
+                                            )}
+                                          />
+                                        }
+                                      >
+                                        <span
+                                          aria-hidden
+                                          className="size-1.5 shrink-0 rounded-full bg-brand"
+                                        />
+                                        {child.label}
+                                      </SheetClose>
+                                    </motion.li>
+                                  ))}
+                                </motion.ul>
+                              ) : (
+                                <div className="border-b border-line" />
+                              )}
+                            </AnimatePresence>
+                          </motion.div>
+                        )
+                      }
+                      // A plain link: no arrow (only a link with a list has one).
                       return (
-                        <div key={link.href}>
-                          <button
-                            type="button"
-                            aria-expanded={servicesOpen}
-                            onClick={() => setServicesOpen((v) => !v)}
-                            className={cn(rowClass, "w-full")}
+                        <motion.div key={link.href} {...enter}>
+                          <SheetClose
+                            nativeButton={false}
+                            render={
+                              <Link
+                                href={link.href}
+                                aria-current={active ? "page" : undefined}
+                                className={cn(
+                                  rowClass,
+                                  "border-b border-line hover:text-brand"
+                                )}
+                              />
+                            }
                           >
                             {link.label}
-                            {servicesOpen ? (
-                              <ChevronDownIcon
-                                aria-hidden
-                                className="size-5 text-body"
-                              />
-                            ) : (
-                              <ChevronRightIcon
-                                aria-hidden
-                                className="size-5 text-body"
-                              />
-                            )}
-                          </button>
-                          {servicesOpen ? (
-                            <ul className="flex flex-col gap-0.5 border-b border-line pb-3 pl-3.5 font-sans text-[15px]">
-                              {[
-                                ...link.children,
-                                {
-                                  label: mobile.allServicesLabel,
-                                  href: link.href,
-                                  all: true,
-                                },
-                              ].map((child) => (
-                                <li key={child.href + child.label}>
-                                  <SheetClose
-                                    nativeButton={false}
-                                    render={
-                                      <Link
-                                        href={child.href}
-                                        className={cn(
-                                          "flex items-center gap-2.5 py-2 hover:text-brand",
-                                          "all" in child
-                                            ? "leading-[1.45] font-medium text-navy"
-                                            : "leading-[1.6] text-body"
-                                        )}
-                                      />
-                                    }
-                                  >
-                                    <span
-                                      aria-hidden
-                                      className="size-1.5 shrink-0 rounded-full bg-brand"
-                                    />
-                                    {child.label}
-                                  </SheetClose>
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <div className="border-b border-line" />
-                          )}
-                        </div>
+                          </SheetClose>
+                        </motion.div>
                       )
-                    }
-                    return (
-                      <SheetClose
-                        key={link.href}
-                        nativeButton={false}
-                        render={
-                          <Link
-                            href={link.href}
-                            aria-current={active ? "page" : undefined}
-                            className={cn(
-                              rowClass,
-                              "border-b border-line hover:text-brand"
-                            )}
-                          />
-                        }
-                      >
-                        {link.label}
-                        <ChevronRightIcon
-                          aria-hidden
-                          className={cn(
-                            "size-5",
-                            active ? "text-brand" : "text-body"
-                          )}
-                        />
-                      </SheetClose>
-                    )
-                  })}
-                </nav>
+                    })}
+                  </nav>
+                </MotionConfig>
                 <div className="flex flex-col gap-3.5 bg-surface px-5 pt-5 pb-7">
                   <p className="font-heading text-lg/[normal] font-bold">
                     {mobile.helpTitle}

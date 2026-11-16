@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const nav = vi.hoisted(() => ({ pathname: "/" }))
@@ -106,5 +107,58 @@ describe("SiteHeader", () => {
       />
     )
     expect(current()).toEqual(["Journal"])
+  })
+
+  describe("phone menu", () => {
+    const withList = {
+      ...props,
+      links: props.links.map((l) =>
+        l.href === "/services"
+          ? {
+              ...l,
+              children: [
+                { label: "Medical", href: "/services/medical" },
+                { label: "Retail", href: "/services/retail" },
+              ],
+            }
+          : l
+      ),
+    }
+    const openDrawer = async () => {
+      const user = userEvent.setup()
+      render(<SiteHeader {...withList} />)
+      await user.click(screen.getByRole("button", { name: "Menu" }))
+      return {
+        user,
+        nav: await screen.findByRole("navigation", { name: "Menu" }),
+      }
+    }
+
+    it("starts with every list closed", async () => {
+      const { nav } = await openDrawer()
+      const toggle = within(nav).getByRole("button", { name: /What we do/ })
+      expect(toggle).toHaveAttribute("aria-expanded", "false")
+      expect(within(nav).queryByText("Medical")).toBeNull()
+    })
+
+    it("opens and closes a list from its row", async () => {
+      const { user, nav } = await openDrawer()
+      const toggle = within(nav).getByRole("button", { name: /What we do/ })
+      await user.click(toggle)
+      expect(toggle).toHaveAttribute("aria-expanded", "true")
+      expect(await within(nav).findByText("Medical")).toBeInTheDocument()
+      expect(within(nav).getByText("View All Services")).toBeInTheDocument()
+      await user.click(toggle)
+      expect(toggle).toHaveAttribute("aria-expanded", "false")
+    })
+
+    it("shows an arrow only on the row that has a list", async () => {
+      const { nav } = await openDrawer()
+      const rowOf = (text: string) =>
+        within(nav).getByText(text).closest("a, button")!
+      expect(rowOf("What we do").querySelector("svg")).not.toBeNull()
+      for (const text of ["Start", "Who we are", "News", "Talk to us"])
+        expect(rowOf(text).querySelector("svg")).toBeNull()
+    })
   })
 })
