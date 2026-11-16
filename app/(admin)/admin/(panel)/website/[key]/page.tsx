@@ -4,6 +4,7 @@ import { Suspense } from "react"
 
 import { CollectionScreen } from "@/components/admin/collections/collection-screen"
 import { SettingsEditor } from "@/components/admin/settings/settings-editor"
+import { HeaderFooterEditor } from "@/components/admin/website/header-footer-editor"
 import { PageEditor } from "@/components/admin/pages/page-editor"
 import {
   isSoloPart,
@@ -25,17 +26,19 @@ export async function generateMetadata({
 
 export default function WebsiteScreenPage({
   params,
+  searchParams,
 }: PageProps<"/admin/website/[key]">) {
   return (
     <Suspense fallback={null}>
-      <Screen params={params} />
+      <Screen params={params} searchParams={searchParams} />
     </Suspense>
   )
 }
 
 async function Screen({
   params,
-}: Pick<PageProps<"/admin/website/[key]">, "params">) {
+  searchParams,
+}: Pick<PageProps<"/admin/website/[key]">, "params" | "searchParams">) {
   const { key } = await params
   // Signed in (and the screen's permission checked) before the 404, so a
   // stranger never learns which paths exist; an unknown key falls back to
@@ -54,6 +57,26 @@ async function Screen({
     ) : solo.source.kind === "collection" ? (
       <CollectionScreen name={solo.source.name} />
     ) : null
+  }
+  // Header & footer: two tabs, the whole of each in one place.
+  if (screen.key === "header-footer") {
+    const open = (id: string) => tabs.some((t) => t.id === id)
+    const available = (["header", "footer"] as const).filter((t) =>
+      open(t === "header" ? "navigation" : "footer")
+    )
+    if (available.length === 0) forbidden()
+    const wanted = (await searchParams).tab
+    const initial =
+      wanted === "footer" && available.includes("footer")
+        ? "footer"
+        : available[0]
+    return (
+      <HeaderFooterEditor
+        initial={initial}
+        tabs={available}
+        canMicrocopy={open("microcopy")}
+      />
+    )
   }
   // No Page (Header & footer, or an author on Blog): open the first part,
   // which may live at its own URL (/admin/blog).

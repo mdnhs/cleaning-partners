@@ -84,6 +84,7 @@ const screenPage = (key: string) =>
   inner(
     WebsiteScreenPage({
       params: Promise.resolve({ key }),
+      searchParams: Promise.resolve({}),
     } as Parameters<typeof WebsiteScreenPage>[0])
   )
 const partPage = (key: string, part: string) =>
@@ -131,10 +132,8 @@ describe("/admin/website/[key]", () => {
     expect(session.requireActor).toHaveBeenCalled()
   })
 
-  it("opens Header & footer on its first part (no Page tab)", async () => {
-    await expect(screenPage("header-footer")).rejects.toThrow(
-      "REDIRECT /admin/website/header-footer/navigation"
-    )
+  it("shows Header & footer as its own two-tab editor (no redirect)", async () => {
+    await expect(screenPage("header-footer")).resolves.toBeTruthy()
   })
 
   it("shows a screen that is one part right at its own URL", async () => {

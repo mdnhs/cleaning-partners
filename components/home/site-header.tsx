@@ -60,6 +60,22 @@ export type SiteHeaderProps = {
 }
 
 /**
+ * The active link's underline on the desktop bar. One shared element: when
+ * the page changes it slides from the old link to the new one (layoutId).
+ */
+function ActiveUnderline() {
+  return (
+    <motion.span
+      aria-hidden
+      layoutId="nav-active-underline"
+      transition={{ type: "spring", stiffness: 520, damping: 40 }}
+      // -bottom-2.5: the header pads the 60px row by 10px; the bar sits on its edge.
+      className="absolute inset-x-0 -bottom-2.5 h-[3px] rounded-t-full bg-brand"
+    />
+  )
+}
+
+/**
  * A header link with a list under it, open while the pointer or keyboard
  * focus is inside the link or the list, and dismissed with Escape (WCAG
  * 1.4.13: dismissible, hoverable, persistent). The link itself still goes to
@@ -139,6 +155,7 @@ function NavMenu({
           )}
         />
       </Link>
+      {active ? <ActiveUnderline /> : null}
       {/* Unrolls downward from the pointer (a clip that grows from the top),
           then the entries follow one after another; closing rolls it back up
           at once. The top padding bridges the way from the link. */}
@@ -306,31 +323,40 @@ export function SiteHeader({
             {logo.animation ? <LogoAnimation src={logo.animation} /> : null}
           </Link>
 
-          <nav className="hidden items-center gap-9 font-heading text-[17px] lg:flex">
-            {links.map((link) => {
-              const active = isActiveHref(pathname, link.href)
-              return link.children?.length ? (
-                <NavMenu
-                  key={link.href}
-                  link={link}
-                  active={active}
-                  isActive={(href) => isActiveHref(pathname, href)}
-                />
-              ) : (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "transition-colors hover:text-brand",
-                    active ? "font-bold text-brand" : "font-semibold text-ink"
-                  )}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
+          <MotionConfig reducedMotion="user">
+            <nav className="hidden items-center gap-9 font-heading text-[17px] lg:flex">
+              {links.map((link) => {
+                const active = isActiveHref(pathname, link.href)
+                return link.children?.length ? (
+                  <NavMenu
+                    key={link.href}
+                    link={link}
+                    active={active}
+                    isActive={(href) => isActiveHref(pathname, href)}
+                  />
+                ) : (
+                  <div
+                    key={link.href}
+                    className="relative flex h-[60px] items-center"
+                  >
+                    <Link
+                      href={link.href}
+                      aria-current={active ? "page" : undefined}
+                      className={cn(
+                        "transition-colors hover:text-brand",
+                        active
+                          ? "font-bold text-brand"
+                          : "font-semibold text-ink"
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                    {active ? <ActiveUnderline /> : null}
+                  </div>
+                )
+              })}
+            </nav>
+          </MotionConfig>
 
           <div className="flex items-center gap-2.5 sm:gap-3">
             <a
