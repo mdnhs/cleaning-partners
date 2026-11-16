@@ -26,19 +26,17 @@ export async function generateMetadata({
 
 export default function WebsiteScreenPage({
   params,
-  searchParams,
 }: PageProps<"/admin/website/[key]">) {
   return (
     <Suspense fallback={null}>
-      <Screen params={params} searchParams={searchParams} />
+      <Screen params={params} />
     </Suspense>
   )
 }
 
 async function Screen({
   params,
-  searchParams,
-}: Pick<PageProps<"/admin/website/[key]">, "params" | "searchParams">) {
+}: Pick<PageProps<"/admin/website/[key]">, "params">) {
   const { key } = await params
   // Signed in (and the screen's permission checked) before the 404, so a
   // stranger never learns which paths exist; an unknown key falls back to
@@ -58,25 +56,11 @@ async function Screen({
       <CollectionScreen name={solo.source.name} />
     ) : null
   }
-  // Header & footer: two tabs, the whole of each in one place.
+  // Header & footer: one editor with a Header and a Footer tab.
   if (screen.key === "header-footer") {
     const open = (id: string) => tabs.some((t) => t.id === id)
-    const available = (["header", "footer"] as const).filter((t) =>
-      open(t === "header" ? "navigation" : "footer")
-    )
-    if (available.length === 0) forbidden()
-    const wanted = (await searchParams).tab
-    const initial =
-      wanted === "footer" && available.includes("footer")
-        ? "footer"
-        : available[0]
-    return (
-      <HeaderFooterEditor
-        initial={initial}
-        tabs={available}
-        canMicrocopy={open("microcopy")}
-      />
-    )
+    if (!open("navigation") || !open("footer")) redirect(tabs[0].href)
+    return <HeaderFooterEditor canMicrocopy={open("microcopy")} />
   }
   // No Page (Header & footer, or an author on Blog): open the first part,
   // which may live at its own URL (/admin/blog).

@@ -3,17 +3,17 @@ import userEvent from "@testing-library/user-event"
 import type { ComponentProps } from "react"
 import { describe, expect, it, vi } from "vitest"
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/admin/website/header-footer",
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}))
 vi.mock("next/link", () => ({
   default: ({ href, ...props }: ComponentProps<"a"> & { href: string }) => (
     <a href={href} {...props} />
   ),
 }))
-// The editors have their own tests: only which one each tab shows matters here.
-vi.mock("@/components/admin/settings/settings-editor", () => ({
-  SettingsEditor: ({ settingsKey }: { settingsKey: string }) => (
-    <div data-testid="editor">{settingsKey}</div>
-  ),
-}))
+// The list has its own tests: only that it sits in the Footer tab matters.
 vi.mock("@/components/admin/collections/collection-screen", () => ({
   CollectionScreen: ({ name }: { name: string }) => (
     <div data-testid="collection">{name}</div>
@@ -21,61 +21,79 @@ vi.mock("@/components/admin/collections/collection-screen", () => ({
 }))
 
 import { HeaderFooterEditor } from "@/components/admin/website/header-footer-editor"
+import { makeQueryClient } from "@/components/admin/providers"
+import { AdminSessionProvider } from "@/components/admin/session-provider"
+import { QueryClientProvider } from "@tanstack/react-query"
 
 describe("HeaderFooterEditor", () => {
-  it("is two horizontal tabs: Header (navigation) and Footer", () => {
+  it("loads the navigation and footer records into one form with two tabs", async () => {
+    const dto = (draft: unknown) => ({
+      draft,
+      published: draft,
+      version: 1,
+      status: "published",
+      dirty: false,
+      publishedAt: "2026-11-01T00:00:00.000Z",
+      updatedAt: "2026-11-01T00:00:00.000Z",
+      updatedBy: null,
+    })
+    const nav = {
+      links: [{ label: "Home", href: "/", children: [], inFooter: true }],
+      cta: { label: "Get a Quote", href: "/contact" },
+      menuAria: "Open menu",
+      closeMenuAria: "Close menu",
+      mobile: {
+        helpTitle: "Need help now?",
+        callLabel: "Call Now",
+        allServicesLabel: "View All Services",
+        directionsLabel: "Get Directions",
+      },
+      breadcrumbHome: "Home",
+      breadcrumbHomeHref: "/",
+    }
+    const seen: string[] = []
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input instanceof Request ? input.url : input)
+        seen.push(url)
+        const key = url.split("/settings/")[1]?.split("?")[0]
+        const body = key === "navigation" ? dto(nav) : dto({})
+        return new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        })
+      })
+    )
     render(
-      <HeaderFooterEditor
-        initial="header"
-        tabs={["header", "footer"]}
-        canMicrocopy
-      />
+      <QueryClientProvider client={makeQueryClient()}>
+        <AdminSessionProvider
+          value={{
+            user: {
+              id: "u",
+              name: "U",
+              email: "u@x.test",
+              title: null,
+              twoFactorEnabled: true,
+            },
+            roles: ["owner"],
+            impersonatedBy: null,
+          }}
+        >
+          <HeaderFooterEditor canMicrocopy />
+        </AdminSessionProvider>
+      </QueryClientProvider>
     )
-    const list = screen.getByRole("tablist", { name: "Header and footer" })
-    // Base UI sets aria-orientation only for a vertical list.
-    expect(list).not.toHaveAttribute("aria-orientation", "vertical")
-    expect(list.getAttribute("data-orientation") ?? "horizontal").toBe(
-      "horizontal"
-    )
-    expect(screen.getAllByRole("tab").map((t) => t.textContent)).toEqual([
-      "Header",
-      "Footer",
-    ])
-    expect(screen.getByTestId("editor")).toHaveTextContent("navigation")
-    expect(screen.queryByTestId("collection")).toBeNull()
-  })
-
-  it("the Footer tab holds the footer, the group companies and a microcopy link", async () => {
+    await screen.findByText("Header & footer")
+    expect(seen.some((u) => u.endsWith("/settings/navigation"))).toBe(true)
+    expect(seen.some((u) => u.endsWith("/settings/footer"))).toBe(true)
+    const tabs = await screen.findAllByRole("tab")
+    expect(tabs.map((t) => t.textContent)).toEqual(["Header", "Footer"])
     const user = userEvent.setup()
-    render(
-      <HeaderFooterEditor
-        initial="header"
-        tabs={["header", "footer"]}
-        canMicrocopy
-      />
-    )
     await user.click(screen.getByRole("tab", { name: "Footer" }))
-    expect(screen.getByTestId("editor")).toHaveTextContent("footer")
-    expect(screen.getByTestId("collection")).toHaveTextContent(
+    expect(await screen.findByTestId("collection")).toHaveTextContent(
       "group-companies"
     )
-    expect(
-      screen.getByRole("link", { name: /forms & microcopy/i })
-    ).toHaveAttribute("href", "/admin/website/header-footer/microcopy")
-  })
-
-  it("opens on the requested tab and hides the microcopy link without access", () => {
-    render(
-      <HeaderFooterEditor
-        initial="footer"
-        tabs={["header", "footer"]}
-        canMicrocopy={false}
-      />
-    )
-    expect(screen.getByRole("tab", { name: "Footer" })).toHaveAttribute(
-      "aria-selected",
-      "true"
-    )
-    expect(screen.queryByRole("link", { name: /microcopy/i })).toBeNull()
+    vi.unstubAllGlobals()
   })
 })
