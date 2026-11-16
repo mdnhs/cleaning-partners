@@ -495,10 +495,27 @@ export function SiteHeader({
                                           />
                                         }
                                       >
-                                        <span
-                                          aria-hidden
-                                          className="size-1.5 shrink-0 rounded-full bg-brand"
-                                        />
+                                        {"icon" in child && child.icon ? (
+                                          // The desktop menu's brand tile, smaller.
+                                          <span
+                                            aria-hidden
+                                            className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand"
+                                          >
+                                            <Image
+                                              src={child.icon}
+                                              alt=""
+                                              width={16}
+                                              height={16}
+                                            />
+                                          </span>
+                                        ) : (
+                                          <span
+                                            aria-hidden
+                                            className="flex size-8 shrink-0 items-center justify-center"
+                                          >
+                                            <span className="size-1.5 rounded-full bg-brand" />
+                                          </span>
+                                        )}
                                         {child.label}
                                       </SheetClose>
                                     </motion.li>
