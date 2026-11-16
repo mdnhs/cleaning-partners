@@ -156,6 +156,18 @@ describe("/admin/website/[key]/[part]", () => {
     })
   })
 
+  it("sends a Header & footer part to its tab on the screen", async () => {
+    await expect(partPage("header-footer", "navigation")).rejects.toThrow(
+      "REDIRECT /admin/website/header-footer?tab=navigation"
+    )
+    await expect(partPage("header-footer", "microcopy")).rejects.toThrow(
+      "REDIRECT /admin/website/header-footer?tab=microcopy"
+    )
+    await expect(partPage("header-footer", "group-companies")).rejects.toThrow(
+      "REDIRECT /admin/website/header-footer?tab=footer"
+    )
+  })
+
   it("is a 404 for a part homed on another screen", async () => {
     await expect(partPage("home", "footer")).rejects.toThrow("NOT_FOUND")
   })

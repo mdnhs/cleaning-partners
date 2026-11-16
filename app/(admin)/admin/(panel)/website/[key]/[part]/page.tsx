@@ -44,6 +44,17 @@ async function Part({
   if (!part || part.source.kind === "route") notFound()
   await requirePermission(part.permission)
   if (isSoloPart(part)) redirect(websiteHref(screen.key))
+  // Header & footer is one form with a tab per part: the old address of a
+  // part opens that tab (a bookmark, a search result).
+  if (screen.key === "header-footer") {
+    const tab =
+      part.source.kind === "settings"
+        ? part.source.key
+        : part.source.name === "group-companies"
+          ? "footer"
+          : null
+    if (tab) redirect(`${websiteHref(screen.key)}?tab=${tab}`)
+  }
   return part.source.kind === "settings" ? (
     <SettingsEditor settingsKey={part.source.key} />
   ) : (
