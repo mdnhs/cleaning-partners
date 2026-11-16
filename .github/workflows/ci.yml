@@ -3,6 +3,8 @@ name: CI
 # Pull requests run it directly (one run per PR update, not also per branch
 # push); main runs it from deploy.yml (workflow_call), so a failing check
 # blocks the deploy. workflow_dispatch: run it by hand on any branch.
+# Quick jobs (lint, types, unit, dom, build, Docker smoke) run everywhere; the
+# Integration and E2E suites run on pull requests and manual runs only.
 on:
   pull_request:
   workflow_call:
@@ -22,50 +24,6 @@ env:
   NEXT_TELEMETRY_DISABLED: "1"
 
 jobs:
-  # Integration and E2E take ~10 and ~20 minutes. They run unless every
-  # changed file is one of the "light" kinds below (public presentation,
-  # docs, tests that run in the static job): then the quick jobs are enough.
-  # Anything unsure (a manual run, an unknown base, no diff) runs everything.
-  changes:
-    name: Which suites to run
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      heavy: ${{ steps.diff.outputs.heavy }}
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          fetch-depth: 0
-      - id: diff
-        env:
-          EVENT: ${{ github.event_name }}
-          BEFORE: ${{ github.event.before }}
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
-        run: |
-          base=""
-          if [ "$EVENT" = "pull_request" ]; then base="$PR_BASE"; fi
-          if [ "$EVENT" = "push" ]; then base="$BEFORE"; fi
-          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ] \
-             || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
-            echo "No usable base ($EVENT): running every suite"
-            echo "heavy=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          files=$(git diff --name-only "$base" HEAD)
-          echo "Changed files:"; echo "$files"
-          if [ -z "$files" ]; then
-            echo "heavy=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          light='^(docs/|public/|tests/unit/|tests/dom/|components/(home|about|services|contact|blog|careers|chat|motion)/|scripts/ship-fast\.sh$|.*\.md$)'
-          if echo "$files" | grep -qvE "$light"; then
-            echo "Some change is outside the light set: running every suite"
-            echo "heavy=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Only light changes: Integration and E2E are skipped"
-            echo "heavy=false" >> "$GITHUB_OUTPUT"
-          fi
-
   static:
     name: Lint, types, unit, audit
     runs-on: ubuntu-latest
@@ -92,8 +50,10 @@ jobs:
 
   integration:
     name: Integration (Postgres + Mailpit)
-    needs: changes
-    if: needs.changes.outputs.heavy == 'true'
+    # Heavy (~10 and ~20 min): pull requests and manual runs only. A push to
+    # main (deploy.yml) runs the quick jobs; run these locally with
+    # `pnpm verify:full` before risky changes.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
@@ -152,8 +112,10 @@ jobs:
 
   e2e:
     name: E2E (Postgres + Mailpit)
-    needs: changes
-    if: needs.changes.outputs.heavy == 'true'
+    # Heavy (~10 and ~20 min): pull requests and manual runs only. A push to
+    # main (deploy.yml) runs the quick jobs; run these locally with
+    # `pnpm verify:full` before risky changes.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     services:
