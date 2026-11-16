@@ -14,6 +14,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }))
 
+// These tests are about the page's own draft: the settings sections and
+// collection lists that sit in its form have their own tests.
+vi.mock("@/lib/admin/website", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/admin/website")>()),
+  PAGE_SECTIONS: {},
+  PART_ANCHORS: {},
+}))
+
 import { PreviewPane } from "@/components/admin/editor/preview-pane"
 import { makeQueryClient } from "@/components/admin/providers"
 import { PageEditor } from "@/components/admin/pages/page-editor"

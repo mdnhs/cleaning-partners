@@ -101,6 +101,12 @@ export function SectionRail({ children }: { children: ReactNode }) {
                         />
                       </>
                     ) : null}
+                    {tab.icon ? (
+                      <tab.icon
+                        aria-hidden
+                        className="relative size-4 shrink-0"
+                      />
+                    ) : null}
                     <span className="relative truncate">{tab.label}</span>
                   </Link>
                 </li>

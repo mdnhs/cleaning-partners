@@ -78,7 +78,6 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       "Add blocks one by one and fill in each. Changes save to a draft by themselves.",
       "Press Publish. The page appears at /p/ followed by its address (slug).",
       "If you change the address of a published page, the old link is sent to the new one.",
-      "To start from an existing page, open it and choose Copy to new page. The blog copy needs a Blog block added by hand, because its filterable list is not a normal section.",
     ],
   },
   {

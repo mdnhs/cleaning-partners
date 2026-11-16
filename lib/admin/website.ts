@@ -18,6 +18,7 @@ export type WebsiteKey =
   | "home"
   | "about"
   | "services"
+  | "how-it-works"
   | "blog"
   | "contact"
   | "careers"
@@ -44,6 +45,8 @@ export type WebsitePart = {
   label: string
   source: WebsitePartSource
   permission: PermissionRequest
+  /** false: owns its route (nav, guards) but is not a tab (the list sits on the page). */
+  tab?: false
 }
 
 export type WebsiteTab = { id: string; label: string; href: string }
@@ -67,6 +70,13 @@ export const WEBSITE_SCREENS: readonly WebsiteScreen[] = [
   pageScreen("home"),
   pageScreen("about"),
   pageScreen("services"),
+  {
+    key: "how-it-works",
+    label: "How it works",
+    page: null,
+    permission: SETTINGS_ENTRIES["sections.howItWorks"].read,
+    kind: "tabs",
+  },
   // Authors hold article:read but not page:read.
   pageScreen("blog", { article: ["read"] }),
   pageScreen("contact"),
@@ -142,10 +152,19 @@ export const WEBSITE_PARTS: readonly WebsitePart[] = [
   collectionPart("testimonials", "home", "Testimonials", "testimonials"),
   settingsPart("team-section", "about", "sections.team"),
   collectionPart("team", "about", "Team members", "team"),
-  routePart("all-services", "services", "All services", "/admin/services", {
-    service: ["read"],
-  }),
-  settingsPart("how-it-works", "services", "sections.howItWorks"),
+  {
+    ...routePart(
+      "all-services",
+      "services",
+      "All services",
+      "/admin/services",
+      {
+        service: ["read"],
+      }
+    ),
+    tab: false,
+  },
+  settingsPart("how-it-works", "how-it-works", "sections.howItWorks"),
   routePart("articles", "blog", "Articles", "/admin/blog", {
     article: ["read"],
   }),
@@ -236,6 +255,50 @@ export const PAGE_SHOWS: Record<PageKey, readonly string[]> = {
   careers: ["jobs", "contact-details", "microcopy"],
 }
 
+/**
+ * Settings sections edited inside a page's own form (one draft, one preview,
+ * one Publish): `key` is the form group, `after` the page group it follows on
+ * the public page (templates/<page>/render), null = first. The sections keep
+ * their stored records (shared across pages); the page editor loads, saves and
+ * publishes them together with the page (components/admin/pages/page-bundle).
+ */
+export type PageSection = {
+  key: string
+  settings: EditableSettingsKey
+  after: string | null
+}
+
+export const PAGE_SECTIONS: Partial<Record<PageKey, readonly PageSection[]>> = {
+  home: [
+    { key: "clients", settings: "sections.clients", after: "hero" },
+    { key: "whyChooseUs", settings: "sections.whyChooseUs", after: "services" },
+    {
+      key: "testimonials",
+      settings: "sections.testimonials",
+      after: "services",
+    },
+  ],
+  about: [{ key: "team", settings: "sections.team", after: "stats" }],
+  contact: [
+    { key: "contactDetails", settings: "contact", after: "hero" },
+    { key: "contactSection", settings: "sections.contact", after: "hero" },
+    { key: "map", settings: "sections.map", after: "quoteForm" },
+  ],
+}
+
+/**
+ * Lists and links (not settings) that sit among a page's sections: they
+ * open in place at the end of the section card of that key.
+ */
+export const PART_ANCHORS: Partial<
+  Record<PageKey, Record<string, readonly string[]>>
+> = {
+  home: { clients: ["clients"], testimonials: ["testimonials"] },
+  about: { team: ["team"] },
+  blog: { hero: ["articles", "categories"] },
+  careers: { open: ["jobs"] },
+}
+
 /** Identity and operations: stay under Site settings, not Website. */
 export const SITE_SETTINGS_KEYS = [
   "site",
@@ -260,9 +323,19 @@ export function websitePart(
   return WEBSITE_PARTS.find((part) => part.screen === screen && part.id === id)
 }
 
+/**
+ * A screen with no page and a single part (How it works) is that part: it
+ * lives at the screen's own URL, not /how-it-works/how-it-works.
+ */
+export const isSoloPart = (part: WebsitePart): boolean =>
+  part.source.kind !== "route" &&
+  screenOf(part.screen).page === null &&
+  WEBSITE_PARTS.filter((p) => p.screen === part.screen).length === 1
+
 export function partHref(part: WebsitePart): string {
-  return part.source.kind === "route"
-    ? part.source.href
+  if (part.source.kind === "route") return part.source.href
+  return isSoloPart(part)
+    ? websiteHref(part.screen)
     : `${websiteHref(part.screen)}/${part.id}`
 }
 
@@ -281,7 +354,11 @@ export function websiteTabs(
   if (screenOf(screen).page && hasPermission(roles, PAGE_READ))
     tabs.push({ id: "page", label: "Page", href: websiteHref(screen) })
   for (const part of WEBSITE_PARTS)
-    if (part.screen === screen && hasPermission(roles, part.permission))
+    if (
+      part.screen === screen &&
+      part.tab !== false &&
+      hasPermission(roles, part.permission)
+    )
       tabs.push(toTab(part))
   return tabs
 }

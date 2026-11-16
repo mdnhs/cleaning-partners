@@ -2,10 +2,17 @@ import type { Metadata } from "next"
 import { forbidden, notFound, redirect } from "next/navigation"
 import { Suspense } from "react"
 
+import { CollectionScreen } from "@/components/admin/collections/collection-screen"
+import { SettingsEditor } from "@/components/admin/settings/settings-editor"
 import { PageEditor } from "@/components/admin/pages/page-editor"
-import { SharedOnPage } from "@/components/admin/website/website-tabs"
-import { isWebsiteKey, WEBSITE_SCREENS, websiteTabs } from "@/lib/admin/website"
-import { requirePage } from "@/server/auth/session"
+import {
+  isSoloPart,
+  isWebsiteKey,
+  WEBSITE_SCREENS,
+  websitePart,
+  websiteTabs,
+} from "@/lib/admin/website"
+import { requirePage, requirePermission } from "@/server/auth/session"
 import { getSiteOrigin } from "@/server/modules/seo/queries"
 
 export async function generateMetadata({
@@ -38,13 +45,18 @@ async function Screen({
   if (!isWebsiteKey(key) || !screen || screen.kind !== "tabs") notFound()
   const tabs = websiteTabs(screen.key, actor.roles)
   if (tabs.length === 0) forbidden()
-  // No Page tab (Header & footer, or an author on Blog): open the first
-  // part, which may live at its own URL (/admin/blog).
+  // A screen that is one part (How it works): show it right here.
+  const solo = !screen.page ? websitePart(screen.key, tabs[0].id) : undefined
+  if (solo && isSoloPart(solo) && tabs.length === 1) {
+    await requirePermission(solo.permission)
+    return solo.source.kind === "settings" ? (
+      <SettingsEditor settingsKey={solo.source.key} />
+    ) : solo.source.kind === "collection" ? (
+      <CollectionScreen name={solo.source.name} />
+    ) : null
+  }
+  // No Page (Header & footer, or an author on Blog): open the first part,
+  // which may live at its own URL (/admin/blog).
   if (tabs[0].id !== "page" || !screen.page) redirect(tabs[0].href)
-  return (
-    <>
-      <SharedOnPage page={screen.page} />
-      <PageEditor pageKey={screen.page} origin={await getSiteOrigin()} />
-    </>
-  )
+  return <PageEditor pageKey={screen.page} origin={await getSiteOrigin()} />
 }

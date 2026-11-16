@@ -16,7 +16,7 @@ export function ContactTemplate({ view }: { view: ContactView }) {
             <PageHero {...view.hero} />
             <Contact {...view.contact} />
             <QuoteForm {...view.form} />
-            <LocationMap {...view.map} />
+            <LocationMap {...view.map} fadeColor="var(--color-surface)" />
           </main>
         </div>
       </HomeMotion>

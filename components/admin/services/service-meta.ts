@@ -8,6 +8,10 @@ import type { EditorMeta } from "@/components/admin/schema-form/editor-meta"
 export const serviceEditorMeta: EditorMeta = {
   fields: {
     title: { label: "Name" },
+    visible: {
+      label: "Visible on the site",
+      help: "Off hides the card and the page. Nothing is deleted.",
+    },
     icon: { label: "Card icon", aspect: "square" },
     cover: { label: "Card and banner image" },
     summary: {
@@ -45,7 +49,7 @@ export const serviceEditorMeta: EditorMeta = {
       {
         title: "Service card",
         description: "How the service appears in the list on /services.",
-        fields: ["title", "icon", "summary", "tags"],
+        fields: ["title", "visible", "icon", "summary", "tags"],
       },
       {
         title: "Page banner",

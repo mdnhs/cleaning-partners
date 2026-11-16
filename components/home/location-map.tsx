@@ -85,6 +85,30 @@ export type LocationMapProps = {
   directionsLabel: string
   logo: string
   pin: string
+  /** Background colour of the section above, which the map's top edge
+   *  melts into; white by default. */
+  fadeColor?: string
+}
+
+// [stop %, opacity %] of the top-edge fade, eased so it has no visible line.
+const FADE_STOPS: [number, number][] = [
+  [0, 100],
+  [10, 97],
+  [22, 88],
+  [36, 72],
+  [52, 50],
+  [68, 28],
+  [83, 12],
+  [93, 3],
+  [100, 0],
+]
+
+function fadeGradient(color: string) {
+  const stops = FADE_STOPS.map(
+    ([at, alpha]) =>
+      `color-mix(in srgb, ${color} ${alpha}%, transparent) ${at}%`
+  )
+  return `linear-gradient(to bottom, ${stops.join(", ")})`
 }
 
 export function LocationMap({
@@ -95,6 +119,7 @@ export function LocationMap({
   directionsLabel,
   logo,
   pin,
+  fadeColor = "#ffffff",
 }: LocationMapProps) {
   return (
     <section
@@ -117,11 +142,12 @@ export function LocationMap({
           pattern={tilePattern}
         />
       </div>
-      {/* The top edge melts into the white section above: white fading out
-          over the first 14rem of the map. */}
+      {/* The top edge melts into the section above: its background colour
+          fading out over the first 14rem of the map. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[linear-gradient(to_bottom,rgba(255,255,255,1)_0%,rgba(255,255,255,0.97)_10%,rgba(255,255,255,0.88)_22%,rgba(255,255,255,0.72)_36%,rgba(255,255,255,0.5)_52%,rgba(255,255,255,0.28)_68%,rgba(255,255,255,0.12)_83%,rgba(255,255,255,0.03)_93%,rgba(255,255,255,0)_100%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-56"
+        style={{ backgroundImage: fadeGradient(fadeColor) }}
       />
 
       <a

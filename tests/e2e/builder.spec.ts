@@ -5,7 +5,7 @@ import { BASE_URL } from "./env"
 import { clientIpFor, E2E_PASSWORD, readFixtures } from "./fixtures"
 
 // R10-12, R10-14, R10-11: the custom pages list, the builder end to end, the
-// stale-version conflict, the rename redirect, ⌘K and "Copy to new page".
+// stale-version conflict, the rename redirect, ⌘K.
 // Every page a test makes is deleted in its `finally`.
 
 const headers = { origin: BASE_URL }
@@ -224,39 +224,6 @@ test("⌘K New page opens the new page dialog", async ({ browser }) => {
     await expect(page).toHaveURL(/\/admin\/website\/custom-pages\?new=1$/)
     await expect(page.getByRole("dialog", { name: "New page" })).toBeVisible()
   } finally {
-    await context.close()
-  }
-})
-
-test("Copy to new page from Contact creates a page with the four blocks", async ({
-  browser,
-}) => {
-  const slug = "e2e-contact-copy"
-  const { context, page } = await signIn(browser, "builder copy")
-  try {
-    await removePages(page, [slug])
-    await page.goto("/admin/website/contact")
-    await page.getByRole("button", { name: "Copy to new page" }).click()
-    const dialog = page.getByRole("dialog", { name: "Copy to a new page" })
-    await expect(dialog.getByLabel("Title")).toHaveValue("Contact copy")
-    await expect(dialog.getByLabel("Address")).toHaveValue("contact-copy")
-    await dialog.getByLabel("Address").fill(slug)
-    await dialog.getByRole("button", { name: "Create copy" }).click()
-    await page.waitForURL(/\/admin\/pages\/custom\/[^/]+$/)
-
-    const id = new URL(page.url()).pathname.split("/").pop()!
-    const res = await page.request.get(`${API}/${id}`)
-    const dto = (await res.json()) as {
-      draft: { blocks: { type: string }[] }
-    }
-    expect(dto.draft.blocks.map((b) => b.type)).toEqual([
-      "hero.page",
-      "contact",
-      "quoteForm",
-      "map",
-    ])
-  } finally {
-    await removePages(page, [slug])
     await context.close()
   }
 })

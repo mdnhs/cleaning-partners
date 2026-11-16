@@ -33,4 +33,7 @@ export type ServiceDto = VersionedDto<unknown> & {
   title: string
 }
 
-export type ServiceListItem = Omit<ServiceDto, "draft" | "published">
+/** `visible` is the draft's flag (the editor's state); false = hidden from the site. */
+export type ServiceListItem = Omit<ServiceDto, "draft" | "published"> & {
+  visible: boolean
+}

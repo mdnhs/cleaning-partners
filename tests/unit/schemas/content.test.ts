@@ -28,6 +28,7 @@ describe("serviceSchema (R3-3: CP shape from lib/services.ts)", () => {
   const service = {
     slug: "medical-cleaning",
     title: "Medical Cleaning",
+    visible: true,
     icon: media,
     cover: media,
     summary: "We understand the importance of the high standard of cleaning.",
@@ -44,6 +45,7 @@ describe("serviceSchema (R3-3: CP shape from lib/services.ts)", () => {
       [
         "slug",
         "title",
+        "visible",
         "icon",
         "cover",
         "summary",

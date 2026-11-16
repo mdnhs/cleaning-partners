@@ -1,36 +1,32 @@
 "use client"
 
-import { Copy } from "lucide-react"
-import { useState } from "react"
-import { toast } from "sonner"
+import { type ReactNode, useMemo } from "react"
 
 import {
-  type CopySeed,
-  NewPageDialog,
-} from "@/components/admin/builder/new-page-dialog"
-import { EDITOR_ACTION } from "@/components/admin/editor/editor-layout"
+  bundleMeta,
+  bundleSchema,
+  createBundle,
+} from "@/components/admin/pages/page-bundle"
 import { VersionedEditor } from "@/components/admin/editor/versioned-editor"
 import { EditorSeoTab, textAt } from "@/components/admin/seo/editor-seo-tab"
-import { SeoLink } from "@/components/admin/seo/seo-link"
-import { Button } from "@/components/ui/button"
+import { ServicesInlineList } from "@/components/admin/services/services-inline-list"
+import { useAdminSession } from "@/components/admin/session-provider"
+import { WebsiteParts } from "@/components/admin/website/website-parts"
 import { usePermission } from "@/hooks/use-permission"
 import { PAGE_LABELS } from "@/lib/admin/page-labels"
-import { api, unwrap } from "@/lib/api-client"
+import { SETTINGS_ENTRIES } from "@/lib/admin/settings-keys"
+import { PAGE_SECTIONS, PART_ANCHORS } from "@/lib/admin/website"
+import { hasPermission } from "@/lib/auth/permissions"
 import { previewHref } from "@/lib/schemas/api/preview"
-import { blocksFromTemplate } from "@/templates/builder/from-template"
 import { templateEditorMeta } from "@/templates/editor-meta"
 import {
   PAGE_PATHS,
   PAGES,
-  type PageData,
   type PageKey,
   templates,
 } from "@/templates/registry"
 
-/**
- * Editor for one fixed page (master 4.4); SEO tab (master 8.1). "Copy to new
- * page" (R10-11) starts a builder page from the page's current draft.
- */
+/** Editor for one fixed page (master 4.4); SEO tab (master 8.1). */
 export function PageEditor({
   pageKey,
   origin,
@@ -42,46 +38,52 @@ export function PageEditor({
   const canEdit = usePermission({ page: ["update"] })
   const canPublish = usePermission({ page: ["publish"] })
   const canReadSeo = usePermission({ seo: ["read"] })
-  const canCreate = usePermission({ page: ["create"] })
   const template = PAGES[pageKey]
-  const param = { key: pageKey }
+  const { roles } = useAdminSession()
+  // Settings sections shown inside this page's form (only those the user
+  // may edit: they are saved and published with the page).
+  const sections = useMemo(
+    () =>
+      (PAGE_SECTIONS[pageKey] ?? []).filter((s) =>
+        hasPermission(roles, SETTINGS_ENTRIES[s.settings].update)
+      ),
+    [pageKey, roles]
+  )
+  const bundle = useMemo(
+    () => createBundle(pageKey, sections),
+    [pageKey, sections]
+  )
+  const schema = useMemo(
+    () => bundleSchema(templates[template].schema, sections),
+    [template, sections]
+  )
+  const meta = useMemo(
+    () => bundleMeta(templateEditorMeta[template], sections),
+    [template, sections]
+  )
+  // Lists and links among the sections, after the group they follow.
+  const slots: Record<string, ReactNode> = {}
+  for (const [group, ids] of Object.entries(PART_ANCHORS[pageKey] ?? {}))
+    slots[`after:${group}`] = <WebsiteParts screen={pageKey} ids={ids} />
+  if (pageKey === "services") slots.grid = <ServicesInlineList />
   return (
     <VersionedEditor
       title={PAGE_LABELS[pageKey]}
       path={PAGE_PATHS[pageKey]}
       queryKey={["pages", pageKey]}
-      load={() => unwrap(api.pages[":key"].$get({ param }))}
-      saveDraft={(draft, version) =>
-        unwrap(
-          api.pages[":key"].draft.$put({ param, json: { draft, version } })
-        )
-      }
-      publish={(version) =>
-        unwrap(api.pages[":key"].publish.$post({ param, json: { version } }))
-      }
-      restore={(revisionId, version) =>
-        unwrap(
-          api.pages[":key"].restore.$post({
-            param,
-            json: { revisionId, version },
-          })
-        )
-      }
-      schema={templates[template].schema}
-      meta={templateEditorMeta[template]}
+      load={bundle.load}
+      saveDraft={bundle.saveDraft}
+      publish={bundle.publish}
+      restore={bundle.restore}
+      schema={schema}
+      meta={meta}
       revisions={{ entity: "page", id: pageKey }}
       previewHref={previewHref("page", pageKey)}
       publicHref={PAGE_PATHS[pageKey]}
+      flat
+      slots={slots}
       canEdit={canEdit}
       canPublish={canPublish}
-      actions={(ctx) => (
-        <>
-          {canCreate ? (
-            <CopyToNewPage pageKey={pageKey} draft={ctx.draft} />
-          ) : null}
-          <SeoLink />
-        </>
-      )}
       seo={
         canReadSeo
           ? (ctx) => (
@@ -103,52 +105,5 @@ export function PageEditor({
           : undefined
       }
     />
-  )
-}
-
-/** "Copy to new page": the draft's sections as a new builder page (R10-11). */
-function CopyToNewPage({
-  pageKey,
-  draft,
-}: {
-  pageKey: PageKey
-  draft: unknown
-}) {
-  const [copy, setCopy] = useState<CopySeed | null>(null)
-  return (
-    <>
-      <Button
-        type="button"
-        variant="outline"
-        className={EDITOR_ACTION}
-        onClick={() => {
-          const parsed = templates[PAGES[pageKey]].schema.safeParse(draft)
-          if (!parsed.success)
-            return void toast.error("Not copied", {
-              description: "Fill in the marked fields first.",
-            })
-          setCopy({
-            title: `${PAGE_LABELS[pageKey]} copy`,
-            slug: `${pageKey}-copy`,
-            seed: {
-              blocks: blocksFromTemplate(
-                pageKey,
-                parsed.data as PageData<PageKey>
-              ),
-            },
-          })
-        }}
-      >
-        <Copy aria-hidden />
-        Copy to new page
-      </Button>
-      <NewPageDialog
-        open={copy !== null}
-        onOpenChange={(open) => {
-          if (!open) setCopy(null)
-        }}
-        copy={copy ?? undefined}
-      />
-    </>
   )
 }

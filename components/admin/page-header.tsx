@@ -119,12 +119,12 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "mb-6 flex flex-col gap-4",
+        "mb-4 flex flex-col gap-3",
         !stacked && "lg:flex-row lg:items-end lg:justify-between",
         className
       )}
     >
-      <div className="flex min-w-0 flex-col gap-2">
+      <div className="flex min-w-0 flex-col gap-1">
         {isCrumbs(breadcrumbs) ? (
           <Breadcrumbs items={breadcrumbs} />
         ) : (
@@ -134,7 +134,7 @@ export function PageHeader({
           {title}
         </h1>
         {description ? (
-          <div className="max-w-2xl text-[15px] text-muted-foreground">
+          <div className="max-w-2xl text-sm text-muted-foreground">
             {description}
           </div>
         ) : null}

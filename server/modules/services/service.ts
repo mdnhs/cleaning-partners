@@ -84,7 +84,10 @@ export async function listServicesAdmin(
       const dto: Partial<ServiceDto> = toDto(row)
       delete dto.draft
       delete dto.published
-      return dto as ServiceListItem
+      return {
+        ...dto,
+        visible: row.draft.visible !== false,
+      } as ServiceListItem
     }),
     page: query.page,
     pageSize: query.pageSize,
@@ -259,5 +262,9 @@ export async function readPublishedServiceTitles(
   db: DbOrTx = getDb()
 ): Promise<string[]> {
   const rows = await listServiceRows(db)
-  return rows.flatMap((row) => (row.published ? [row.published.title] : []))
+  return rows.flatMap((row) =>
+    row.published && row.published.visible !== false
+      ? [row.published.title]
+      : []
+  )
 }

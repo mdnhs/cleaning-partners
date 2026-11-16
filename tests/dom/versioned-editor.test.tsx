@@ -7,6 +7,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }))
 
+// These tests are about the page's own draft: the settings sections and
+// collection lists that sit in its form have their own tests.
+vi.mock("@/lib/admin/website", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/admin/website")>()),
+  PAGE_SECTIONS: {},
+  PART_ANCHORS: {},
+}))
+
 import { z } from "zod"
 
 import { VersionedEditor } from "@/components/admin/editor/versioned-editor"
@@ -587,96 +595,13 @@ describe("page editor (master 4.4)", () => {
   })
 })
 
-describe("page editor section tabs", () => {
-  it("shows one template group per tab and keeps edits across tabs", async () => {
-    const user = userEvent.setup()
-    const put = vi.fn((init?: RequestInit) => {
-      const body = JSON.parse(String(init?.body)) as { draft: typeof home }
-      return json(200, {
-        ...dto(2, body.draft.hero.title),
-        draft: body.draft,
-      })
-    })
-    routes["PUT /api/v1/admin/pages/home/draft"] = put
+describe("page editor sections", () => {
+  it("stacks every template group on the page, with no section tabs", async () => {
     renderEditor()
-    const heading = await headingInput()
-    const tablist = screen.getByRole("tablist", { name: "Sections" })
-    // No back link: the Website rail and tabs give the context.
-    expect(screen.queryByRole("link", { name: "All pages" })).toBeNull()
-    // The sticky tab rail stops below the editor's sticky bar.
-    expect(
-      tablist
-        .closest<HTMLElement>("[style]")
-        ?.style.getPropertyValue("--section-tabs-top")
-    ).toMatch(/^\d+px$/)
-    expect(
-      within(tablist)
-        .getAllByRole("tab")
-        .map((tab) => tab.textContent)
-    ).toEqual(["Hero", "Services section", "Blog section"])
-    expect(within(tablist).getByRole("tab", { name: "Hero" })).toHaveAttribute(
-      "aria-selected",
-      "true"
-    )
-    expect(
-      screen.queryByRole("region", { name: "Services section" })
-    ).toBeNull()
-
-    await user.clear(heading)
-    await user.type(heading, "Kept heading")
-    await user.click(
-      within(tablist).getByRole("tab", { name: "Services section" })
-    )
-    expect(window.location.search).toBe("?tab=services")
-    expect(
-      screen.getByRole("region", { name: "Services section" })
-    ).toBeVisible()
-    expect(screen.queryByRole("region", { name: "Hero" })).toBeNull()
-    await user.click(within(tablist).getByRole("tab", { name: "Hero" }))
-    expect(await headingInput()).toHaveValue("Kept heading")
-
-    // The hidden groups still belong to the draft that is saved.
-    await user.keyboard("{Control>}s{/Control}")
-    await waitFor(() => expect(put).toHaveBeenCalledTimes(1))
-    const sent = JSON.parse(String(put.mock.calls[0][0]?.body)) as {
-      draft: typeof home
-    }
-    expect(sent.draft.hero.title).toBe("Kept heading")
-    expect(sent.draft.services).toEqual(home.services)
-  })
-
-  it("marks tabs with errors and jumps to the first one on publish", async () => {
-    const user = userEvent.setup()
-    const push = vi.spyOn(window.history, "pushState")
-    renderEditor()
-    const heading = await headingInput()
-    await user.clear(heading)
-    const tablist = screen.getByRole("tablist", { name: "Sections" })
-    await user.click(within(tablist).getByRole("tab", { name: "Blog section" }))
-    await user.click(screen.getByRole("button", { name: "Publish" }))
-    const hero = await within(tablist).findByRole("tab", {
-      name: "Hero, has errors",
-    })
-    expect(hero).toHaveAttribute("aria-selected", "true")
-    expect(
-      within(tablist).getByRole("tab", { name: "Blog section" })
-    ).toHaveAttribute("aria-selected", "false")
-    expect(await headingInput()).toHaveAttribute("aria-invalid", "true")
-    // The jump lands on the first invalid field and replaces the history
-    // entry (it was not a click).
-    await waitFor(async () => expect(await headingInput()).toHaveFocus())
-    expect(window.location.search).toBe("?tab=hero")
-    // The click on "Blog section" (the unsaved-changes guard's own Back
-    // entry, pushed on the first edit, does not count).
-    expect(
-      push.mock.calls.filter(
-        ([state]) => !(state as Record<string, unknown> | null)?.__cpUnsaved
-      )
-    ).toHaveLength(1)
-    push.mockRestore()
-    expect(
-      screen.queryByRole("dialog", { name: "Publish changes?" })
-    ).toBeNull()
+    await headingInput()
+    expect(screen.queryByRole("tablist", { name: "Sections" })).toBeNull()
+    for (const name of ["Hero", "Services section", "Blog section"])
+      expect(screen.getByRole("region", { name })).toBeInTheDocument()
   })
 })
 

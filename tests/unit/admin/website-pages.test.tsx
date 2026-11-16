@@ -136,6 +136,16 @@ describe("/admin/website/[key]", () => {
       "REDIRECT /admin/website/header-footer/navigation"
     )
   })
+
+  it("shows a screen that is one part right at its own URL", async () => {
+    await expect(screenPage("how-it-works")).resolves.toBeTruthy()
+  })
+
+  it("sends the solo part's old nested URL to the screen", async () => {
+    await expect(partPage("how-it-works", "how-it-works")).rejects.toThrow(
+      "REDIRECT /admin/website/how-it-works"
+    )
+  })
 })
 
 describe("/admin/website/[key]/[part]", () => {

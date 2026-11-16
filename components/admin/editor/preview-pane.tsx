@@ -7,6 +7,63 @@ import { Spinner } from "@/components/ui/spinner"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 
+/**
+ * Scrolls the preview frame to the section that shows `text` (a heading or
+ * field of the section being edited). The preview is the same origin, so the
+ * frame's document is reachable; nothing happens when it is not, or when
+ * the text is not on the page.
+ */
+function scrollFrameTo(frame: HTMLIFrameElement | null, text: string): boolean {
+  try {
+    const doc = frame?.contentDocument
+    const win = frame?.contentWindow
+    if (!doc || !win) return false
+    const needle = text.replace(/\s+/g, " ").trim().slice(0, 40).toLowerCase()
+    if (needle.length < 3) return false
+    const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT)
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const content = (node.textContent ?? "")
+        .replace(/\s+/g, " ")
+        .toLowerCase()
+      const el = node.parentElement
+      if (!el || !content.includes(needle)) continue
+      // The page header and footer repeat site-wide text: the section wins.
+      if (el.closest("header, footer, nav")) continue
+      const top = el.getBoundingClientRect().top + win.scrollY - 120
+      win.scrollTo({ top: Math.max(0, top), behavior: "instant" })
+      return true
+    }
+  } catch {
+    // Cross-origin or detached frame: leave the preview where it is.
+  }
+  return false
+}
+
+/**
+ * The page may still be hydrating or animating in when the frame fires load:
+ * try again a few times until the section is found and the scroll sticks.
+ */
+function scrollFrameWhenReady(
+  frame: HTMLIFrameElement | null,
+  text: string
+): () => void {
+  let tries = 0
+  let timer: number | undefined
+  const attempt = () => {
+    const found = scrollFrameTo(frame, text)
+    // Run once more after it is found: late layout shifts move the section.
+    if (tries++ < (found ? 3 : 12)) timer = window.setTimeout(attempt, 400)
+  }
+  attempt()
+  return () => window.clearTimeout(timer)
+}
+
+/** Reloads every open preview pane (a list changed that is live at once). */
+export const PREVIEW_REFRESH_EVENT = "admin:preview-refresh"
+export function refreshPreview() {
+  window.dispatchEvent(new Event(PREVIEW_REFRESH_EVENT))
+}
+
 export const PREVIEW_DEVICES = {
   desktop: 1440,
   tablet: 834,
@@ -28,10 +85,13 @@ const LOAD_TIMEOUT_MS = 10_000
 export function PreviewPane({
   src,
   refreshKey,
+  focusText,
   className,
 }: {
   src: string
-  refreshKey: number
+  refreshKey: number | string
+  /** Text of the section being edited: the frame scrolls to it. */
+  focusText?: string
   className?: string
 }) {
   const [device, setDevice] = useState<Device>("desktop")
@@ -41,6 +101,8 @@ export function PreviewPane({
   const boxRef = useRef<HTMLDivElement>(null)
   const frame = useRef<HTMLIFrameElement>(null)
   const shownKey = useRef(refreshKey)
+  const stopScroll = useRef<(() => void) | null>(null)
+  useEffect(() => () => stopScroll.current?.(), [])
   const width = PREVIEW_DEVICES[device]
   const scale = box.width ? Math.min(1, box.width / width) : 1
 
@@ -69,6 +131,20 @@ export function PreviewPane({
     el.src = src
   }, [refreshKey, src])
 
+  // Lists and shared records save at once, not with the page's draft: they
+  // ask for a reload through refreshPreview().
+  useEffect(() => {
+    const reload = () => {
+      const el = frame.current
+      if (!el) return
+      setLoading(true)
+      setFailed(false)
+      el.src = src
+    }
+    window.addEventListener(PREVIEW_REFRESH_EVENT, reload)
+    return () => window.removeEventListener(PREVIEW_REFRESH_EVENT, reload)
+  }, [src])
+
   // A frame that never fires load (blocked, offline, a hung route) would
   // spin forever: after a while say so and point at the new tab.
   useEffect(() => {
@@ -83,7 +159,18 @@ export function PreviewPane({
   const onLoad = () => {
     setLoading(false)
     setFailed(false)
+    stopScroll.current?.()
+    if (focusText)
+      stopScroll.current = scrollFrameWhenReady(frame.current, focusText)
   }
+  // Moving to another section scrolls the loaded frame there.
+  useEffect(() => {
+    stopScroll.current?.()
+    if (focusText && !loading)
+      stopScroll.current = scrollFrameWhenReady(frame.current, focusText)
+    // Only when the target changes, not on every load state change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusText])
 
   return (
     <section

@@ -86,6 +86,33 @@ export type VersionedEditorProps<Dto extends VersionedDto<unknown>> = {
    * either side survive a switch).
    */
   seo?: EditorSlot<Dto>
+  /** Show every section stacked in one scroll instead of section tabs. */
+  flat?: boolean
+  /** Extra content at the end of a section card, by group path (SchemaForm slots). */
+  slots?: Record<string, ReactNode>
+}
+
+/** Text that identifies a section on the public page: its heading, else its eyebrow. */
+function sectionText(value: unknown): string | undefined {
+  if (typeof value === "string") return value
+  if (!value || typeof value !== "object") return undefined
+  const record = value as Record<string, unknown>
+  for (const key of ["title", "heading", "eyebrow", "label"]) {
+    const text = record[key]
+    if (typeof text === "string" && text.trim().length >= 3) return text
+  }
+  return undefined
+}
+
+/**
+ * What the preview scrolls to: the group being edited (a page section), or,
+ * with no focus yet, the record's own heading (a settings editor).
+ */
+function previewFocusText(saved: unknown, group: string | null) {
+  const root = saved as Record<string, unknown> | null
+  if (group && root && typeof root === "object" && group in root)
+    return sectionText(root[group])
+  return sectionText(saved)
 }
 
 /** A plain node, or one rendered from the editor's state. */
@@ -195,6 +222,8 @@ function LoadedEditor<Dto extends VersionedDto<unknown>>({
     Record<string, string[]> | undefined
   >()
   const [publishOpen, setPublishOpen] = useState(false)
+  // The form group being edited: the preview scrolls to its section.
+  const [focusGroup, setFocusGroup] = useState<string | null>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
   // The version to send next. Updated synchronously (a publish right after
   // a save must use the version that save returned).
@@ -230,7 +259,8 @@ function LoadedEditor<Dto extends VersionedDto<unknown>>({
     entityId: props.revisions.id,
     record: draft,
   })
-  const onFieldFocus = (field: FocusedTextField) =>
+  const onFieldFocus = (field: FocusedTextField) => {
+    setFocusGroup(field.path.split(".")[0])
     assistant.setField({
       path: field.path,
       label: field.label,
@@ -244,6 +274,7 @@ function LoadedEditor<Dto extends VersionedDto<unknown>>({
         return field.setValue(text)
       },
     })
+  }
   const onSeoFieldFocus = (field: FocusedTextField) =>
     assistant.setField({
       path: `seo.${field.path}`,
@@ -483,7 +514,8 @@ function LoadedEditor<Dto extends VersionedDto<unknown>>({
         errors={fieldErrors}
         resetKey={resetKey}
         disabled={!props.canEdit}
-        sectionTabs="Sections"
+        sectionTabs={props.flat ? undefined : "Sections"}
+        slots={props.slots}
         onFieldFocus={props.canEdit ? onFieldFocus : undefined}
       />
     </div>
@@ -569,7 +601,11 @@ function LoadedEditor<Dto extends VersionedDto<unknown>>({
         preview={
           // The SEO tab has its own previews: no content preview beside it.
           paneAvailable && livePreview && !seoTab.active ? (
-            <PreviewPane src={props.previewHref!} refreshKey={base.version} />
+            <PreviewPane
+              src={props.previewHref!}
+              refreshKey={`${base.version}:${record.updatedAt}`}
+              focusText={previewFocusText(base.saved, focusGroup)}
+            />
           ) : undefined
         }
       >

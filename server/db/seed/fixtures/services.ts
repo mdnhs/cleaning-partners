@@ -16,6 +16,7 @@ export function servicesFixture(media: MediaLookup): ServiceFixture[] {
       seo: {},
       content: {
         title: "Medical Cleaning",
+        visible: true,
         icon: media("/images/services/icon-medical.svg"),
         cover: media("/images/home/cleaning-the-counter.png"),
         summary:
@@ -49,6 +50,7 @@ export function servicesFixture(media: MediaLookup): ServiceFixture[] {
       seo: {},
       content: {
         title: "Board of Education",
+        visible: true,
         icon: media("/images/services/icon-education.svg"),
         cover: media("/images/home/vacuuming.png"),
         summary:
@@ -77,6 +79,7 @@ export function servicesFixture(media: MediaLookup): ServiceFixture[] {
       seo: {},
       content: {
         title: "Commercial Cleaning",
+        visible: true,
         icon: media("/images/services/icon-commercial.svg"),
         cover: media("/images/home/vacuuming.png"),
         summary:
@@ -105,6 +108,7 @@ export function servicesFixture(media: MediaLookup): ServiceFixture[] {
       seo: {},
       content: {
         title: "Retail Cleaning",
+        visible: true,
         icon: media("/images/services/icon-retail.svg"),
         cover: media("/images/home/blog-curtains.png"),
         summary:
@@ -132,6 +136,7 @@ export function servicesFixture(media: MediaLookup): ServiceFixture[] {
       seo: {},
       content: {
         title: "ULV Fogging",
+        visible: true,
         icon: media("/images/services/icon-fogging.svg"),
         cover: media("/images/home/hero.png"),
         summary:

@@ -8,6 +8,13 @@ import {
   Inbox,
   LayoutDashboard,
   type LucideIcon,
+  FileText,
+  HeartHandshake,
+  House,
+  Mail,
+  PanelTop,
+  Scale,
+  Workflow,
   Megaphone,
   MessagesSquare,
   Newspaper,
@@ -128,6 +135,20 @@ const websiteOwns = (key: WebsiteKey): NonNullable<NavLink["owns"]> => [
 ]
 
 /** ⌘K terms the removed Blog, Services, Careers and Legal items carried. */
+/** The Website rail's icons (same set as the MK admin). */
+const SCREEN_ICONS: Record<WebsiteKey, LucideIcon> = {
+  home: House,
+  about: UserRound,
+  services: HeartHandshake,
+  "how-it-works": Workflow,
+  blog: Newspaper,
+  contact: Mail,
+  careers: BriefcaseBusiness,
+  "custom-pages": FileText,
+  legal: Scale,
+  "header-footer": PanelTop,
+}
+
 const SCREEN_KEYWORDS: Partial<Record<WebsiteKey, readonly string[]>> = {
   services: ["cleaning services", "offerings"],
   blog: ["articles", "posts", "news"],
@@ -182,6 +203,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
         label: screen.label,
         href: websiteHref(screen.key),
         permission: screen.permission,
+        icon: SCREEN_ICONS[screen.key],
         keywords: [
           ...WEBSITE_PARTS.filter((part) => part.screen === screen.key).map(
             (part) => part.label

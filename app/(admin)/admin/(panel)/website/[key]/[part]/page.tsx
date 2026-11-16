@@ -1,10 +1,16 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { Suspense } from "react"
 
 import { CollectionScreen } from "@/components/admin/collections/collection-screen"
 import { SettingsEditor } from "@/components/admin/settings/settings-editor"
-import { isWebsiteKey, WEBSITE_SCREENS, websitePart } from "@/lib/admin/website"
+import {
+  isSoloPart,
+  isWebsiteKey,
+  WEBSITE_SCREENS,
+  websiteHref,
+  websitePart,
+} from "@/lib/admin/website"
 import { requirePage, requirePermission } from "@/server/auth/session"
 
 export async function generateMetadata({
@@ -37,6 +43,7 @@ async function Part({
   // A route part (Articles, Jobs…) lives at its own URL, not here.
   if (!part || part.source.kind === "route") notFound()
   await requirePermission(part.permission)
+  if (isSoloPart(part)) redirect(websiteHref(screen.key))
   return part.source.kind === "settings" ? (
     <SettingsEditor settingsKey={part.source.key} />
   ) : (

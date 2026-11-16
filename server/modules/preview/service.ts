@@ -13,7 +13,10 @@ import { jobPath } from "@/lib/schemas/api/job-postings"
 import { findBuilderPageForEdit } from "@/server/modules/builder-pages/repo"
 import { findJobById } from "@/server/modules/job-postings/repo"
 import { findArticleForEdit } from "@/server/modules/articles/repo"
-import { findServiceById } from "@/server/modules/services/repo"
+import {
+  findServiceById,
+  listServiceRows,
+} from "@/server/modules/services/repo"
 import { isPageKey, PAGE_PATHS } from "@/templates/registry"
 
 const READ: Record<PreviewEntity, PermissionRequest> = {
@@ -87,8 +90,29 @@ export async function previewPath(
     }
     case "settings":
       if (!isSettingsKey(id)) throw notFound("Settings")
-      return "/"
+      // The page that shows the section; the rest appear on the home page.
+      if (id === "sections.howItWorks") return firstServicePath()
+      return SETTINGS_PREVIEW_PATHS[id] ?? "/"
   }
+}
+
+/**
+ * "How it works" shows only on a service's own page: the first service in
+ * display order that is not hidden (its draft, as draft mode reads it).
+ */
+async function firstServicePath(): Promise<string> {
+  const rows = await listServiceRows(getDb())
+  const first = rows.find((row) => row.draft.visible !== false)
+  return first ? `/services/${first.slug}` : "/services"
+}
+
+/** Where a settings key is best seen on the public site. */
+const SETTINGS_PREVIEW_PATHS: Partial<Record<string, string>> = {
+  "sections.team": "/about#team",
+  "sections.contact": "/contact",
+  "sections.map": "/contact",
+  contact: "/contact",
+  careers: "/careers",
 }
 
 /** Path of a same-origin public page (Referer) to return to after preview, else "/". */

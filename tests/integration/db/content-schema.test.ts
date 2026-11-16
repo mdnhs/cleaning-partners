@@ -41,6 +41,7 @@ const CONTENT_TABLES = [
 ]
 
 const serviceContent = {
+  visible: true,
   title: "T",
   icon: { mediaId: "00000000-0000-7000-8000-000000000001" },
   cover: { mediaId: "00000000-0000-7000-8000-000000000001" },

@@ -19,7 +19,14 @@ import { RichTextSection } from "@/templates/shared/rich-text-section"
 import type { BlockView, BuilderView } from "./views"
 
 /** One block's section, exactly as the fixed pages render it. */
-export function Section({ view }: { view: BlockView }) {
+export function Section({
+  view,
+  after,
+}: {
+  view: BlockView
+  /** The block type rendered just above this one, if any */
+  after?: BlockView["type"]
+}) {
   switch (view.type) {
     case "hero":
       return <Hero {...view.props} />
@@ -52,7 +59,12 @@ export function Section({ view }: { view: BlockView }) {
     case "quoteForm":
       return <QuoteForm {...view.props} />
     case "map":
-      return <LocationMap {...view.props} />
+      return (
+        <LocationMap
+          {...view.props}
+          fadeColor={after === "quoteForm" ? "var(--color-surface)" : undefined}
+        />
+      )
     case "richtext":
       return <RichTextSection {...view.props} />
   }
@@ -65,15 +77,16 @@ export function BuilderTemplate({ view }: { view: BuilderView }) {
       <HomeMotion>
         <div className="bg-white text-ink">
           <main>
-            {view.blocks.map((block) =>
-              block.owned ? (
-                <Section key={block.id} view={block.view} />
+            {view.blocks.map((block, i) => {
+              const after = view.blocks[i - 1]?.view.type
+              return block.owned ? (
+                <Section key={block.id} view={block.view} after={after} />
               ) : (
                 <div key={block.id} id={block.anchor}>
-                  <Section view={block.view} />
+                  <Section view={block.view} after={after} />
                 </div>
               )
-            )}
+            })}
           </main>
         </div>
       </HomeMotion>

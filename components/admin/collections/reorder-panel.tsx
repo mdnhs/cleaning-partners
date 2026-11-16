@@ -11,6 +11,7 @@ import {
 import { EmptyState } from "@/components/admin/kit/empty-state"
 import { CardSkeleton } from "@/components/admin/kit/skeletons"
 import { FORM_ACTION } from "@/components/admin/page-header"
+import { refreshPreview } from "@/components/admin/editor/preview-pane"
 import { Button } from "@/components/ui/button"
 import { api, ApiError, errorMessage, unwrap } from "@/lib/api-client"
 import type { Reorderable } from "@/lib/schemas/api/collections"
@@ -77,6 +78,7 @@ export function ReorderPanel({
       toast.success("Order saved", {
         description: "The site shows the new order now.",
       })
+      refreshPreview()
       await queryClient.invalidateQueries({ queryKey })
       onDone()
     },

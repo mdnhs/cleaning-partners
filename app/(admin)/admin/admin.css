@@ -25,11 +25,11 @@
 
 /* Type scale and card radius (MK). */
 @theme {
-  --text-title: 2.25rem;
+  --text-title: 1.625rem;
   --text-title--line-height: 1.1;
   --text-title--letter-spacing: -0.025em;
   --text-title--font-weight: 600;
-  --text-card-title: 1.125rem;
+  --text-card-title: 1rem;
   --text-card-title--line-height: 1.35;
   --text-card-title--font-weight: 600;
   --text-kpi: 2.75rem;

@@ -27,7 +27,9 @@ import { PAGE_KEYS, type PageKey } from "@/templates/registry"
 describe("website registry", () => {
   it("lists one page screen per PAGE_KEYS page, in order, then custom-pages, legal, header-footer", () => {
     expect(WEBSITE_SCREENS.map((s) => s.key)).toEqual([
-      ...PAGE_KEYS,
+      ...PAGE_KEYS.slice(0, 3),
+      "how-it-works",
+      ...PAGE_KEYS.slice(3),
       "custom-pages",
       "legal",
       "header-footer",

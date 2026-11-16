@@ -9,6 +9,8 @@ import { mediaRef, paragraphsText, slug, text } from "../common"
  */
 export const serviceContent = z.object({
   title: text,
+  /** Off hides the card, the page and the quote-form option; the service is kept. */
+  visible: z.boolean().default(true),
   icon: mediaRef,
   cover: mediaRef,
   summary: text,

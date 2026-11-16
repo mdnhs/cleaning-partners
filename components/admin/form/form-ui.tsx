@@ -45,7 +45,7 @@ export function FormCard({
       data-slot="form-card"
       aria-labelledby={title ? `${id}-title` : undefined}
       className={cn(
-        "@container/card flex min-w-0 flex-col gap-5 rounded-2xl border bg-card p-4 shadow-xs sm:p-6",
+        "@container/card flex min-w-0 flex-col gap-4 rounded-2xl border bg-card p-4 shadow-xs sm:p-5",
         className
       )}
       {...rest}

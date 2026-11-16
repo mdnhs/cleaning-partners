@@ -23,6 +23,8 @@ type Row = Awaited<ReturnType<typeof findServiceBySlug>>
 function toRecord(row: NonNullable<Row>, draft: boolean): ServiceRecord | null {
   const content = draft ? row.draft : row.published
   if (!content) return null
+  // Hidden from the site (stored content from before the toggle has no flag).
+  if (content.visible === false) return null
   return {
     id: row.id,
     slug: row.slug,

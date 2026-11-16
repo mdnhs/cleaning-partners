@@ -16,6 +16,14 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
 }))
 
+// These tests are about the page's own draft: the settings sections and
+// collection lists that sit in its form have their own tests.
+vi.mock("@/lib/admin/website", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/admin/website")>()),
+  PAGE_SECTIONS: {},
+  PART_ANCHORS: {},
+}))
+
 import { useAssistant } from "@/components/admin/ai/assistant-context"
 import { PageEditor } from "@/components/admin/pages/page-editor"
 import { makeQueryClient } from "@/components/admin/providers"
@@ -366,14 +374,11 @@ describe("editor SEO tab (MK D1.4)", () => {
     })
   })
 
-  it("the header SEO link selects the SEO tab on the same page", async () => {
+  it("the SEO tab selects ?tab=seo on the same page", async () => {
     const user = userEvent.setup()
     renderEditor()
     await screen.findByRole("region", { name: "Hero" })
-    const bar = document.querySelector<HTMLElement>('[data-slot="editor-bar"]')!
-    const link = within(bar).getByRole("link", { name: "SEO" })
-    expect(link).toHaveAttribute("href", "?tab=seo")
-    await user.click(link)
+    await user.click(screen.getByRole("tab", { name: "SEO" }))
     expect(screen.getByRole("tab", { name: "SEO" })).toHaveAttribute(
       "aria-selected",
       "true"
@@ -389,8 +394,7 @@ describe("editor SEO tab (MK D1.4)", () => {
     renderEditor()
     const hero = await screen.findByRole("region", { name: "Hero" })
     await user.type(within(hero).getByRole("textbox", { name: "Heading" }), "!")
-    const bar = document.querySelector<HTMLElement>('[data-slot="editor-bar"]')!
-    await user.click(within(bar).getByRole("link", { name: "SEO" }))
+    await user.click(screen.getByRole("tab", { name: "SEO" }))
     expect(screen.queryByRole("alertdialog")).toBeNull()
     expect(screen.getByRole("tab", { name: "SEO" })).toHaveAttribute(
       "aria-selected",
