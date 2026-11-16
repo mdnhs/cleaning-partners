@@ -1,23 +1,10 @@
 import type { Metadata } from "next"
-import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google"
+
 
 import "./admin.css"
+import { adminMono as fontMono, jakarta } from "@/app/fonts"
 import { AdminThemeProvider } from "@/components/admin/theme-provider"
 import { cn } from "@/lib/utils"
-
-// MK's admin face; admin.css maps --font-sans to it.
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-jakarta",
-  display: "swap",
-})
-
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-  display: "swap",
-})
 
 export const metadata: Metadata = {
   title: {
