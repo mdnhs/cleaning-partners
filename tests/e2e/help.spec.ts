@@ -4,7 +4,8 @@ import { E2E_OWNER } from "./admin-accounts"
 import { clientIpFor, E2E_PASSWORD, greeting, readFixtures } from "./fixtures"
 
 // The dock's Help opens /admin/help for every signed-in user: how-to
-// answers, the shortcuts and the active owners to mail.
+// guides by area (only the ones the role can open) and the active owners
+// to mail.
 
 test.beforeEach(async ({ context }, testInfo) => {
   await context.setExtraHTTPHeaders({
@@ -12,7 +13,7 @@ test.beforeEach(async ({ context }, testInfo) => {
   })
 })
 
-test("help page: the dock's Help shows shortcuts and an owner's mailto", async ({
+test("help page: guides by area, the shortcuts article and an owner's mailto", async ({
   page,
 }) => {
   const { editor } = readFixtures()
@@ -32,28 +33,33 @@ test("help page: the dock's Help shows shortcuts and an owner's mailto", async (
     page.getByRole("heading", { name: "Help", level: 1 })
   ).toBeVisible()
 
-  // Docs layout: an outline on the left, one article at a time.
+  // Docs layout: topics on the left, one article at a time.
+  const topics = page.getByRole("navigation", { name: "Help topics" })
+  await expect(topics).toBeVisible()
   await expect(
-    page.getByRole("heading", { name: "How can we help?" })
-  ).toBeVisible()
-  const outline = page.getByRole("navigation", { name: "Help outline" })
+    page.getByRole("link", { name: /Read the guide/ })
+  ).toHaveAttribute("href", "/admin/help/getting-started")
 
-  await outline
-    .getByRole("link", { name: "Add a customer testimonial", exact: true })
-    .click()
-  await expect(page).toHaveURL(/\/admin\/help#testimonials$/)
+  await topics.getByRole("link", { name: "Saving and publishing" }).click()
+  await expect(page).toHaveURL(/\/admin\/help\/saving-and-publishing$/)
   await expect(
-    page.getByRole("heading", { name: "Add a customer testimonial", level: 2 })
+    page.getByRole("heading", { name: "Saving and publishing", level: 1 })
   ).toBeVisible()
   await expect(
-    page.getByText("drag rows to change the order", { exact: false })
+    page.getByRole("heading", { name: "Drafts save by themselves", level: 2 })
   ).toBeVisible()
 
-  await outline.getByRole("link", { name: "Keyboard shortcuts" }).click()
-  await expect(page.getByText("Search and go")).toBeVisible()
-  await expect(page.getByText("Close panels")).toBeVisible()
+  // The keyboard shortcuts are in Getting started.
+  await topics.getByRole("link", { name: "Getting started" }).click()
+  await expect(
+    page.getByRole("heading", { name: "Keyboard shortcuts", level: 2 })
+  ).toBeVisible()
 
-  await outline.getByRole("link", { name: "Who to contact" }).click()
+  // An editor does not open Enquiries, so that article is not listed.
+  await expect(topics.getByRole("link", { name: "Enquiries" })).toHaveCount(0)
+
+  // The owners to ask are on the Help home.
+  await page.goto("/admin/help")
   await expect(
     page.getByRole("link", { name: new RegExp(E2E_OWNER.email) })
   ).toHaveAttribute("href", `mailto:${E2E_OWNER.email}`)

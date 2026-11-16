@@ -65,6 +65,7 @@ const EXPECTED: Record<string, PermissionRequest | null> = {
   "activity/page.tsx": { audit: ["read"] },
   "appearance/page.tsx": { appearance: ["read"] },
   "design/page.tsx": { customCode: ["update"] },
+  "help/[slug]/page.tsx": null,
   "help/page.tsx": null,
   "users/page.tsx": { user: ["read"] },
   "users/[id]/page.tsx": { user: ["read"] },

@@ -3,8 +3,6 @@ import { existsSync, readFileSync } from "node:fs"
 
 import { describe, expect, it } from "vitest"
 
-import { HELP_GUIDES } from "@/components/admin/help/help-view"
-
 const read = (file: string) => readFileSync(file, "utf8")
 const DOCS = ["docs/runbook.md", "docs/launch.md", "README.md"]
 
@@ -120,12 +118,6 @@ describe("operations docs", () => {
       for (const m of read(file).matchAll(/scripts\/dist\/([a-z0-9-]+)\.mjs/g))
         expect(bundles, `${file}: ${m[0]}`).toContain(m[1]!)
     }
-  })
-
-  it("every Help guide is a runbook heading", () => {
-    const runbook = read("docs/runbook.md")
-    for (const guide of HELP_GUIDES)
-      expect(runbook).toContain(`## ${guide.title}\n`)
   })
 
   it("the docs carry no sister-site strings", () => {

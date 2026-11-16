@@ -1,392 +1,417 @@
-import { HelpDocs } from "@/components/admin/help/help-docs"
+import {
+  AlertTriangleIcon,
+  ArrowRightIcon,
+  ArrowUpRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  InfoIcon,
+  LightbulbIcon,
+} from "lucide-react"
+import Link from "next/link"
+
+import { LINK_SECONDARY } from "@/components/admin/page-header"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import {
+  canFollow,
+  groupedArticles,
+  HELP_GROUPS,
+  HELP_HREF,
+  headingId,
+  helpArticle,
+  helpHref,
+  neighbours,
+  tocFor,
+  type HelpArticle,
+  type HelpBlock,
+} from "@/lib/admin/help/registry"
+import type { Role } from "@/lib/auth/roles"
+import { cn } from "@/lib/utils"
+
+import { HELP_GROUP_ICONS } from "./help-icons"
+import { HelpMobileNav } from "./help-mobile-nav"
+import { HelpSidebar, type HelpNavGroup } from "./help-sidebar"
+import { HelpToc, HelpTocDisclosure } from "./help-toc"
+import { HelpText } from "./inline"
+
+function navGroups(roles: readonly Role[]): HelpNavGroup[] {
+  return groupedArticles(roles).map((group) => ({
+    id: group.id,
+    label: group.label,
+    articles: group.articles.map(({ slug, title }) => ({ slug, title })),
+  }))
+}
+
+// Three columns like a docs site: topics (~17rem), the page, and "On this
+// page" (~14rem). HelpShell (the topics) is rendered by help/layout.tsx, so
+// it stays mounted across articles; each page brings its own TOC column.
+// The side columns stick, with their own scroll, while <main> scrolls.
+export function HelpShell({
+  roles,
+  children,
+}: {
+  roles: readonly Role[]
+  children: React.ReactNode
+}) {
+  const groups = navGroups(roles)
+  return (
+    <div
+      data-testid="help"
+      className="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)]"
+    >
+      <aside className="sticky top-0 hidden max-h-(--content-h) self-start overflow-y-auto overscroll-contain pr-2 pb-6 lg:block">
+        <HelpSidebar groups={groups} />
+      </aside>
+      <div className="flex min-w-0 flex-col gap-6">
+        <HelpMobileNav groups={groups} />
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function HelpPage({
+  aside,
+  children,
+}: {
+  aside?: React.ReactNode
+  children: React.ReactNode
+}) {
+  if (!aside) return <>{children}</>
+  return (
+    <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_14rem]">
+      <div className="min-w-0">{children}</div>
+      <aside className="sticky top-0 hidden max-h-(--content-h) self-start overflow-y-auto pb-6 xl:block">
+        {aside}
+      </aside>
+    </div>
+  )
+}
+
+const CALLOUT = {
+  tip: {
+    label: "Tip",
+    Icon: LightbulbIcon,
+    tone: "border-primary/30 bg-accent/60",
+  },
+  note: { label: "Note", Icon: InfoIcon, tone: "border-border bg-card" },
+  warning: {
+    label: "Warning",
+    Icon: AlertTriangleIcon,
+    tone: "border-destructive/40 bg-destructive/5",
+  },
+} as const
+
+function Block({ block, roles }: { block: HelpBlock; roles: readonly Role[] }) {
+  switch (block.type) {
+    case "p":
+      return (
+        <p className="leading-7 text-muted-foreground">
+          <HelpText text={block.text} roles={roles} />
+        </p>
+      )
+    case "list":
+      return (
+        <ul className="ml-5 flex list-disc flex-col gap-2 leading-7 text-muted-foreground marker:text-primary">
+          {block.items.map((item) => (
+            <li key={item}>
+              <HelpText text={item} roles={roles} />
+            </li>
+          ))}
+        </ul>
+      )
+    case "steps":
+      return (
+        <ol className="flex flex-col gap-3">
+          {block.items.map((item, index) => (
+            <li
+              key={item}
+              className="flex gap-3 leading-7 text-muted-foreground"
+            >
+              <span
+                aria-hidden
+                className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
+              >
+                {index + 1}
+              </span>
+              <span className="min-w-0">
+                <HelpText text={item} roles={roles} />
+              </span>
+            </li>
+          ))}
+        </ol>
+      )
+    case "callout": {
+      const { label, Icon, tone } = CALLOUT[block.tone]
+      return (
+        <div
+          role="note"
+          aria-label={label}
+          className={cn("flex gap-3 rounded-xl border p-4 leading-7", tone)}
+        >
+          <Icon aria-hidden className="mt-1 size-4 shrink-0 text-primary" />
+          <p className="min-w-0 text-foreground/90">
+            <span className="font-semibold">{label}: </span>
+            <HelpText text={block.text} roles={roles} />
+          </p>
+        </div>
+      )
+    }
+    case "open":
+      // A button to a screen the viewer cannot open is left out.
+      return canFollow(roles, block.href) ? (
+        <p>
+          <Link href={block.href} className={cn(LINK_SECONDARY, "h-11")}>
+            {block.label}
+            <ArrowUpRightIcon aria-hidden />
+          </Link>
+        </p>
+      ) : null
+  }
+}
+
+function groupLabel(article: HelpArticle) {
+  return HELP_GROUPS.find((group) => group.id === article.group)!.label
+}
+
+export function HelpArticleView({
+  article,
+  roles,
+}: {
+  article: HelpArticle
+  roles: readonly Role[]
+}) {
+  const { prev, next } = neighbours(roles, article.slug)
+  return (
+    <HelpPage aside={<HelpToc entries={tocFor(article)} />}>
+      <article className="flex max-w-[70ch] flex-col gap-10">
+        <header className="flex flex-col gap-3">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink render={<Link href={HELP_HREF} />}>
+                  Help
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>{groupLabel(article)}</BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{article.title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <h1 className="text-title text-balance">{article.title}</h1>
+          <p className="text-lg leading-8 text-muted-foreground">
+            <HelpText text={article.lead} roles={roles} />
+          </p>
+        </header>
+        <HelpTocDisclosure entries={tocFor(article)} />
+        {article.sections.map((section) => {
+          const id = headingId(section.title)
+          return (
+            <section
+              key={id}
+              aria-labelledby={id}
+              className={cn(
+                "flex flex-col gap-4",
+                section.level === 3 && "-mt-4"
+              )}
+            >
+              {section.level === 3 ? (
+                <h3
+                  id={id}
+                  className="scroll-mt-6 text-lg font-semibold tracking-tight"
+                >
+                  {section.title}
+                </h3>
+              ) : (
+                <h2
+                  id={id}
+                  className="scroll-mt-6 border-b border-border pb-2 text-xl font-semibold tracking-tight"
+                >
+                  {section.title}
+                </h2>
+              )}
+              {section.blocks.map((block, index) => (
+                <Block key={index} block={block} roles={roles} />
+              ))}
+            </section>
+          )
+        })}
+        <nav
+          aria-label="Pagination"
+          className="flex items-start justify-between gap-6 border-t border-border py-8"
+        >
+          {prev ? (
+            <PagerLink article={prev} direction="prev" />
+          ) : (
+            <span aria-hidden />
+          )}
+          {next ? (
+            <PagerLink article={next} direction="next" />
+          ) : (
+            <span aria-hidden />
+          )}
+        </nav>
+      </article>
+    </HelpPage>
+  )
+}
+
+// Previous / Next in sidebar order, across groups: a chevron, a small
+// label and the title, no box. The chevron nudges outward on hover.
+function PagerLink({
+  article,
+  direction,
+}: {
+  article: HelpArticle
+  direction: "prev" | "next"
+}) {
+  const isNext = direction === "next"
+  const Chevron = isNext ? ChevronRightIcon : ChevronLeftIcon
+  return (
+    <Link
+      href={helpHref(article.slug)}
+      rel={direction}
+      className={cn(
+        "group flex min-w-0 items-center gap-3",
+        isNext && "ml-auto flex-row-reverse text-right"
+      )}
+    >
+      <Chevron
+        aria-hidden
+        className={cn(
+          "size-5 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none",
+          isNext
+            ? "group-hover:translate-x-0.5"
+            : "group-hover:-translate-x-0.5"
+        )}
+      />
+      <span className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-xs text-muted-foreground">
+          {isNext ? "Next" : "Previous"}
+        </span>{" "}
+        <span className="font-semibold text-foreground underline-offset-4 group-hover:text-primary group-hover:underline">
+          {article.title}
+        </span>
+      </span>
+    </Link>
+  )
+}
 
 export type OwnerContact = { name: string; email: string }
 
-/** ⌘ on a Mac, Ctrl elsewhere: both are listed (the page renders on the server). */
-export const SHORTCUTS: { keys: string[][]; action: string }[] = [
-  {
-    keys: [
-      ["⌘", "K"],
-      ["Ctrl", "K"],
-    ],
-    action: "Search and go",
-  },
-  {
-    keys: [
-      ["⌘", "J"],
-      ["Ctrl", "J"],
-    ],
-    action: "AI assistant",
-  },
-  {
-    keys: [
-      ["⌘", "S"],
-      ["Ctrl", "S"],
-    ],
-    action: "Save draft",
-  },
-  { keys: [["Esc"]], action: "Close panels" },
-]
-
-export type HelpGroupId = "content" | "inbox" | "team"
-
-/** The outline's sections, in order. */
-export const HELP_GROUPS: readonly { id: HelpGroupId; title: string }[] = [
-  { id: "content", title: "Website content" },
-  { id: "inbox", title: "Blog and enquiries" },
-  { id: "team", title: "Team and account" },
-]
-
-export type HelpTopic = {
-  id: string
-  group: HelpGroupId
-  title: string
-  /** Short answer, then the steps. */
-  summary: string
-  steps: string[]
-}
-
-/**
- * Plain-language answers for the people who run the Cleaning Partners
- * website. Each one names a screen in the left menu; the page is pinned by
- * tests/unit/admin/help-topics.test.ts (every topic has steps, and nothing
- * from another business sneaks in).
- */
-export const HELP_TOPICS: readonly HelpTopic[] = [
-  {
-    id: "edit-a-page",
-    group: "content",
-    title: "Change the words or pictures on a page",
-    summary:
-      "Website lists every page of the site. Open one, change what you need, then publish.",
-    steps: [
-      "Open Website and choose the page, for example Home or About. Each page's tabs hold the sections and lists it shows.",
-      "Edit a section's text, button or image. Changes save to a draft by themselves, so the live site does not change yet.",
-      "Use the preview to see the page as visitors will, on a phone or a computer.",
-      "Press Publish and check the list of changes. The site updates within a few seconds.",
-      "Made a mistake? Open History and restore an earlier version.",
-    ],
-  },
-  {
-    id: "build-a-page",
-    group: "content",
-    title: "Build a new page from blocks",
-    summary:
-      "Pages you add yourself are put together from ready-made blocks and live under /p/ on the site.",
-    steps: [
-      "Open Website, Custom pages and choose New page. You can also find it with the search (Ctrl or ⌘ K).",
-      "Add blocks one by one and fill in each. Changes save to a draft by themselves.",
-      "Press Publish. The page appears at /p/ followed by its address (slug).",
-      "If you change the address of a published page, the old link is sent to the new one.",
-    ],
-  },
-  {
-    id: "post-a-job",
-    group: "content",
-    title: "Post a job and handle applications",
-    summary:
-      "Website, Careers holds the jobs shown on /careers. The applications people send, with their CVs, arrive under Enquiries.",
-    steps: [
-      "Open Website, Careers, Jobs and choose New job. Fill in the title, location, hours, pay and the role's details.",
-      "Press Publish. The job appears under Open Positions on /careers with its own page and application form.",
-      "When the role is filled, press Close. It moves to Previous Openings and its form stops taking applications. A closing date closes it by itself.",
-      "Applications arrive under Enquiries, Job applications, and by email to the Careers recipients in Site settings. Open one to read the answers and download the CV.",
-      "Set each application's status and add notes as you go. Applications and their CVs are deleted automatically after the retention period in Site settings, Job applications.",
-      "The words on the careers pages and the form's questions and options are edited in Website, Careers.",
-    ],
-  },
-  {
-    id: "services",
-    group: "content",
-    title: "Add or edit a cleaning service",
-    summary:
-      "Each service has its own page, plus a card on the Services page and the home page.",
-    steps: [
-      "Open Website, Services, All services and choose New service, or open one to edit it.",
-      "Fill in the name, the card text, the banner text and picture, and what is included.",
-      "List the places you clean (offices, homes, clinics and so on) so visitors see them on the page.",
-      "A new service starts as a draft and stays hidden until you publish it.",
-      "Choose Change order, then drag services to change the order they show on the site.",
-    ],
-  },
-  {
-    id: "testimonials",
-    group: "content",
-    title: "Add a customer testimonial",
-    summary:
-      "Testimonials live in Website, Home and appear in the reviews section of the site.",
-    steps: [
-      "Open Website, Home, Testimonials and choose Add testimonial.",
-      "Enter the customer's name, their initials and the quote, then pick a rating from 1 to 5 stars.",
-      "Save. Testimonials go live straight away: there is no separate publish step.",
-      "Choose Change order, then drag rows to change the order, or delete a testimonial you no longer want to show.",
-    ],
-  },
-  {
-    id: "team-clients",
-    group: "content",
-    title: "Update the team, clients and group companies",
-    summary:
-      "These short lists sit in Website, on the page that shows them, and work the same way as testimonials.",
-    steps: [
-      "Open Website, About, Team members; Website, Home, Client logos; or Website, Header & footer, Group companies.",
-      "Add a person or company, edit a row, or choose Change order and drag to reorder.",
-      "Changes show on the live site as soon as you save.",
-    ],
-  },
-  {
-    id: "blog",
-    group: "inbox",
-    title: "Write and publish a blog article",
-    summary:
-      "Blog holds your news and cleaning tips. Authors write, editors publish.",
-    steps: [
-      "Open Website, Blog and choose New article.",
-      "Write the title and the article, add a cover picture and choose a category.",
-      "Authors can send an article for review. An editor then publishes it, or schedules it for a later date.",
-      "Categories are managed under Website, Blog, Categories.",
-    ],
-  },
-  {
-    id: "enquiries",
-    group: "inbox",
-    title: "Handle enquiries from the contact form",
-    summary:
-      "Every message sent through the site's contact form arrives under Enquiries.",
-    steps: [
-      "Open Enquiries to see new messages first. The number beside the menu item counts the ones nobody has picked up.",
-      "Open a message, assign it to someone on the team and reply by email or phone.",
-      "Change its status as you go: New, Contacted, Qualified, Won or Lost.",
-      "Messages marked as spam are hidden from the main list. Filter by Spam to find one marked by mistake.",
-    ],
-  },
-  {
-    id: "live-chat",
-    group: "inbox",
-    title: "Live chat",
-    summary:
-      "Visitors can chat with the team from the bubble on the site. Their chats arrive under Live chat.",
-    steps: [
-      "Turn it on under Site settings › Live chat, then publish.",
-      "The AI assistant needs Site settings › AI assistant set up.",
-      'Before turning it on, add a short "Live chat" paragraph to the Privacy page (what is stored, for how long, that an AI provider reads messages).',
-      "Reply to take over; Hand back to let the assistant answer again.",
-      "Use Privacy request to export or erase a person's chats.",
-    ],
-  },
-  {
-    id: "media",
-    group: "content",
-    title: "Upload and reuse pictures",
-    summary:
-      "Pictures are chosen from the media library wherever a page asks for an image.",
-    steps: [
-      "Press Choose image on any picture field, then upload a new file or pick one you already have.",
-      "Add a short description (alt text) so the picture works for people using screen readers.",
-      "Use large, sharp photos for banners. Uploaded pictures are cleaned of hidden camera and location data.",
-      "The Media screen lists everything uploaded and where each file is used.",
-    ],
-  },
-  {
-    id: "settings",
-    group: "content",
-    title: "Change phone, email, address and menus",
-    summary:
-      "Website holds the details and sections that repeat across the site; Site settings keeps the business identity and inbox setup.",
-    steps: [
-      "Open Website, Contact, Contact details to change the phone number, email, address or opening hours.",
-      "Use Website, Header & footer: Navigation for the header and footer menus, and Footer for the closing text and links.",
-      "Shared sections sit on the page that features them: Why choose us and Testimonials section on Home, How it works on Services. A page lists the ones it shows under Shared on this page.",
-      "Settings save to a draft first: press Publish to put them on the live site.",
-    ],
-  },
-  {
-    id: "appearance",
-    group: "content",
-    title: "Change the site colours",
-    summary:
-      "Appearance sets the colours of the public site and of this admin. Owners and administrators can change it.",
-    steps: [
-      "Open Appearance in the left menu and pick the colours you want. Changes save to a draft first.",
-      "Press Publish. If a colour pair is too hard to read, you are asked to fix the contrast issues before publishing.",
-      "The default theme is the original look of the site, so you can always go back to it.",
-    ],
-  },
-  {
-    id: "people",
-    group: "team",
-    title: "Invite a colleague and choose what they can do",
-    summary:
-      "Owners and administrators manage the team under Users & roles. Roles decide what each person can change.",
-    steps: [
-      "Open Users & roles and choose Invite user, then enter their name and email.",
-      "Pick a role: for example an editor can publish, an author can only write drafts.",
-      "If email is not set up yet, copy the invitation link and send it to them yourself.",
-      "Turn on two-factor sign-in under your own Account for extra protection.",
-    ],
-  },
-  {
-    id: "signin",
-    group: "team",
-    title: "Sign in, passwords and two-factor",
-    summary:
-      "Staying signed in, choosing a password and what to do when you are locked out.",
-    steps: [
-      "You stay signed in for about 7 days. The clock restarts whenever you use the admin.",
-      "Passwords are 12 to 128 characters long. Change yours, or turn on two-factor sign-in, under Account.",
-      "Too many wrong attempts in a minute pauses sign-in for a short while. Wait, then try again.",
-      "Locked out or lost your two-factor device? Ask an owner (see Who to contact below). They can reset your access.",
-    ],
-  },
-  {
-    id: "ai",
-    group: "team",
-    title: "Use the AI assistant",
-    summary:
-      "The assistant answers questions about the site's content. It can look but never change anything.",
-    steps: [
-      "Press Ctrl or ⌘ J to open it, and ask your question in plain words.",
-      "Only the roles the owner has allowed can use it. If it is missing for you, ask an owner.",
-      "There is a limit of 30 messages every 10 minutes for each person.",
-      "Your conversations are kept until you delete them.",
-    ],
-  },
-  {
-    id: "activity",
-    group: "team",
-    title: "See who changed something",
-    summary:
-      "Activity log records sign-ins, edits and publishes by everyone on the team.",
-    steps: [
-      "Open Activity log and filter by person, action or date.",
-      "Select a row to see its details, including what changed.",
-    ],
-  },
-]
-
-export type HelpGuide = {
-  /** Exactly a `## ` heading of docs/runbook.md. */
-  title: string
-  summary: string
-  steps: string[]
-}
-
-/**
- * Sections of docs/runbook.md (not served by the site), written up here for
- * the people who run it; tests/unit/admin/help-guides.test.ts pins each title
- * to a `## ` heading there. Jobs only the person who hosts the site can do are
- * marked as such.
- */
-export const HELP_GUIDES: readonly HelpGuide[] = [
-  {
-    title: "Owner locked out",
-    summary:
-      "If the only owner cannot sign in, whoever hosts the site can restore access.",
-    steps: [
-      "Ask another owner first. Owners are listed under Who to contact.",
-      "If there is no other owner, ask whoever hosts the site to run the owner recovery script for your email address.",
-      "It turns off two-factor for you, ends your old sessions and cancels older links. You get a one-time password link that works for 24 hours (also emailed when email is set up).",
-      "Set a new password, then turn two-factor back on under Account.",
-    ],
-  },
-  {
-    title: "Sessions and sign-in",
-    summary:
-      "How long you stay signed in, and the limits that protect sign-in.",
-    steps: [
-      "A session lasts 7 days and is extended while you use the admin, so in practice you are signed out after about 7 days of not using it.",
-      "Passwords are 12 to 128 characters long.",
-      "Limits on sign-in: 5 sign-in attempts and 5 two-factor attempts a minute, and 3 password resets every 5 minutes. Wait a moment and try again.",
-      "Ending someone's session takes effect straight away on every admin page.",
-      "While an administrator is using View as, account settings and the AI assistant are read-only.",
-    ],
-  },
-  {
-    title: "Page builder",
-    summary:
-      "Pages you add yourself are built from 15 blocks and live at /p/ followed by their address.",
-    steps: [
-      "Open Website, Custom pages and choose New page. Changes save to a draft by themselves, and Publish checks the whole page.",
-      "If a save is refused because the page changed meanwhile, reload it and make your change again.",
-      "Two pages cannot share an address. Renaming the address of a published page keeps the old link working.",
-      "Deleting a page can send its address to the home page. Without that option the old address shows a not-found page.",
-      "Pages built this way appear in the sitemap and have an SEO tab and a preview like the other pages.",
-    ],
-  },
-  {
-    title: "AI assistant",
-    summary:
-      "Owners and administrators set up the assistant under Settings, then AI assistant.",
-    steps: [
-      "Choose the provider and model, paste the API key and pick which roles may use it. The key is stored encrypted and is not kept anywhere else.",
-      "Use Test connection to check the key works. If you leave out owner and administrator from the allowed roles, those roles lose access until the list is saved again.",
-      "Share enquiry details lets the assistant read enquiries. Only an owner can turn it on, and changing the provider turns it off again. With it on, names, companies and messages go to the provider.",
-      "Addresses and Eircodes typed into a message are not hidden before they are sent.",
-      "The assistant can only read. It opens with Ctrl or ⌘ J, and each person can send 30 messages every 10 minutes.",
-    ],
-  },
-  {
-    title: "Backups and the restore drill",
-    summary:
-      "The site backs up its database every day by itself. Setting up storage is the part to check.",
-    steps: [
-      "A backup runs each day and the newest 14 are kept. Pending invitations, password links and short-lived counters are not included.",
-      "Backups are stored in your R2 bucket once R2 is saved under Settings, then Integrations. Until then they stay on the server's disk and are lost with it, so set up R2 early.",
-      "A failing backup shows on the dashboard as Background jobs need attention and is retried every minute.",
-      "Once after the first backup, then monthly and after any database upgrade, whoever hosts the site should run the restore drill. It restores the newest backup to a scratch database and compares the row counts.",
-    ],
-  },
-  {
-    title: "Restore a backup",
-    summary:
-      "Only the person who hosts the site can do this. It replaces the live data with a backup.",
-    steps: [
-      "Stop the app so nothing writes while you restore.",
-      "Get the backup file and check its checksum against the manifest stored beside it.",
-      "Restore it into the database, then release the job locks the backup captured.",
-      "Start the app, check the health address and sign in.",
-      "Re-send any invitations and password links: pending ones do not come back. Sessions stay valid.",
-    ],
-  },
-  {
-    title: "Custom code and Content-Security-Policy",
-    summary:
-      "Only an owner can add scripts and tracking codes, under Marketing, then Custom code.",
-    steps: [
-      "Each snippet is a script address or a block of HTML, with a place on the page, the pages it runs on and a consent type. You can have up to 20.",
-      "Necessary snippets always run. Analytics and marketing snippets wait until the visitor accepts that kind in the cookie banner.",
-      "Only paste code from vendors you trust: it runs with full access to every visitor's page.",
-      "Switch all custom code off stops every snippet at once. Turn it off again and publish to bring them back.",
-      "Tracking IDs (Google Tag Manager, Google Analytics, Meta Pixel) can only be changed by an owner, and load nothing until a visitor consents.",
-    ],
-  },
-  {
-    title: "Background jobs",
-    summary:
-      "The site runs a few tasks by itself every minute, so nothing needs pressing.",
-    steps: [
-      "Scheduled articles are published within about a minute of their time.",
-      "Old versions are cleaned up daily, keeping the newest 50 of each page or article.",
-      "Enquiries older than the retention period are deleted daily (24 months unless changed).",
-      "A picture you replace stays at its old address for 24 hours, so open pages keep their images, and is then deleted.",
-      "A failed job shows on the dashboard as Background jobs need attention and is retried after a minute.",
-    ],
-  },
-]
-
-/**
- * The Help page (dock): laid out like a docs site, with how-to answers for the
- * people who run the website, runbook guides, keyboard shortcuts, and the
- * owners to ask for access or a reset.
- */
-export function HelpView({ owners }: { owners: OwnerContact[] }) {
+export function HelpOverview({
+  roles,
+  owners = [],
+}: {
+  roles: readonly Role[]
+  owners?: readonly OwnerContact[]
+}) {
+  const start = helpArticle("getting-started")!
+  const groups = groupedArticles(roles)
   return (
-    <HelpDocs
-      topics={HELP_TOPICS}
-      groups={HELP_GROUPS}
-      guides={HELP_GUIDES}
-      shortcuts={SHORTCUTS}
-      owners={owners}
-    />
+    <HelpPage>
+      <div className="flex flex-col gap-8">
+        <header className="flex max-w-3xl flex-col gap-3">
+          <h1 className="text-title text-balance">Help</h1>
+          <p className="text-lg leading-8 text-muted-foreground">
+            Step-by-step guides for every part of the admin. Only the parts your
+            role can open are listed.
+          </p>
+        </header>
+        <Link
+          href={helpHref(start.slug)}
+          className="rounded-card flex flex-col gap-2 bg-primary p-6 text-primary-foreground transition-opacity hover:opacity-95 sm:p-8"
+        >
+          <span className="text-sm font-semibold tracking-wide uppercase opacity-80">
+            New here?
+          </span>
+          <span className="text-2xl font-semibold">{start.title}</span>
+          <span className="max-w-2xl opacity-90">{start.description}</span>
+          <span className="mt-2 inline-flex items-center gap-1 font-semibold">
+            Read the guide <ArrowRightIcon aria-hidden className="size-4" />
+          </span>
+        </Link>
+        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {groups.map((group) => {
+            const Icon = HELP_GROUP_ICONS[group.id]
+            return (
+              <section
+                key={group.id}
+                aria-labelledby={`group-${group.id}`}
+                className="rounded-card flex flex-col gap-4 bg-card p-5 text-card-foreground sm:p-6"
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden
+                    className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground [&_svg]:size-5"
+                  >
+                    <Icon />
+                  </span>
+                  <div className="min-w-0">
+                    <h2 id={`group-${group.id}`} className="font-semibold">
+                      {group.label}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {group.description}
+                    </p>
+                  </div>
+                </div>
+                <ul className="flex flex-col gap-1">
+                  {group.articles.map((article) => (
+                    <li key={article.slug}>
+                      <Link
+                        href={helpHref(article.slug)}
+                        className="group flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                      >
+                        {article.title}
+                        <ArrowRightIcon
+                          aria-hidden
+                          className="size-4 opacity-0 transition-opacity group-hover:opacity-100"
+                        />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          })}
+        </div>
+        {owners.length > 0 ? (
+          <section
+            aria-labelledby="help-owners"
+            className="rounded-card flex max-w-3xl flex-col gap-3 bg-card p-5 text-card-foreground sm:p-6"
+          >
+            <h2 id="help-owners" className="font-semibold">
+              Who to ask
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Stuck, or need your access changed? These people can help.
+            </p>
+            <ul className="flex flex-col gap-1 text-sm">
+              {owners.map((owner) => (
+                <li key={owner.email}>
+                  <span className="font-medium">{owner.name}</span>{" "}
+                  <a
+                    href={`mailto:${owner.email}`}
+                    className="text-muted-foreground underline-offset-4 hover:underline"
+                  >
+                    {owner.email}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+      </div>
+    </HelpPage>
   )
 }
