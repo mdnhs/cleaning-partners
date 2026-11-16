@@ -3,7 +3,6 @@ import { notFound } from "next/navigation"
 import { connection } from "next/server"
 
 import { JsonLd } from "@/components/seo/json-ld"
-import { ServiceDetailSkeleton } from "@/components/services/service-detail-skeleton"
 import { SiteThemed } from "@/components/site-themed"
 import { publicOrigin } from "@/server/lib/site-origin"
 import { loadSiteSources } from "@/server/modules/pages/sources"
@@ -22,7 +21,7 @@ export async function generateMetadata({
 
 export default function ServicePage({ params }: PageProps<"/services/[slug]">) {
   return (
-    <SiteThemed fallback={<ServiceDetailSkeleton />}>
+    <SiteThemed>
       <Content params={params} />
     </SiteThemed>
   )
