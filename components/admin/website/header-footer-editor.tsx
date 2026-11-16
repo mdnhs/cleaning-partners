@@ -1,57 +1,79 @@
 "use client"
 
-import Link from "next/link"
 import { useMemo } from "react"
+import { z } from "zod"
 
-import { CollectionScreen } from "@/components/admin/collections/collection-screen"
 import { VersionedEditor } from "@/components/admin/editor/versioned-editor"
-import { FormCard } from "@/components/admin/form/form-ui"
-import {
-  createHeaderFooterBundle,
-  headerFooterMeta,
-  headerFooterSchema,
-} from "@/components/admin/website/header-footer-bundle"
+import { bundleMeta } from "@/components/admin/pages/page-bundle"
+import { createSettingsBundle } from "@/components/admin/website/settings-bundle"
+import { WebsiteParts } from "@/components/admin/website/website-parts"
 import { usePermission } from "@/hooks/use-permission"
-import { SETTINGS_ENTRIES } from "@/lib/admin/settings-keys"
+import {
+  type EditableSettingsKey,
+  SETTINGS_ENTRIES,
+} from "@/lib/admin/settings-keys"
+import type { PageSection } from "@/lib/admin/website"
 import { previewHref } from "@/lib/schemas/api/preview"
+import { settingsSchemas } from "@/lib/schemas/settings"
+
+/** The settings behind the screen, in form order; the first is tracked. */
+const KEYS = [
+  "navigation",
+  "footer",
+  "microcopy",
+] as const satisfies readonly EditableSettingsKey[]
+
+const SECTIONS: readonly PageSection[] = KEYS.map((key) => ({
+  key,
+  settings: key,
+  after: null,
+}))
+
+/** The tab names (each key's form group). */
+const TAB_LABELS = {
+  navigation: {
+    label: "Header",
+    help: "The links across the top of every page (with dropdowns), the button and the phone menu.",
+  },
+  footer: {
+    label: "Footer",
+    help: "Footer text and headings, the legal links, and the group companies.",
+  },
+  microcopy: {
+    label: "Forms & microcopy",
+    help: "Small labels, icons and the quote card shared by several pages.",
+  },
+}
 
 /**
- * Header & footer: one editor (one preview, one Publish) with a Header and a
- * Footer tab inside the form, below the title. The Footer tab ends with the
- * group companies list and a link to the forms & microcopy strings.
+ * Header & footer: the header menu, the footer and the shared small labels in
+ * one form with a tab each (Header, Footer, Forms & microcopy), one draft, one
+ * preview and one Publish. The group companies sit at the end of the Footer
+ * tab.
  */
-export function HeaderFooterEditor({
-  canMicrocopy,
-}: {
-  canMicrocopy: boolean
-}) {
+export function HeaderFooterEditor() {
   const canEdit = usePermission(SETTINGS_ENTRIES.navigation.update)
-  const bundle = useMemo(() => createHeaderFooterBundle(), [])
-  const slots = useMemo(
-    () => ({
-      "after:footer": (
-        <>
-          <FormCard id="part-group-companies">
-            <CollectionScreen name="group-companies" compact />
-          </FormCard>
-          {canMicrocopy ? (
-            <FormCard
-              id="part-microcopy"
-              title="Forms & microcopy"
-              description="The labels, messages and small texts used across the site."
-            >
-              <Link
-                href="/admin/website/header-footer/microcopy"
-                className="text-sm font-medium underline-offset-4 hover:underline"
-              >
-                Open forms &amp; microcopy
-              </Link>
-            </FormCard>
-          ) : null}
-        </>
+  const bundle = useMemo(() => createSettingsBundle(KEYS), [])
+  const schema = useMemo(
+    () =>
+      z.object(
+        Object.fromEntries(KEYS.map((key) => [key, settingsSchemas[key]]))
       ),
-    }),
-    [canMicrocopy]
+    []
+  )
+  const meta = useMemo(
+    () =>
+      bundleMeta(
+        {
+          fields: {
+            navigation: TAB_LABELS.navigation,
+            footer: TAB_LABELS.footer,
+            microcopy: TAB_LABELS.microcopy,
+          },
+        },
+        SECTIONS
+      ),
+    []
   )
   return (
     <VersionedEditor
@@ -62,14 +84,18 @@ export function HeaderFooterEditor({
       saveDraft={bundle.saveDraft}
       publish={bundle.publish}
       restore={bundle.restore}
-      schema={headerFooterSchema}
-      meta={headerFooterMeta}
+      schema={schema}
+      meta={meta}
       revisions={{ entity: "settings", id: "navigation" }}
       previewHref={previewHref("settings", "navigation")}
       publicHref="/"
+      slots={{
+        "after:footer": (
+          <WebsiteParts screen="header-footer" ids={["group-companies"]} />
+        ),
+      }}
       canEdit={canEdit}
       canPublish={canEdit}
-      slots={slots}
     />
   )
 }

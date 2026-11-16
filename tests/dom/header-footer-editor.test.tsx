@@ -26,7 +26,7 @@ import { AdminSessionProvider } from "@/components/admin/session-provider"
 import { QueryClientProvider } from "@tanstack/react-query"
 
 describe("HeaderFooterEditor", () => {
-  it("loads the navigation and footer records into one form with two tabs", async () => {
+  it("loads navigation, footer and microcopy into one form with three tabs", async () => {
     const dto = (draft: unknown) => ({
       draft,
       published: draft,
@@ -80,15 +80,20 @@ describe("HeaderFooterEditor", () => {
             impersonatedBy: null,
           }}
         >
-          <HeaderFooterEditor canMicrocopy />
+          <HeaderFooterEditor />
         </AdminSessionProvider>
       </QueryClientProvider>
     )
     await screen.findByText("Header & footer")
     expect(seen.some((u) => u.endsWith("/settings/navigation"))).toBe(true)
     expect(seen.some((u) => u.endsWith("/settings/footer"))).toBe(true)
+    expect(seen.some((u) => u.endsWith("/settings/microcopy"))).toBe(true)
     const tabs = await screen.findAllByRole("tab")
-    expect(tabs.map((t) => t.textContent)).toEqual(["Header", "Footer"])
+    expect(tabs.map((t) => t.textContent)).toEqual([
+      "Header",
+      "Footer",
+      "Forms & microcopy",
+    ])
     const user = userEvent.setup()
     await user.click(screen.getByRole("tab", { name: "Footer" }))
     expect(await screen.findByTestId("collection")).toHaveTextContent(

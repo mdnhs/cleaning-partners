@@ -56,12 +56,8 @@ async function Screen({
       <CollectionScreen name={solo.source.name} />
     ) : null
   }
-  // Header & footer: one editor with a Header and a Footer tab.
-  if (screen.key === "header-footer") {
-    const open = (id: string) => tabs.some((t) => t.id === id)
-    if (!open("navigation") || !open("footer")) redirect(tabs[0].href)
-    return <HeaderFooterEditor canMicrocopy={open("microcopy")} />
-  }
+  // Header & footer: one form with its own tabs (settings:read, checked above).
+  if (screen.key === "header-footer") return <HeaderFooterEditor />
   // No Page (Header & footer, or an author on Blog): open the first part,
   // which may live at its own URL (/admin/blog).
   if (tabs[0].id !== "page" || !screen.page) redirect(tabs[0].href)
