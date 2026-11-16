@@ -162,7 +162,11 @@ export function BlogList({
                 </p>
               </div>
               <h2 className="font-heading text-[28px] leading-[1.2] font-bold text-ink md:text-4xl/[1.2]">
-                <Link href={featured.href} className="hover:text-navy">
+                <Link
+                  href={featured.href}
+                  prefetch={false}
+                  className="hover:text-navy"
+                >
                   {featured.title}
                 </Link>
               </h2>
@@ -171,6 +175,7 @@ export function BlogList({
               </p>
               <Link
                 href={featured.href}
+                prefetch={false}
                 className="font-heading text-[17px]/[normal] font-bold text-navy hover:text-brand"
               >
                 {labels.readArticle}

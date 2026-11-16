@@ -40,6 +40,7 @@ export function JobRow({
         >
           <Link
             href={job.href}
+            prefetch={false}
             className="outline-none hover:text-navy focus-visible:underline"
           >
             {job.title}
@@ -58,6 +59,7 @@ export function JobRow({
         </p>
         <Link
           href={job.href}
+          prefetch={false}
           aria-describedby={`job-${job.slug}`}
           className={buttonVariants({
             variant: "brand",

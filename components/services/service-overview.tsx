@@ -64,6 +64,7 @@ export function ServiceOverview({
               <li key={item.slug} className="shrink-0">
                 <Link
                   href={item.href}
+                  prefetch={false}
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "block rounded-full border px-3.5 py-[9px] font-heading text-sm/[1.3] font-semibold whitespace-nowrap",
@@ -183,6 +184,7 @@ export function ServiceOverview({
                   <Link
                     key={item.slug}
                     href={item.href}
+                    prefetch={false}
                     aria-current={active ? "page" : undefined}
                     className={cn(
                       "group flex items-center justify-between rounded-xl px-[18px] py-3.5 font-heading text-[17px]/[normal] font-semibold transition-colors",

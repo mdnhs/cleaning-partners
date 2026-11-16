@@ -52,7 +52,7 @@ export function PostCard({
           </time>
         </div>
         <h3 className="line-clamp-2 font-heading text-xl leading-[1.25] font-bold text-ink md:text-2xl md:leading-[1.2]">
-          <Link href={post.href} className="hover:text-navy">
+          <Link href={post.href} prefetch={false} className="hover:text-navy">
             {post.title}
           </Link>
         </h3>
@@ -61,6 +61,7 @@ export function PostCard({
         </p>
         <Link
           href={post.href}
+          prefetch={false}
           className="font-heading text-base/[1.2] font-bold text-navy hover:text-brand md:leading-[normal]"
         >
           {readArticle}
@@ -98,6 +99,7 @@ export function PostCardCompact({ post }: { post: PostCardData }) {
         <h3 className="line-clamp-3 font-heading text-[17px] leading-[1.3] font-bold text-ink">
           <Link
             href={post.href}
+            prefetch={false}
             className="after:absolute after:inset-0 hover:text-navy"
           >
             {post.title}

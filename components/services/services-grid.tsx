@@ -106,6 +106,7 @@ export function ServicesGrid({
               <div className="col-span-full flex items-center justify-between gap-4">
                 <Link
                   href={service.href}
+                  prefetch={false}
                   aria-label={service.learnMoreAria}
                   className="font-heading text-base/[normal] font-bold text-navy hover:text-brand"
                 >

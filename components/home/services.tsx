@@ -80,6 +80,7 @@ export function Services({
               <li key={`${index}:${service.href}`} data-service-item>
                 <Link
                   href={service.href}
+                  prefetch={false}
                   className="flex items-center gap-3.5 rounded-2xl border border-line bg-white p-4 sm:gap-4 sm:rounded-[18px] sm:px-5 sm:py-[18px]"
                 >
                   <Image

@@ -65,6 +65,7 @@ export function SimilarRoles({
               />
               <Link
                 href={job.href}
+                prefetch={false}
                 aria-describedby={`similar-${job.slug}`}
                 className="mt-auto inline-flex items-center gap-1.5 font-heading text-base font-bold text-navy hover:text-brand"
               >
