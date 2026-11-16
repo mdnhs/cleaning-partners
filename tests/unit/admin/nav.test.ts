@@ -24,7 +24,17 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
     [
       "owner",
       [
-        ["Menu", ["Dashboard", "Website", "Media", "Enquiries", "Live chat"]],
+        [
+          "Menu",
+          [
+            "Dashboard",
+            "Website",
+            "Media",
+            "Enquiries",
+            "Job applications",
+            "Live chat",
+          ],
+        ],
         ["Growth", ["SEO", "Marketing"]],
         ["General", ["Appearance", "Site settings"]],
       ],
@@ -54,7 +64,10 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
       ],
     ],
     ["author", [["Menu", ["Dashboard", "Website", "Media"]]]],
-    ["intake", [["Menu", ["Dashboard", "Enquiries", "Live chat"]]]],
+    [
+      "intake",
+      [["Menu", ["Dashboard", "Enquiries", "Job applications", "Live chat"]]],
+    ],
   ])("%s sees %j", (role, expected) => {
     expect(menu([role])).toEqual(expected)
   })
@@ -99,14 +112,8 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
       "Custom pages",
       "Legal pages",
     ])
-    expect(children(["owner"], "leads")).toEqual([
-      "Enquiries",
-      "Job applications",
-    ])
-    expect(children(["intake"], "leads")).toEqual([
-      "Enquiries",
-      "Job applications",
-    ])
+    expect(children(["owner"], "leads")).toBeNull()
+    expect(children(["intake"], "applications")).toBeNull()
     const settings = children(["editor"], "settings")!
     expect(settings).not.toContain("AI assistant")
     expect(settings).not.toContain("Integrations")
@@ -154,12 +161,15 @@ describe("role gating keeps the permission matrix (lib/auth/permissions.ts)", ()
       parentKeywords: [],
       label: "Media",
     })
-    expect(owner.find((l) => l.id === "leads-enquiries")).toMatchObject({
-      parent: "Enquiries",
+    expect(owner.find((l) => l.id === "leads")).toMatchObject({
+      parent: null,
       href: "/admin/leads",
     })
+    expect(owner.find((l) => l.id === "applications")).toMatchObject({
+      parent: null,
+      href: "/admin/careers/applications",
+    })
     expect(owner.some((l) => l.id === "seo")).toBe(false)
-    expect(owner.some((l) => l.id === "leads")).toBe(false)
     for (const link of owner) expect(link.icon).toBeTruthy()
   })
 })
@@ -221,7 +231,6 @@ describe("firstVisibleChild (section index pages)", () => {
     expect(firstVisibleChild("website", ["editor"])?.href).toBe(
       "/admin/website/home"
     )
-    expect(firstVisibleChild("leads", ["intake"])?.href).toBe("/admin/leads")
     expect(firstVisibleChild("marketing", ["marketer"])?.href).toBe(
       "/admin/marketing"
     )

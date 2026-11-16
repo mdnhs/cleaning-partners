@@ -235,22 +235,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
     badge: "new-leads",
     badgeLabel: "new enquiries",
     keywords: ["leads", "contact", "inbox", "messages"],
-    children: [
-      {
-        id: "leads-enquiries",
-        label: "Enquiries",
-        href: "/admin/leads",
-        permission: LEAD_READ,
-      },
-      {
-        id: "leads-applications",
-        label: "Job applications",
-        href: "/admin/careers/applications",
-        permission: LEAD_READ,
-        icon: FileUser,
-        keywords: ["applicants", "cv", "candidates"],
-      },
-    ],
+  },
+  {
+    id: "applications",
+    group: "menu",
+    label: "Job applications",
+    href: "/admin/careers/applications",
+    icon: FileUser,
+    permission: LEAD_READ,
+    match: "prefix",
+    keywords: ["applicants", "cv", "candidates", "careers", "jobs"],
   },
   {
     id: "chat",

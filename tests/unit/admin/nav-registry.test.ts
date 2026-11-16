@@ -54,7 +54,14 @@ describe("nav registry (MK IA, spec §5.1)", () => {
     expect(
       visibleNav(["owner"]).map((g) => g.items.map((i) => i.label))
     ).toEqual([
-      ["Dashboard", "Website", "Media", "Enquiries", "Live chat"],
+      [
+        "Dashboard",
+        "Website",
+        "Media",
+        "Enquiries",
+        "Job applications",
+        "Live chat",
+      ],
       ["SEO", "Marketing"],
       ["Appearance", "Site settings"],
     ])
@@ -104,42 +111,35 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       ["/admin/careers", "website", "website-careers"],
       ["/admin/careers/new", "website", "website-careers"],
       ["/admin/pages/custom/x", "website", "website-custom-pages"],
-      ["/admin/careers/applications", "leads", "leads-applications"],
-      ["/admin/careers/applications/x", "leads", "leads-applications"],
-      ["/admin/leads/0192", "leads", "leads-enquiries"],
     ]
     for (const [path, itemId, childId] of cases) {
       const item = activeItem(path, ["owner"])!
       expect(item.id, path).toBe(itemId)
       expect(activeChild(item, path)!.id, path).toBe(childId)
     }
+    for (const path of [
+      "/admin/careers/applications",
+      "/admin/careers/applications/x",
+    ])
+      expect(activeItem(path, ["owner"])!.id, path).toBe("applications")
+    expect(activeItem("/admin/leads/0192", ["owner"])!.id).toBe("leads")
     // An author holds article:read only: Blog still selects Website.
     expect(activeItem("/admin/blog/0192", ["author"])!.id).toBe("website")
   })
 
-  it("intake sees Enquiries with Job applications and no Website", () => {
+  it("intake sees Enquiries and Job applications as top-level items", () => {
     const items = visibleNav(["intake"]).flatMap((g) => g.items)
     expect(items.map((i) => i.label)).toEqual([
       "Dashboard",
       "Enquiries",
+      "Job applications",
       "Live chat",
     ])
-    expect(
-      items
-        .find((i) => i.id === "leads")!
-        .children!.map((c) => [c.label, c.href])
-    ).toEqual([
-      ["Enquiries", "/admin/leads"],
-      ["Job applications", "/admin/careers/applications"],
-    ])
+    expect(items.find((i) => i.id === "applications")).toMatchObject({
+      href: "/admin/careers/applications",
+    })
     expect(permissionFor("/admin/careers/applications")).toEqual({
       lead: ["read"],
-    })
-    expect(
-      reachableLinks(["intake"]).find((l) => l.id === "leads-applications")
-    ).toMatchObject({
-      parent: "Enquiries",
-      href: "/admin/careers/applications",
     })
   })
 
@@ -181,6 +181,7 @@ describe("nav registry (MK IA, spec §5.1)", () => {
       "website",
       "media",
       "leads",
+      "applications",
       "chat",
       "seo",
       "marketing",
