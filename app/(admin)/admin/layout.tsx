@@ -1,20 +1,24 @@
 import type { Metadata } from "next"
-
+import { connection } from "next/server"
 
 import "./admin.css"
 import { adminMono as fontMono, jakarta } from "@/app/fonts"
 import { AdminThemeProvider } from "@/components/admin/theme-provider"
 import { cn } from "@/lib/utils"
+import { loadAdminFavicon } from "@/server/lib/admin-brand"
 
-export const metadata: Metadata = {
-  title: {
-    default: "Admin · Cleaning Partners",
-    template: "%s · Cleaning Partners admin",
-  },
-  robots: { index: false, follow: false },
-  // The bundled icon (public/favicon.ico); the public site's root layout
-  // uses settings.site.favicon when set.
-  icons: { icon: "/favicon.ico" },
+export async function generateMetadata(): Promise<Metadata> {
+  // The site's favicon (settings), else the bundled public/favicon.ico: the
+  // tab matches the public site's. Read at request time, like the site layout.
+  await connection()
+  return {
+    title: {
+      default: "Admin · Cleaning Partners",
+      template: "%s · Cleaning Partners admin",
+    },
+    robots: { index: false, follow: false },
+    icons: { icon: (await loadAdminFavicon()) ?? "/favicon.ico" },
+  }
 }
 
 /**

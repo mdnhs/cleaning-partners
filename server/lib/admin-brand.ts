@@ -39,3 +39,19 @@ export async function loadAdminBrand(): Promise<AdminBrand | null> {
     return null
   }
 }
+
+/**
+ * The browser-tab icon of the admin: the PUBLISHED settings.site favicon, as
+ * on the public site. Null (the caller falls back to the bundled icon) when
+ * none is set, the media row is gone or the query fails.
+ */
+export async function loadAdminFavicon(): Promise<string | null> {
+  try {
+    const site = await getPublishedSettings("site")
+    if (!site?.favicon) return null
+    return (await getMedia(site.favicon.mediaId))?.url ?? null
+  } catch (error) {
+    console.error("[admin shell] favicon unavailable", error)
+    return null
+  }
+}
