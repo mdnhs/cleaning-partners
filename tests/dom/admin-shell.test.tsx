@@ -324,7 +324,7 @@ describe("AdminShell (master 4.1)", () => {
       within(nav)
         .getAllByRole("link")
         .map((a) => a.textContent)
-    ).toEqual(["Dashboard", "Enquiries", "Live chat"])
+    ).toEqual(["Dashboard", "Enquiries", "Job applications", "Live chat"])
     expect(screen.getByRole("main")).toHaveTextContent("Body")
   })
 
@@ -353,7 +353,7 @@ describe("AdminShell (master 4.1)", () => {
     expect(website).toHaveAttribute("href", "/admin/website/home")
   })
 
-  it("intake: Job applications marks Enquiries", () => {
+  it("intake: Job applications is its own current item", () => {
     pathname.current = "/admin/careers/applications/0192"
     render(
       <AdminShell session={session(["intake"])}>
@@ -362,8 +362,11 @@ describe("AdminShell (master 4.1)", () => {
     )
     const nav = screen.getByRole("navigation", { name: "Admin" })
     expect(
-      within(nav).getByRole("link", { name: "Enquiries" })
+      within(nav).getByRole("link", { name: "Job applications" })
     ).toHaveAttribute("aria-current", "page")
+    expect(
+      within(nav).getByRole("link", { name: "Enquiries" })
+    ).not.toHaveAttribute("aria-current", "page")
   })
 
   it("puts the floating panels on the canvas: sidebar, topbar, content", () => {

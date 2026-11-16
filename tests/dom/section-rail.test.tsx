@@ -143,12 +143,10 @@ describe("SectionRail", () => {
     expect(screen.getByText("Body")).toBeInTheDocument()
   })
 
-  it("Job applications keeps the Enquiries rail (intake)", () => {
+  it("Job applications is its own item with no rail (intake)", () => {
     renderAt("/admin/careers/applications/0192", ["intake"])
-    const rail = screen.getByRole("navigation", { name: "Enquiries" })
-    expect(
-      within(rail).getByRole("link", { name: "Job applications" })
-    ).toHaveAttribute("aria-current", "page")
+    expect(screen.queryByRole("navigation", { name: "Enquiries" })).toBeNull()
+    expect(screen.getByText("Body")).toBeInTheDocument()
   })
 
   it("no rail on a section without children", () => {
