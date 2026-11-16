@@ -149,6 +149,26 @@ describe("SectionRail", () => {
     expect(screen.getByText("Body")).toBeInTheDocument()
   })
 
+  it("Header & footer lists its parts under it (it has no page to hold them)", () => {
+    renderAt("/admin/website/header-footer/footer", ["owner"])
+    const rail = screen.getByRole("navigation", { name: "Website" })
+    const part = (name: string) => within(rail).getByRole("link", { name })
+    expect(part("Footer")).toHaveAttribute("aria-current", "page")
+    for (const name of ["Navigation", "Group companies"])
+      expect(part(name)).toBeInTheDocument()
+  })
+
+  it("a page screen shows no part links in the rail (they sit in the page)", () => {
+    renderAt("/admin/website/home", ["owner"])
+    const rail = screen.getByRole("navigation", { name: "Website" })
+    expect(
+      within(rail).queryByRole("link", { name: "Group companies" })
+    ).toBeNull()
+    expect(
+      within(rail).queryByRole("link", { name: "Client logos" })
+    ).toBeNull()
+  })
+
   it("no rail on a section without children", () => {
     renderAt("/admin/media", ["owner"])
     expect(screen.queryByRole("navigation")).toBeNull()

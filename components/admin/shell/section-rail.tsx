@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   createContext,
+  Fragment,
   type ReactNode,
   type RefObject,
   useContext,
@@ -25,6 +26,11 @@ import {
   useClickedCurrent,
 } from "@/components/admin/shell/active-indicator"
 import { activeChild, activeItem } from "@/lib/admin/nav"
+import {
+  WEBSITE_SCREENS,
+  type WebsiteKey,
+  websiteTabs,
+} from "@/lib/admin/website"
 import { cn } from "@/lib/utils"
 
 const RailContext = createContext(false)
@@ -77,39 +83,75 @@ export function SectionRail({ children }: { children: ReactNode }) {
           >
             {tabs.map((tab) => {
               const active = tab.id === current
+              // A Website screen with no page of its own (Header & footer)
+              // lists its parts under it, since there is no page to hold
+              // them: the other screens show their parts inside the page.
+              const screenKey = tab.id.replace(/^website-/, "") as WebsiteKey
+              const subs =
+                item.id === "website" &&
+                active &&
+                WEBSITE_SCREENS.find((s) => s.key === screenKey)?.page === null
+                  ? websiteTabs(screenKey, roles)
+                  : []
               return (
-                <li key={tab.id} className="flex shrink-0">
-                  <Link
-                    href={tab.href}
-                    aria-current={active ? "page" : undefined}
-                    data-current={active || undefined}
-                    onClick={mark(tab.id)}
-                    className={cn(
-                      SECTION_TAB,
-                      "min-h-11 lg:min-h-0 lg:w-full",
-                      active && SECTION_TAB_ACTIVE,
-                      // The pill below carries the active background.
-                      active && "bg-transparent"
-                    )}
-                  >
-                    {active ? (
-                      <>
-                        <ActivePill layoutId={`rail-pill-${item.id}`} />
-                        <ActiveBar
-                          layoutId={`rail-bar-${item.id}`}
-                          className="absolute top-1/2 left-0 hidden h-6 w-1 -translate-y-1/2 lg:block"
+                <Fragment key={tab.id}>
+                  <li className="flex shrink-0">
+                    <Link
+                      href={tab.href}
+                      aria-current={active ? "page" : undefined}
+                      data-current={active || undefined}
+                      onClick={mark(tab.id)}
+                      className={cn(
+                        SECTION_TAB,
+                        "min-h-11 lg:min-h-0 lg:w-full",
+                        active && SECTION_TAB_ACTIVE,
+                        // The pill below carries the active background.
+                        active && "bg-transparent"
+                      )}
+                    >
+                      {active ? (
+                        <>
+                          <ActivePill layoutId={`rail-pill-${item.id}`} />
+                          <ActiveBar
+                            layoutId={`rail-bar-${item.id}`}
+                            className="absolute top-1/2 left-0 hidden h-6 w-1 -translate-y-1/2 lg:block"
+                          />
+                        </>
+                      ) : null}
+                      {tab.icon ? (
+                        <tab.icon
+                          aria-hidden
+                          className="relative size-4 shrink-0"
                         />
-                      </>
-                    ) : null}
-                    {tab.icon ? (
-                      <tab.icon
-                        aria-hidden
-                        className="relative size-4 shrink-0"
-                      />
-                    ) : null}
-                    <span className="relative truncate">{tab.label}</span>
-                  </Link>
-                </li>
+                      ) : null}
+                      <span className="relative truncate">{tab.label}</span>
+                    </Link>
+                  </li>
+                  {subs.length > 1
+                    ? subs.map((part) => {
+                        const on =
+                          pathname === part.href ||
+                          pathname.startsWith(`${part.href}/`)
+                        return (
+                          <li key={part.id} className="flex shrink-0 lg:pl-5">
+                            <Link
+                              href={part.href}
+                              aria-current={on ? "page" : undefined}
+                              className={cn(
+                                SECTION_TAB,
+                                "min-h-11 text-[13px] lg:min-h-0 lg:w-full",
+                                on && SECTION_TAB_ACTIVE
+                              )}
+                            >
+                              <span className="relative truncate">
+                                {part.label}
+                              </span>
+                            </Link>
+                          </li>
+                        )
+                      })
+                    : null}
+                </Fragment>
               )
             })}
           </ul>
