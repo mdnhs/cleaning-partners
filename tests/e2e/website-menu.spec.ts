@@ -109,9 +109,10 @@ test("Services keeps Website highlighted", async ({ page }) => {
   await expect(
     sidebar(page).getByRole("link", { name: /^Website/ })
   ).toHaveAttribute("aria-current", "page")
+  // The Services screen has no tab row: its rail item is the current one.
   await expect(
     page
-      .getByRole("navigation", { name: "Services sections" })
-      .getByRole("link", { name: "All services" })
+      .getByRole("navigation", { name: "Website", exact: true })
+      .getByRole("link", { name: "Services" })
   ).toHaveAttribute("aria-current", "page")
 })
