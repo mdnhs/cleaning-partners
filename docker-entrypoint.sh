@@ -30,6 +30,14 @@ fi
 echo "[entrypoint] seeding content if the database is empty"
 node scripts/dist/seed.mjs --if-empty
 
+# One-shot: replace ONLY the Services (and the media rows they reference) with
+# docker/services-sync.json. Marker row ops.services-sync holds the file's
+# hash, so restarts and later deploys never overwrite editors' changes. Backs
+# the current services up to /data/backups first. Never fails the start.
+if [ -f docker/services-sync.json ]; then
+  node scripts/dist/services-sync.mjs apply docker/services-sync.json --yes --once || echo "[entrypoint] services sync exited non-zero; continuing"
+fi
+
 # Settings ▸ Integrations ▸ R2 from CP_R2_* when not saved yet (never
 # overwrites; never fails the start).
 node scripts/dist/r2-bootstrap.mjs || echo "[entrypoint] r2 bootstrap exited non-zero; continuing"

@@ -25,6 +25,7 @@ export const SCRIPT_ENTRIES = [
   "r2-bootstrap",
   "data-export-to-r2",
   "data-import",
+  "services-sync",
 ] as const
 
 /** `server-only` throws outside Next's react-server bundles; scripts get an empty module. */

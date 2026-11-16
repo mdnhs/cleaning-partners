@@ -60,6 +60,7 @@ COPY --from=builder /app/.next/static ./.next/static
 # (docker exec ... node scripts/dist/<name>.mjs).
 COPY --from=builder /app/scripts/dist ./scripts/dist
 COPY --from=builder /app/server/db/migrations ./server/db/migrations
+COPY --from=builder /app/docker/services-sync.json ./docker/services-sync.json
 COPY --chmod=755 docker-entrypoint.sh ./docker-entrypoint.sh
 RUN mkdir -p .next/cache && chown nextjs:nodejs .next/cache
 
