@@ -101,4 +101,60 @@ describe("HeaderFooterEditor", () => {
     )
     vi.unstubAllGlobals()
   })
+
+  it("fills the phone menu texts with their defaults for a row saved without them", async () => {
+    const dto = (draft: unknown) => ({
+      draft,
+      published: draft,
+      version: 1,
+      status: "published",
+      dirty: false,
+      publishedAt: "2026-11-01T00:00:00.000Z",
+      updatedAt: "2026-11-01T00:00:00.000Z",
+      updatedBy: null,
+    })
+    // An older row: no `mobile`, no `closeMenuAria`, links without the new fields.
+    const old = {
+      links: [{ label: "Home", href: "/" }],
+      cta: { label: "Get a Quote", href: "/contact" },
+      menuAria: "Open menu",
+      breadcrumbHome: "Home",
+      breadcrumbHomeHref: "/",
+    }
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input instanceof Request ? input.url : input)
+        const key = url.split("/settings/")[1]?.split("?")[0]
+        return new Response(
+          JSON.stringify(key === "navigation" ? dto(old) : dto({})),
+          { status: 200, headers: { "content-type": "application/json" } }
+        )
+      })
+    )
+    render(
+      <QueryClientProvider client={makeQueryClient()}>
+        <AdminSessionProvider
+          value={{
+            user: {
+              id: "u",
+              name: "U",
+              email: "u@x.test",
+              title: null,
+              twoFactorEnabled: true,
+            },
+            roles: ["owner"],
+            impersonatedBy: null,
+          }}
+        >
+          <HeaderFooterEditor />
+        </AdminSessionProvider>
+      </QueryClientProvider>
+    )
+    expect(await screen.findByLabelText("Help block title")).toHaveValue(
+      "Need help now?"
+    )
+    expect(screen.getByLabelText("Call button")).toHaveValue("Call Now")
+    vi.unstubAllGlobals()
+  })
 })

@@ -2,6 +2,7 @@ import { isDeepEqual } from "@/lib/json"
 import { api, unwrap } from "@/lib/api-client"
 import type { EditableSettingsKey } from "@/lib/admin/settings-keys"
 import type { SettingsDto } from "@/lib/schemas/api/settings"
+import { settingsSchemas } from "@/lib/schemas/settings"
 
 /**
  * Several settings keys edited as one record (Header & footer): one form, one
@@ -11,6 +12,17 @@ import type { SettingsDto } from "@/lib/schemas/api/settings"
  * the others' versions are tracked here, as in the page bundle.
  */
 type Pair = { dto: SettingsDto; saved: unknown }
+
+/**
+ * The record as the form should open it: rows saved before a field existed
+ * lack it, and the schema's default (the text the site shows meanwhile) is
+ * filled in so the field is not blank. Nothing is saved until an edit; an
+ * invalid draft is left as stored (the form reports it).
+ */
+function withDefaults(key: EditableSettingsKey, dto: SettingsDto): SettingsDto {
+  const parsed = settingsSchemas[key].safeParse(dto.draft)
+  return parsed.success ? { ...dto, draft: parsed.data } : dto
+}
 
 export function createSettingsBundle(keys: readonly EditableSettingsKey[]) {
   const [primaryKey, ...restKeys] = keys
@@ -50,9 +62,9 @@ export function createSettingsBundle(keys: readonly EditableSettingsKey[]) {
           unwrap(api.settings[":key"].$get({ param: paramOf(key) }))
         )
       )
-      primary = first
-      primarySaved = first.draft
-      restKeys.forEach((key, i) => adopt(key, others[i]))
+      primary = withDefaults(primaryKey, first)
+      primarySaved = primary.draft
+      restKeys.forEach((key, i) => adopt(key, withDefaults(key, others[i])))
       return merged()
     },
 
@@ -92,30 +104,39 @@ export function createSettingsBundle(keys: readonly EditableSettingsKey[]) {
         if (!part.dto.dirty && part.dto.published) continue
         adopt(
           key,
-          await unwrap(
-            api.settings[":key"].publish.$post({
-              param: paramOf(key),
-              json: { version: part.dto.version },
-            })
+          withDefaults(
+            key,
+            await unwrap(
+              api.settings[":key"].publish.$post({
+                param: paramOf(key),
+                json: { version: part.dto.version },
+              })
+            )
           )
         )
       }
-      primary = await unwrap(
-        api.settings[":key"].publish.$post({
-          param: paramOf(primaryKey),
-          json: { version },
-        })
+      primary = withDefaults(
+        primaryKey,
+        await unwrap(
+          api.settings[":key"].publish.$post({
+            param: paramOf(primaryKey),
+            json: { version },
+          })
+        )
       )
       primarySaved = primary.draft
       return merged()
     },
 
     async restore(revisionId: string, version: number): Promise<SettingsDto> {
-      primary = await unwrap(
-        api.settings[":key"].restore.$post({
-          param: paramOf(primaryKey),
-          json: { revisionId, version },
-        })
+      primary = withDefaults(
+        primaryKey,
+        await unwrap(
+          api.settings[":key"].restore.$post({
+            param: paramOf(primaryKey),
+            json: { revisionId, version },
+          })
+        )
       )
       primarySaved = primary.draft
       return merged()
