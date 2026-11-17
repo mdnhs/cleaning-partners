@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useSyncExternalStore } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -31,9 +31,28 @@ function videoAllowed() {
 export function HeroVideo({ src }: { src: string }) {
   const allowed = useSyncExternalStore(subscribe, videoAllowed, () => false)
   const [ready, setReady] = useState(false)
+  const ref = useRef<HTMLVideoElement>(null)
+
+  // Safari only autoplays when `muted` is a real DOM attribute and play() is
+  // called explicitly; React sets `muted` as a property only, and a
+  // client-rendered <video> never gets the attribute, so autoPlay is ignored.
+  useEffect(() => {
+    const video = ref.current
+    if (!allowed || !video) return
+    video.defaultMuted = true
+    video.muted = true
+    video.setAttribute("muted", "")
+    video.setAttribute("playsinline", "")
+    video.setAttribute("webkit-playsinline", "")
+    video.play().catch(() => {
+      // Autoplay blocked (e.g. iOS Low Power Mode): keep the poster image.
+    })
+  }, [allowed, src])
+
   if (!allowed) return null
   return (
     <video
+      ref={ref}
       aria-hidden
       tabIndex={-1}
       autoPlay
