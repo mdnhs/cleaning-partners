@@ -40,7 +40,7 @@ export function Hero({
           preload
         />
         {backgroundVideo ? <HeroVideo src={backgroundVideo} /> : null}
-        <div className="absolute inset-0 bg-linear-to-b from-[rgba(40,100,143,0.55)] to-[rgba(15,47,71,0.8)]" />
+        <div className="absolute inset-0 bg-linear-to-b from-[rgba(40,100,143,0.2)] to-[rgba(15,47,71,0.45)]" />
       </div>
 
       <Container
