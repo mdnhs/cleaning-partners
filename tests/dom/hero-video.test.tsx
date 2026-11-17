@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react"
+import { act, render } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { Hero } from "@/components/home/hero"
@@ -79,5 +79,30 @@ describe("Hero background video", () => {
       <Hero {...props} backgroundVideo="/videos/loop.mp4" />
     )
     expect(container.querySelector("video")).toBeNull()
+  })
+
+  it("stays hidden until playing, and starts on the first tap when autoplay is blocked", async () => {
+    mockEnvironment()
+    const play = vi
+      .fn<() => Promise<void>>()
+      .mockRejectedValueOnce(new Error("NotAllowedError"))
+      .mockResolvedValue(undefined)
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(play)
+    const { container } = render(
+      <Hero {...props} backgroundVideo="/videos/loop.mp4" />
+    )
+    const video = container.querySelector("video")!
+    await act(async () => {})
+    expect(play).toHaveBeenCalledTimes(1)
+    // Blocked (Low Power Mode): the poster image stays, the video is invisible.
+    expect(video.className).toContain("opacity-0")
+    await act(async () => {
+      document.dispatchEvent(new Event("touchend"))
+    })
+    expect(play).toHaveBeenCalledTimes(2)
+    await act(async () => {
+      video.dispatchEvent(new Event("playing"))
+    })
+    expect(video.className).toContain("opacity-100")
   })
 })
