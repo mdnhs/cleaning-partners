@@ -40,7 +40,6 @@ export function Hero({
           preload
         />
         {backgroundVideo ? <HeroVideo src={backgroundVideo} /> : null}
-        <div className="absolute inset-0 bg-linear-to-b from-[rgba(40,100,143,0.2)] to-[rgba(15,47,71,0.45)]" />
       </div>
 
       <Container
@@ -67,14 +66,14 @@ export function Hero({
         <h1
           data-intro
           data-hero-title
-          className="font-heading text-[32px] leading-[1.1] font-bold tracking-[-0.16px] text-white sm:text-[44px] sm:leading-[1.05] md:text-[64px]"
+          className="font-heading text-[32px] leading-[1.1] font-bold tracking-[-0.16px] text-black sm:text-[44px] sm:leading-[1.05] md:text-[64px]"
         >
           {title}
         </h1>
         <p
           data-intro
           data-hero-copy
-          className="max-w-[640px] text-base leading-[1.6] text-white/90 sm:text-lg sm:leading-[1.55] md:text-xl"
+          className="max-w-[640px] text-base leading-[1.6] text-black sm:text-lg sm:leading-[1.55] md:text-xl"
         >
           {subtitle}
         </p>
@@ -99,7 +98,8 @@ export function Hero({
             className={buttonVariants({
               variant: "outline-light",
               size: "pill",
-              className: "max-sm:w-full",
+              className:
+                "border-black/70 text-black hover:bg-black/10 max-sm:w-full",
             })}
           >
             {secondaryCta.label}
@@ -111,7 +111,7 @@ export function Hero({
           data-hero-member
           className="flex items-center gap-3 pt-3 max-sm:pt-3"
         >
-          <p className="text-sm font-medium text-white/80">{member.label}</p>
+          <p className="text-sm font-medium text-black">{member.label}</p>
           <div className="relative h-[42px] w-20">
             <Image
               src={member.logo}
