@@ -37,6 +37,9 @@ node scripts/dist/seed.mjs --if-empty
 if [ -f docker/services-sync.json ]; then
   node scripts/dist/services-sync.mjs apply docker/services-sync.json --yes --once || echo "[entrypoint] services sync exited non-zero; continuing"
 fi
+# Services whose version fell behind their revisions cannot be published
+# (duplicate revision): raise it. Idempotent, never fails the start.
+node scripts/dist/services-sync.mjs repair || echo "[entrypoint] services version repair exited non-zero; continuing"
 
 # Settings ▸ Integrations ▸ R2 from CP_R2_* when not saved yet (never
 # overwrites; never fails the start).

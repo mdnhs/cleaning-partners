@@ -2,6 +2,7 @@
 // database to another without touching anything else.
 //   export:  pnpm tsx:server scripts/services-sync.ts export <out.json>
 //   apply:   node scripts/dist/services-sync.mjs apply <in.json> [--yes] [--once]
+//   repair:  node scripts/dist/services-sync.mjs repair
 // `apply` is a dry run (prints what would change) unless --yes is given. With
 // --yes it backs the current services up to <in.json>.before-<stamp>.json,
 // then, in ONE transaction, upserts the referenced media (matched on
@@ -16,7 +17,7 @@ import { join } from "node:path"
 // One-off ops script that works on whole tables: it queries directly instead
 // of going through a server/modules repo.
 // eslint-disable-next-line no-restricted-imports
-import { eq, inArray, notInArray } from "drizzle-orm"
+import { eq, inArray, notInArray, sql } from "drizzle-orm"
 
 import { getDb } from "@/server/db/client"
 import { media, services } from "@/server/db/schema"
@@ -48,11 +49,31 @@ await runScript("services-sync", async () => {
   const [mode, file, ...flags] = process.argv.slice(2)
   const flag = flags.includes("--yes") ? "--yes" : undefined
   const once = flags.includes("--once")
-  if (!file || (mode !== "export" && mode !== "apply"))
+  if (mode !== "repair" && (!file || (mode !== "export" && mode !== "apply")))
     throw new Error(
-      "Usage: services-sync export <out.json> | apply <in.json> [--yes]"
+      "Usage: services-sync export <out.json> | apply <in.json> [--yes] | repair"
     )
   const db = getDb()
+
+  // An earlier apply copied the source's `version` (1) over production rows
+  // whose revisions were already numbered higher, so the next publish tried to
+  // insert a revision that exists (unique entity + version) and failed with a
+  // 500. Raises each service's version to its newest revision's, never lowers
+  // one, so it is safe to run on every start.
+  if (mode === "repair") {
+    const fixed = await db.execute(sql`
+      UPDATE services SET version = r.newest
+      FROM (
+        SELECT entity_id, max(version) AS newest
+        FROM revisions WHERE entity_type = 'service' GROUP BY entity_id
+      ) r
+      WHERE r.entity_id = services.id::text AND services.version < r.newest
+      RETURNING services.slug`)
+    console.log(
+      `[services-sync] repair: ${fixed.rows.length} service version(s) raised above their revisions`
+    )
+    return
+  }
 
   if (mode === "export") {
     const svc = await db.select().from(services)
@@ -139,7 +160,9 @@ await runScript("services-sync", async () => {
       const row = remap({ ...s, updatedBy: null })
       const existing = current.find((c) => c.slug === s.slug)
       if (existing) {
-        const { id: _id, slug: _slug, ...rest } = row
+        // Keep this database's own version: the file's would fall behind the
+        // existing revisions and break the next publish.
+        const { id: _id, slug: _slug, version: _version, ...rest } = row
         await tx.update(services).set(rest).where(eq(services.id, existing.id))
       } else await tx.insert(services).values(row)
     }
