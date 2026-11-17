@@ -8,3 +8,12 @@ allowBuilds:
 
 overrides:
   "undici@>=7 <8": 7.30.1
+
+# audit:deps ignore list. Each entry needs a reason and a way out.
+auditConfig:
+  ignoreGhsas:
+    # picomatch ReDoS (extglobs), 2026-11-17: no patched version exists yet
+    # (patched range is empty). Reached only through dev tooling
+    # (better-auth > vitest, shadcn, eslint-config-next), not request handling.
+    # Remove this line once picomatch publishes a fix and the lockfile has it.
+    - GHSA-fc5q-39xc-vjpf
