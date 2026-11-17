@@ -115,10 +115,16 @@ function fileHeaders(file: {
   }
   if (file.mime === "image/svg+xml")
     headers["Content-Security-Policy"] = SVG_CSP
-  else if (isVideoMime(file.mime))
+  else if (isVideoMime(file.mime)) {
     // A background video is only fetched by <video>: plays inline.
+    // no-transform: a proxy that compresses it drops Content-Length and
+    // Accept-Ranges, and Safari / iOS will not play video without byte ranges.
     headers["Content-Disposition"] = "inline"
-  else if (!file.mime.startsWith("image/")) {
+    headers["Cache-Control"] = `${IMMUTABLE_CACHE}, no-transform`
+    // Traefik's global compress middleware skips responses that already name
+    // an encoding; "identity" says "not compressed" and is a no-op to clients.
+    headers["Content-Encoding"] = "identity"
+  } else if (!file.mime.startsWith("image/")) {
     // Lottie data is only fetched by the player: opened directly it runs
     // nothing (sandboxed, no sources) and downloads.
     if (isLottieMime(file.mime))

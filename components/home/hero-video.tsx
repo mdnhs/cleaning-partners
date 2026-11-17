@@ -44,7 +44,8 @@ export function HeroVideo({ src }: { src: string }) {
     video.setAttribute("muted", "")
     video.setAttribute("playsinline", "")
     video.setAttribute("webkit-playsinline", "")
-    video.play().catch(() => {
+    // Older WebKit returns undefined instead of a promise.
+    video.play()?.catch(() => {
       // Autoplay blocked (e.g. iOS Low Power Mode): keep the poster image.
     })
   }, [allowed, src])

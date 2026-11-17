@@ -63,6 +63,7 @@ import {
   UPLOAD_TYPES,
   type UploadMime,
 } from "@/server/lib/media-sniff"
+import { faststartMp4 } from "@/server/lib/mp4-faststart"
 import { AppError, forbidden, notFound } from "@/server/lib/errors"
 import { FOREIGN_KEY_VIOLATION, pgErrorCode } from "@/server/lib/pg-errors"
 import {
@@ -215,8 +216,10 @@ export async function prepareUpload(file: unknown): Promise<PreparedUpload> {
 }
 
 /**
- * MP4 / WebM background video: at most 30 MB, stored exactly as uploaded
- * (no transcoding, so no metadata is read: width/height stay empty, no blur).
+ * MP4 / WebM background video: at most 30 MB, no transcoding (so no metadata
+ * is read: width/height stay empty, no blur). An MP4 whose index (`moov`) sits
+ * after the media gets it moved to the front (faststart) so Safari / iOS can
+ * start playing; everything else is stored exactly as uploaded.
  */
 function prepareVideo(
   file: File,
@@ -226,11 +229,12 @@ function prepareVideo(
   if (bytes.byteLength > MAX_VIDEO_BYTES)
     throw fileError(`Videos can be up to ${MAX_VIDEO_BYTES / 1024 / 1024} MB`)
   const ext = UPLOAD_TYPES[mime]
+  const stored = mime === "video/mp4" ? faststartMp4(bytes) : bytes
   return {
-    bytes,
+    bytes: stored,
     mime,
     ext,
-    size: bytes.byteLength,
+    size: stored.byteLength,
     originalName: cleanFileName(file.name, ext),
     width: null,
     height: null,
